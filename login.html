@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign in – ScalVest</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;font-family:Inter}
+body{margin:0;color:#fff}
+
+/* VIDEO BG */
+#bgVideo{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:-2;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(10,15,25,.45);
+  z-index:-1;
+}
+
+/* AUTH BUTTONS */
+.auth-btn{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:13px 16px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+.auth-btn img{width:18px;height:18px}
+
+/* MODALS */
+.modal-overlay,.email-overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.email-overlay{
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(10px);
+  display:none;
+  z-index:100;
+}
+.email-glass{
+  width:360px;
+  padding:28px;
+  border-radius:20px;
+  background:rgba(255,255,255,.15);
+  backdrop-filter:blur(20px);
+}
+.email-glass input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  background:rgba(255,255,255,.2);
+  color:#fff;
+}
+.email-glass button{
+  width:100%;
+  padding:12px;
+  margin-top:12px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* MAIN MODAL */
+.modal{
+  width:900px;
+  height:520px;
+  background:#fff;
+  border-radius:16px;
+  display:flex;
+  overflow:hidden;
+}
+.modal-left{
+  width:50%;
+  background:url("scalvestauth.jpg") center/cover no-repeat;
+  position:relative;
+}
+.modal-left::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.55);
+}
+.overlay-text{
+  position:relative;
+  z-index:2;
+  padding:42px;
+}
+.modal-right{
+  width:50%;
+  padding:40px;
+  color:#000;
+}
+.divider{
+  text-align:center;
+  margin:18px 0;
+  position:relative;
+}
+.divider span{
+  background:#fff;
+  padding:0 10px;
+  font-size:12px;
+  color:#6b7280;
+}
+.divider::before{
+  content:"";
+  position:absolute;
+  top:50%;
+  left:0;
+  right:0;
+  height:1px;
+  background:#e5e7eb;
+  z-index:-1;
+}
+</style>
+</head>
+
+<body>
+
+<video id="bgVideo" autoplay muted loop playsinline>
+  <source src="loginpage.mp4" type="video/mp4">
+</video>
+
+<!-- MAIN AUTH -->
+<div class="modal-overlay">
+  <div class="modal">
+
+    <div class="modal-left">
+      <div class="overlay-text">
+        <h2>Verified • Secure • Scalable</h2>
+      </div>
+    </div>
+
+    <div class="modal-right">
+      <h3>Sign in to ScalVest</h3>
+      <p style="color:#6b7280">Fast. Secure. Passwordless.</p>
+
+      <button class="auth-btn" onclick="googleLogin()">
+        <img src="google.svg"> Continue with Google
+      </button>
+
+      <button class="auth-btn" onclick="openEmail()">
+        <img src="email.svg"> Continue with Email
+      </button>
+
+      <div class="divider"><span>or</span></div>
+
+      <button class="auth-btn" onclick="appleLogin()">
+        <img src="apple.svg"> Continue with Apple
+      </button>
+
+      <button class="auth-btn" onclick="facebookLogin()">
+        <img src="facebook.svg"> Continue with Facebook
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL MAGIC LINK -->
+<div class="email-overlay" id="emailModal">
+  <div class="email-glass">
+    <h3>Email sign-in</h3>
+    <p style="font-size:13px;opacity:.85">
+      We’ll send you a secure sign-in link.
+    </p>
+    <input id="emailInput" placeholder="Email address">
+    <button onclick="sendMagicLink()">Send sign-in link</button>
+  </div>
+</div>
+
+<!-- VERIFYING -->
+<div class="email-overlay" id="verifyingModal">
+  <div class="email-glass">
+    <h3>Check your email</h3>
+    <p>Click the link to finish signing in.</p>
+    <p style="font-size:12px;opacity:.8">
+      You’ll be logged in automatically.
+    </p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey:"AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+  authDomain:"scalevest-163a0.firebaseapp.com",
+  projectId:"scalevest-163a0"
+});
+
+const auth = firebase.auth();
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+/* EMAIL MAGIC LINK */
+function openEmail(){
+  emailModal.style.display="flex";
+}
+
+function sendMagicLink(){
+  const email = emailInput.value;
+  if(!email) return alert("Enter email");
+
+  const actionCodeSettings = {
+    url: window.location.href,
+    handleCodeInApp: true
+  };
+
+  auth.sendSignInLinkToEmail(email, actionCodeSettings)
+    .then(()=>{
+      localStorage.setItem("emailForSignIn", email);
+      emailModal.style.display="none";
+      verifyingModal.style.display="flex";
+    })
+    .catch(e=>alert(e.message));
+}
+
+/* AUTO LOGIN FROM EMAIL LINK */
+if (auth.isSignInWithEmailLink(window.location.href)) {
+  const email = localStorage.getItem("emailForSignIn");
+  if(email){
+    auth.signInWithEmailLink(email, window.location.href)
+      .then(()=>{
+        localStorage.removeItem("emailForSignIn");
+        location.href="mainbusinesshub.html";
+      })
+      .catch(e=>alert(e.message));
+  }
+}
+
+/* SOCIAL LOGIN */
+function googleLogin(){
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    .then(()=>location.href="mainbusinesshub.html")
+    .catch(e=>alert(e.message));
+}
+function facebookLogin(){
+  auth.signInWithPopup(new firebase.auth.FacebookAuthProvider())
+    .then(()=>location.href="mainbusinesshub.html")
+    .catch(e=>alert(e.message));
+}
+function appleLogin(){
+  auth.signInWithPopup(new firebase.auth.OAuthProvider("apple.com"))
+    .then(()=>location.href="mainbusinesshub.html")
+    .catch(e=>alert(e.message));
+}
+</script>
+
+</body>
+</html>
