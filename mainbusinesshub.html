@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Main Business Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;font-family:Inter}
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f6f7fb;
+}
+
+/* ===== CREATE HUB CARD ===== */
+#createHubCard{
+  width:380px;
+  height:380px;
+  background:#fff;
+  border-radius:28px;
+  box-shadow:0 20px 50px rgba(0,0,0,.08);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:.3s;
+}
+#createHubCard:hover{transform:translateY(-4px)}
+
+#createHubCard img{
+  width:120px;
+  margin-bottom:24px;
+}
+
+#createHubCard h2{
+  font-size:22px;
+  margin:0;
+  text-align:center;
+}
+
+/* ===== NAME MODAL ===== */
+#nameModal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-box{
+  width:360px;
+  background:#fff;
+  padding:30px;
+  border-radius:20px;
+  text-align:center;
+}
+
+.modal-box input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  margin:16px 0;
+  font-size:15px;
+}
+
+.modal-box button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#000;
+  color:#fff;
+  font-size:15px;
+  cursor:pointer;
+}
+
+/* ===== DASHBOARD ===== */
+#dashboard{
+  display:none;
+  width:90%;
+  max-width:1100px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:22px;
+}
+
+.box{
+  height:160px;
+  background:#fff;
+  border-radius:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.07);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- CREATE HUB -->
+<div id="createHubCard">
+  <img src="shop.svg" alt="Shop">
+  <h2>Create your Business Hub</h2>
+</div>
+
+<!-- NAME MODAL -->
+<div id="nameModal">
+  <div class="modal-box">
+    <h3>Name your business</h3>
+    <input id="businessName" placeholder="Business name">
+    <button onclick="saveBusinessName()">Continue</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="grid">
+    <div class="box">Box 1</div>
+    <div class="box">Box 2</div>
+    <div class="box">Box 3</div>
+    <div class="box">Box 4</div>
+    <div class="box">Box 5</div>
+    <div class="box">Box 6</div>
+  </div>
+</div>
+
+<!-- FIREBASE SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+/* ===== FIREBASE CONFIG ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+  authDomain: "scalevest-163a0.firebaseapp.com",
+  databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+  projectId: "scalevest-163a0",
+  storageBucket: "scalevest-163a0.appspot.com",
+  messagingSenderId: "938358950124",
+  appId: "1:938358950124:web:043506aeaacea2a96bfdc9"
+};
+
+/* ===== INIT ===== */
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+/* ===== ELEMENTS ===== */
+const createCard = document.getElementById("createHubCard");
+const modal = document.getElementById("nameModal");
+const dashboard = document.getElementById("dashboard");
+
+/* ===== OPEN MODAL ===== */
+createCard.onclick = () => modal.style.display="flex";
+
+/* ===== SAVE BUSINESS NAME ===== */
+function saveBusinessName(){
+  const name = document.getElementById("businessName").value.trim();
+  if(!name) return alert("Enter business name");
+
+  const user = auth.currentUser;
+  if(!user) return alert("Not logged in");
+
+  db.ref("BusinessOwners/" + user.uid).update({
+    businessName: name,
+    createdAt: new Date().toISOString()
+  }).then(() => {
+    modal.style.display="none";
+    createCard.style.display="none";
+    dashboard.style.display="block";
+  });
+}
+
+/* ===== CHECK ON LOAD ===== */
+auth.onAuthStateChanged(user=>{
+  if(!user){
+    location.href="login.html";
+    return;
+  }
+
+  db.ref("BusinessOwners/" + user.uid + "/businessName")
+    .once("value")
+    .then(snap=>{
+      if(snap.exists()){
+        createCard.style.display="none";
+        dashboard.style.display="block";
+      }
+    });
+});
+
+</script>
+
+</body>
+</html>
