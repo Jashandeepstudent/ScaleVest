@@ -38,6 +38,21 @@ body{margin:0;background:#f6f7fb;padding:30px}
 /* BUTTONS */
 .row button{padding:6px 12px;border-radius:10px;border:1px solid #ddd;background:#fff;cursor:pointer}
 .remove{color:#dc2626;border-color:#dc2626}
+.top .actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap; /* allow buttons to wrap if not enough space */
+}
+.top .actions button{
+  padding:12px 18px;
+  border:none;
+  border-radius:14px;
+  background:#000;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  white-space: nowrap; /* prevent text wrapping inside button */
+}
 
 /* MODALS */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000}
@@ -56,7 +71,16 @@ body{margin:0;background:#f6f7fb;padding:30px}
 }
 .laser{position:absolute;top:0;left:0;width:100%;height:2px;background:red;box-shadow:0 0 10px red;animation:scan 1.2s linear infinite}
 @keyframes scan{0%{top:0}50%{top:100%}100%{top:0}}
-
+.flash{
+  position:fixed;
+  inset:0;
+  background:rgba(34,197,94,.25);
+  pointer-events:none;
+  z-index:3000;
+  opacity:0;
+  transition:.15s;
+}
+.flash.show{opacity:1}
 /* POPUP */
 .toast{
   position:fixed;
@@ -104,10 +128,12 @@ body{margin:0;background:#f6f7fb;padding:30px}
 
 <div class="top">
   <h2>Inventory</h2>
-  <div class="actions">
-    <button onclick="openScanner()">Scan Barcode</button>
-    <button onclick="openAdd()">Add Product</button>
-  </div>
+ <div class="actions">
+  <button onclick="openScanner()">Scan Barcode</button>
+  <button onclick="openAdd()">Add Product</button>
+  <button onclick="startVoice()">🎙 Voice</button>
+</div>
+
 </div>
 
 <div class="stats">
@@ -142,6 +168,7 @@ body{margin:0;background:#f6f7fb;padding:30px}
     <button onclick="closeScanner()">Close</button>
   </div>
 </div>
+<div id="flash" class="flash"></div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -157,7 +184,9 @@ firebase.initializeApp({
 
 const auth=firebase.auth(), db=firebase.database();
 let inventory={}, invRef, scannerRunning=false;
-let scanStamp=0, scanCount=0;
+let scanStamp = 0;
+let scanTotal = 0;
+
 
 function showToast(t){
   toast.textContent="✔ "+t;
@@ -172,7 +201,12 @@ auth.onAuthStateChanged(u=>{
 });
 
 function openAdd(){addModal.style.display="flex"}
-function openScanner(){scannerModal.style.display="flex";startScanner()}
+function openScanner(){
+  unlockAudio();          
+  scannerModal.style.display="flex";
+  startScanner();
+}
+
 function closeScanner(){scannerModal.style.display="none";if(scannerRunning){Quagga.stop();scannerRunning=false}}
 
 function addProduct(){
@@ -192,6 +226,11 @@ function addProduct(){
   punit.value = "";
 
   addModal.style.display = "none";
+}
+function greenFlash(){
+  const f=document.getElementById("flash");
+  f.classList.add("show");
+  setTimeout(()=>f.classList.remove("show"),120);
 }
 
 
@@ -228,31 +267,70 @@ function startScanner(){
 }
 
 async function handleBarcode(code){
-  const now=Date.now();
-  if(now-scanStamp<700) return;
-  scanStamp=now;
+  const now = Date.now();
+  if(now - scanStamp < 120) return;   // 5–10 scans/sec
+  scanStamp = now;
 
-  scanCount++;
-  scanCount.textContent=scanCount;
+  scanTotal++;
+  document.getElementById("scanCount").textContent = scanTotal;
 
-  let name="Unknown Product";
-  const found=Object.entries(inventory).find(([_,p])=>p.barcode===code);
+  let name = "Unknown Product";
+  const found = Object.entries(inventory).find(([_,p])=>p.barcode===code);
 
   if(found){
-    name=found[1].name;
-    invRef.child(found[0]).update({quantity:found[1].quantity+1});
+    name = found[1].name;
+    invRef.child(found[0]).update({
+      quantity: found[1].quantity + 1
+    });
     document.getElementById("beep-ok").play().catch(()=>{});
   }else{
     document.getElementById("beep-new").play().catch(()=>{});
     try{
-      const r=await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
-      const j=await r.json();
-      if(j.status===1) name=j.product.product_name||name;
+      const r = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+      const j = await r.json();
+      if(j.status === 1) name = j.product.product_name || name;
     }catch(e){}
-    invRef.push({name,quantity:1,unit:"pcs",barcode:code});
+    invRef.push({
+      name,
+      quantity: 1,
+      unit: "pcs",
+      barcode: code
+    });
   }
+
+  greenFlash();     // ✅ ADD THIS LINE HERE
   showToast(name);
 }
+
+function unlockAudio(){
+  ["beep-ok","beep-new"].forEach(id=>{
+    const a=document.getElementById(id);
+    a.play().then(()=>{
+      a.pause();
+      a.currentTime=0;
+    }).catch(()=>{});
+  });
+}
+let gunBuffer="";
+let gunTimer=null;
+
+document.addEventListener("keydown",e=>{
+  if(scannerModal.style.display!=="flex") return;
+
+  if(e.key==="Enter"){
+    if(gunBuffer.length>=6){
+      handleBarcode(gunBuffer);
+    }
+    gunBuffer="";
+    return;
+  }
+
+  if(/^[0-9]$/.test(e.key)){
+    gunBuffer+=e.key;
+    clearTimeout(gunTimer);
+    gunTimer=setTimeout(()=>gunBuffer="",100);
+  }
+});
 
 function render(){
   products.innerHTML="";
@@ -300,6 +378,139 @@ function changeQty(id, direction){
   if(newQty < 0) newQty = 0;
 
   invRef.child(id).update({ quantity: newQty });
+}
+/* ===============================
+   🎙️ VOICE ASSISTANT ENGINE
+================================ */
+
+let recognition;
+let listening = false;
+
+function startVoice(){
+  if(!('webkitSpeechRecognition' in window)){
+    alert("Voice not supported on this browser");
+    return;
+  }
+
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    listening = true;
+    showToast("Listening...");
+  };
+
+  recognition.onerror = () => {
+    listening = false;
+    showToast("Voice error");
+  };
+
+  recognition.onend = () => {
+    listening = false;
+  };
+
+  recognition.onresult = e => {
+    const text = e.results[0][0].transcript.toLowerCase();
+    console.log("VOICE:", text);
+    processVoice(text);
+  };
+
+  recognition.start();
+}
+
+/* ===============================
+   🧠 COMMAND PROCESSOR
+================================ */
+
+function processVoice(cmd){
+
+  // ADD PRODUCT
+  if(cmd.includes("add")){
+    // "add rice quantity five"
+    const name = extractProduct(cmd);
+    const qty = extractNumber(cmd) || 1;
+
+    if(!name) return showToast("Say product name");
+
+    invRef.push({
+      name,
+      quantity: qty,
+      unit: "pcs"
+    });
+
+    showToast(`Added ${name} (${qty})`);
+    return;
+  }
+
+  // INCREASE
+  if(cmd.includes("increase")){
+    const name = extractProduct(cmd);
+    const qty = extractNumber(cmd) || 1;
+    changeByName(name, qty);
+    return;
+  }
+
+  // DECREASE
+  if(cmd.includes("decrease")){
+    const name = extractProduct(cmd);
+    const qty = extractNumber(cmd) || 1;
+    changeByName(name, -qty);
+    return;
+  }
+
+  // REMOVE
+  if(cmd.includes("remove") || cmd.includes("delete")){
+    const name = extractProduct(cmd);
+    removeByName(name);
+    return;
+  }
+
+  showToast("Command not understood");
+}
+
+/* ===============================
+   🔧 HELPERS
+================================ */
+
+function extractProduct(text){
+  const words = text.split(" ");
+  const ignore = ["add","increase","decrease","remove","delete","quantity","by"];
+  const filtered = words.filter(w => !ignore.includes(w) && isNaN(w));
+  return filtered.join(" ").trim();
+}
+
+function extractNumber(text){
+  const match = text.match(/\d+/);
+  return match ? parseInt(match[0]) : null;
+}
+
+function changeByName(name, diff){
+  if(!name) return showToast("Say product name");
+
+  const found = Object.entries(inventory)
+    .find(([_,p])=>p.name.toLowerCase() === name.toLowerCase());
+
+  if(!found) return showToast("Product not found");
+
+  const [id,p] = found;
+  const newQty = Math.max(0, p.quantity + diff);
+
+  invRef.child(id).update({ quantity: newQty });
+  showToast(`${name} updated`);
+}
+
+function removeByName(name){
+  if(!name) return showToast("Say product name");
+
+  const found = Object.entries(inventory)
+    .find(([_,p])=>p.name.toLowerCase() === name.toLowerCase());
+
+  if(!found) return showToast("Product not found");
+
+  invRef.child(found[0]).remove();
+  showToast(`${name} removed`);
 }
 
 </script>
