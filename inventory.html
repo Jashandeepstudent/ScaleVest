@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -403,7 +404,8 @@ function startVoice(){
   }
 
   recognition = new webkitSpeechRecognition();
-  recognition.lang = "en-US";
+ recognition.lang = "hi-IN"; // supports Hindi + English mixed
+
   recognition.continuous = false;
   recognition.interimResults = false;
 
@@ -424,7 +426,8 @@ function startVoice(){
   recognition.onresult = e => {
     const text = e.results[0][0].transcript.toLowerCase();
     console.log("VOICE:", text);
-    processVoice(text);
+    handleAIVoice(text);
+
   };
 
   recognition.start();
@@ -500,7 +503,7 @@ function changeByName(name, diff){
   if(!name) return showToast("Say product name");
 
   const found = Object.entries(inventory)
-    .find(([_,p])=>p.name.toLowerCase() === name.toLowerCase());
+    .find(([_,p]) => p.name.toLowerCase().includes(name.toLowerCase()));
 
   if(!found) return showToast("Product not found");
 
@@ -508,8 +511,8 @@ function changeByName(name, diff){
   const newQty = Math.max(0, p.quantity + diff);
 
   invRef.child(id).update({ quantity: newQty });
-  showToast(`${name} updated`);
 }
+
 
 function removeByName(name){
   if(!name) return showToast("Say product name");
@@ -521,6 +524,122 @@ function removeByName(name){
 
   invRef.child(found[0]).remove();
   showToast(`${name} removed`);
+}
+async function aiUnderstand(text){
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "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"
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+content: `
+You are an inventory command parser.
+
+User may speak Hindi, English, or Hinglish.
+
+Detect:
+- action: add | increase | decrease | remove
+- product name
+- quantity (number)
+- unit (kg, g, litre, ml, pcs, packet, dozen)
+
+Rules:
+- If unit not spoken, use "pcs"
+- Hindi units mapping:
+  kilo = kg
+  kilo gram = kg
+  litre = litre
+  liter = litre
+  gram = g
+  packet = packet
+  piece = pcs
+  number = pcs
+
+Return ONLY JSON like:
+{
+ "action":"increase",
+ "product":"rice",
+ "quantity":2,
+ "unit":"kg"
+}
+`
+
+        },
+        { role: "user", content: text }
+      ]
+    })
+  });
+
+  const data = await res.json();
+  return JSON.parse(data.choices[0].message.content);
+}
+async function handleAIVoice(text){
+  try{
+    showToast("Thinking...");
+    const cmd = await aiUnderstand(text);
+
+    console.log("AI CMD:", cmd);
+
+    const qty = cmd.quantity || 1;
+    const unit = cmd.unit || "pcs";
+
+    if(cmd.action === "add"){
+      invRef.push({
+        name: cmd.product,
+        quantity: qty,
+        unit
+      });
+      speak(`Added ${qty} ${unit} of ${cmd.product}`);
+      showToast(`Added ${cmd.product}`);
+    }
+
+    if(cmd.action === "increase"){
+      changeByName(cmd.product, qty);
+      speak(`${cmd.product} stock increased by ${qty} ${unit}`);
+    }
+
+    if(cmd.action === "decrease"){
+      changeByName(cmd.product, -qty);
+      speak(`${cmd.product} stock reduced by ${qty} ${unit}`);
+    }
+
+    if(cmd.action === "remove"){
+      removeByName(cmd.product);
+      speak(`${cmd.product} removed from inventory`);
+    }
+
+  }catch(e){
+    console.error(e);
+    speak("Sorry, I didn't understand");
+    showToast("AI error");
+  }
+}
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+
+  const msg = new SpeechSynthesisUtterance(text);
+
+msg.lang = text.match(/[अ-ह]/) ? "hi-IN" : "en-US";
+
+  msg.rate = 0.95;
+  msg.pitch = 1;
+  msg.volume = 1;
+
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(msg);
+}
+if(cmd.action !== "add"){
+  const found = Object.values(inventory)
+    .find(p => p.name.toLowerCase().includes(cmd.product.toLowerCase()));
+
+  if(found && found.unit !== unit){
+    speak(`Warning. Unit mismatch. Stored in ${found.unit}`);
+  }
 }
 
 </script>
