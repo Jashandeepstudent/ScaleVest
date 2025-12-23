@@ -265,14 +265,32 @@ function showVerifying(){
 
 /* SIGNUP */
 function emailSignup(){
-  if(!validPassword(signupPassword.value)) return alert("Weak password");
-  auth.createUserWithEmailAndPassword(signupEmail.value, signupPassword.value)
+  if(!validPassword(signupPassword.value))
+    return alert("Password does not meet requirements");
+
+  auth.createUserWithEmailAndPassword(
+    signupEmail.value,
+    signupPassword.value
+  )
   .then(async cred=>{
-    await cred.user.sendEmailVerification({ url:getRedirectURL() });
+    await cred.user.sendEmailVerification({
+      url: getRedirectURL()
+    });
+
+    // ❌ DO NOT SIGN OUT
     showVerifying();
-    await auth.signOut();
-  }).catch(e=>alert(e.message));
+  })
+  .catch(err=>{
+    if(err.code==="auth/email-already-in-use"){
+      alert("Account already exists. Please sign in.");
+      switchToSigninUI();
+      signupModal.style.display="none";
+    }else{
+      alert(err.message);
+    }
+  });
 }
+
 
 /* SIGNIN */
 function emailSignin(){
