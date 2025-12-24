@@ -2,56 +2,56 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AI Barcode Scanner</title>
+<title>Ultra AI Barcode Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
   margin: 0;
   background: #111;
+  color: white;
   font-family: Inter, sans-serif;
-  color: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
 }
 
-h2 {
-  margin-bottom: 10px;
-}
-
 #scanner {
+  position: relative;
   width: 100%;
   max-width: 600px;
   height: 420px;
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
-  position: relative;
   border: 3px solid #00ff55;
 }
 
-/* GREEN SCAN ZONE */
-.scan-zone {
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Green scan box */
+.scan-box {
   position: absolute;
   top: 25%;
   bottom: 25%;
   left: 10%;
   right: 10%;
   border: 3px dashed #00ff55;
-  border-radius: 14px;
-  z-index: 10;
+  z-index: 5;
 }
 
-/* LASER LINE */
+/* Laser */
 .laser {
   position: absolute;
   width: 100%;
   height: 3px;
   background: red;
-  box-shadow: 0 0 15px red;
   animation: scan 1s linear infinite;
-  z-index: 20;
+  z-index: 6;
 }
 
 @keyframes scan {
@@ -61,24 +61,19 @@ h2 {
 }
 
 #log {
+  margin-top: 15px;
   width: 100%;
   max-width: 600px;
-  margin-top: 15px;
   background: #222;
-  padding: 12px;
+  padding: 10px;
   border-radius: 12px;
   min-height: 120px;
   overflow-y: auto;
 }
 
-#log div {
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
 button {
-  margin-top: 15px;
-  padding: 12px 18px;
+  margin-top: 12px;
+  padding: 12px 20px;
   border-radius: 14px;
   border: none;
   font-weight: bold;
@@ -87,16 +82,15 @@ button {
   color: black;
 }
 </style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
 
 <body>
 
-<h2>⚡ AI Barcode Scanner (Super Strong)</h2>
+<h2>🔥 AI Barcode Scanner (FAST)</h2>
 
 <div id="scanner">
-  <div class="scan-zone"></div>
+  <video id="video" autoplay muted playsinline></video>
+  <div class="scan-box"></div>
   <div class="laser"></div>
 </div>
 
@@ -106,111 +100,70 @@ button {
 <button onclick="stopScanner()">STOP</button>
 
 <script>
-let scannerRunning = false;
-let lastScanTime = 0;
+let video = document.getElementById("video");
+let scanning = false;
+let lastScan = 0;
 let lastCode = null;
 
-// AI stabilization memory
-let aiMemory = {};
-
-function log(msg) {
+function log(text) {
   const div = document.createElement("div");
-  div.textContent = `${new Date().toLocaleTimeString()} → ${msg}`;
+  div.textContent = `${new Date().toLocaleTimeString()} → ${text}`;
   document.getElementById("log").prepend(div);
 }
 
-function startScanner() {
-  if (scannerRunning) return;
+// 🔥 START CAMERA
+async function startScanner() {
+  if (!('BarcodeDetector' in window)) {
+    alert("BarcodeDetector API not supported on this browser.");
+    return;
+  }
 
-  const isLaptop = !/Android|iPhone/i.test(navigator.userAgent);
-
-  Quagga.init({
-    inputStream: {
-      type: "LiveStream",
-      target: document.getElementById("scanner"),
-      constraints: {
-        facingMode: isLaptop ? "user" : "environment",
-        width: { ideal: 1920 },
-        height: { ideal: 1080 }
-      },
-      area: {
-        top: "25%",
-        bottom: "25%",
-        left: "10%",
-        right: "10%"
-      }
-    },
-
-    locator: {
-      patchSize: "large",
-      halfSample: false
-    },
-
-    numOfWorkers: navigator.hardwareConcurrency || 4,
-    frequency: 30,
-
-    decoder: {
-      readers: [
-        "ean_reader",
-        "upc_reader",
-        "code_128_reader",
-        "code_39_reader"
-      ]
-    },
-
-    locate: true
-  }, err => {
-    if (err) {
-      alert("Camera permission error or HTTPS required.");
-      return;
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: {
+      facingMode: "environment",
+      width: { ideal: 1920 },
+      height: { ideal: 1080 }
     }
-
-    Quagga.start();
-    scannerRunning = true;
-    log("✅ Scanner started");
   });
 
-  Quagga.onDetected(onDetected);
+  video.srcObject = stream;
+  scanning = true;
+
+  const detector = new BarcodeDetector({
+    formats: ["ean_13", "ean_8", "upc_a", "code_128", "code_39"]
+  });
+
+  scanLoop(detector);
 }
 
-// 🧠 AI RECOVERY LOGIC
-function onDetected(data) {
-  const code = data.codeResult.code;
-  const confidence = data.codeResult.confidence;
-  const now = Date.now();
+async function scanLoop(detector) {
+  if (!scanning) return;
 
-  // Accept blurry scans
-  if (confidence < 0.5) return;
+  try {
+    const barcodes = await detector.detect(video);
 
-  // AI buffer
-  if (!aiMemory[code]) {
-    aiMemory[code] = { count: 1, time: now };
-    return;
-  }
+    for (const barcode of barcodes) {
+      const now = Date.now();
 
-  if (now - aiMemory[code].time < 500) {
-    aiMemory[code].count++;
-  } else {
-    aiMemory[code] = { count: 1, time: now };
-    return;
-  }
+      // Ignore duplicates
+      if (barcode.rawValue === lastCode && now - lastScan < 1200) continue;
 
-  // Require stability
-  if (aiMemory[code].count < 2) return;
+      lastCode = barcode.rawValue;
+      lastScan = now;
 
-  // Prevent duplicate spam
-  if (lastCode === code && now - lastScanTime < 1200) return;
+      log(`✅ SCANNED: ${barcode.rawValue}`);
+    }
+  } catch (e) {}
 
-  lastCode = code;
-  lastScanTime = now;
-
-  log(`✅ SCANNED: ${code} (${Math.round(confidence * 100)}%)`);
+  requestAnimationFrame(() => scanLoop(detector));
 }
 
 function stopScanner() {
-  if (!scannerRunning) return;
-  Quagga.stop();
-  scannerRunning = false;
+  scanning = false;
+  const stream = video.srcObject;
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
   log("⛔ Scanner stopped");
 }
 </script>
