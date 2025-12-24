@@ -200,20 +200,16 @@ auth.onAuthStateChanged(u=>{
 });
 
 function openAdd(){addModal.style.display="flex"}
-function openScanner(){
-  unlockAudio();          
-  scannerModal.style.display="flex";
-  startScanner();
-}
-const input = document.getElementById('barcodeInput');
-input.focus();
+async function openScanner(){
+  unlockAudio();
 
-input.addEventListener('keypress', e => {
-  if (e.key === 'Enter') {
-    handleBarcode(input.value); // your existing scan handler
-    input.value = '';
-  }
-});
+  const granted = await requestCameraPermission();
+  if (!granted) return;
+
+  scannerModal.style.display = "flex";
+  await startScanner();
+}
+
 
 function closeScanner(){
   scannerModal.style.display="none";
@@ -245,6 +241,22 @@ function greenFlash(){
   setTimeout(()=>f.classList.remove("show"),120);
 }
 
+async function requestCameraPermission() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment" }
+    });
+
+    // Immediately stop preview stream
+    stream.getTracks().forEach(track => track.stop());
+
+    return true;
+  } catch (err) {
+    alert("Camera permission denied. Please allow camera access.");
+    console.error(err);
+    return false;
+  }
+}
 
 /* 🔥 INSANE MODE INIT */
 let scanditScanner = null;
@@ -277,7 +289,7 @@ async function startScanner() {
   );
 
   barcodeCapture.addListener({
-    didScan: async (session) => {
+    didScan: (session) => {
       const code = session.newlyRecognizedBarcode?.data;
       if (!code) return;
 
@@ -289,47 +301,14 @@ async function startScanner() {
   const view = await ScanditSDK.DataCaptureView.forContext(context);
   view.connectToElement(document.getElementById("scanner"));
 
-  const overlay = await ScanditSDK.BarcodeCaptureOverlay.withBarcodeCaptureForView(
+  await ScanditSDK.BarcodeCaptureOverlay.withBarcodeCaptureForView(
     barcodeCapture,
     view
   );
 
-  await camera.switchToDesiredState(ScanditSDK.FrameSourceState.On);
-}
-async function handleBarcode(code){
-  const now = Date.now();
-  if(now - scanStamp < 120) return;   // 5–10 scans/sec
-  scanStamp = now;
-
-  scanTotal++;
-  document.getElementById("scanCount").textContent = scanTotal;
-
-  let name = "Unknown Product";
-  const found = Object.entries(inventory).find(([_,p])=>p.barcode===code);
-
-  if(found){
-    name = found[1].name;
-    invRef.child(found[0]).update({
-      quantity: found[1].quantity + 1
-    });
-    document.getElementById("beep-ok").play().catch(()=>{});
-  }else{
-    document.getElementById("beep-new").play().catch(()=>{});
-    try{
-      const r = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
-      const j = await r.json();
-      if(j.status === 1) name = j.product.product_name || name;
-    }catch(e){}
-    invRef.push({
-      name,
-      quantity: 1,
-      unit: "pcs",
-      barcode: code
-    });
-  }
-
-  greenFlash();     // ✅ ADD THIS LINE HERE
-  showToast(name);
+  await camera.switchToDesiredState(
+    ScanditSDK.FrameSourceState.On
+  );
 }
 
 function unlockAudio(){
