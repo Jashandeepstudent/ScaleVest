@@ -434,51 +434,33 @@ function startVoice(){
    🧠 COMMAND PROCESSOR
 ================================ */
 
-function processVoice(cmd){
-
-  // ADD PRODUCT
-  if(cmd.includes("add")){
-    // "add rice quantity five"
-    const name = extractProduct(cmd);
-    const qty = extractNumber(cmd) || 1;
-
-    if(!name) return showToast("Say product name");
-
-    invRef.push({
-      name,
-      quantity: qty,
-      unit: "pcs"
+async function processVoice(cmd){
+  try {
+    // Send the spoken command to your Render backend
+    const response = await fetch("https://scaleai.onrender.com/api/parse-voice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ command: cmd })
     });
 
-    showToast(`Added ${name} (${qty})`);
-    return;
-  }
+    const data = await response.json();
 
-  // INCREASE
-  if(cmd.includes("increase")){
-    const name = extractProduct(cmd);
-    const qty = extractNumber(cmd) || 1;
-    changeByName(name, qty);
-    return;
-  }
+    // Check if OpenAI returned a structured action
+    if(!data.action) return showToast("Command not understood");
 
-  // DECREASE
-  if(cmd.includes("decrease")){
-    const name = extractProduct(cmd);
-    const qty = extractNumber(cmd) || 1;
-    changeByName(name, -qty);
-    return;
-  }
+    const { action, name, quantity } = data;
 
-  // REMOVE
-  if(cmd.includes("remove") || cmd.includes("delete")){
-    const name = extractProduct(cmd);
-    removeByName(name);
-    return;
-  }
+    // Perform the action on Firebase inventory
+    if(action === "add" || action === "increase") changeByName(name, quantity || 1);
+    if(action === "decrease") changeByName(name, -(quantity || 1));
+    if(action === "remove") removeByName(name);
 
-  showToast("Command not understood");
+  } catch (e) {
+    console.error(e);
+    showToast("Error processing voice command");
+  }
 }
+
 
 /* ===============================
    🔧 HELPERS
