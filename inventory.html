@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -177,6 +176,9 @@ body{margin:0;background:#f6f7fb;padding:30px}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
+const GOOGLE_TRANSLATE_API_KEY = "AIzaSyBWd8VNdVzvP9CESzih6bWetkwJHKygnLs"; 
+
+
 firebase.initializeApp({
   apiKey:"AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
   authDomain:"scalevest-163a0.firebaseapp.com",
@@ -244,6 +246,27 @@ function greenFlash(){
   setTimeout(()=>f.classList.remove("show"),120);
 }
 
+async function translateToEnglish(text){
+  if(!text) return text;
+  try{
+    const response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_TRANSLATE_API_KEY}`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        q: text,
+        target: "en",   // always translate to English
+        format: "text"
+      })
+    });
+    const data = await response.json();
+    if(data.data && data.data.translations && data.data.translations.length){
+      return data.data.translations[0].translatedText;
+    }
+  }catch(e){
+    console.error("Translation error:", e);
+  }
+  return text; // fallback if translation fails
+}
 
 /* 🔥 INSANE MODE INIT */
 function startScanner(){
@@ -399,178 +422,78 @@ let listening = false;
 
 function startVoice(){
   if(!('webkitSpeechRecognition' in window)){
-    alert("Voice not supported");
+    alert("Voice not supported on this browser");
     return;
   }
 
-  voiceModal.style.display = "flex";
+  document.getElementById("voiceModal").style.display = "flex"; // show modal
 
   recognition = new webkitSpeechRecognition();
-  recognition.lang = "en-IN"; // 🇮🇳 English + Hindi mix
-  recognition.continuous = true;
-  recognition.interimResults = true;
+  recognition.lang = "en-US";
+  recognition.continuous = true; // keep listening for multiple commands
+  recognition.interimResults = false;
 
-  recognition.onresult = e => {
-    let text = "";
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      text += e.results[i][0].transcript;
-    }
-    voiceText.textContent = text;
+  recognition.onresult = async e => {
+    const text = e.results[e.results.length-1][0].transcript.toLowerCase();
+    console.log("VOICE:", text);
+    await processVoice(text); // process each phrase
   };
 
   recognition.onend = () => {
-    if(listening) recognition.start(); // auto-restart
-  };
-
-  recognition.onerror = () => {
-    stopVoice();
+    listening = false;
+    document.getElementById("voiceModal").style.display = "none"; // hide modal
   };
 
   recognition.start();
-  listening = true;
 }
 
 function stopVoice(){
-  listening = false;
-  recognition?.stop();
-  voiceModal.style.display = "none";
-
-  const finalText = voiceText.textContent.toLowerCase();
-  processVoice(finalText);
-};
-
-  recognition.start();
+  if(recognition) recognition.stop();
+  document.getElementById("voiceModal").style.display = "none";
 }
+
 
 /* ===============================
    🧠 COMMAND PROCESSOR
 ================================ */
 
-function processVoice(cmd){
+async function processVoice(cmd){
+  // normalize hinglish connectors
+  cmd = cmd.replace("ke","").replace("ka","").replace("ki","");
 
-  cmd = normalizeHindi(cmd);
+  // extract quantity and raw product name
+  const { qty, name } = extractQtyAndName(cmd);
+  if(!name) return;
 
-  // split multiple commands
-  const commands = cmd.split(/and|aur|phir/);
+  // Translate Hindi/Hinglish to English
+  const product = await translateToEnglish(name);
 
-  commands.forEach(c=>handleSingleCommand(c.trim()));
-}
-
-function handleSingleCommand(cmd){
-
-  // BUY / ADD / PURCHASE
-  if(match(cmd,["buy","kharide","laya","add","jodo","dalo"])){
-    const {name,qty}=parseNameQty(cmd);
-    changeByName(name,qty);
+  // ADD
+  if(cmd.includes("add") || cmd.includes("daal") || cmd.includes("jodo")){
+    invRef.push({ name: product, quantity: qty, unit: "pcs" });
+    showToast(`Added ${qty} ${product}`);
     return;
   }
 
-  // SELL
-  if(match(cmd,["sell","beche","bech","nikaale"])){
-    const {name,qty}=parseNameQty(cmd);
-    changeByName(name,-qty);
+  // INCREASE
+  if(cmd.includes("increase") || cmd.includes("badhao") || cmd.includes("aur")){
+    changeByName(product, qty);
     return;
   }
 
-  // DAMAGE / WASTE
-  if(match(cmd,["damage","kharab","waste"])){
-    const {name,qty}=parseNameQty(cmd);
-    changeByName(name,-qty);
-    speak(`${qty} ${name} marked as damaged`);
+  // DECREASE
+  if(cmd.includes("decrease") || cmd.includes("ghatao") || cmd.includes("kam")){
+    changeByName(product, -qty);
     return;
   }
 
-  // SET
-  if(match(cmd,["set","rakho","fix"])){
-    const {name,qty}=parseNameQty(cmd);
-    setQty(name,qty);
+  // REMOVE
+  if(cmd.includes("remove") || cmd.includes("delete") || cmd.includes("hatao")){
+    removeByName(product);
     return;
   }
 
-  // REMOVE PRODUCT
-  if(match(cmd,["remove","delete","hata"])){
-    const name=extractName(cmd);
-    removeByName(name);
-    return;
-  }
-
-  speak("Command not understood");
-}
-
-function match(text, words){
-  return words.some(w => text.includes(w));
-}
-
-function normalizeHindi(text){
-  const map={
-    "ek":1,"do":2,"teen":3,"char":4,"paanch":5,
-    "chhe":6,"saat":7,"aath":8,"nau":9,
-    "das":10,"bees":20,"tees":30,"chalis":40,"pachaas":50
-  };
-
-  Object.entries(map).forEach(([k,v])=>{
-    text=text.replace(new RegExp(k,"g"),v);
-  });
-
-  return text;
-}
-
-
-  Object.keys(map).forEach(k=>{
-    text = text.replace(new RegExp(k,"g"), map[k]);
-  });
-
-  return text;
-}
-
-function parseNameQty(text){
-  const qty = extractNumber(text) || 1;
-  let name = text.replace(/\d+/g,"");
-  name = extractName(name);
-  return {name, qty};
-}
-
-function extractName(text){
-  const ignore = [
-    "add","increase","decrease","remove","delete",
-    "quantity","by","set","rakho","karo","ka","ki",
-    "badhao","kam","stock","dalo","jodo","plus","minus"
-  ];
-
-  return text.split(" ")
-    .filter(w => !ignore.includes(w))
-    .join(" ")
-    .trim();
-}
-
-function setQty(name, qty){
-  const found = findProductFuzzy(name);
-  if(!found) return speak("Product not found");
-
-  invRef.child(found[0]).update({quantity:qty});
-  speak(`${found[1].name} stock set to ${qty}`);
-}
-
-
-function saveAdd(name, qty){
-  if(!name) return showToast("Say product name");
-
-  const found = Object.entries(inventory)
-    .find(([_,p])=>p.name.toLowerCase()===name.toLowerCase());
-
-  if(found){
-    invRef.child(found[0]).update({
-      quantity: found[1].quantity + qty
-    });
-  }else{
-    invRef.push({
-      name,
-      quantity: qty,
-      unit:"pcs"
-    });
-  }
-
-  showToast(`Added ${qty} ${name}`);
+  showToast("Command not understood");
 }
 
 
@@ -591,64 +514,37 @@ function extractNumber(text){
 }
 
 function changeByName(name, diff){
-  if(!name) return;
+  if(!name) return showToast("Say product name");
 
-  const found = findProductFuzzy(name);
-  if(!found) return speak("Product not found");
+  const found = Object.entries(inventory)
+    .find(([_,p])=>p.name.toLowerCase() === name.toLowerCase());
+
+  if(!found) return showToast("Product not found");
 
   const [id,p] = found;
   const newQty = Math.max(0, p.quantity + diff);
 
-  invRef.child(id).update({ quantity:newQty });
-  speak(`${Math.abs(diff)} ${p.name} ${diff>0?"added":"removed"}`);
+  invRef.child(id).update({ quantity: newQty });
+  showToast(`${name} updated`);
 }
-
 
 function removeByName(name){
-  const found = findProductFuzzy(name);
-  if(!found) return speak("Product not found");
+  if(!name) return showToast("Say product name");
+
+  const found = Object.entries(inventory)
+    .find(([_,p])=>p.name.toLowerCase() === name.toLowerCase());
+
+  if(!found) return showToast("Product not found");
 
   invRef.child(found[0]).remove();
-  speak(`${found[1].name} removed`);
-}
-
-function similarity(a,b){
-  a=a.toLowerCase(); b=b.toLowerCase();
-  let matches=0;
-  for(let i=0;i<Math.min(a.length,b.length);i++){
-    if(a[i]===b[i]) matches++;
-  }
-  return matches / Math.max(a.length,b.length);
-}
-
-function findProductFuzzy(name){
-  let best=null, score=0;
-
-  Object.entries(inventory).forEach(([id,p])=>{
-    const s = similarity(name,p.name);
-    if(s > score){
-      score=s;
-      best=[id,p];
-    }
-  });
-
-  return score>0.6 ? best : null;
-}
-function speak(text){
-  const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "en-IN";
-  msg.rate = 0.95;
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(msg);
+  showToast(`${name} removed`);
 }
 
 </script>
 <div id="voiceModal" class="modal">
   <div class="modal-box">
-    <h3>🎙 Voice Assistant</h3>
-    <p id="voiceText" style="min-height:60px;color:#333;font-weight:500">
-      Listening...
-    </p>
+    <h3>🎙 Listening…</h3>
+    <p>Speak commands continuously</p>
     <button onclick="stopVoice()">Stop</button>
   </div>
 </div>
