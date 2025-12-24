@@ -176,9 +176,6 @@ body{margin:0;background:#f6f7fb;padding:30px}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-const GOOGLE_TRANSLATE_API_KEY = "AIzaSyBWd8VNdVzvP9CESzih6bWetkwJHKygnLs"; 
-
-
 firebase.initializeApp({
   apiKey:"AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
   authDomain:"scalevest-163a0.firebaseapp.com",
@@ -246,27 +243,6 @@ function greenFlash(){
   setTimeout(()=>f.classList.remove("show"),120);
 }
 
-async function translateToEnglish(text){
-  if(!text) return text;
-  try{
-    const response = await fetch(`https://translation.googleapis.com/language/translate/v2?key=${GOOGLE_TRANSLATE_API_KEY}`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        q: text,
-        target: "en",   // always translate to English
-        format: "text"
-      })
-    });
-    const data = await response.json();
-    if(data.data && data.data.translations && data.data.translations.length){
-      return data.data.translations[0].translatedText;
-    }
-  }catch(e){
-    console.error("Translation error:", e);
-  }
-  return text; // fallback if translation fails
-}
 
 /* 🔥 INSANE MODE INIT */
 function startScanner(){
@@ -426,76 +402,83 @@ function startVoice(){
     return;
   }
 
-  document.getElementById("voiceModal").style.display = "flex"; // show modal
-
   recognition = new webkitSpeechRecognition();
   recognition.lang = "en-US";
-  recognition.continuous = true; // keep listening for multiple commands
+  recognition.continuous = false;
   recognition.interimResults = false;
 
-  recognition.onresult = async e => {
-    const text = e.results[e.results.length-1][0].transcript.toLowerCase();
-    console.log("VOICE:", text);
-    await processVoice(text); // process each phrase
+  recognition.onstart = () => {
+    listening = true;
+    showToast("Listening...");
+  };
+
+  recognition.onerror = () => {
+    listening = false;
+    showToast("Voice error");
   };
 
   recognition.onend = () => {
     listening = false;
-    document.getElementById("voiceModal").style.display = "none"; // hide modal
+  };
+
+  recognition.onresult = e => {
+    const text = e.results[0][0].transcript.toLowerCase();
+    console.log("VOICE:", text);
+    processVoice(text);
   };
 
   recognition.start();
 }
 
-function stopVoice(){
-  if(recognition) recognition.stop();
-  document.getElementById("voiceModal").style.display = "none";
-}
-
-
 /* ===============================
    🧠 COMMAND PROCESSOR
 ================================ */
 
-async function processVoice(cmd){
-  // normalize hinglish connectors
-  cmd = cmd.replace("ke","").replace("ka","").replace("ki","");
+function processVoice(cmd){
 
-  // extract quantity and raw product name
-  const { qty, name } = extractQtyAndName(cmd);
-  if(!name) return;
+  // ADD PRODUCT
+  if(cmd.includes("add")){
+    // "add rice quantity five"
+    const name = extractProduct(cmd);
+    const qty = extractNumber(cmd) || 1;
 
-  // Translate Hindi/Hinglish to English
-  const product = await translateToEnglish(name);
+    if(!name) return showToast("Say product name");
 
-  // ADD
-  if(cmd.includes("add") || cmd.includes("daal") || cmd.includes("jodo")){
-    invRef.push({ name: product, quantity: qty, unit: "pcs" });
-    showToast(`Added ${qty} ${product}`);
+    invRef.push({
+      name,
+      quantity: qty,
+      unit: "pcs"
+    });
+
+    showToast(`Added ${name} (${qty})`);
     return;
   }
 
   // INCREASE
-  if(cmd.includes("increase") || cmd.includes("badhao") || cmd.includes("aur")){
-    changeByName(product, qty);
+  if(cmd.includes("increase")){
+    const name = extractProduct(cmd);
+    const qty = extractNumber(cmd) || 1;
+    changeByName(name, qty);
     return;
   }
 
   // DECREASE
-  if(cmd.includes("decrease") || cmd.includes("ghatao") || cmd.includes("kam")){
-    changeByName(product, -qty);
+  if(cmd.includes("decrease")){
+    const name = extractProduct(cmd);
+    const qty = extractNumber(cmd) || 1;
+    changeByName(name, -qty);
     return;
   }
 
   // REMOVE
-  if(cmd.includes("remove") || cmd.includes("delete") || cmd.includes("hatao")){
-    removeByName(product);
+  if(cmd.includes("remove") || cmd.includes("delete")){
+    const name = extractProduct(cmd);
+    removeByName(name);
     return;
   }
 
   showToast("Command not understood");
 }
-
 
 /* ===============================
    🔧 HELPERS
@@ -541,13 +524,6 @@ function removeByName(name){
 }
 
 </script>
-<div id="voiceModal" class="modal">
-  <div class="modal-box">
-    <h3>🎙 Listening…</h3>
-    <p>Speak commands continuously</p>
-    <button onclick="stopVoice()">Stop</button>
-  </div>
-</div>
 
 </body>
 </html>
