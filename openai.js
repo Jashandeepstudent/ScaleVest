@@ -1,21 +1,52 @@
-import fetch from "node-fetch";
+import OpenAI from "openai";
 
-export async function parseCommand(text) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Only POST allowed" });
+  }
+
+  try {
+    const { text } = req.body;
+
+    const prompt = `
+You are an inventory voice command parser.
+User speaks Hindi, English, or Hinglish.
+
+Return ONLY JSON.
+
+Actions:
+add, increase, decrease, remove
+
+Defaults:
+quantity = 1
+unit = pcs
+
+Examples:
+"chawal do kilo badhao"
+{"action":"increase","product":"chawal","quantity":2,"unit":"kg"}
+
+"add sugar"
+{"action":"add","product":"sugar","quantity":1,"unit":"pcs"}
+`;
+
+    const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
+      temperature: 0,
       messages: [
-        { role: "system", content: "Return inventory command JSON only" },
+        { role: "system", content: prompt },
         { role: "user", content: text }
       ]
-    })
-  });
+    });
 
-  const data = await res.json();
-  return JSON.parse(data.choices[0].message.content);
+    const output = completion.choices[0].message.content.trim();
+
+    res.json(JSON.parse(output));
+  } catch (e) {
+    console.error(e);
+    res.json({ action: null });
+  }
 }
