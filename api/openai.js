@@ -11,7 +11,6 @@ export default async function handler(req, res) {
 
   try {
     const { text } = req.body;
-
     if (!text) {
       return res.status(400).json({ error: "No text provided" });
     }
@@ -22,38 +21,49 @@ export default async function handler(req, res) {
         {
           role: "system",
           content: `
-You are an inventory voice assistant.
+You are an inventory assistant.
 Understand English, Hindi, and Hinglish.
 
-Return ONLY valid JSON:
+Return ONLY JSON.
+No markdown. No text. No explanation.
+
+Format:
 {
   "action": "add | increase | decrease | remove",
-  "product": "product name",
+  "product": "string",
   "quantity": number,
   "unit": "pcs | kg | litre"
 }
-          `
+`
         },
-        {
-          role: "user",
-          content: text
-        }
+        { role: "user", content: text }
       ],
       temperature: 0
     });
 
-    const reply = completion.choices[0].message.content;
+    let reply = completion.choices[0].message.content;
 
-    // Force JSON safety
-    const json = JSON.parse(reply);
+    // 🛡️ CLEAN RESPONSE
+    reply = reply
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-    return res.status(200).json(json);
+    let data;
+    try {
+      data = JSON.parse(reply);
+    } catch (e) {
+      console.error("INVALID JSON FROM AI:", reply);
+      return res.status(200).json({ action: null });
+    }
+
+    return res.status(200).json(data);
 
   } catch (err) {
-    console.error("OPENAI ERROR:", err);
+    console.error("OPENAI FAILURE:", err);
     return res.status(500).json({
-      error: "AI failed",
-      details: err.message
+      error: "OpenAI failed",
+      message: err.message
     });
   }
 }
