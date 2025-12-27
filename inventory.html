@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>AI Inventory Pro</title>
+<title>AI Inventory Pro - Unlimited Alerts</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@ body{margin:0;background:#f6f7fb;padding:30px}
 .status.low{color:#d97706}
 .status.out{color:#dc2626}
 
-/* VOICE MODAL & ANIMATION */
+/* MODALS */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(8px)}
 .modal-box{width:400px;background:#fff;padding:30px;border-radius:30px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,0.3)}
 
@@ -60,18 +60,8 @@ body{margin:0;background:#f6f7fb;padding:30px}
   border-radius: 10px;
   animation: bounce 1s ease-in-out infinite;
 }
-.bar:nth-child(2) { animation-delay: 0.1s; background: #3b82f6; }
-.bar:nth-child(3) { animation-delay: 0.2s; background: #60a5fa; }
-.bar:nth-child(4) { animation-delay: 0.3s; background: #2563eb; }
-.bar:nth-child(5) { animation-delay: 0.4s; background: #3b82f6; }
-
-/* Visual cue for confirmation mode */
-.confirm-mode .bar { background: #ef4444 !important; animation-duration: 0.4s; }
-
-@keyframes bounce {
-  0%, 100% { height: 10px; }
-  50% { height: 50px; }
-}
+@keyframes bounce { 0%, 100% { height: 10px; } 50% { height: 50px; } }
+.confirm-mode .bar { background: #ef4444 !important; }
 
 /* SUCCESS POPUP */
 .success-popup {
@@ -87,11 +77,8 @@ body{margin:0;background:#f6f7fb;padding:30px}
   display: none;
   z-index: 3000;
   box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-  animation: slideUp 0.3s ease;
 }
-@keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 30px; opacity: 1; } }
 
-#scanner{position:relative;width:100%;height:240px;background:#000;border-radius:14px;overflow:hidden}
 .flash{position:fixed;inset:0;background:rgba(34,197,94,.25);pointer-events:none;z-index:3000;opacity:0;transition:.15s}
 .flash.show{opacity:1}
 </style>
@@ -99,15 +86,22 @@ body{margin:0;background:#f6f7fb;padding:30px}
 
 <body>
 
-<audio id="beep-ok" preload src="https://assets.mixkit.co/sfx/preview/mixkit-beep-tone-2864.mp3"></audio>
 <div id="flash" class="flash"></div>
-<div id="successPopup" class="success-popup">Product Updated</div>
+<div id="successPopup" class="success-popup"></div>
+
+<div id="notifModal" class="modal" style="display: flex;">
+  <div class="modal-box">
+    <h2 style="margin-top:0">Stock Alerts</h2>
+    <p>Enable notifications to get instant alerts when items are low or out of stock.</p>
+    <button onclick="requestPushPermission()" style="background:#16a34a; width:100%; margin-bottom:10px;">Enable Notifications</button>
+    <button onclick="closeNotifModal()" style="background:#ddd; color:#333; width:100%;">Maybe Later</button>
+  </div>
+</div>
 
 <div class="top">
   <h2>Inventory</h2>
   <div class="actions">
     <button onclick="openScanner()">📷 Scanner</button>
-    <button onclick="openAdd()">➕ Add Product</button>
     <button style="background:#2563eb" onclick="startVoiceAssistant()">🎙️ AI Voice</button>
   </div>
 </div>
@@ -130,14 +124,10 @@ body{margin:0;background:#f6f7fb;padding:30px}
 <div id="voiceModal" class="modal">
   <div class="modal-box">
     <h2 style="margin-top:0">AI Voice Assistant</h2>
-    <p style="color:#666; font-size:14px">Just speak the product name and quantity.<br>I will add, increase, or decrease it for you.</p>
-    
     <div id="viz" class="ai-visualizer">
       <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
     </div>
-    
     <div id="speechOutput" style="font-style:italic; color:#2563eb; margin-bottom:20px; min-height:24px">Waiting for you to speak...</div>
-    
     <button onclick="stopVoiceAssistant()" style="background:#ef4444">Close Assistant</button>
   </div>
 </div>
@@ -157,181 +147,126 @@ firebase.initializeApp({
 
 const auth=firebase.auth(), db=firebase.database();
 let inventory={}, invRef, recognition, isAssistantActive = false;
-let pendingAction = null; // Stores actions requiring confirmation
+let pendingAction = null;
 
 auth.onAuthStateChanged(u=>{
-  if(!u){ /* location.href="login.html"; */ return; }
+  if(!u) return;
   invRef=db.ref(`Businesses/${u.uid}/inventory`);
   invRef.on("value",s=>{ inventory=s.val()||{}; render(); });
+  
+  // Hide permission modal if already granted
+  if (Notification.permission === "granted") closeNotifModal();
 });
+
+// --- PUSH NOTIFICATION LOGIC ---
+function closeNotifModal() { document.getElementById('notifModal').style.display = 'none'; }
+
+function requestPushPermission() {
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      new Notification("Alerts Enabled!", { body: "You will now receive stock alerts." });
+    }
+    closeNotifModal();
+  });
+}
+
+function triggerPushAlert(title, message) {
+  if (Notification.permission === "granted") {
+    new Notification(title, { body: message });
+  }
+}
 
 // --- AI VOICE LOGIC ---
 function startVoiceAssistant() {
   if (!('webkitSpeechRecognition' in window)) return alert("Voice not supported");
-  
   isAssistantActive = true;
   document.getElementById("voiceModal").style.display = "flex";
-  
   recognition = new webkitSpeechRecognition();
   recognition.lang = "en-US";
   recognition.continuous = true; 
   recognition.interimResults = true;
 
   recognition.onresult = (event) => {
-    let interimTranscript = '';
     for (let i = event.resultIndex; i < event.results.length; ++i) {
       if (event.results[i].isFinal) {
         const finalTranscript = event.results[i][0].transcript;
         document.getElementById("speechOutput").textContent = `"${finalTranscript}"`;
         processSmartAI(finalTranscript);
-      } else {
-        interimTranscript += event.results[i][0].transcript;
-        document.getElementById("speechOutput").textContent = interimTranscript;
       }
     }
   };
-
-  recognition.onend = () => {
-    if (isAssistantActive) {
-        try { recognition.start(); } catch(e) {}
-    }
-  };
-
+  recognition.onend = () => { if (isAssistantActive) recognition.start(); };
   recognition.start();
-  speakWithAI("I am listening. Just tell me what to do.");
+  speakWithAI("I am listening.");
 }
 
 function stopVoiceAssistant() {
   isAssistantActive = false;
-  pendingAction = null;
-  document.getElementById("viz").classList.remove("confirm-mode");
-  if (recognition) recognition.stop();
   document.getElementById("voiceModal").style.display = "none";
+  if (recognition) recognition.stop();
 }
 
 async function processSmartAI(cmd) {
   cmd = cmd.toLowerCase();
 
-  // 1. Handle Pending Confirmation
-  if (pendingAction) {
-    if (cmd.includes("yes") || cmd.includes("confirm") || cmd.includes("do it")) {
-        if (pendingAction.type === 'delete') {
-            invRef.child(pendingAction.id).remove();
-            triggerSuccess(`Removed ${pendingAction.name}`);
-            speakWithAI(`Successfully deleted ${pendingAction.name}.`);
-        }
-        pendingAction = null;
-        document.getElementById("viz").classList.remove("confirm-mode");
-        return;
-    } else if (cmd.includes("no") || cmd.includes("cancel")) {
-        speakWithAI("Action cancelled.");
-        pendingAction = null;
-        document.getElementById("viz").classList.remove("confirm-mode");
-        return;
-    }
-  }
-  
-  // 2. Extract Numbers (Support for digits and basic words)
+  // 1. Extract Quantity & Name
   const numberMap = { 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'ten': 10 };
   let qty = 1;
-  const numMatch = cmd.match(/(\d+(\.\d+)?)/);
-  if (numMatch) {
-      qty = parseFloat(numMatch[0]);
-  } else {
-      Object.keys(numberMap).forEach(word => { if(cmd.includes(word)) qty = numberMap[word]; });
-  }
+  const numMatch = cmd.match(/(\d+)/);
+  if (numMatch) qty = parseInt(numMatch[0]);
+  else Object.keys(numberMap).forEach(word => { if(cmd.includes(word)) qty = numberMap[word]; });
 
-  // 3. Extract Units
-  const units = ["kg", "kilogram", "gram", " g ", "liter", " ml ", "packets", "pcs", "boxes"];
-  let detectedUnit = "pcs";
-  units.forEach(u => { if(cmd.includes(u)) detectedUnit = u.trim(); });
-
-  // 4. Extract Product Name
-  let pName = cmd
-    .replace(/(\d+(\.\d+)?)/g, '')
-    .replace(new RegExp(units.join("|"), "g"), '')
-    .replace(/(add|remove|delete|increase|decrease|minus|plus|update|to|of|set|the)/g, '')
-    .trim();
-
+  let pName = cmd.replace(/\d+|add|remove|delete|increase|decrease|minus|plus|update|to|of|set|the/g, '').trim();
   if (pName.length < 2) return;
 
   const existingEntry = Object.entries(inventory).find(([_, p]) => p.name.toLowerCase() === pName);
 
-  // 5. Action Logic
+  // 2. Action Logic
   if (cmd.includes("remove") || cmd.includes("delete")) {
     if (existingEntry) {
-      pendingAction = { type: 'delete', id: existingEntry[0], name: pName };
-      document.getElementById("viz").classList.add("confirm-mode");
-      speakWithAI(`Are you sure you want to delete ${pName}? Say yes to confirm.`);
-    } else {
-      speakWithAI(`I couldn't find ${pName} in your inventory.`);
+      invRef.child(existingEntry[0]).remove();
+      speakWithAI(`Deleted ${pName}`);
     }
-  } 
-  else if (cmd.includes("decrease") || cmd.includes("minus") || cmd.includes("less") || cmd.includes("reduce")) {
+  } else {
+    let newQty;
     if (existingEntry) {
-      const newVal = Math.max(0, existingEntry[1].quantity - qty);
-      invRef.child(existingEntry[0]).update({ quantity: newVal });
-      triggerSuccess(`Decreased ${pName}`);
-      speakWithAI(`Decreased ${pName} by ${qty}. New total is ${newVal}.`);
+      const current = existingEntry[1].quantity;
+      newQty = (cmd.includes("decrease") || cmd.includes("minus") || cmd.includes("less")) ? Math.max(0, current - qty) : current + qty;
+      invRef.child(existingEntry[0]).update({ quantity: newQty });
     } else {
-      speakWithAI(`Product ${pName} not found to decrease.`);
+      newQty = qty;
+      invRef.push({ name: pName.charAt(0).toUpperCase() + pName.slice(1), quantity: newQty, unit: "pcs" });
     }
-  }
-  else {
-    // Implicit Add or Increase
-    if (existingEntry) {
-      const newVal = existingEntry[1].quantity + qty;
-      invRef.child(existingEntry[0]).update({ quantity: newVal });
-      triggerSuccess(`Increased ${pName}`);
-      speakWithAI(`Added ${qty} to ${pName}. Total is now ${newVal}.`);
-    } else {
-      invRef.push({ 
-        name: pName.charAt(0).toUpperCase() + pName.slice(1), 
-        quantity: qty, 
-        unit: detectedUnit 
-      });
-      triggerSuccess(`Added ${pName}`);
-      speakWithAI(`Added ${qty} ${detectedUnit} of ${pName} as a new product.`);
-    }
+
+    // 3. PUSH ALERT TRIGGER
+    if (newQty === 0) triggerPushAlert("🚨 OUT OF STOCK", `${pName} is now empty!`);
+    else if (newQty < 10) triggerPushAlert("⚠️ LOW STOCK", `${pName} is down to ${newQty}.`);
+
+    speakWithAI(`Updated ${pName} to ${newQty}`);
+    triggerSuccess(`Updated ${pName}`);
   }
 }
 
-// --- TEXT TO SPEECH ENGINE ---
 function speakWithAI(text) {
   if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // Stop current speech
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    const googleVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('en'));
-    if (googleVoice) utterance.voice = googleVoice;
-    
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
   }
 }
 
-// --- UI HELPERS ---
 function triggerSuccess(msg) {
   const popup = document.getElementById("successPopup");
-  popup.textContent = msg;
-  popup.style.display = "block";
+  popup.textContent = msg; popup.style.display = "block";
   document.getElementById("flash").classList.add("show");
-  setTimeout(() => {
-    popup.style.display = "none";
-    document.getElementById("flash").classList.remove("show");
-  }, 2000);
+  setTimeout(() => { popup.style.display = "none"; document.getElementById("flash").classList.remove("show"); }, 2000);
 }
 
 function render(){
   const productsDiv = document.getElementById("products");
-  const query = document.getElementById("searchInput").value.toLowerCase();
   productsDiv.innerHTML="";
   let lowC=0, outC=0;
 
   Object.entries(inventory).forEach(([id,p])=>{
-    if(query && !p.name.toLowerCase().includes(query)) return;
-
     let s="OK", c="ok";
     if(p.quantity===0){s="Out"; c="out"; outC++}
     else if(p.quantity<10){s="Low"; c="low"; lowC++}
@@ -339,7 +274,7 @@ function render(){
     productsDiv.innerHTML+=`
     <div class="row">
       <div style="font-weight:600">${p.name}</div>
-      <div>${p.quantity} <small>${p.unit}</small></div>
+      <div>${p.quantity} <small>${p.unit || 'pcs'}</small></div>
       <div class="status ${c}">${s}</div>
       <div>
         <button onclick="manualChange('${id}', 1)">+</button>
@@ -352,13 +287,12 @@ function render(){
   document.getElementById("out").textContent=outC;
 }
 
-function handleManualDelete(id, name) {
-    if(confirm(`Delete ${name}?`)) invRef.child(id).remove();
-}
-
+function handleManualDelete(id, name) { if(confirm(`Delete ${name}?`)) invRef.child(id).remove(); }
 function manualChange(id, dir) {
   const p = inventory[id];
-  invRef.child(id).update({ quantity: Math.max(0, p.quantity + dir) });
+  const newQty = Math.max(0, p.quantity + dir);
+  invRef.child(id).update({ quantity: newQty });
+  if (newQty === 0) triggerPushAlert("🚨 OUT OF STOCK", `${p.name} is now empty!`);
 }
 </script>
 
