@@ -351,7 +351,7 @@ input:focus, select:focus, textarea:focus {
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://unpkg.com/tesseract.js@v4.0.1/dist/tesseract.min.js"></script>
+
 <script>
 firebase.initializeApp({
   apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
@@ -704,7 +704,7 @@ let lastScannedBarcode = null;
 let lastScannedTime = 0;
 let torchOn = false;
 
-// --- 1. FULL UI & CAMERA SETUP ---
+// --- 1. PRO SCANNER: ZOOMED & OPTIMIZED ---
 async function openScanner() {
     let scannerModal = document.getElementById('scannerModal');
     if (!scannerModal) {
@@ -712,28 +712,23 @@ async function openScanner() {
         scannerModal.id = 'scannerModal';
         scannerModal.className = 'modal';
         scannerModal.innerHTML = `
-            <div class="manual-modal-box" style="padding:20px; max-width: 480px; width:90%; text-align:center; border: 4px solid #059669; background:#fff; border-radius:24px; position:relative;">
-                <h3 style="margin-top:0; color:#059669; font-size:1.4rem;">Number Reader Mode</h3>
-                <p style="font-size:12px; color:#666; margin-bottom:10px;">Pointing at digits only. Lines are ignored.</p>
+            <div class="manual-modal-box" style="padding:20px; max-width: 500px; text-align:center; border: 4px solid #000; background:#fff;">
+                <h3 style="margin-top:0">Smart Scanner Pro</h3>
+                <p style="font-size:12px; color:#666; margin-bottom:10px;">Hold phone further back; auto-zoom is active</p>
+                <div id="reader" style="border-radius:15px; overflow:hidden; background:#000;"></div>
                 
-                <div style="position:relative; border-radius:15px; overflow:hidden; background:#000; height: 250px; border: 2px solid #059669;">
-                    <div id="reader" style="width:100%;"></div>
-                    <div style="position:absolute; top:40%; left:10%; right:10%; height:20%; border:2px dashed #059669; border-radius:8px; z-index:10; pointer-events:none; box-shadow: 0 0 0 1000px rgba(0,0,0,0.4);"></div>
-                    <div style="position:absolute; top:35%; width:100%; color:#059669; font-size:10px; font-weight:bold; z-index:11;">PLACE NUMBERS HERE</div>
-                </div>
-
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 15px 0;">
                     <button id="torch-btn" onclick="toggleTorch()" 
-                            style="background:#fbbf24; color:#000; display:none; padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer;">
+                            style="background:#fbbf24; color:#000; display:none; padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer; align-items:center; justify-content:center;">
                         🔦 Flashlight
                     </button>
                     <button onclick="openTypeModal()" 
                             style="background:#f0f2f5; color:#333; padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer;">
-                        ⌨️ Type Code
+                        ⌨️ Type Barcode
                     </button>
                 </div>
 
-                <button onclick="stopScanner()" style="width:100%; padding:15px; font-weight:bold; background:#ef4444; color:#fff; border:none; border-radius:12px; cursor:pointer;">Close Scanner</button>
+                <button class="btn-close" onclick="stopScanner()" style="width:100%; padding:15px; font-weight:bold;">Close Scanner</button>
             </div>
         `;
         document.body.appendChild(scannerModal);
@@ -742,181 +737,75 @@ async function openScanner() {
     scannerModal.style.display = "flex";
     html5QrCode = new Html5Qrcode("reader");
     
+    const config = { 
+        fps: 30, 
+        qrbox: { width: 300, height: 150 }, 
+        aspectRatio: 1.0,
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+    };
+
+    const formats = [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.CODE_128
+    ];
+
     try {
         await html5QrCode.start(
             { facingMode: "environment" }, 
-            { fps: 20, qrbox: { width: 280, height: 80 } },
-            () => {} // No action on standard barcode detection
+            { ...config, formatsToSupport: formats }, 
+            (text) => handleScanSuccess(text)
         );
 
         setTimeout(async () => {
             try {
                 const track = html5QrCode.getRunningTrack();
                 const caps = track.getCapabilities();
-                if (caps.torch) document.getElementById('torch-btn').style.display = "flex";
                 
-                // High zoom for small product numbers
+                if (caps.torch) {
+                    document.getElementById('torch-btn').style.display = "flex";
+                }
+
                 if (caps.zoom) {
                     await track.applyConstraints({
-                        advanced: [{ zoom: 3.5 }, { focusMode: "continuous" }]
+                        advanced: [{ zoom: 4.0 }, { focusMode: "continuous" }]
                     });
                 }
-                
-                isScanning = true;
-                runNumberRecognition();
-            } catch (hwErr) { console.warn(hwErr); }
+            } catch (hwErr) {
+                console.warn("Hardware constraints failed", hwErr);
+            }
         }, 1200);
 
-    } catch (err) { console.error("Scanner failed:", err); }
+    } catch (err) {
+        console.error("Scanner fail:", err);
+    }
 }
 
-// --- 2. THE OCR PROCESSING ENGINE ---
-async function runNumberRecognition() {
-    if (!isScanning) return;
-
-    try {
-        const video = document.querySelector("#reader video");
-        if (!video) return;
-
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        
-        // Capture specific center area for speed
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0);
-
-        const result = await Tesseract.recognize(canvas, 'eng', {
-            tessedit_char_whitelist: '0123456789'
-        });
-
-        const foundNumbers = result.data.text.replace(/\D/g, "");
-
-        // Only accept standard barcode lengths
-        if (foundNumbers.length >= 8 && foundNumbers.length <= 14) {
-            handleScanSuccess(foundNumbers);
-        }
-    } catch (e) { console.warn("OCR Error:", e); }
-
-    if (isScanning) setTimeout(runNumberRecognition, 700);
-}
-
-// --- 3. LOGIC & API SYNC ---
-function handleScanSuccess(code) {
+// --- 2. HAPTIC & AUTO-LOOKUP LOGIC ---
+function handleScanSuccess(decodedText) {
     const now = Date.now();
-    if (code === lastScannedBarcode && (now - lastScannedTime) < 5000) return; 
+    if (decodedText === lastScannedBarcode && (now - lastScannedTime) < 5000) return; 
 
-    lastScannedBarcode = code;
+    lastScannedBarcode = decodedText;
     lastScannedTime = now;
     
     if ("vibrate" in navigator) navigator.vibrate(100); 
-    if (document.getElementById("beep-ok")) document.getElementById("beep-ok").play();
-
-    processScannedBarcode(code);
+    document.getElementById("beep-ok").play();
+    processScannedBarcode(decodedText);
 }
 
-async function processScannedBarcode(code) {
-    const entries = Object.entries(inventory || {});
-    const existingEntry = entries.find(([_, p]) => p.barcode === code);
-
-    if (existingEntry) {
-        const [id, product] = existingEntry;
-        invRef.child(id).update({ quantity: (product.quantity || 0) + 1 }).then(() => {
-            triggerSuccess(`Updated: ${product.name}`);
-            speakWithAI(`${product.name} updated.`);
-        });
-        return;
-    }
-
-    speakWithAI("Looking up numbers...");
-
-    // API Chain
-    try {
-        const offRes = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json?fields=product_name,brands`);
-        const offData = await offRes.json();
-        if (offData.status === 1) {
-            let name = (offData.product.brands || "") + " " + (offData.product.product_name || "");
-            saveNewProduct(code, name.trim());
-            return;
-        }
-    } catch (e) {}
-
-    try {
-        const upcRes = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${code}`);
-        const upcData = await upcRes.json();
-        if (upcData.items?.length > 0) {
-            saveNewProduct(code, upcData.items[0].title);
-            return;
-        }
-    } catch (e) {}
-
-    openNamePrompt(code);
-}
-
-// --- 4. UTILS & HELPERS ---
-function saveNewProduct(code, name) {
-    const cleanName = name.charAt(0).toUpperCase() + name.slice(1);
-    invRef.push({
-        name: cleanName,
-        barcode: code,
-        quantity: 1,
-        unit: "pcs",
-        createdAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        triggerSuccess(`Registered: ${cleanName}`);
-        speakWithAI(`Registered ${cleanName}`);
-    });
-}
-
-function openTypeModal() {
-    let tModal = document.getElementById('typeModal');
-    if (!tModal) {
-        tModal = document.createElement('div');
-        tModal.id = 'typeModal';
-        tModal.className = 'modal';
-        tModal.style.zIndex = "5000";
-        document.body.appendChild(tModal);
-    }
-    tModal.innerHTML = `
-        <div class="manual-modal-box" style="border: 3px solid #000; padding:20px; background:#fff; border-radius:15px;">
-            <h3>Manual Entry</h3>
-            <input type="number" id="manual_barcode_input" style="width:90%; padding:15px; font-size:18px; margin-bottom:10px; border:2px solid #ccc; border-radius:8px;" placeholder="Type numbers here..." autofocus>
-            <div style="display:flex; gap:10px;">
-                <button onclick="submitManualCode()" style="flex:1; padding:12px; background:#2563eb; color:#fff; border:none; border-radius:8px;">Process</button>
-                <button onclick="document.getElementById('typeModal').style.display='none'" style="flex:1; padding:12px; background:#eee; border:none; border-radius:8px;">Cancel</button>
-            </div>
-        </div>
-    `;
-    tModal.style.display = "flex";
-}
-
-function submitManualCode() {
-    const code = document.getElementById('manual_barcode_input').value.trim();
-    if (code) {
-        handleScanSuccess(code);
-        document.getElementById('typeModal').style.display = 'none';
-    }
-}
-
-function stopScanner() {
-    isScanning = false;
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            document.getElementById('scannerModal').style.display = "none";
-        }).catch(() => {
-            document.getElementById('scannerModal').style.display = "none";
-        });
-    }
-}
-
+// --- 3. REWRITTEN FLASHLIGHT ---
 async function toggleTorch() {
     try {
         const track = html5QrCode.getRunningTrack();
         torchOn = !torchOn;
         await track.applyConstraints({ advanced: [{ torch: torchOn }] });
         const btn = document.getElementById('torch-btn');
+        btn.style.background = torchOn ? "#000" : "#fbbf24";
+        btn.style.color = torchOn ? "#fff" : "#000";
         btn.innerText = torchOn ? "🚫 Flash Off" : "🔦 Flashlight";
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Torch error", e); }
 }
 
 // --- 4. MANUAL ENTRY ---
