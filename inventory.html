@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 *{box-sizing:border-box;font-family:Inter}
@@ -25,7 +25,29 @@ body{margin:0;background:#f6f7fb;padding:30px}
   width:100%; padding:16px 20px; border-radius:16px; border:1px solid #ddd;
   font-size:16px; outline:none; box-shadow:0 10px 20px rgba(0,0,0,0.03);
 }
+/* Modern Scanner Viewport */
+#reader {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    border: none !important;
+}
 
+#reader__dashboard_section_csr button {
+    background: #2563eb !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* This makes it look like PhonePe */
+#reader__scan_region {
+    background: #000;
+}
 /* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:30px}
 .stat{background:#fff;padding:22px;border-radius:20px;box-shadow:0 10px 25px rgba(0,0,0,.06)}
@@ -671,6 +693,94 @@ function manualChange(id, dir) {
   const p = inventory[id];
   invRef.child(id).update({ quantity: Math.max(0, p.quantity + dir) });
 }
+// SCANNER PART
+
+let html5QrCode;
+
+async function openScanner() {
+    // Create a modal/overlay for the scanner if it doesn't exist
+    let scannerModal = document.getElementById('scannerModal');
+    if (!scannerModal) {
+        scannerModal = document.createElement('div');
+        scannerModal.id = 'scannerModal';
+        scannerModal.className = 'modal';
+        scannerModal.innerHTML = `
+            <div class="manual-modal-box" style="padding:20px;">
+                <div id="reader"></div>
+                <button class="btn-close" onclick="stopScanner()" style="width:100%; margin-top:15px;">Close Scanner</button>
+            </div>
+        `;
+        document.body.appendChild(scannerModal);
+    }
+    
+    scannerModal.style.display = "flex";
+
+    html5QrCode = new Html5Qrcode("reader");
+    
+    const config = { 
+        fps: 20, 
+        qrbox: { width: 250, height: 150 }, // Aspect ratio for barcodes
+        aspectRatio: 1.0 
+    };
+
+    // This starts the camera with high-power settings
+    html5QrCode.start(
+        { facingMode: "environment" }, 
+        config,
+        (decodedText) => {
+            // Logic when barcode is detected
+            document.getElementById("beep-ok").play();
+            triggerSuccess("Scanned: " + decodedText);
+            processScannedBarcode(decodedText);
+            stopScanner();
+        },
+        (errorMessage) => {
+            // parse error, ignore to keep scanning
+        }
+    ).then(() => {
+        // Apply advanced camera controls for that "PhonePe" feel
+        const track = html5QrCode.getRunningTrack();
+        const capabilities = track.getCapabilities();
+        
+        // Auto-focus and Zoom (if supported by phone)
+        track.applyConstraints({
+            advanced: [
+                { focusMode: "continuous" },
+                { exposureMode: "continuous" },
+                { whiteBalanceMode: "continuous" }
+            ]
+        }).catch(e => console.log("Advanced features not supported"));
+    });
+}
+
+function stopScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('scannerModal').style.display = "none";
+        });
+    } else {
+        document.getElementById('scannerModal').style.display = "none";
+    }
+}
+
+// Function to handle the result
+function processScannedBarcode(code) {
+    // Check if item exists in inventory
+    const existingEntry = Object.entries(inventory).find(([_, p]) => p.barcode === code);
+    
+    if (existingEntry) {
+        manualChange(existingEntry[0], 1);
+        speakWithAI("Updated " + existingEntry[1].name);
+    } else {
+        // If new, open manual add and fill the name with the code
+        openManualAdd();
+        document.getElementById("m_name").value = "Item " + code;
+        speakWithAI("New barcode detected");
+    }
+}
+
+
+
 </script>
 
 </body>
