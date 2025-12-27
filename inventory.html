@@ -701,6 +701,7 @@ function manualChange(id, dir) {
 let html5QrCode;
 let isScanning = false; 
 
+// --- 1. OPEN SCANNER WITH POWER UPGRADES ---
 async function openScanner() {
     let scannerModal = document.getElementById('scannerModal');
     if (!scannerModal) {
@@ -709,7 +710,7 @@ async function openScanner() {
         scannerModal.className = 'modal';
         scannerModal.innerHTML = `
             <div class="manual-modal-box" style="padding:20px; max-width: 500px; text-align:center;">
-                <h3 style="margin-top:0">Smart Scanner</h3>
+                <h3 style="margin-top:0">Smart Scanner Pro</h3>
                 <div id="reader" style="border-radius:15px; overflow:hidden;"></div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin: 15px 0;">
@@ -733,94 +734,132 @@ async function openScanner() {
     scannerModal.style.display = "flex";
     html5QrCode = new Html5Qrcode("reader");
     
+    // POWER SETTINGS: Smaller qrbox + Higher FPS = Easier to catch small barcodes
     const config = { 
-        fps: 25, 
-        qrbox: { width: 280, height: 160 }, 
+        fps: 30, 
+        qrbox: { width: 250, height: 150 }, 
         aspectRatio: 1.0 
     };
 
     html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
-        if (isScanning) return;
         handleScanSuccess(decodedText);
     }).then(() => {
+        // ENHANCED FOCUS: Forcing camera zoom and focus for small barcodes
         const track = html5QrCode.getRunningTrack();
-        track.applyConstraints({
-            advanced: [{ focusMode: "continuous" }, { exposureMode: "continuous" }, { zoom: 1.5 }]
-        }).catch(e => console.warn("Power settings not fully supported on this hardware."));
+        const capabilities = track.getCapabilities();
+        
+        // If zoom is supported, set it to 2.0x for small hardware labels
+        if (capabilities.zoom) {
+            track.applyConstraints({
+                advanced: [
+                    { zoom: 2.0 }, 
+                    { focusMode: "continuous" },
+                    { pointsOfInterest: [{ x: 0.5, y: 0.5 }] }
+                ]
+            });
+        }
     });
 }
 
-// --- SCANNING HANDLERS ---
-
+// --- 2. SCANNING HANDLERS ---
 function handleScanSuccess(decodedText) {
+    if (isScanning) return; // Prevent double-scans
     isScanning = true;
+    
     document.getElementById("beep-ok").play();
     processScannedBarcode(decodedText);
     
-    // Brief pause to prevent rapid double-processing
-    setTimeout(() => {
-        isScanning = false;
-        stopScanner();
-    }, 800);
+    // Delay before next scan allowed (1.5s)
+    setTimeout(() => { isScanning = false; }, 1500);
 }
 
-function scanFromImage(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const html5QrCodeFile = new Html5Qrcode("reader");
-    html5QrCodeFile.scanFile(file, true)
-        .then(decodedText => handleScanSuccess(decodedText))
-        .catch(err => alert("No barcode found in this image."));
-}
-
-function promptBarcodeType() {
-    const code = prompt("Type or Paste Barcode Number:");
-    if (code && code.trim() !== "") {
-        handleScanSuccess(code.trim());
-    }
-}
-
-function stopScanner() {
-    if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => {
-            document.getElementById('scannerModal').style.display = "none";
-        });
-    } else {
-        document.getElementById('scannerModal').style.display = "none";
-    }
-}
-
-// --- CORE INVENTORY LOGIC ---
-
-function processScannedBarcode(code) {
+// --- 3. CORE LOGIC & INTERNET LOOKUP ---
+async function processScannedBarcode(code) {
     const entries = Object.entries(inventory);
     const existingEntry = entries.find(([_, p]) => p.barcode === code);
 
     if (existingEntry) {
-        // SCENARIO 1: SCANNING SAME PRODUCT AGAIN -> DECREASE BY 1
+        // SCENARIO: Item already in DB
         const id = existingEntry[0];
         const product = existingEntry[1];
         const newQty = Math.max(0, (product.quantity || 0) - 1);
 
         invRef.child(id).update({ quantity: newQty }).then(() => {
             triggerSuccess(`Out: ${product.name} (-1)`);
-            speakWithAI(`${product.name} decreased to ${newQty}.`);
+            speakWithAI(`${product.name} reduced.`);
         });
     } else {
-        // SCENARIO 2: SCANNING NEW PRODUCT -> ADD TO INVENTORY
-        const newName = "Item-" + code.slice(-4);
-        const newProduct = {
-            name: newName,
-            barcode: code,
-            quantity: 1,
-            unit: "pcs",
-            createdAt: firebase.database.ServerValue.TIMESTAMP
-        };
+        // SCENARIO: New Barcode
+        speakWithAI("Searching internet...");
+        try {
+            // Free Open Food Facts API (Works for most household items)
+            const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+            const data = await res.json();
 
-        invRef.push(newProduct).then(() => {
-            triggerSuccess(`In: ${newName} (+1)`);
-            speakWithAI("New barcode registered.");
+            if (data.status === 1 && data.product.product_name) {
+                saveNewProduct(code, data.product.product_name);
+            } else {
+                openNamePrompt(code); // Not found -> Beautiful Popup
+            }
+        } catch (e) {
+            openNamePrompt(code);
+        }
+    }
+}
+
+// --- 4. BEAUTIFUL CUSTOM PROMPT ---
+function openNamePrompt(code) {
+    let pModal = document.getElementById('namePromptModal');
+    if (!pModal) {
+        pModal = document.createElement('div');
+        pModal.id = 'namePromptModal';
+        pModal.className = 'modal';
+        pModal.style.zIndex = "4000"; 
+        document.body.appendChild(pModal);
+    }
+    pModal.innerHTML = `
+        <div class="manual-modal-box" style="border: 3px solid #2563eb; animation: slideUp 0.3s ease;">
+            <h3 style="margin-top:0; color:#2563eb;">New Item Found!</h3>
+            <p style="font-size:12px; color:#666;">Barcode: ${code}</p>
+            <input type="text" id="custom_name" placeholder="What is this product?" autofocus>
+            <div class="modal-actions">
+                <button class="btn-save" onclick="submitName('${code}')">Save Product</button>
+                <button class="btn-close" onclick="document.getElementById('namePromptModal').style.display='none'">Skip</button>
+            </div>
+        </div>
+    `;
+    pModal.style.display = "flex";
+    document.getElementById('custom_name').focus();
+}
+
+function submitName(code) {
+    const name = document.getElementById('custom_name').value.trim();
+    if (name) {
+        saveNewProduct(code, name);
+        document.getElementById('namePromptModal').style.display = 'none';
+    }
+}
+
+function saveNewProduct(code, name) {
+    const cleanName = name.charAt(0).toUpperCase() + name.slice(1);
+    invRef.push({
+        name: cleanName,
+        barcode: code,
+        quantity: 1,
+        unit: "pcs",
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        triggerSuccess(`Added: ${cleanName}`);
+        speakWithAI(`Registered ${cleanName}`);
+    });
+}
+
+function stopScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('scannerModal').style.display = "none";
+        }).catch(() => {
+            document.getElementById('scannerModal').style.display = "none";
         });
     }
 }
