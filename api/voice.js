@@ -1,42 +1,33 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-  // 1. Handle CORS and Options (Prevents "Brain Freeze" on some browsers)
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  // 1. Log incoming request to Vercel Dashboard
+  console.log("Method:", req.method, "Body:", req.body);
 
-  // 2. Security Check
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(500).json({ error: "API Key missing in Vercel Settings" });
-  }
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+
+  // 2. Force-parse body if Vercel sends it as a string
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  const prompt = body?.prompt;
+
+  if (!prompt) return res.status(400).json({ error: "No prompt provided" });
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.0-flash",
-      systemInstruction: "You are an inventory manager. Return ONLY raw JSON. No markdown, no backticks. { \"action\": \"add\"|\"decrease\"|\"delete\", \"item\": \"string\", \"qty\": number, \"unit\": \"string\", \"reply\": \"string\" }"
+      systemInstruction: "You are an inventory manager. Return ONLY raw JSON. { \"action\": \"add\"|\"decrease\"|\"delete\", \"item\": \"string\", \"qty\": number, \"unit\": \"string\", \"reply\": \"friendly message\" }"
     });
-
-    const { prompt } = req.body;
-    if (!prompt) throw new Error("No prompt provided");
 
     const result = await model.generateContent(prompt);
-    const responseText = await result.response.text();
+    const responseText = result.response.text();
     
-    // 3. Robust JSON Extraction (Removes backticks if AI adds them)
+    // Clean AI output (removes markdown code blocks if present)
     const cleanJson = responseText.replace(/```json|```/g, "").trim();
-    const data = JSON.parse(cleanJson);
-
-    return res.status(200).json(data);
+    res.status(200).json(JSON.parse(cleanJson));
 
   } catch (error) {
-    console.error("Gemini Error:", error);
-    // Return a 200 with an error flag so your frontend doesn't "Brain Freeze"
-    return res.status(200).json({ 
-      error: true, 
-      reply: "I had a tiny glitch. Can you try again?",
-      originalError: error.message 
-    });
+    console.error("CRITICAL ERROR:", error.message);
+    res.status(500).json({ error: error.message });
   }
 }
