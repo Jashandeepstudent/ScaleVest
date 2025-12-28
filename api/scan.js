@@ -1,11 +1,20 @@
+// api/scan.js
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  // Check if the request is actually a POST
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Please use POST' });
+  }
 
   const { imageBase64 } = req.body;
-  const KEY = process.env.GEMINI_KEY; // This stays hidden on Vercel's servers
+  const KEY = process.env.GEMINI_KEY;
+
+  if (!KEY) {
+    return res.status(500).json({ error: 'API Key is missing in Vercel settings' });
+  }
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${KEY}`, {
+    // We use the 'gemini-1.5-flash' model (most stable for vision)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -19,8 +28,12 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    res.status(200).json(data);
+    
+    // Send the result back to your frontend
+    return res.status(200).json(data);
+    
   } catch (error) {
-    res.status(500).json({ error: "Server Error" });
+    console.error("Server Side Error:", error);
+    return res.status(500).json({ error: error.message });
   }
 }
