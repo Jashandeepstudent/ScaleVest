@@ -47,7 +47,37 @@ body{margin:0;background:#f6f7fb;padding:30px}
     font-weight: bold;
 }
 
-/* This makes it look like PhonePe */
+/* Back Arrow*/
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    flex-wrap: wrap; 
+    gap: 15px;
+}
+
+.top h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Hover effect for the back button */
+.top a:hover {
+    border-color: #7c3aed;
+    color: #7c3aed;
+    transform: translateX(-3px);
+    box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1);
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+/* Like PhonePe */
 #reader__scan_region {
     background: #000;
 }
@@ -266,17 +296,23 @@ input:focus, select:focus, textarea:focus {
 <div id="successPopup" class="success-popup">Product Updated</div>
 
 <div class="top">
-  <h2>Inventory</h2>
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <a href="mainbusinesshub.html" style="text-decoration: none; display: flex; align-items: center; justify-content: center; width: 35px; height: 35px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; color: #1e293b; transition: 0.3s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <h2>Inventory</h2>
+  </div>
+
   <div class="actions">
-<button style="background:#8b5cf6" onclick="window.location.href='picture.html'">📸 PIC (AI Scan)</button>
+    <button style="background:#8b5cf6" onclick="window.location.href='picture.html'">📸 PIC (AI Scan)</button>
     <button onclick="openScanner()">📷 Scanner</button>
-   <div style="position:relative; display:inline-block;">
-    <button onclick="toggleAddMenu()">➕ Add Product</button>
-    <div id="addMenu" class="choice-menu">
-        <button onclick="openManualAdd()">📝 Manual Add</button>
-        <button onclick="openBulkAdd()">📦 Bulk Add</button>
+    <div style="position:relative; display:inline-block;">
+        <button onclick="toggleAddMenu()">➕ Add Product</button>
+        <div id="addMenu" class="choice-menu">
+            <button onclick="openManualAdd()">📝 Manual Add</button>
+            <button onclick="openBulkAdd()">📦 Bulk Add</button>
+        </div>
     </div>
-</div>
     <button style="background:#2563eb" onclick="startVoiceAssistant()">🎙️ AI Voice</button>
   </div>
 </div>
@@ -954,3 +990,4 @@ function stopScanner() {
 
 </body>
 </html>
+
