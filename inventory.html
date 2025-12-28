@@ -101,21 +101,24 @@ body{margin:0;background:#f6f7fb;padding:30px}
 }
 /* STATS */
 .stats-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    display: flex; /* Use flex instead of grid for easier side-by-side control */
+    justify-content: space-between;
+    gap: 8px; /* Tighter gap so they don't hit the screen edges */
     margin-bottom: 30px;
+    width: 100%;
 }
 
 .stat-card {
     background: white;
-    padding: 24px;
-    border-radius: 24px;
+    padding: 12px 10px; /* Reduced padding slightly so icons fit next to text */
+    border-radius: 20px; /* Same luxury curves */
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 8px; /* Space between icon and text */
     border: 1px solid #f1f5f9;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    flex: 1; /* This forces all 3 cards to be equal width */
+    min-width: 0; /* Prevents cards from "leaking" off screen */
     transition: transform 0.3s ease;
 }
 
@@ -124,15 +127,21 @@ body{margin:0;background:#f6f7fb;padding:30px}
 }
 
 .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 35px; /* Scaled down slightly for mobile to keep them side-by-side */
+    height: 35px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0; /* Prevents the icon from getting crushed */
 }
 
-/* Icon Colors */
+.stat-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Your Exact Colors */
 .total-bg { background: #f5f3ff; color: #7c3aed; }
 .low-bg { background: #fffbeb; color: #d97706; }
 .out-bg { background: #fef2f2; color: #ef4444; }
@@ -140,34 +149,39 @@ body{margin:0;background:#f6f7fb;padding:30px}
 .stat-details {
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Safety for long numbers */
 }
 
 .stat-label {
-    font-size: 13px;
+    font-size: 9px; /* Shrunk for mobile side-by-side */
     font-weight: 600;
     color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
 }
 
 .stat-details h3 {
-    margin: 4px 0;
-    font-size: 24px;
+    margin: 0;
+    font-size: 16px; /* High-end bold number */
     font-weight: 700;
     color: #1e293b;
 }
 
+/* Hide the sub-text only on very small screens to save space */
 .stat-sub {
-    font-size: 11px;
-    color: #94a3b8;
-    font-weight: 500;
+    display: none;
 }
 
-.text-warning { color: #d97706 !important; }
-.text-danger { color: #ef4444 !important; }
-
-@media (max-width: 600px) {
-    .stats-container { grid-template-columns: 1fr; }
+/* DESKTOP UPGRADE: Makes them bigger when there is room */
+@media (min-width: 768px) {
+    .stats-container { gap: 20px; }
+    .stat-card { padding: 24px; gap: 16px; }
+    .stat-icon { width: 48px; height: 48px; }
+    .stat-icon svg { width: 24px; height: 24px; }
+    .stat-label { font-size: 13px; }
+    .stat-details h3 { font-size: 24px; }
+    .stat-sub { display: block; font-size: 11px; color: #94a3b8; font-weight: 500; }
 }
 .inventory-grid-wrapper {
     background: white;
@@ -422,6 +436,38 @@ input:focus, select:focus, textarea:focus {
   0%, 100% { height: 10px; }
   50% { height: 50px; }
 }
+.back-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    color: #1e293b;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.back-nav-btn:hover {
+    background: #f5f3ff;
+    border-color: #7c3aed;
+    color: #7c3aed;
+    transform: translateX(-3px); /* Subtle nudge to the left */
+}
+
+.top h2 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    color: #1e293b;
+}
+/* Matching the other buttons to the elite theme */
+.btn-pic { background: #8b5cf6; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+.btn-primary { background: #1e293b; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 600; cursor: pointer; }
+.btn-standard { background: white; border: 1px solid #e2e8f0; padding: 10px 18px; border-radius: 12px; font-weight: 600; cursor: pointer; }
 .custom-modal {
     position: fixed; inset: 0;
     background: rgba(15, 23, 42, 0.4);
@@ -475,17 +521,23 @@ input:focus, select:focus, textarea:focus {
 <div id="successPopup" class="success-popup">Product Updated</div>
 
 <div class="top">
-  <h2>Inventory</h2>
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <a href="mainbusinesshub.html" class="back-nav-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </a>
+    <h2>Inventory</h2>
+  </div>
+
   <div class="actions">
-<button style="background:#8b5cf6" onclick="window.location.href='picture.html'">📸 PIC (AI Scan)</button>
+    <button style="background:#8b5cf6" onclick="window.location.href='picture.html'">📸 PIC (AI Scan)</button>
     <button onclick="openScanner()">📷 Scanner</button>
-   <div style="position:relative; display:inline-block;">
-    <button onclick="toggleAddMenu()">➕ Add Product</button>
-    <div id="addMenu" class="choice-menu">
-        <button onclick="openManualAdd()">📝 Manual Add</button>
-        <button onclick="openBulkAdd()">📦 Bulk Add</button>
+    <div style="position:relative; display:inline-block;">
+        <button onclick="toggleAddMenu()">➕ Add Product</button>
+        <div id="addMenu" class="choice-menu">
+            <button onclick="openManualAdd()">📝 Manual Add</button>
+            <button onclick="openBulkAdd()">📦 Bulk Add</button>
+        </div>
     </div>
-</div>
     <button style="background:#2563eb" onclick="startVoiceAssistant()">🎙️ AI Voice</button>
   </div>
 </div>
@@ -1258,16 +1310,19 @@ function saveNewProduct(code, name) {
 }
 
 function stopScanner() {
-    if (html5QrCode) {
-        html5QrCode.stop().then(() => {
-            document.getElementById('scannerModal').style.display = "none";
+    const modal = document.getElementById('scannerModal');
+    
+    if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().finally(() => {
+            if (modal) modal.style.display = "none";
             torchOn = false;
-        }).catch(() => {
-            document.getElementById('scannerModal').style.display = "none";
         });
+    } else {
+        // If not scanning or instance doesn't exist, just hide the modal immediately
+        if (modal) modal.style.display = "none";
+        torchOn = false;
     }
 }
-
 
 </script>
 
