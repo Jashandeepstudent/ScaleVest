@@ -859,93 +859,52 @@ function stopVoiceAssistant() {
   document.getElementById("voiceModal").style.display = "none";
 }
 
-async function processSmartAI(cmd) {
-  cmd = cmd.toLowerCase();
+async function processSmartAI(transcript) {
+  const output = document.getElementById("speechOutput");
+  output.textContent = "Checking with Gemini...";
 
-  // 1. Handle Pending Confirmation
-  if (pendingAction) {
-    if (cmd.includes("yes") || cmd.includes("confirm") || cmd.includes("do it")) {
-        if (pendingAction.type === 'delete') {
-            invRef.child(pendingAction.id).remove();
-            triggerSuccess(`Removed ${pendingAction.name}`);
-            speakWithAI(`Successfully deleted ${pendingAction.name}.`);
+  try {
+    const res = await fetch('/api/voice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: transcript })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    // 1. AI Logic Execution
+    const pName = data.item.toLowerCase();
+    const existingEntry = Object.entries(inventory).find(([_, p]) => p.name.toLowerCase() === pName);
+
+    if (data.action === 'delete' && existingEntry) {
+        pendingAction = { type: 'delete', id: existingEntry[0], name: pName };
+        document.getElementById("viz").classList.add("confirm-mode");
+    } 
+    else if (data.action === 'decrease' && existingEntry) {
+        const newVal = Math.max(0, existingEntry[1].quantity - data.qty);
+        invRef.child(existingEntry[0]).update({ quantity: newVal });
+        triggerSuccess(`Reduced ${pName}`);
+    } 
+    else if (data.action === 'add') {
+        if (existingEntry) {
+            invRef.child(existingEntry[0]).update({ quantity: existingEntry[1].quantity + data.qty });
+        } else {
+            invRef.push({ name: data.item, quantity: data.qty, unit: data.unit });
         }
-        pendingAction = null;
-        document.getElementById("viz").classList.remove("confirm-mode");
-        return;
-    } else if (cmd.includes("no") || cmd.includes("cancel")) {
-        speakWithAI("Action cancelled.");
-        pendingAction = null;
-        document.getElementById("viz").classList.remove("confirm-mode");
-        return;
+        triggerSuccess(`Added ${pName}`);
     }
-  }
-  
-  // 2. Extract Numbers (Support for digits and basic words)
-  const numberMap = { 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'ten': 10 };
-  let qty = 1;
-  const numMatch = cmd.match(/(\d+(\.\d+)?)/);
-  if (numMatch) {
-      qty = parseFloat(numMatch[0]);
-  } else {
-      Object.keys(numberMap).forEach(word => { if(cmd.includes(word)) qty = numberMap[word]; });
-  }
 
-  // 3. Extract Units
-  const units = ["kg", "kilogram", "gram", " g ", "liter", " ml ", "packets", "pcs", "boxes"];
-  let detectedUnit = "pcs";
-  units.forEach(u => { if(cmd.includes(u)) detectedUnit = u.trim(); });
+    // 2. The "Real Person" Voice Response
+    speakWithAI(data.reply);
+    output.textContent = `"${transcript}"`;
 
-  // 4. Extract Product Name
-  let pName = cmd
-    .replace(/(\d+(\.\d+)?)/g, '')
-    .replace(new RegExp(units.join("|"), "g"), '')
-    .replace(/(add|remove|delete|increase|decrease|minus|plus|update|to|of|set|the)/g, '')
-    .trim();
-
-  if (pName.length < 2) return;
-
-  const existingEntry = Object.entries(inventory).find(([_, p]) => p.name.toLowerCase() === pName);
-
-  // 5. Action Logic
-  if (cmd.includes("remove") || cmd.includes("delete")) {
-    if (existingEntry) {
-      pendingAction = { type: 'delete', id: existingEntry[0], name: pName };
-      document.getElementById("viz").classList.add("confirm-mode");
-      speakWithAI(`Are you sure you want to delete ${pName}? Say yes to confirm.`);
-    } else {
-      speakWithAI(`I couldn't find ${pName} in your inventory.`);
-    }
-  } 
-  else if (cmd.includes("decrease") || cmd.includes("minus") || cmd.includes("less") || cmd.includes("reduce")) {
-    if (existingEntry) {
-      const newVal = Math.max(0, existingEntry[1].quantity - qty);
-      invRef.child(existingEntry[0]).update({ quantity: newVal });
-      triggerSuccess(`Decreased ${pName}`);
-      speakWithAI(`Decreased ${pName} by ${qty}. New total is ${newVal}.`);
-    } else {
-      speakWithAI(`Product ${pName} not found to decrease.`);
-    }
-  }
-  else {
-    // Implicit Add or Increase
-    if (existingEntry) {
-      const newVal = existingEntry[1].quantity + qty;
-      invRef.child(existingEntry[0]).update({ quantity: newVal });
-      triggerSuccess(`Increased ${pName}`);
-      speakWithAI(`Added ${qty} to ${pName}. Total is now ${newVal}.`);
-    } else {
-      invRef.push({ 
-        name: pName.charAt(0).toUpperCase() + pName.slice(1), 
-        quantity: qty, 
-        unit: detectedUnit 
-      });
-      triggerSuccess(`Added ${pName}`);
-      speakWithAI(`Added ${qty} ${detectedUnit} of ${pName} as a new product.`);
-    }
+  } catch (err) {
+    console.error(err);
+    speakWithAI("Sorry, I had a brain freeze. Can you say that again?");
+    output.textContent = "Error processing command.";
   }
 }
-
 // --- TEXT TO SPEECH ENGINE ---
 function speakWithAI(text) {
   if ('speechSynthesis' in window) {
@@ -1296,7 +1255,7 @@ function submitName(code) {
 }
 
 function saveNewProduct(code, name) {
-    const cleanName = name.charAt(0).toUpperCase() + name.slice(1);
+    const cleanName = name.charAt(0).toUpperCase() + name.slice(1);rtfcvcvcvcvcvcvcvcvcvcvcvcvcv
     invRef.push({
         name: cleanName,
         barcode: code,
@@ -1310,17 +1269,13 @@ function saveNewProduct(code, name) {
 }
 
 function stopScanner() {
-    const modal = document.getElementById('scannerModal');
-    
-    if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().finally(() => {
-            if (modal) modal.style.display = "none";
+    if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+            document.getElementById('scannerModal').style.display = "none";
             torchOn = false;
+        }).catch(() => {
+            document.getElementById('scannerModal').style.display = "none";
         });
-    } else {
-        // If not scanning or instance doesn't exist, just hide the modal immediately
-        if (modal) modal.style.display = "none";
-        torchOn = false;
     }
 }
 
