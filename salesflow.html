@@ -2,262 +2,677 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SaleFlow Pro</title>
+<title>Financial Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-* { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { margin: 0; background: #f6f7fb; padding: 25px; color: #1e293b; }
+* { box-sizing: border-box; font-family: Inter, sans-serif; }
+body { margin: 0; background: #f6f7fb; padding: 20px; }
 
-.header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: white;
-    border: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    color: #1e293b;
+.back-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #1e293b;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.finance-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 30px;
+.back-nav-btn:hover {
+  background: #f5f3ff;
+  border-color: #7c3aed;
+  color: #7c3aed;
+  transform: translateX(-3px);
 }
 
-.finance-card {
-    background: white;
-    padding: 20px;
-    border-radius: 24px;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  color: #1e293b;
 }
 
-.finance-card h4 {
-    margin: 0;
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #64748b;
-    letter-spacing: 1px;
+/* Financial Stats Cards */
+.financial-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
-.finance-card p {
-    margin-top: 8px;
-    font-size: 24px;
-    font-weight: 800;
+.stat-card {
+  background: white;
+  padding: 30px;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
 }
 
-.spend { color: #64748b; }
-.revenue { color: #10b981; }
-
-.list-container {
-    background: white;
-    border-radius: 24px;
-    overflow: hidden;
-    border: 1px solid #f1f5f9;
+.stat-card:hover {
+  transform: translateY(-5px);
 }
 
-.row {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr;
-    gap: 15px;
-    padding: 20px;
-    border-bottom: 1px solid #f8fafc;
-    align-items: center;
+.stat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
 }
 
-.row:last-child { border-bottom: none; }
-
-.prod-name {
-    font-weight: 700;
-    font-size: 16px;
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.prod-stock {
-    font-size: 12px;
-    color: #94a3b8;
+.spend-icon { background: #fef2f2; color: #ef4444; }
+.earned-icon { background: #ecfdf5; color: #10b981; }
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.input-box {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+.stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 10px 0;
 }
 
-.input-box label {
-    font-size: 9px;
-    font-weight: 800;
-    color: #94a3b8;
-    text-transform: uppercase;
+.stat-sub {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.input-box input {
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    font-weight: 700;
+/* Products Table */
+.products-wrapper {
+  background: white;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  overflow: hidden;
+}
+
+.products-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.products-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.btn-download {
+  padding: 12px 20px;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-download:hover {
+  background: #6d28d9;
+  transform: translateY(-2px);
+}
+
+.grid-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  background: #f8fafc;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.grid-body {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid #f8fafc;
+  transition: all 0.2s ease;
+}
+
+.product-row:hover {
+  background-color: #f5f3ff;
+}
+
+.product-row:last-child { border-bottom: none; }
+
+.product-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.product-qty {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.price-input {
+  width: 100%;
+  max-width: 120px;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.set-btn {
+  padding: 8px 16px;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.set-btn:hover {
+  background: #6d28d9;
+  transform: scale(1.05);
+}
+
+.set-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.price-set {
+  color: #10b981;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+
+.modal-box {
+  background: white;
+  padding: 35px;
+  border-radius: 28px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-box h3 {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.modal-box p {
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.price-inputs {
+  display: grid;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.input-group {
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-cancel {
+  padding: 12px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save {
+  padding: 12px;
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save:hover { background: #6d28d9; }
+
+.success-popup {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10b981;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 50px;
+  font-weight: 600;
+  display: none;
+  z-index: 3000;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { bottom: -50px; opacity: 0; }
+  to { bottom: 30px; opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .financial-stats { grid-template-columns: 1fr; }
+  .grid-header { display: none; }
+  .product-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 15px;
+  }
+  .stat-value { font-size: 28px; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <a href="inventory.html" class="back-btn">
-        ←
+<div id="successPopup" class="success-popup">Prices Updated!</div>
+
+<div class="top">
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <a href="inventory.html" class="back-nav-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
     </a>
-    <h2 style="margin:0;font-weight:800;">SaleFlow</h2>
+    <h2>💰 Financial Dashboard</h2>
+  </div>
 </div>
 
-<div class="finance-grid">
-    <div class="finance-card">
-        <h4>Total Spend (Inventory Value)</h4>
-        <p id="totalSpend" class="spend">$0.00</p>
+<div class="financial-stats">
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon spend-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <span class="stat-label">Total Spend</span>
     </div>
-    <div class="finance-card">
-        <h4>Total Earned (Sales)</h4>
-        <p id="totalEarned" class="revenue">$0.00</p>
+    <div class="stat-value" id="totalSpend">₹0</div>
+    <div class="stat-sub">Total investment made</div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-header">
+      <div class="stat-icon earned-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <span class="stat-label">Total Earned</span>
     </div>
+    <div class="stat-value" id="totalEarned">₹0</div>
+    <div class="stat-sub">Revenue from sales</div>
+  </div>
 </div>
 
-<div class="list-container" id="flowList"></div>
+<div class="products-wrapper">
+  <div class="products-header">
+    <h3>📦 Product Pricing</h3>
+    <button class="btn-download" onclick="downloadProducts()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; margin-right:6px;">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Download CSV
+    </button>
+  </div>
 
-<!-- ===================== FIREBASE ===================== -->
+  <div class="grid-header">
+    <div>Product Name</div>
+    <div>Quantity</div>
+    <div>Cost Price</div>
+    <div>Sell Price</div>
+    <div>Action</div>
+  </div>
+
+  <div class="grid-body" id="productsGrid"></div>
+</div>
+
+<div id="priceModal" class="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">Set Prices</h3>
+    <p id="modalSubtitle">Define cost and selling price</p>
+    
+    <div class="price-inputs">
+      <div class="input-group">
+        <label>Cost Price (₹)</label>
+        <input type="number" id="costPriceInput" placeholder="100" step="0.01">
+      </div>
+      <div class="input-group">
+        <label>Selling Price (₹)</label>
+        <input type="number" id="sellPriceInput" placeholder="150" step="0.01">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closePriceModal()">Cancel</button>
+      <button class="btn-save" onclick="savePrices()">Save Prices</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-/* ===================== INIT ===================== */
 firebase.initializeApp({
-    apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
-    authDomain: "scalevest-163a0.firebaseapp.com",
-    databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
-    projectId: "scalevest-163a0"
+  apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+  authDomain: "scalevest-163a0.firebaseapp.com",
+  databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+  projectId: "scalevest-163a0"
 });
 
-const db = firebase.database();
 const auth = firebase.auth();
+const db = firebase.database();
 
 let inventory = {};
-let previousInventory = null;
-let totalEarned = 0;
+let prices = {};
+let sales = {};
+let purchases = {};
+let invRef, pricesRef, salesRef, purchasesRef, lastKnownRef;
+let currentProductId = null;
 
-let invRef;
-let earnedRef;
+auth.onAuthStateChanged(user => {
+  if (!user) return;
 
-/* ===================== AUTH ===================== */
-auth.onAuthStateChanged(async user => {
-    if (!user) return;
+  invRef = db.ref(`Businesses/${user.uid}/inventory`);
+  pricesRef = db.ref(`Businesses/${user.uid}/prices`);
+  salesRef = db.ref(`Businesses/${user.uid}/sales`);
+  purchasesRef = db.ref(`Businesses/${user.uid}/purchases`);
+  lastKnownRef = db.ref(`Businesses/${user.uid}/last_known_inventory`);
 
-    invRef = db.ref(`Businesses/${user.uid}/inventory`);
-    earnedRef = db.ref(`Businesses/${user.uid}/finances/totalEarned`);
+  // 1. Load Prices
+  pricesRef.on("value", snapshot => {
+    prices = snapshot.val() || {};
+    render();
+  });
 
-    /* 1️⃣ LOAD STORED REVENUE */
-    const earnedSnap = await earnedRef.once("value");
-    totalEarned = earnedSnap.val() || 0;
+  // 2. The "Smart" Inventory Watcher (Works even if tab was closed)
+  invRef.on("value", snapshot => {
+    const currentInventory = snapshot.val() || {};
+    
+    // Compare against the database's last known record, not the browser memory
+    lastKnownRef.once('value', lastSnap => {
+      const lastInventory = lastSnap.val() || {};
 
-    /* 2️⃣ LOAD INVENTORY ONCE (BASELINE) */
-    const invSnap = await invRef.once("value");
-    inventory = invSnap.val() || {};
-    previousInventory = JSON.parse(JSON.stringify(inventory));
-
-    renderList();
-    updateSummary();
-
-    /* 3️⃣ REALTIME INVENTORY WATCH */
-    invRef.on("value", snap => {
-        const newInv = snap.val() || {};
-
-        if (previousInventory) {
-            detectSales(previousInventory, newInv);
-        }
-
-        inventory = newInv;
-        previousInventory = JSON.parse(JSON.stringify(newInv));
-
-        renderList();
-        updateSummary();
-    });
-});
-
-/* ===================== SALE DETECTION ===================== */
-function detectSales(oldInv, newInv) {
-    let earnedNow = 0;
-
-    Object.keys(oldInv).forEach(id => {
-        if (!newInv[id]) return;
-
-        const oldQty = oldInv[id].quantity || 0;
-        const newQty = newInv[id].quantity || 0;
+      Object.entries(currentInventory).forEach(([id, product]) => {
+        const oldQty = lastInventory[id] ? lastInventory[id].quantity : product.quantity;
+        const newQty = product.quantity || 0;
 
         if (newQty < oldQty) {
-            const sold = oldQty - newQty;
-            const price = newInv[id].sellingPrice || 0;
-            earnedNow += sold * price;
+          // Sale happened!
+          recordSale(id, product.name, oldQty - newQty);
+        } else if (newQty > oldQty) {
+          // Stock added!
+          recordPurchase(id, product.name, newQty - oldQty);
         }
+      });
+
+      // Update the "Last Known" record in Firebase so we are ready for next time
+      lastKnownRef.set(currentInventory);
+      
+      inventory = currentInventory;
+      render();
     });
+  });
 
-    if (earnedNow > 0) {
-        totalEarned += earnedNow;
-        earnedRef.set(totalEarned);
-    }
+  // 3. Keep stats updated from historical nodes
+  salesRef.on("value", snapshot => {
+    sales = snapshot.val() || {};
+    calculateFinancials();
+  });
+
+  purchasesRef.on("value", snapshot => {
+    purchases = snapshot.val() || {};
+    calculateFinancials();
+  });
+});
+
+function recordSale(productId, productName, quantity) {
+  const priceData = prices[productId];
+  if (!priceData || !priceData.sellPrice) return;
+
+  const revenue = priceData.sellPrice * quantity;
+  salesRef.push({
+    productId,
+    productName,
+    quantity,
+    sellPrice: priceData.sellPrice,
+    revenue: revenue,
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
 }
 
-/* ===================== UI ===================== */
-function renderList() {
-    const list = document.getElementById("flowList");
-    list.innerHTML = "";
+function recordPurchase(productId, productName, quantity) {
+  const priceData = prices[productId];
+  if (!priceData || !priceData.costPrice) return;
 
-    Object.entries(inventory).forEach(([id, item]) => {
-        const row = document.createElement("div");
-        row.className = "row";
-        row.innerHTML = `
-            <div>
-                <div class="prod-name">${item.name}</div>
-                <div class="prod-stock">Current: ${item.quantity || 0}</div>
-            </div>
-            <div class="input-box">
-                <label>Cost</label>
-                <input type="number" value="${item.costPrice || 0}"
-                    onchange="updatePrice('${id}','costPrice',this.value)">
-            </div>
-            <div class="input-box">
-                <label>Sale</label>
-                <input type="number" value="${item.sellingPrice || 0}"
-                    onchange="updatePrice('${id}','sellingPrice',this.value)">
-            </div>
-        `;
-        list.appendChild(row);
-    });
+  const cost = priceData.costPrice * quantity;
+  purchasesRef.push({
+    productId,
+    productName,
+    quantity,
+    costPrice: priceData.costPrice,
+    totalCost: cost,
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
 }
 
-function updatePrice(id, field, val) {
-    invRef.child(id).update({ [field]: parseFloat(val) || 0 });
+function calculateFinancials() {
+  let totalSpend = 0;
+  let totalEarned = 0;
+
+  Object.values(sales).forEach(sale => {
+    totalEarned += (parseFloat(sale.revenue) || 0);
+  });
+
+  Object.values(purchases).forEach(purchase => {
+    totalSpend += (parseFloat(purchase.totalCost) || 0);
+  });
+
+  document.getElementById("totalSpend").textContent = `₹${totalSpend.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+  document.getElementById("totalEarned").textContent = `₹${totalEarned.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
 }
 
-function updateSummary() {
-    let spend = 0;
-    Object.values(inventory).forEach(item => {
-        spend += (item.costPrice || 0) * (item.quantity || 0);
-    });
+function render() {
+  const grid = document.getElementById("productsGrid");
+  if(!grid) return;
+  grid.innerHTML = "";
 
-    document.getElementById("totalSpend").textContent = `$${spend.toFixed(2)}`;
-    document.getElementById("totalEarned").textContent = `$${totalEarned.toFixed(2)}`;
+  Object.entries(inventory).forEach(([id, product]) => {
+    const priceData = prices[id] || {};
+    const hasPrices = priceData.costPrice && priceData.sellPrice;
+
+    grid.innerHTML += `
+      <div class="product-row">
+        <div class="product-name">${product.name}</div>
+        <div class="product-qty">${product.quantity} ${product.unit || 'pcs'}</div>
+        <div>${hasPrices ? `₹${priceData.costPrice}` : '<span style="color:#94a3b8;">Not set</span>'}</div>
+        <div>${hasPrices ? `₹${priceData.sellPrice}` : '<span style="color:#94a3b8;">Not set</span>'}</div>
+        <div>
+          <button class="set-btn" onclick="openPriceModal('${id}', '${product.name}')">
+            ${hasPrices ? 'Edit' : 'Set Prices'}
+          </button>
+        </div>
+      </div>
+    `;
+  });
 }
+
+function openPriceModal(productId, productName) {
+  currentProductId = productId;
+  document.getElementById("modalTitle").textContent = productName;
+  const priceData = prices[productId] || {};
+  document.getElementById("costPriceInput").value = priceData.costPrice || "";
+  document.getElementById("sellPriceInput").value = priceData.sellPrice || "";
+  document.getElementById("priceModal").style.display = "flex";
+}
+
+function closePriceModal() {
+  document.getElementById("priceModal").style.display = "none";
+}
+
+function savePrices() {
+  const costPrice = parseFloat(document.getElementById("costPriceInput").value);
+  const sellPrice = parseFloat(document.getElementById("sellPriceInput").value);
+
+  if (isNaN(costPrice) || isNaN(sellPrice)) {
+    alert("Please enter valid prices");
+    return;
+  }
+
+  pricesRef.child(currentProductId).set({
+    costPrice: costPrice,
+    sellPrice: sellPrice,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    showSuccess("Prices Saved!");
+    closePriceModal();
+  });
+}
+
+function showSuccess(msg) {
+  const popup = document.getElementById("successPopup");
+  popup.textContent = msg;
+  popup.style.display = "block";
+  setTimeout(() => popup.style.display = "none", 3000);
+}
+
+function downloadProducts() {
+  let csv = "Product Name,Quantity,Cost Price,Sell Price\n";
+  Object.entries(inventory).forEach(([id, p]) => {
+    const pr = prices[id] || {};
+    csv += `"${p.name}",${p.quantity},${pr.costPrice || 0},${pr.sellPrice || 0}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `finance_report.csv`;
+  a.click();
+}
+
+function showSuccess(msg) {
+  const popup = document.getElementById("successPopup");
+  popup.textContent = msg;
+  popup.style.display = "block";
+  setTimeout(() => popup.style.display = "none", 3000);
+}
+
+window.onclick = (e) => {
+  const modal = document.getElementById("priceModal");
+  if (e.target === modal) closePriceModal();
+};
 </script>
 
 </body>
