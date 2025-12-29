@@ -444,11 +444,11 @@ h2 {
     
     <div class="price-inputs">
       <div class="input-group">
-        <label>Cost Price (₹)</label>
+        <label>Cost Price</label>
         <input type="number" id="costPriceInput" placeholder="100" step="0.01">
       </div>
       <div class="input-group">
-        <label>Selling Price (₹)</label>
+        <label>Selling Price</label>
         <input type="number" id="sellPriceInput" placeholder="150" step="0.01">
       </div>
     </div>
@@ -456,6 +456,24 @@ h2 {
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closePriceModal()">Cancel</button>
       <button class="btn-save" onclick="savePrices()">Save Prices</button>
+    </div>
+  </div>
+</div>
+
+<div id="currencyModal" class="modal">
+  <div class="modal-box">
+    <h3>🌍 Regional Settings</h3>
+    <p>Enter your 3-letter currency code (e.g., USD, INR, GBP, EUR)</p>
+    
+    <div class="price-inputs">
+      <div class="input-group">
+        <label>Currency Code</label>
+        <input type="text" id="currencyInput" placeholder="USD" maxlength="3" style="text-transform: uppercase;">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-save" style="grid-column: span 2;" onclick="saveCurrency()">Save & Continue</button>
     </div>
   </div>
 </div>
@@ -475,33 +493,50 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.database();
 
+// --- 1. Global State ---
 let inventory = {};
 let prices = {};
 let sales = {};
 let purchases = {};
 let invRef, pricesRef, salesRef, purchasesRef, lastKnownRef;
 let currentProductId = null;
+let userCurrency = "USD"; // Default fallback
 
+// --- 2. Firebase Auth & Data Listeners ---
 auth.onAuthStateChanged(user => {
   if (!user) return;
 
+  // Define References
+  const profileRef = db.ref(`Businesses/${user.uid}/profile`);
   invRef = db.ref(`Businesses/${user.uid}/inventory`);
   pricesRef = db.ref(`Businesses/${user.uid}/prices`);
   salesRef = db.ref(`Businesses/${user.uid}/sales`);
   purchasesRef = db.ref(`Businesses/${user.uid}/purchases`);
   lastKnownRef = db.ref(`Businesses/${user.uid}/last_known_inventory`);
 
-  // 1. Load Prices
+  // A. Currency Check
+  profileRef.on("value", snapshot => {
+    const data = snapshot.val();
+    if (!data || !data.currency) {
+      document.getElementById("currencyModal").style.display = "flex";
+    } else {
+      userCurrency = data.currency.toUpperCase();
+      document.getElementById("currencyModal").style.display = "none";
+      render(); 
+      calculateFinancials();
+    }
+  });
+
+  // B. Load Prices
   pricesRef.on("value", snapshot => {
     prices = snapshot.val() || {};
     render();
   });
 
-  // 2. The "Smart" Inventory Watcher (Works even if tab was closed)
+  // C. Smart Inventory Watcher (Detect Sales/Restock)
   invRef.on("value", snapshot => {
     const currentInventory = snapshot.val() || {};
     
-    // Compare against the database's last known record, not the browser memory
     lastKnownRef.once('value', lastSnap => {
       const lastInventory = lastSnap.val() || {};
 
@@ -510,23 +545,19 @@ auth.onAuthStateChanged(user => {
         const newQty = product.quantity || 0;
 
         if (newQty < oldQty) {
-          // Sale happened!
           recordSale(id, product.name, oldQty - newQty);
         } else if (newQty > oldQty) {
-          // Stock added!
           recordPurchase(id, product.name, newQty - oldQty);
         }
       });
 
-      // Update the "Last Known" record in Firebase so we are ready for next time
       lastKnownRef.set(currentInventory);
-      
       inventory = currentInventory;
       render();
     });
   });
 
-  // 3. Keep stats updated from historical nodes
+  // D. Financial Sync
   salesRef.on("value", snapshot => {
     sales = snapshot.val() || {};
     calculateFinancials();
@@ -538,35 +569,7 @@ auth.onAuthStateChanged(user => {
   });
 });
 
-function recordSale(productId, productName, quantity) {
-  const priceData = prices[productId];
-  if (!priceData || !priceData.sellPrice) return;
-
-  const revenue = priceData.sellPrice * quantity;
-  salesRef.push({
-    productId,
-    productName,
-    quantity,
-    sellPrice: priceData.sellPrice,
-    revenue: revenue,
-    timestamp: firebase.database.ServerValue.TIMESTAMP
-  });
-}
-
-function recordPurchase(productId, productName, quantity) {
-  const priceData = prices[productId];
-  if (!priceData || !priceData.costPrice) return;
-
-  const cost = priceData.costPrice * quantity;
-  purchasesRef.push({
-    productId,
-    productName,
-    quantity,
-    costPrice: priceData.costPrice,
-    totalCost: cost,
-    timestamp: firebase.database.ServerValue.TIMESTAMP
-  });
-}
+// --- 3. Business Logic Functions ---
 
 function calculateFinancials() {
   let totalSpend = 0;
@@ -580,9 +583,60 @@ function calculateFinancials() {
     totalSpend += (parseFloat(purchase.totalCost) || 0);
   });
 
-  document.getElementById("totalSpend").textContent = `₹${totalSpend.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-  document.getElementById("totalEarned").textContent = `₹${totalEarned.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
+  // Display with Currency Code and formatting
+  document.getElementById("totalSpend").textContent = `${userCurrency} ${totalSpend.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+  document.getElementById("totalEarned").textContent = `${userCurrency} ${totalEarned.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 }
+
+function recordSale(productId, productName, quantity) {
+  const priceData = prices[productId];
+  if (!priceData || !priceData.sellPrice) return;
+
+  salesRef.push({
+    productId,
+    productName,
+    quantity,
+    sellPrice: priceData.sellPrice,
+    revenue: priceData.sellPrice * quantity,
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
+}
+
+function recordPurchase(productId, productName, quantity) {
+  const priceData = prices[productId];
+  if (!priceData || !priceData.costPrice) return;
+
+  purchasesRef.push({
+    productId,
+    productName,
+    quantity,
+    costPrice: priceData.costPrice,
+    totalCost: priceData.costPrice * quantity,
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+  });
+}
+
+function checkAndRecordInitialStock(productId, costPrice) {
+  const product = inventory[productId];
+  if (!product || !product.quantity || product.quantity <= 0) return;
+
+  // Check if we already have a purchase record to avoid double-counting
+  const alreadyRecorded = Object.values(purchases).some(p => p.productId === productId);
+
+  if (!alreadyRecorded) {
+    purchasesRef.push({
+      productId,
+      productName: product.name,
+      quantity: product.quantity,
+      costPrice: costPrice,
+      totalCost: costPrice * product.quantity,
+      type: "initial_setup",
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+  }
+}
+
+// --- 4. UI & Modal Interactions ---
 
 function render() {
   const grid = document.getElementById("productsGrid");
@@ -597,8 +651,8 @@ function render() {
       <div class="product-row">
         <div class="product-name">${product.name}</div>
         <div class="product-qty">${product.quantity} ${product.unit || 'pcs'}</div>
-        <div>${hasPrices ? `₹${priceData.costPrice}` : '<span style="color:#94a3b8;">Not set</span>'}</div>
-        <div>${hasPrices ? `₹${priceData.sellPrice}` : '<span style="color:#94a3b8;">Not set</span>'}</div>
+        <div>${hasPrices ? `${userCurrency} ${priceData.costPrice}` : '<span style="color:#94a3b8;">Not set</span>'}</div>
+        <div>${hasPrices ? `${userCurrency} ${priceData.sellPrice}` : '<span style="color:#94a3b8;">Not set</span>'}</div>
         <div>
           <button class="set-btn" onclick="openPriceModal('${id}', '${product.name}')">
             ${hasPrices ? 'Edit' : 'Set Prices'}
@@ -609,20 +663,6 @@ function render() {
   });
 }
 
-function openPriceModal(productId, productName) {
-  currentProductId = productId;
-  document.getElementById("modalTitle").textContent = productName;
-  const priceData = prices[productId] || {};
-  document.getElementById("costPriceInput").value = priceData.costPrice || "";
-  document.getElementById("sellPriceInput").value = priceData.sellPrice || "";
-  document.getElementById("priceModal").style.display = "flex";
-}
-
-function closePriceModal() {
-  document.getElementById("priceModal").style.display = "none";
-}
-
-// 1. Update savePrices to trigger a check for existing stock
 function savePrices() {
   const costPrice = parseFloat(document.getElementById("costPriceInput").value);
   const sellPrice = parseFloat(document.getElementById("sellPriceInput").value);
@@ -637,34 +677,33 @@ function savePrices() {
     sellPrice: sellPrice,
     updatedAt: firebase.database.ServerValue.TIMESTAMP
   }).then(() => {
-    // NEW: When prices are saved, check if we should record the current stock as an initial purchase
     checkAndRecordInitialStock(currentProductId, costPrice);
     showSuccess("Prices Saved!");
     closePriceModal();
   });
 }
 
-// 2. New helper function to handle existing inventory
-function checkAndRecordInitialStock(productId, costPrice) {
-  const product = inventory[productId];
-  if (!product || !product.quantity || product.quantity <= 0) return;
+function saveCurrency() {
+  const code = document.getElementById("currencyInput").value.trim().toUpperCase();
+  if (code.length < 2) return alert("Please enter a valid currency code!");
 
-  // Check if we have already recorded a purchase for this product 
-  // to avoid double-counting every time you edit a price.
-  const alreadyRecorded = Object.values(purchases).some(p => p.productId === productId);
+  db.ref(`Businesses/${auth.currentUser.uid}/profile`).update({
+    currency: code,
+    updatedAt: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => showSuccess("Currency Updated!"));
+}
 
-  if (!alreadyRecorded) {
-    const cost = costPrice * product.quantity;
-    purchasesRef.push({
-      productId,
-      productName: product.name,
-      quantity: product.quantity,
-      costPrice: costPrice,
-      totalCost: cost,
-      type: "initial_setup", // Labeling it helps with debugging
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    });
-  }
+function openPriceModal(productId, productName) {
+  currentProductId = productId;
+  document.getElementById("modalTitle").textContent = productName;
+  const priceData = prices[productId] || {};
+  document.getElementById("costPriceInput").value = priceData.costPrice || "";
+  document.getElementById("sellPriceInput").value = priceData.sellPrice || "";
+  document.getElementById("priceModal").style.display = "flex";
+}
+
+function closePriceModal() {
+  document.getElementById("priceModal").style.display = "none";
 }
 
 function showSuccess(msg) {
@@ -686,13 +725,6 @@ function downloadProducts() {
   a.href = url;
   a.download = `finance_report.csv`;
   a.click();
-}
-
-function showSuccess(msg) {
-  const popup = document.getElementById("successPopup");
-  popup.textContent = msg;
-  popup.style.display = "block";
-  setTimeout(() => popup.style.display = "none", 3000);
 }
 
 window.onclick = (e) => {
