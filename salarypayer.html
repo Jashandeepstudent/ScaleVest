@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UpScaleVest | Boss Dashboard</title>
+    <title>ScaleVest | Boss Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -46,7 +46,7 @@
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-indigo-900">UpScaleVest</h1>
+                    <h1 class="text-2xl md:text-3xl font-bold text-indigo-900">ScaleVest</h1>
                     <p class="text-sm text-gray-600">Workforce Management Platform</p>
                 </div>
                 <button id="addEmployeeBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 md:px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
@@ -70,15 +70,25 @@
             <!-- Employee cards will be inserted here -->
         </div>
 
-        <!-- Empty State -->
-        <div id="emptyState" class="glass-card rounded-2xl shadow-xl p-12 text-center hidden">
-            <div class="text-6xl mb-4">👥</div>
-            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Employees Yet</h3>
-            <p class="text-gray-500 mb-6">Add your first team member to get started</p>
-            <button class="add-first-btn bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-                Add First Employee
-            </button>
-        </div>
+<div id="emptyState" class="glass-card rounded-2xl shadow-xl p-12 text-center hidden">
+    <div class="flex justify-center mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-32 h-32 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+        </svg>
+    </div>
+    
+    <h3 class="text-2xl font-bold text-indigo-900 mb-2">No Employees Registered</h3>
+    <p class="text-gray-500 mb-8 max-w-sm mx-auto">
+No Employees yet add one to get started.
+    </p>
+    
+    <button class="add-first-btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-10 rounded-full shadow-lg transition duration-300 transform hover:scale-105 flex items-center mx-auto gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
+        </svg>
+        Add First Employee
+    </button>
+</div>
     </main>
 
     <!-- Fixed Pay Salary Button -->
@@ -124,7 +134,7 @@ const firebaseConfig = {
         function showWelcomePopup() {
             Swal.fire({
                 title: `Hi, ${bossName}! 👋`,
-                text: "Welcome to UpScaleVest. Manage your team and process salaries with ease.",
+                text: "Welcome to ScaleVest. Manage your team and process salaries with ease.",
                 icon: "success",
                 confirmButtonText: "Let's Get Started",
                 confirmButtonColor: "#4F46E5"
@@ -462,7 +472,7 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
         key: "rzp_test_1DP5mmOlF5G5ag", // Your Razorpay Key
         amount: amount * 100, // Amount in paise
         currency: "INR",
-        name: "UpScaleVest",
+        name: "ScaleVest",
         description: `Salary Payment for ${selectedEmps.length} employee(s)`,
         handler: function (response) {
             triggerConfetti();
@@ -502,7 +512,7 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
                 key: "rzp_test_1DP5mmOlF5G5ag", // Replace with YOUR Razorpay Key
                 amount: amount * 100,
                 currency: "INR",
-                name: "UpScaleVest",
+                name: "ScaleVest",
                 description: `Salary Payment for ${selectedEmployees.size} employee(s)`,
                 handler: function (response) {
                     // Trigger confetti celebration
@@ -630,7 +640,7 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(24);
             doc.setFont(undefined, 'bold');
-            doc.text('UpScaleVest', 105, 18, { align: 'center' });
+            doc.text('ScaleVest', 105, 18, { align: 'center' });
             
             doc.setFontSize(12);
             doc.setFont(undefined, 'normal');
@@ -725,7 +735,7 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
             doc.setFont(undefined, 'normal');
             doc.setTextColor(100, 116, 139);
             doc.text('This is a computer-generated receipt and does not require a signature.', 105, 285, { align: 'center' });
-            doc.text('Processed by UpScaleVest AI • Powered by Razorpay', 105, 290, { align: 'center' });
+            doc.text('Processed by ScaleVest AI • Powered by Razorpay', 105, 290, { align: 'center' });
 
             // QR Code Placeholder
             doc.setDrawColor(200, 200, 200);
@@ -734,7 +744,7 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
             doc.text('QR', 178, 281);
             doc.text('Verify', 175, 285);
 
-            doc.save(`UpScaleVest_MasterReceipt_${paymentId}.pdf`);
+            doc.save(`ScaleVest_MasterReceipt_${paymentId}.pdf`);
         };
 
         // Generate Employee Salary Slip
@@ -756,7 +766,7 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
             
             doc.setFontSize(11);
             doc.setFont(undefined, 'normal');
-            doc.text('UpScaleVest Workforce Management', 105, 35, { align: 'center' });
+            doc.text('ScaleVest Payment Management', 105, 35, { align: 'center' });
 
             // Employee Info Box
             doc.setFillColor(248, 250, 252);
@@ -868,7 +878,7 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
             doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
             doc.text('This is a computer-generated salary slip and does not require a signature.', 105, yPos + 8, { align: 'center' });
-            doc.text('Processed by UpScaleVest AI • Secured by Razorpay', 105, yPos + 15, { align: 'center' });
+            doc.text('Processed by ScaleVest AI • Secured by Razorpay', 105, yPos + 15, { align: 'center' });
 
             // QR Code Placeholder
             doc.setFillColor(255, 255, 255);
@@ -896,7 +906,35 @@ async function deleteEmployee(id) {
         Swal.fire('Deleted!', 'Employee removed successfully.', 'success');
     }
 }
+function showTerms() {
+    Swal.fire({
+        title: 'Terms & Conditions',
+        html: `
+            <div style="text-align: left; font-size: 0.85em; max-height: 300px; overflow-y: auto; color: #4b5563;">
+                <p><strong>1. Services:</strong> ScaleVest is a ecosystem to Scale. We provide best and revolutionary tools to scale and more for business , startups and investors.</p>
+                <p><strong>2. Accuracy:</strong> You are responsible for ensuring all Bank/UPI details are correct. Uniorax is not responsible for lost funds due to user error.</p>
+                <p><strong>3. Fees:</strong> Each transaction includes a ₹5 platform fee for digital processing and receipt generation.</p>
+                <p><strong>4. Compliance:</strong> All payments are subject to Razorpay’s terms of service.</p>
+            </div>
+        `,
+        confirmButtonColor: '#4F46E5'
+    });
+}
 
+function showPrivacy() {
+    Swal.fire({
+        title: 'Privacy Policy',
+        html: `
+            <div style="text-align: left; font-size: 0.85em; max-height: 300px; overflow-y: auto; color: #4b5563;">
+                <p><strong>Data Privacy:</strong> ScaleVest (Uniorax) takes your data seriously.</p>
+                <p><strong>1. Collection:</strong> We store employee names and payment details solely for payroll purposes.</p>
+                <p><strong>2. Security:</strong> Your data is protected by Google Firebase encryption.</p>
+                <p><strong>3. Third Parties:</strong> We only share data with Razorpay to process your payments.</p>
+            </div>
+        `,
+        confirmButtonColor: '#4F46E5'
+    });
+}
 // --- EDIT EMPLOYEE ---
 async function editEmployee(id) {
     const emp = employees[id];
@@ -927,5 +965,31 @@ async function editEmployee(id) {
         // Initialize on load
         window.onload = initApp;
     </script>
+
+<footer class="mt-12 pb-32 text-center">
+    <div class="container mx-auto px-4">
+        <div class="glass-card max-w-4xl mx-auto p-8 rounded-2xl shadow-lg border border-indigo-100">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                <div>
+                    <h3 class="text-xl font-bold text-indigo-900 mb-2">ScaleVest</h3>
+                    <p class="text-sm text-gray-600">The Digital Brain for Small Business Payroll. A Uniorax Product.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Support</h4>
+                    <p class="text-sm text-gray-600">📧 Support: scalevestofficial@gmail.com</p>
+                    <p class="text-sm text-gray-600">📍 India</p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-gray-800 mb-2">Legal</h4>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li><a href="javascript:void(0)" onclick="showTerms()" class="hover:text-indigo-600 transition">Terms & Conditions</a></li>
+                       <li><a href="javascript:void(0)" onclick="showPrivacy()" class="hover:text-indigo-600 transition">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <p class="mt-6 text-xs text-gray-400">© 2025 UnioraX Private Limited. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
 </body>
 </html>
