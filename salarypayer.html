@@ -192,30 +192,41 @@ grid.innerHTML = employeeList.map(([id, emp]) => `
 `).join('');
                 
                 // Add click handlers to cards
-                document.querySelectorAll('.employee-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        if (selectedEmployees.size > 0) {
-                            toggleCardSelection(card);
-                        }
-                    });
-                });
+// ... inside renderEmployees function ...
+// Add click handlers to cards
+document.querySelectorAll('.employee-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+        // FIX: Remove the (selectedEmployees.size > 0) check
+        // Also check if the user clicked the Edit or Remove buttons so we don't trigger selection
+        if (e.target.tagName === 'BUTTON' || e.target.parentElement.tagName === 'BUTTON') return;
+        
+        toggleCardSelection(card);
+    });
+});
             }
         }
 
         // Toggle Card Selection
-        function toggleCardSelection(card) {
-            const id = card.dataset.id;
-            
-            if (selectedEmployees.has(id)) {
-                selectedEmployees.delete(id);
-                card.classList.remove('selected-card');
-            } else {
-                selectedEmployees.add(id);
-                card.classList.add('selected-card');
-            }
-            
-            renderEmployees();
+function toggleCardSelection(card) {
+    const id = card.dataset.id;
+    
+    if (selectedEmployees.has(id)) {
+        selectedEmployees.delete(id);
+        card.classList.remove('selected-card');
+        // Remove the visual checkmark if it exists
+        const status = card.querySelector('.selection-status');
+        if (status) status.remove();
+    } else {
+        selectedEmployees.add(id);
+        card.classList.add('selected-card');
+        // Add a visual "Selected" indicator inside the card
+        const container = card.querySelector('.flex.flex-col.items-center');
+        if (container) {
+            container.insertAdjacentHTML('beforeend', '<div class="selection-status text-green-600 font-bold">✓ Selected</div>');
         }
+    }
+    // Do NOT call renderEmployees() here, it causes the page to reset scroll
+}
 
         // Setup Event Listeners
         function setupEventListeners() {
