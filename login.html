@@ -312,11 +312,9 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 let isAuthFlowActive = false;
 
 /* REDIRECT URL - Fixed for GitHub Pages */
-function getRedirectURL(){
-  // For production, use your actual domain
-  // For GitHub Pages: https://username.github.io/repo-name/login.html
-  const baseURL = window.location.origin + window.location.pathname;
-  return baseURL;
+function getRedirectURL() {
+  // Returns the exact current page URL without query parameters
+  return window.location.origin + window.location.pathname;
 }
 
 /* UI HELPERS */
@@ -422,13 +420,13 @@ async function emailSignin(){
   isAuthFlowActive = true;
 
   try {
-    const res = await auth.signInWithEmailAndPassword(email, password);
-    await res.user.reload();
+const cred = await auth.createUserWithEmailAndPassword(email, password);
     
-    if(!res.user.emailVerified){
-      showVerifying();
-      return;
-    }
+    // FIX: Optimized Verification Email Sending
+    await cred.user.sendEmailVerification({
+      url: getRedirectURL(),
+      handleCodeInApp: true // Changed to true for better cross-platform reliability
+    });
     
     // Redirect to main hub
     window.location.href = "mainbusinesshub.html";
