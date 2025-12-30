@@ -675,16 +675,23 @@ firebase.initializeApp({
 });
 
 const auth = firebase.auth(), db = firebase.database();
-let inventory = {}, invRef = null, recognition, isAssistantActive = false;
+let inventory = {}, prices = {}, invRef = null, recognition, isAssistantActive = false;
 let pendingAction = null; 
 
 auth.onAuthStateChanged(u => {
   if (!u) { console.log("User not logged in"); return; }
-  // Set the reference globally so saveManualProduct can see it
+  
+  // 1. Inventory Reference
   invRef = db.ref(`Businesses/${u.uid}/inventory`);
   invRef.on("value", s => { 
     inventory = s.val() || {}; 
     render(); 
+  });
+
+  // 2. Prices Reference (NEW: Needed for revenue calculation)
+  db.ref(`Businesses/${u.uid}/prices`).on("value", s => {
+    prices = s.val() || {};
+    console.log("Prices loaded:", prices);
   });
 });
 
@@ -887,11 +894,17 @@ async function processSmartAI(transcript) {
         pendingAction = { type: 'delete', id: existingEntry[0], name: pName };
         document.getElementById("viz").classList.add("confirm-mode");
     } 
-    else if (data.action === 'decrease' && existingEntry) {
-        const newVal = Math.max(0, existingEntry[1].quantity - data.qty);
-        invRef.child(existingEntry[0]).update({ quantity: newVal });
-        triggerSuccess(`Reduced ${pName}`);
-    } 
+else if (data.action === 'decrease' && existingEntry) {
+        const [id, product] = existingEntry;
+        const amount = data.qty;
+
+        // Record the sale first
+        recordSale(id, product.name, amount);
+
+        const newVal = Math.max(0, product.quantity - amount);
+        invRef.child(id).update({ quantity: newVal });
+        triggerSuccess(`Sold ${amount} ${pName}`);
+    }
     else if (data.action === 'add' || data.action === 'increase') {
         if (existingEntry) {
             invRef.child(existingEntry[0]).update({ quantity: existingEntry[1].quantity + data.qty });
@@ -936,7 +949,22 @@ function triggerSuccess(msg) {
     document.getElementById("flash").classList.remove("show");
   }, 2000);
 }
+function recordSale(productId, productName, qty) {
+    const priceData = prices[productId];
+    if (!priceData || !priceData.sellPrice) return;
 
+    const sellPrice = (typeof priceData.sellPrice === 'object') 
+        ? (priceData.sellPrice.numericValue || 0) 
+        : parseFloat(priceData.sellPrice) || 0;
+
+    db.ref(`Businesses/${auth.currentUser.uid}/sales`).push({
+        productId: productId,
+        productName: productName,
+        quantity: qty,
+        revenue: sellPrice * qty,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+}
 function render() {
   const productsDiv = document.getElementById("products");
   const query = document.getElementById("searchInput").value.toLowerCase();
@@ -1002,14 +1030,38 @@ document.getElementById("confirmQtyBtn").onclick = () => {
     const val = document.getElementById("qtyInput").value;
     if (!val || isNaN(val)) return;
 
-    const amount = Math.abs(parseInt(val));
+    const amount = Math.abs(parseFloat(val));
     const p = inventory[currentUpdateId];
-    const newQty = currentDirection > 0 ? p.quantity + amount : Math.max(0, p.quantity - amount);
+    const priceData = prices[currentUpdateId] || {};
+    const costPrice = (typeof priceData.costPrice === 'object') ? priceData.costPrice.numericValue : parseFloat(priceData.costPrice) || 0;
+    const sellPrice = (typeof priceData.sellPrice === 'object') ? priceData.sellPrice.numericValue : parseFloat(priceData.sellPrice) || 0;
 
-    invRef.child(currentUpdateId).update({ quantity: newQty })
-        .then(() => {
-            closeQtyModal();
+    if (currentDirection > 0) {
+        // INCREASING STOCK: Record a Purchase (Increases Total Spend)
+        db.ref(`Businesses/${auth.currentUser.uid}/purchases`).push({
+            productId: currentUpdateId,
+            productName: p.name,
+            quantity: amount,
+            totalCost: costPrice * amount,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
         });
+    } else {
+        // DECREASING STOCK: Record a Sale (Increases Total Revenue)
+        db.ref(`Businesses/${auth.currentUser.uid}/sales`).push({
+            productId: currentUpdateId,
+            productName: p.name,
+            quantity: amount,
+            revenue: sellPrice * amount,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
+
+    // Update the actual inventory count
+    const newQty = currentDirection > 0 ? p.quantity + amount : Math.max(0, p.quantity - amount);
+    invRef.child(currentUpdateId).update({ quantity: newQty }).then(() => {
+        closeQtyModal();
+        triggerSuccess(currentDirection > 0 ? `Added ${amount}` : `Sold ${amount}`);
+    });
 };
 
 // Close modal if user clicks outside
@@ -1287,6 +1339,5 @@ function stopScanner() {
 
 </body>
 </html>
-
 
 
