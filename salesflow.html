@@ -694,15 +694,16 @@ function getTimeRanges() {
   };
 }
 
-function calculateRevenueForPeriod(startTime, endTime) {
-  let revenue = 0;
-  Object.values(sales).forEach(sale => {
-    const saleTime = sale.timestamp;
-    if (saleTime >= startTime && saleTime < endTime) {
-      revenue += (parseFloat(sale.revenue) || 0);
-    }
-  });
-  return revenue;
+function calculateRevenueForPeriod(start, end) {
+    let total = 0;
+    if (!sales) return 0; // Guard if sales node hasn't loaded
+    
+    Object.values(sales).forEach(sale => {
+        if (sale.timestamp >= start && sale.timestamp <= end) {
+            total += (parseFloat(sale.revenue) || 0);
+        }
+    });
+    return total;
 }
 
 function calculateCostForPeriod(startTime, endTime) {
@@ -885,7 +886,6 @@ x: {
     }); 
   } 
 } 
-// FINANCIAL CALCULATIONS & UI UPDATES
 function calculateFinancials() {
     const filter = document.getElementById("timeFilter").value;
     const ranges = getTimeRanges();
@@ -895,7 +895,6 @@ function calculateFinancials() {
     let comparisonPeriod = null;
     let periodName = "";
 
-    // Determine time range and comparison period
     switch(filter) {
         case "today":
             startTime = ranges.today.start;
@@ -905,6 +904,7 @@ function calculateFinancials() {
         case "yesterday":
             startTime = ranges.yesterday.start;
             endTime = ranges.yesterday.end;
+            periodName = "vs Day Before";
             break;
         case "week":
             startTime = ranges.thisWeek.start;
@@ -923,21 +923,35 @@ function calculateFinancials() {
             break;
     }
 
-    // Calculate Lifetime Spend
+    // --- 1. SPEND CALCULATION ---
     let totalSpend = 0;
-    Object.values(purchases).forEach(purchase => {
-        totalSpend += (parseFloat(purchase.totalCost) || 0);
+    const productsWithHistory = new Set();
+    if (typeof purchases !== 'undefined' && purchases) {
+        Object.values(purchases).forEach(purchase => {
+            totalSpend += (parseFloat(purchase.totalCost) || 0);
+            productsWithHistory.add(purchase.productId);
+        });
+    }
+    Object.entries(inventory).forEach(([id, product]) => {
+        if (!productsWithHistory.has(id)) {
+            const priceData = (typeof prices !== 'undefined') ? prices[id] : null;
+            if (priceData && priceData.costPrice) {
+                const costValue = (typeof priceData.costPrice === 'object') 
+                    ? (priceData.costPrice.numericValue || 0) 
+                    : parseFloat(priceData.costPrice) || 0;
+                totalSpend += costValue * (parseFloat(product.quantity) || 0);
+            }
+        }
     });
 
-    // Current Period Stats
+    // --- 2. REVENUE & PROFIT ---
     const currentRevenue = calculateRevenueForPeriod(startTime, endTime);
     const currentCost = calculateCostForPeriod(startTime, endTime);
     const grossProfit = currentRevenue - currentCost;
     
-    // Format Numbers
     const formatter = new Intl.NumberFormat(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-    // Update Metric Cards
+    // Update UI Cards
     document.getElementById("totalSpend").textContent = `${userCurrency} ${formatter.format(totalSpend)}`;
     document.getElementById("totalEarned").textContent = `${userCurrency} ${formatter.format(currentRevenue)}`;
     
@@ -945,17 +959,20 @@ function calculateFinancials() {
     profitEl.textContent = `${userCurrency} ${formatter.format(Math.abs(grossProfit))}`;
     profitEl.style.color = grossProfit >= 0 ? "#1e293b" : "#ef4444";
 
-    // Margin Gauge Logic
+    // --- 3. FIX: MARGIN GAUGE LOGIC ---
+    // This section makes the Profit/Loss bar move and update text
     const marginLabel = document.getElementById("marginLabel");
     const marginValue = document.getElementById("marginValue");
     const marginFill = document.getElementById("marginFill");
     
     let marginPercent = 0;
     if (grossProfit >= 0) {
+        // Profit Margin: (Profit / Revenue) * 100
         marginPercent = currentRevenue > 0 ? (grossProfit / currentRevenue) * 100 : 0;
         marginLabel.textContent = "Profit Margin";
         marginFill.className = "margin-fill margin-profit";
     } else {
+        // Loss Margin: (Loss / Cost) * 100
         marginPercent = currentCost > 0 ? (Math.abs(grossProfit) / currentCost) * 100 : 0;
         marginLabel.textContent = "Loss Margin";
         marginFill.className = "margin-fill margin-loss";
@@ -964,30 +981,23 @@ function calculateFinancials() {
     marginValue.textContent = `${marginPercent.toFixed(1)}%`;
     marginFill.style.width = `${Math.min(marginPercent, 100)}%`;
 
-    // Comparison Badge Logic
+    // --- 4. COMPARISON LOGIC ---
     const earnedCompEl = document.getElementById("earnedComparison");
-    const perfCompEl = document.getElementById("performanceComparison");
     const perfIndicator = document.getElementById("performanceIndicator");
 
     if (comparisonPeriod && filter !== 'all') {
         const previousRevenue = calculateRevenueForPeriod(comparisonPeriod.start, comparisonPeriod.end);
         const comparison = calculateComparison(currentRevenue, previousRevenue);
-        
         earnedCompEl.innerHTML = renderComparisonBadge(comparison, periodName);
-        
-        // Performance Indicator Card
         perfIndicator.textContent = comparison.direction === 'up' ? 'Growing' : comparison.direction === 'down' ? 'Declining' : 'Stable';
         perfIndicator.style.color = comparison.direction === 'up' ? '#10b981' : comparison.direction === 'down' ? '#ef4444' : '#1e293b';
     } else {
-        earnedCompEl.innerHTML = '';
-        perfIndicator.textContent = "—";
+        earnedCompEl.innerHTML = '<span style="color:#94a3b8; font-size:12px;">No comparison</span>';
+        perfIndicator.textContent = "Stable";
     }
 
-    // Update Chart
-    renderPerformanceChart(filter);
+    if (typeof renderPerformanceChart === 'function') renderPerformanceChart(filter);
 }
-
-// FIREBASE AUTH & SYNC
 auth.onAuthStateChanged(user => {
     if (!user) return;
 
@@ -999,17 +1009,18 @@ auth.onAuthStateChanged(user => {
 
     currencyRef.on("value", snapshot => {
         const data = snapshot.val();
-        if (!data || !data.currency) {
-            document.getElementById("currencyModal").style.display = "flex";
-        } else {
+        if (data && data.currency) {
             userCurrency = data.currency.toUpperCase();
             document.getElementById("currencyModal").style.display = "none";
             calculateFinancials();
+        } else {
+            document.getElementById("currencyModal").style.display = "flex";
         }
     });
 
-    pricesRef.on("value", snapshot => { prices = snapshot.val() || {}; render(); });
-    invRef.on("value", snapshot => { inventory = snapshot.val() || {}; render(); });
+    // These listeners ensure the dashboard updates instantly when inventory or sales change
+    pricesRef.on("value", snapshot => { prices = snapshot.val() || {}; render(); calculateFinancials(); });
+    invRef.on("value", snapshot => { inventory = snapshot.val() || {}; render(); calculateFinancials(); });
     salesRef.on("value", snapshot => { sales = snapshot.val() || {}; calculateFinancials(); });
     purchasesRef.on("value", snapshot => { purchases = snapshot.val() || {}; calculateFinancials(); });
 });
