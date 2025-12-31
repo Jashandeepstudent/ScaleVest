@@ -917,34 +917,35 @@
         }
 
         function updateHeatmap() {
-            document.querySelectorAll('.grid-cell').forEach(cell => {
-                cell.classList.remove('heatmap-hot', 'heatmap-cold');
-            });
+    // Clear all existing colors first
+    const tiles = document.querySelectorAll('.tile');
+    tiles.forEach(t => {
+        t.style.background = 'rgba(255, 255, 255, 0.05)';
+        t.classList.remove('hot', 'cold');
+    });
 
-            if (!heatmapEnabled) return;
+    if (!heatmapEnabled) return;
 
-            const salesMap = new Map();
-            productsData.forEach(product => {
-                const key = `${product.x}-${product.y}`;
-                salesMap.set(key, product.sales || 0);
-            });
+    productsData.forEach(product => {
+        const tileIndex = (product.y * 10) + product.x;
+        const tile = tiles[tileIndex];
 
-            const maxSales = Math.max(...Array.from(salesMap.values()), 1);
-            const threshold = maxSales * 0.5;
-
-            document.querySelectorAll('.grid-cell').forEach(cell => {
-                const x = parseInt(cell.dataset.x);
-                const y = parseInt(cell.dataset.y);
-                const key = `${x}-${y}`;
-                const sales = salesMap.get(key) || 0;
-                
-                if (sales > threshold) {
-                    cell.classList.add('heatmap-hot');
-                } else if (sales > 0) {
-                    cell.classList.add('heatmap-cold');
-                }
-            });
+        if (tile) {
+            // FIX: Only show Orange if sales are actually high (> 50)
+            // Show Blue if sales are low but existing (> 0)
+            // Keep Gray if sales are 0
+            if (product.sales > 50) {
+                tile.style.background = 'rgba(255, 136, 0, 0.6)'; // Orange (Hot)
+                tile.classList.add('hot');
+            } else if (product.sales > 0) {
+                tile.style.background = 'rgba(0, 212, 255, 0.4)'; // Blue (Cold/Selling)
+                tile.classList.add('cold');
+            } else {
+                tile.style.background = 'rgba(100, 100, 100, 0.2)'; // Gray (No Sales)
+            }
         }
+    });
+}
 
         function showToast(title, message) {
             const toast = document.getElementById('toast');
@@ -1108,7 +1109,7 @@ const storedX = inventory.x;
                                 x: coords.x,
                                 y: coords.y,
                                 stock: parseInt(inventory?.quantity || inventory || 0),
-                                sales: Math.floor(Math.random() * 100),
+                                sales: inventory.sold || 0,
                                 origin: business.name || 'My Shop',
                                 sustainability: 75 + Math.floor(Math.random() * 20),
                                 story: getProductDescription(inventory.name || productKey),
