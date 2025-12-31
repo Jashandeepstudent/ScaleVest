@@ -506,47 +506,55 @@ transform: rotateZ(-45deg) rotateX(-60deg);
         .toggle-switch.active .toggle-slider {
             transform: translateX(24px);
         }
-/* Mobile Optimization */
+/* Master Mobile Scaling Fix */
 @media (max-width: 768px) {
-    .controls {
-        width: 140px; /* Slimmer menu */
-        min-width: unset;
-        top: 10px;
-        left: 10px;
-        padding: 10px;
-        font-size: 12px;
+    /* 1. Global UI Shrink */
+    .controls, .inventory-leaderboard, .story-card {
+        transform: scale(0.7); /* Shrinks all UIs to 70% size */
+        transform-origin: top left;
+        width: 180px !important;
+        min-width: unset !important;
     }
 
-    .controls h3 { font-size: 14px; margin-bottom: 8px; }
+    /* 2. Reposition Leaderboard for Scale */
+    .inventory-leaderboard {
+        transform-origin: top right;
+        top: 10px;
+        right: 10px;
+    }
 
-    /* Hide less important controls on mobile to save space */
-    .control-group label, .recipe-mode, #rotateX, #rotateZ {
+    /* 3. Controls Layout */
+    .controls {
+        top: 10px;
+        left: 10px;
+        padding: 8px;
+    }
+
+    /* 4. Hide bulky elements on small screens */
+    .control-group label, .recipe-mode, input[type="range"] {
         display: none; 
     }
 
     .search-bar {
-        padding: 8px;
-        font-size: 12px;
-        margin-bottom: 5px;
+        font-size: 11px;
+        padding: 6px;
+        margin-bottom: 2px;
     }
 
-    .inventory-leaderboard {
-        width: 140px; /* Slimmer leaderboard */
-        top: 10px;
-        right: 10px;
-        padding: 10px;
+    .leaderboard-title { font-size: 11px; }
+    .stock-item { font-size: 10px; padding: 2px 0; }
+
+    /* 5. Shrink the Story Card specifically */
+    .story-card {
+        width: 90vw !important;
+        transform: translate(-50%, -50%) scale(0.8) !important;
+        transform-origin: center;
+        padding: 15px;
     }
 
-    .leaderboard-title { font-size: 12px; }
-    .stock-item { font-size: 11px; padding: 4px 0; }
-
-    /* Adjust the 3D floor scale for smaller screens */
-    .perspective-container {
-        perspective: 1200px;
-    }
-    
+    /* 6. Scale the 3D World so it fits the narrow screen */
     .world {
-        transform: rotateX(var(--world-rotateX)) rotateZ(var(--world-rotateZ)) scale(0.6);
+        transform: rotateX(var(--world-rotateX)) rotateZ(var(--world-rotateZ)) scale(0.5);
     }
 }
         .stock-badge {
