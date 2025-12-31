@@ -1143,11 +1143,11 @@ window.openStoryCard = async function(product) {
     const overlay = document.getElementById('overlay');
     const content = document.getElementById('storyContent');
 
-    // 1. Show Loading State immediately with a futuristic spinner
+    // 1. Show Loading State immediately
     content.innerHTML = `
         <div style="text-align: center; padding: 40px;">
             <div class="loading-spinner"></div>
-            <p style="margin-top: 20px; color: var(--neon-primary); font-family: monospace; letter-spacing: 2px;">
+            <p style="margin-top: 20px; color: var(--neon-primary); font-family: monospace; letter-spacing: 2px; animation: pulse 1.5s infinite;">
                 AI ENGINE: ANALYZING ${product.name.toUpperCase()}...
             </p>
         </div>
@@ -1157,54 +1157,56 @@ window.openStoryCard = async function(product) {
     storyCard.classList.add('active');
 
     try {
-        // 2. Fetch real-world data from your secure Vercel Gemini API
-        // This ensures your GEMINI_KEY remains hidden on the backend
+        // 2. Fetch from your Vercel Backend
         const response = await fetch(`/api/gemini?productName=${encodeURIComponent(product.name)}`);
+        
+        if (!response.ok) throw new Error('AI Server Offline');
+        
         const aiData = await response.json();
 
-        // 3. Render the full combined content with AI insights
+        // 3. Render full content with AI Data
         content.innerHTML = `
-            <h2 style="text-shadow: 0 0 15px var(--neon-primary);">${product.icon} ${product.name}</h2>
+            <h2 style="text-shadow: 0 0 15px var(--neon-primary); font-size: 28px;">${product.icon} ${product.name}</h2>
             
             <div class="story-section">
                 <h3>📖 AI Product Journey</h3>
-                <p style="line-height: 1.6; font-style: italic; color: #eee;">"${aiData.description || product.story}"</p>
+                <p style="line-height: 1.6; font-style: italic; color: #eee; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                    "${aiData.description || product.story}"
+                </p>
                 <p style="margin-top: 10px;"><strong>🌍 Verified Origin:</strong> <span style="color: var(--ice-blue);">${aiData.origin || product.origin}</span></p>
             </div>
 
             <div class="story-section">
                 <h3>🌱 Sustainability Score</h3>
-                <div class="sustainability-score">
-                    <span style="font-size: 20px; font-weight: bold;">${aiData.score || product.sustainability}/100</span>
-                    <div class="score-bar">
-                        <div class="score-fill" style="width: ${aiData.score || product.sustainability}%; 
-                             background: ${(aiData.score || product.sustainability) > 80 ? 'var(--neon-accent)' : 'var(--neon-secondary)'}">
+                <div class="sustainability-score" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <span style="font-size: 20px; font-weight: bold; color: var(--neon-primary);">${aiData.score || product.sustainability}/100</span>
+                    <div class="score-bar" style="height: 10px; background: #333; border-radius: 5px; margin-top: 10px; overflow: hidden;">
+                        <div class="score-fill" style="width: ${aiData.score || product.sustainability}%; height: 100%; transition: width 1s ease-out;
+                             background: ${(aiData.score || product.sustainability) > 80 ? 'var(--neon-accent)' : 'var(--neon-secondary)'};
+                             box-shadow: 0 0 10px ${(aiData.score || product.sustainability) > 80 ? 'var(--neon-accent)' : 'var(--neon-secondary)'};">
                         </div>
                     </div>
                 </div>
-                <p style="margin-top: 10px; font-size: 13px; color: #aaa;">
-                    ${(aiData.score || product.sustainability) > 85 ? 'Excellent environmental impact ♻️' : 
-                      (aiData.score || product.sustainability) > 70 ? 'Good sustainability practices 🌿' : 
-                      'Standard industry footprint 🌍'}
-                </p>
             </div>
 
-            <div class="story-section" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="story-section" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,243,255,0.05); padding: 15px; border-radius: 12px;">
                 <div>
-                    <h3>📦 Stock Status</h3>
-                    <p style="font-size: 18px;">${product.stock} units available ${product.stock < 5 ? '⚠️' : '✅'}</p>
+                    <h3 style="margin: 0; font-size: 14px; opacity: 0.7;">📦 Stock Status</h3>
+                    <p style="font-size: 20px; margin: 5px 0 0 0;">${product.stock} units ${product.stock < 5 ? '⚠️' : '✅'}</p>
                 </div>
                 <div style="text-align: right;">
-                    <h3>💰 Current Price</h3>
-                    <p style="font-size: 28px; color: var(--neon-accent); font-weight: bold;">${product.price}</p>
+                    <h3 style="margin: 0; font-size: 14px; opacity: 0.7;">💰 Current Price</h3>
+                    <p style="font-size: 32px; color: var(--neon-accent); font-weight: bold; margin: 5px 0 0 0;">${product.price}</p>
                 </div>
             </div>
         `;
     } catch (error) {
         console.error("Gemini AI Error:", error);
-        // Fallback to local data if the AI fails or API key is missing
+        // Fallback to local data if the AI fails
         content.innerHTML = `
-            <p style="color: var(--neon-red); text-align: center; margin-bottom: 10px;">⚠️ AI Offline - Showing Cached Data</p>
+            <div style="background: rgba(255,0,0,0.1); border: 1px solid var(--neon-red); padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                <p style="color: var(--neon-red); margin: 0; font-size: 13px;">⚠️ AI ENGINE OFFLINE - SHOWING CACHED DATA</p>
+            </div>
             <h2>${product.icon} ${product.name}</h2>
             <div class="story-section">
                 <h3>📖 Product Journey</h3>
@@ -1212,12 +1214,12 @@ window.openStoryCard = async function(product) {
                 <p style="margin-top: 10px;"><strong>Sourced from:</strong> ${product.origin}</p>
             </div>
             <div class="story-section">
-                <h3>💰 Price: ${product.price}</h3>
+                <h3>💰 Price: <span style="color: var(--neon-accent)">${product.price}</span></h3>
+                <h3>📦 Stock: ${product.stock} units</h3>
             </div>
         `;
     }
 };
-
         window.closeStoryCard = function() {
             document.getElementById('storyCard').classList.remove('active');
             document.getElementById('overlay').classList.remove('active');
