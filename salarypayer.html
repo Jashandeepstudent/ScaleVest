@@ -569,7 +569,7 @@ transform: rotateZ(-45deg) rotateX(-60deg);
 /* Optimized Mobile View - No longer hiding controls */
 @media (max-width: 768px) {
     .controls {
-        width: 180px; /* Slightly wider to fit text */
+        width: width: 45%; max-width: 180px;
         min-width: unset;
         top: 10px;
         left: 10px;
@@ -790,6 +790,7 @@ transform: rotateZ(-45deg) rotateX(-60deg);
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
         // Firebase Configuration
         // TODO: For production, add your API key and enable Firebase Security Rules
@@ -1009,77 +1010,92 @@ const outOfStockItems = products.filter(p => !p.stock || p.stock === 0 || p.stoc
         }
 
         // Listen to Firebase data
-        function listenToFirebase() {
-            const businessesRef = ref(database, '/Businesses');
-            
-            onValue(businessesRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) {
-                    console.error('No data available');
-                    showToast('⚠️ No Data', 'No businesses found in database');
-                    document.getElementById('loading').style.display = 'none';
-                    return;
-                }
+function listenToFirebase() {
+    const auth = getAuth();
 
-                const newProducts = [];
-                let productIndex = 0;
-
-                Object.keys(data).forEach(businessId => {
-                    const business = data[businessId];
-                    
-                    if (business.inventory && business.prices) {
-                        Object.keys(business.inventory).forEach(productKey => {
-                            const coords = generateCoordinates(productIndex, 
-                                Object.keys(business.inventory).length * Object.keys(data).length);
-                            
-                            const inventory = business.inventory[productKey];
-                            const price = business.prices[productKey];
-                            
-                            const product = {
-                                id: `${businessId}-${productKey}`,
-                               name: (business.sales && Object.values(business.sales).find(s => s.productId === productKey)?.productName) || productKey.replace(/[^a-zA-Z]/g, ' ').trim().toUpperCase(),
-                                icon: getProductIcon(productKey),
-                                price: `$${parseFloat(business.prices?.[productKey]?.numericValue || business.prices?.[productKey]?.sellPrice?.numericValue || 0).toFixed(2)}`,
-                                priceValue: parseFloat(price || 0),
-                                x: coords.x,
-                                y: coords.y,
-                                stock: parseInt(inventory?.quantity || inventory || 0),
-                                sales: Math.floor(Math.random() * 100), // Mock sales data
-                                origin: business.name || 'Local Business',
-                                sustainability: Math.floor(60 + Math.random() * 40),
-                                story: `Quality product from ${business.name || 'our partners'}.`,
-                                businessId: businessId
-                            };
-
-                            // Check for price changes
-                            const cacheKey = product.id;
-                            if (priceCache[cacheKey] && priceCache[cacheKey] !== product.priceValue) {
-                                showToast('💰 Price Updated!', 
-                                    `${product.name} price changed to ${product.price}`);
-                            }
-                            priceCache[cacheKey] = product.priceValue;
-
-                            newProducts.push(product);
-                            productIndex++;
-                        });
-                    }
-                });
-
-                productsData = newProducts;
-                renderShop(productsData);
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('statusIndicator').classList.add('connected');
-                
-                if (newProducts.length > 0) {
-                    showToast('✅ Connected', `Loaded ${newProducts.length} products from Inventory`);
-                }
-            }, (error) => {
-                console.error('Firebase error:', error);
-                showToast('❌ Connection Error', error.message);
-                document.getElementById('loading').style.display = 'none';
-            });
+    // 1. Monitor the Authentication state
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            // If not logged in, send them to login page
+            window.location.href = "login.html"; 
+            return;
         }
+
+        const userId = user.uid;
+        // 2. Point directly to THIS specific user's business data
+        const businessRef = ref(database, `Businesses/${userId}`);
+        
+        // 3. Listen for live updates on this user's data ONLY
+        onValue(businessRef, (snapshot) => {
+            const business = snapshot.val();
+            
+            if (!business) {
+                console.error('No business data available for this user');
+                showToast('⚠️ No Data', 'Your inventory folder is empty.');
+                document.getElementById('loading').style.display = 'none';
+                return;
+            }
+
+            const newProducts = [];
+            let productIndex = 0;
+
+            // 4. Process the Inventory items
+            if (business.inventory) {
+                const productKeys = Object.keys(business.inventory);
+                
+                productKeys.forEach(productKey => {
+                    const inventory = business.inventory[productKey];
+                    const priceData = business.prices?.[productKey];
+                    
+                    // Generate coordinates based on the count of items
+                    const coords = generateCoordinates(productIndex, productKeys.length);
+                    
+                    const product = {
+                        id: productKey,
+                        // Priority 1: Use 'name' field from database. Priority 2: Clean the ID string.
+                        name: inventory.name || productKey.replace(/[^a-zA-Z]/g, ' ').trim().toUpperCase(),
+                        icon: getProductIcon(inventory.name || productKey),
+                        // Drills down into your specific price structure
+                        price: `$${parseFloat(priceData?.numericValue || priceData?.sellPrice?.numericValue || 0).toFixed(2)}`,
+                        priceValue: parseFloat(priceData?.numericValue || 0),
+                        x: coords.x,
+                        y: coords.y,
+                        stock: parseInt(inventory?.quantity || inventory || 0),
+                        sales: Math.floor(Math.random() * 100), // Placeholder for Heatmap
+                        origin: business.name || 'My Shop',
+                        sustainability: 85,
+                        story: `Product tracked for user: ${userId}`,
+                        businessId: userId
+                    };
+
+                    // Price change notification logic
+                    if (priceCache[product.id] && priceCache[product.id] !== product.priceValue) {
+                        showToast('💰 Price Updated!', `${product.name} changed to ${product.price}`);
+                    }
+                    priceCache[product.id] = product.priceValue;
+
+                    newProducts.push(product);
+                    productIndex++;
+                });
+            }
+
+            // 5. Update the Global state and UI
+            productsData = newProducts;
+            renderShop(productsData);
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('statusIndicator').classList.add('connected');
+            
+            if (newProducts.length > 0) {
+                showToast('✅ Connected', `Loaded ${newProducts.length} items from your inventory`);
+            }
+        }, (error) => {
+            console.error('Firebase error:', error);
+            showToast('❌ Connection Error', error.message);
+            document.getElementById('loading').style.display = 'none';
+        });
+    });
+}
 
         // Open story card with animation
         window.openStoryCard = function(product) {
