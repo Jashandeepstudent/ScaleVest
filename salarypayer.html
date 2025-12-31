@@ -192,7 +192,67 @@ transform: rotateZ(-45deg) rotateX(-60deg);
     z-index: 1000;
     box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
 }
+/* Add this to your <style> section */
+@media (max-width: 768px) {
+    .controls {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        padding: 10px;
+        font-size: 12px;
+        background: rgba(0, 0, 0, 0.85); /* Darker for better legibility */
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
 
+    .control-group {
+        margin-bottom: 5px;
+    }
+
+    .control-group input[type="range"] {
+        width: 100%; /* Make sliders full width */
+    }
+}
+@media (max-width: 768px) {
+    #leaderboard {
+        max-height: 200px;
+        overflow-y: auto; /* Scroll if list is long */
+        width: 150px;
+        padding: 8px;
+        font-size: 11px;
+    }
+
+    #leaderboard h3 {
+        font-size: 13px;
+    }
+}
+@media (max-width: 600px) {
+    .story-card {
+        width: 90%; /* Scale to fit phone screen */
+        max-width: 350px;
+        padding: 15px;
+        border-radius: 12px;
+    }
+
+    .story-card h2 {
+        font-size: 18px;
+    }
+
+    .story-card p {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    /* Make the action buttons larger for thumb-tapping */
+    .story-card button {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-top: 10px;
+    }
+}
 .leaderboard-title {
     color: #ff4444;
     font-size: 16px;
@@ -506,47 +566,47 @@ transform: rotateZ(-45deg) rotateX(-60deg);
         .toggle-switch.active .toggle-slider {
             transform: translateX(24px);
         }
-/* Master Mobile Scaling Fix - UPDATED */
+/* Mobile Optimization */
 @media (max-width: 768px) {
-    /* 1. Reset Positioning for Scales */
     .controls {
-        transform: scale(0.75); /* Slightly larger for better tap targets */
-        transform-origin: top left;
-        left: 5px !important; /* Push it away from the extreme edge */
-        top: 5px !important;
-        width: 160px !important;
-        min-width: unset !important;
+        width: 140px; /* Slimmer menu */
+        min-width: unset;
+        top: 10px;
+        left: 10px;
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .controls h3 { font-size: 14px; margin-bottom: 8px; }
+
+    /* Hide less important controls on mobile to save space */
+    .control-group label, .recipe-mode, #rotateX, #rotateZ {
+        display: none; 
+    }
+
+    .search-bar {
+        padding: 8px;
+        font-size: 12px;
+        margin-bottom: 5px;
     }
 
     .inventory-leaderboard {
-        transform: scale(0.75);
-        transform-origin: top right;
-        right: 5px !important; /* Push it away from the right edge */
-        top: 5px !important;
-        width: 160px !important;
-        min-width: unset !important;
+        width: 140px; /* Slimmer leaderboard */
+        top: 10px;
+        right: 10px;
+        padding: 10px;
     }
 
-    /* 2. Fix inner elements that take up too much vertical space */
-    .controls h3 {
-        font-size: 14px !important;
-        margin-bottom: 5px !important;
-    }
+    .leaderboard-title { font-size: 12px; }
+    .stock-item { font-size: 11px; padding: 4px 0; }
 
-    .control-group {
-        margin-bottom: 8px !important;
+    /* Adjust the 3D floor scale for smaller screens */
+    .perspective-container {
+        perspective: 1200px;
     }
-
-    /* Hide the rotation sliders - they are too bulky for phones */
-    .control-group label:not(.search-label), 
-    input[type="range"],
-    .recipe-mode {
-        display: none !important; 
-    }
-
-    /* 3. Scale the world more aggressively so UI has room */
+    
     .world {
-        transform: rotateX(var(--world-rotateX)) rotateZ(var(--world-rotateZ)) scale(0.4) !important;
+        transform: rotateX(var(--world-rotateX)) rotateZ(var(--world-rotateZ)) scale(0.6);
     }
 }
         .stock-badge {
