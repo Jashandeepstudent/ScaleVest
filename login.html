@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Sign in — ScaleVest</title>
+<title>Sign in – ScaleVest</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,11 +41,8 @@ body::before{
   background:#fff;
   font-weight:600;
   cursor:pointer;
-  color:#000;
-  font-size:14px;
 }
 .auth-btn img{width:18px;height:18px}
-.auth-btn:hover{background:#f9fafb}
 
 /* MODALS */
 .modal-overlay,.email-overlay{
@@ -69,7 +65,6 @@ body::before{
   background:rgba(255,255,255,.15);
   backdrop-filter:blur(20px);
 }
-.email-glass h3{margin-top:0;color:#fff}
 .email-glass input{
   width:100%;
   padding:12px;
@@ -78,9 +73,7 @@ body::before{
   border:none;
   background:rgba(255,255,255,.2);
   color:#fff;
-  font-size:14px;
 }
-.email-glass input::placeholder{color:rgba(255,255,255,.6)}
 .email-glass button{
   width:100%;
   padding:12px;
@@ -90,16 +83,13 @@ body::before{
   color:#fff;
   font-weight:600;
   cursor:pointer;
-  font-size:14px;
 }
-.email-glass button:hover{background:#1d4ed8}
 
 ul{
   margin:6px 0 14px 14px;
   padding:0;
   font-size:12px;
   line-height:1.6;
-  color:#fff;
 }
 
 .modal{
@@ -112,32 +102,25 @@ ul{
 }
 .modal-left{
   width:50%;
-  background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background:url("scalevestauth.jpg") center/cover no-repeat;
   position:relative;
 }
 .modal-left::after{
   content:"";
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,.25);
+  background:rgba(0,0,0,.55);
 }
 .overlay-text{
   position:relative;
   z-index:2;
   padding:42px;
-  color:#fff;
 }
 .modal-right{
   width:50%;
   padding:40px;
   color:#000;
 }
-.modal-right h3{margin-top:0;font-size:24px}
-.modal-right p{font-size:14px;color:#6b7280}
-#authSwitch{cursor:pointer}
-#authSwitch span{color:#2563eb;font-weight:600}
-#authSwitch span:hover{text-decoration:underline}
-
 .divider{
   text-align:center;
   margin:18px 0;
@@ -169,17 +152,6 @@ ul{
   margin:0 auto 14px;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-
-.error-msg{
-  background:rgba(239,68,68,.1);
-  border:1px solid rgba(239,68,68,.3);
-  color:#ef4444;
-  padding:10px;
-  border-radius:8px;
-  font-size:13px;
-  margin-bottom:12px;
-  display:none;
-}
 </style>
 </head>
 
@@ -194,34 +166,25 @@ ul{
     <div class="modal-left">
       <div class="overlay-text">
         <h2>Verified • Secure • Scalable</h2>
-        <p>Join thousands of businesses scaling with confidence</p>
       </div>
     </div>
 
     <div class="modal-right">
       <h3 id="authTitle">New to ScaleVest?</h3>
-      <p id="authSubtitle">Create an account to get started</p>
+      <p id="authSubtitle">Create an account</p>
 
       <p id="authSwitch">
         Already have an account?
         <span onclick="switchToSigninUI()">Sign in</span>
       </p>
 
-      <button class="auth-btn" onclick="googleLogin()">
-        <span>🔵</span> Continue with Google
-      </button>
-      <button class="auth-btn" onclick="emailAuthHandler()">
-        <span>✉️</span> Continue with Email
-      </button>
+      <button class="auth-btn" onclick="googleLogin()">Continue with Google</button>
+      <button class="auth-btn" onclick="emailAuthHandler()">Continue with Email</button>
 
       <div class="divider"><span>or</span></div>
 
-      <button class="auth-btn" onclick="appleLogin()">
-        <span>🍎</span> Continue with Apple
-      </button>
-      <button class="auth-btn" onclick="facebookLogin()">
-        <span>📘</span> Continue with Facebook
-      </button>
+      <button class="auth-btn" onclick="appleLogin()">Continue with Apple</button>
+      <button class="auth-btn" onclick="facebookLogin()">Continue with Facebook</button>
     </div>
   </div>
 </div>
@@ -230,18 +193,14 @@ ul{
 <div class="email-overlay" id="signupModal">
   <div class="email-glass">
     <h3>Create account</h3>
-    <div class="error-msg" id="signupError"></div>
-    <input id="signupEmail" type="email" placeholder="Email" autocomplete="email">
-    <input id="signupPassword" type="password" placeholder="Password" autocomplete="new-password" oninput="checkPasswordRules()">
+    <input id="signupEmail" placeholder="Email">
+    <input id="signupPassword" type="password" placeholder="Password" oninput="checkPasswordRules()">
     <ul>
       <li id="rule_length">❌ At least 6 characters</li>
       <li id="rule_number">❌ Contains a number</li>
       <li id="rule_special">❌ Contains a special character</li>
     </ul>
     <button onclick="emailSignup()">Create account</button>
-    <p style="text-align:center;font-size:12px;margin-top:12px;color:#fff;">
-      <span style="cursor:pointer" onclick="closeModals()">← Back</span>
-    </p>
   </div>
 </div>
 
@@ -249,9 +208,9 @@ ul{
 <div class="email-overlay" id="signinModal">
   <div class="email-glass">
     <h3>Sign in</h3>
-    <div class="error-msg" id="signinError"></div>
-    <input id="signinEmail" type="email" placeholder="Email" autocomplete="email">
-    <input id="signinPassword" type="password" placeholder="Password" autocomplete="current-password">
+
+    <input id="signinEmail" placeholder="Email">
+    <input id="signinPassword" type="password">
 
     <button onclick="emailSignin()">Sign in</button>
 
@@ -263,34 +222,21 @@ ul{
 
     <div class="divider"><span>or</span></div>
 
-    <button class="auth-btn" onclick="googleLogin()">
-      <span>🔵</span> Continue with Google
-    </button>
-    <button class="auth-btn" onclick="appleLogin()">
-      <span>🍎</span> Continue with Apple
-    </button>
-    <button class="auth-btn" onclick="facebookLogin()">
-      <span>📘</span> Continue with Facebook
-    </button>
-    
-    <p style="text-align:center;font-size:12px;margin-top:12px;color:#fff;">
-      <span style="cursor:pointer" onclick="closeModals()">← Back</span>
-    </p>
+    <button class="auth-btn" onclick="googleLogin()">Continue with Google</button>
+    <button class="auth-btn" onclick="appleLogin()">Continue with Apple</button>
+    <button class="auth-btn" onclick="facebookLogin()">Continue with Facebook</button>
   </div>
 </div>
+
 
 <!-- VERIFY -->
 <div class="email-overlay" id="verifyingModal">
   <div class="email-glass" style="text-align:center">
     <div class="loader"></div>
-    <h3>Verify your email</h3>
-    <p>We sent a verification link to your email. Click the link to continue.</p>
-    <button onclick="checkVerificationStatus()">I've verified my email</button>
-    <button onclick="resendVerification()" style="background:#6b7280;margin-top:8px">Resend email</button>
-    <p id="resendMsg" style="font-size:12px;color:#fff"></p>
-    <p style="text-align:center;font-size:12px;margin-top:12px;color:#fff;">
-      <span style="cursor:pointer" onclick="signOutAndClose()">← Sign out</span>
-    </p>
+    <h3>Verifying your email</h3>
+    <p>Check your inbox and click the link</p>
+    <button onclick="resendVerification()">Resend email</button>
+    <p id="resendMsg"></p>
   </div>
 </div>
 
@@ -298,7 +244,6 @@ ul{
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <script>
-// Initialize Firebase
 firebase.initializeApp({
   apiKey:"AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
   authDomain:"scalevest-163a0.firebaseapp.com",
@@ -308,316 +253,119 @@ firebase.initializeApp({
 const auth = firebase.auth();
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-// Track if we're in the middle of auth flow
-let isAuthFlowActive = false;
-
-/* REDIRECT URL - Fixed for GitHub Pages */
-function getRedirectURL() {
-  // Returns the exact current page URL without query parameters
-  return window.location.origin + window.location.pathname;
+/* 🔥 GITHUB PAGES SAFE REDIRECT */
+function getRedirectURL(){
+  return window.location.origin +
+    window.location.pathname.replace(/\/[^\/]*$/, "/") +
+    "login.html";
 }
 
-/* UI HELPERS */
-function emailAuthHandler(){ 
-  signupModal.style.display="flex";
-  signupError.style.display="none";
-}
-
+/* UI */
+function emailAuthHandler(){ signupModal.style.display="flex"; }
 function switchToSigninUI(){
   signupModal.style.display="none";
   signinModal.style.display="flex";
-  signinError.style.display="none";
-  authTitle.innerText = "Welcome back";
-  authSubtitle.innerText = "Sign in to your account";
 }
-
-function closeModals(){
-  signupModal.style.display="none";
-  signinModal.style.display="none";
-  verifyingModal.style.display="none";
-}
-
-function showVerifying(){
-  signupModal.style.display="none";
-  signinModal.style.display="none";
-  verifyingModal.style.display="flex";
-  resendMsg.innerText = "";
-}
-
 function checkPasswordRules(){
   const p = signupPassword.value;
   rule_length.innerText=(p.length>=6?"✅":"❌")+" At least 6 characters";
   rule_number.innerText=(/\d/.test(p)?"✅":"❌")+" Contains a number";
   rule_special.innerText=(/[!@#$%^&*]/.test(p)?"✅":"❌")+" Contains a special character";
 }
-
 function validPassword(p){
   return p.length>=6 && /\d/.test(p) && /[!@#$%^&*]/.test(p);
 }
-
-function showError(elementId, message){
-  const el = document.getElementById(elementId);
-  el.innerText = message;
-  el.style.display = "block";
+function showVerifying(){
+  signupModal.style.display="none";
+  signinModal.style.display="none";
+  verifyingModal.style.display="flex";
 }
 
-/* EMAIL SIGNUP - Fixed */
-async function emailSignup(){
-  const email = signupEmail.value.trim();
-  const password = signupPassword.value;
+/* SIGNUP */
+function emailSignup(){
+  if(!validPassword(signupPassword.value))
+    return alert("Password does not meet requirements");
 
-  if(!email){
-    showError('signupError', 'Please enter your email');
-    return;
-  }
-
-  if(!validPassword(password)){
-    showError('signupError', 'Password does not meet requirements');
-    return;
-  }
-
-  isAuthFlowActive = true;
-
-  try {
-    const cred = await auth.createUserWithEmailAndPassword(email, password);
-    
-    // Send verification email
+  auth.createUserWithEmailAndPassword(
+    signupEmail.value,
+    signupPassword.value
+  )
+  .then(async cred=>{
     await cred.user.sendEmailVerification({
-      url: getRedirectURL(),
-      handleCodeInApp: false
+      url: getRedirectURL()
     });
 
+    // ❌ DO NOT SIGN OUT
     showVerifying();
-  } catch(err) {
-    isAuthFlowActive = false;
-    
-    if(err.code === "auth/email-already-in-use"){
-      showError('signupError', 'Account already exists. Please sign in.');
-      setTimeout(() => {
-        signupModal.style.display="none";
-        switchToSigninUI();
-      }, 2000);
-    } else if(err.code === "auth/invalid-email"){
-      showError('signupError', 'Please enter a valid email address');
-    } else if(err.code === "auth/weak-password"){
-      showError('signupError', 'Password is too weak');
-    } else {
-      showError('signupError', err.message);
+  })
+  .catch(err=>{
+    if(err.code==="auth/email-already-in-use"){
+      alert("Account already exists. Please sign in.");
+      switchToSigninUI();
+      signupModal.style.display="none";
+    }else{
+      alert(err.message);
     }
-  }
+  });
 }
 
-/* EMAIL SIGNIN - Fixed */
-async function emailSignin(){
-  const email = signinEmail.value.trim();
-  const password = signinPassword.value;
+function forgotPassword(){
+  const email = signinEmail.value;
+  if(!email) return alert("Enter your email first");
 
-  if(!email || !password){
-    showError('signinError', 'Please enter email and password');
-    return;
-  }
-
-  isAuthFlowActive = true;
-
-  try {
-const cred = await auth.createUserWithEmailAndPassword(email, password);
-    
-    // FIX: Optimized Verification Email Sending
-    await cred.user.sendEmailVerification({
-      url: getRedirectURL(),
-      handleCodeInApp: true // Changed to true for better cross-platform reliability
+  auth.sendPasswordResetEmail(email)
+    .then(()=>{
+      alert("Password reset email sent");
+    })
+    .catch(err=>{
+      alert(err.message);
     });
-    
-    // Redirect to main hub
-    window.location.href = "mainbusinesshub.html";
-  } catch(err) {
-    isAuthFlowActive = false;
-    
-    if(err.code === "auth/user-not-found"){
-      showError('signinError', 'No account found with this email');
-    } else if(err.code === "auth/wrong-password"){
-      showError('signinError', 'Incorrect password');
-    } else if(err.code === "auth/invalid-email"){
-      showError('signinError', 'Please enter a valid email');
-    } else if(err.code === "auth/too-many-requests"){
-      showError('signinError', 'Too many attempts. Try again later.');
-    } else {
-      showError('signinError', err.message);
-    }
-  }
 }
 
-/* FORGOT PASSWORD */
-async function forgotPassword(){
-  const email = signinEmail.value.trim();
-  
-  if(!email){
-    showError('signinError', 'Please enter your email first');
-    return;
-  }
-
-  try {
-    await auth.sendPasswordResetEmail(email);
-    showError('signinError', '✅ Password reset email sent! Check your inbox.');
-  } catch(err) {
-    if(err.code === "auth/user-not-found"){
-      showError('signinError', 'No account found with this email');
-    } else {
-      showError('signinError', err.message);
+/* SIGNIN */
+function emailSignin(){
+  auth.signInWithEmailAndPassword(signinEmail.value, signinPassword.value)
+  .then(async res=>{
+    await res.user.reload();
+    if(!res.user.emailVerified){
+      showVerifying();
+      await auth.signOut();
+      return;
     }
-  }
+    location.href="mainbusinesshub.html";
+  }).catch(e=>alert(e.message));
 }
 
-/* CHECK VERIFICATION STATUS */
-async function checkVerificationStatus(){
-  const user = auth.currentUser;
-  if(!user){
-    resendMsg.innerText = "❌ Please sign in again";
-    return;
-  }
-
-  try {
-    await user.reload();
-    
-    if(user.emailVerified){
-      resendMsg.innerText = "✅ Verified! Redirecting...";
-      setTimeout(() => {
-        window.location.href = "mainbusinesshub.html";
-      }, 1000);
-    } else {
-      resendMsg.innerText = "❌ Not verified yet. Check your email.";
-    }
-  } catch(err) {
-    resendMsg.innerText = "❌ Error checking status";
-  }
-}
-
-/* RESEND VERIFICATION */
+/* RESEND */
 async function resendVerification(){
   const user = auth.currentUser;
-  
-  if(!user){
-    resendMsg.innerText = "❌ Please sign in again";
-    return;
-  }
-
-  try {
-    await user.sendEmailVerification({
-      url: getRedirectURL(),
-      handleCodeInApp: false
-    });
-    resendMsg.innerText = "✅ Verification email sent again!";
-  } catch(err) {
-    if(err.code === "auth/too-many-requests"){
-      resendMsg.innerText = "⏰ Too many requests. Wait a moment.";
-    } else {
-      resendMsg.innerText = "❌ " + err.message;
-    }
-  }
+  if(!user) return resendMsg.innerText="Sign in again";
+  await user.sendEmailVerification({ url:getRedirectURL() });
+  resendMsg.innerText="✅ Email sent again";
 }
 
-/* SIGN OUT */
-async function signOutAndClose(){
-  await auth.signOut();
-  closeModals();
-  isAuthFlowActive = false;
+/* SOCIAL */
+function googleLogin(){
+  auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+  .then(()=>location.href="mainbusinesshub.html");
+}
+function facebookLogin(){
+  auth.signInWithPopup(new firebase.auth.FacebookAuthProvider())
+  .then(()=>location.href="mainbusinesshub.html");
+}
+function appleLogin(){
+  auth.signInWithPopup(new firebase.auth.OAuthProvider("apple.com"))
+  .then(()=>location.href="mainbusinesshub.html");
 }
 
-/* GOOGLE LOGIN */
-async function googleLogin(){
-  isAuthFlowActive = true;
-  
-  try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithPopup(provider);
-    window.location.href = "mainbusinesshub.html";
-  } catch(err) {
-    isAuthFlowActive = false;
-    alert("Google sign-in failed: " + err.message);
-  }
-}
-
-/* FACEBOOK LOGIN */
-async function facebookLogin(){
-  isAuthFlowActive = true;
-  
-  try {
-    const provider = new firebase.auth.FacebookAuthProvider();
-    // Request additional permissions if needed
-    provider.addScope('email');
-    
-    await auth.signInWithPopup(provider);
-    window.location.href = "mainbusinesshub.html";
-  } catch(err) {
-    isAuthFlowActive = false;
-    
-    if(err.code === "auth/account-exists-with-different-credential"){
-      alert("An account already exists with this email using a different sign-in method.");
-    } else if(err.code === "auth/popup-blocked"){
-      alert("Popup was blocked. Please allow popups for this site.");
-    } else if(err.code === "auth/popup-closed-by-user"){
-      // User closed popup, just return
-      return;
-    } else {
-      alert("Facebook sign-in failed: " + err.message);
-    }
-  }
-}
-
-/* APPLE LOGIN */
-async function appleLogin(){
-  isAuthFlowActive = true;
-  
-  try {
-    const provider = new firebase.auth.OAuthProvider('apple.com');
-    // Request additional scopes
-    provider.addScope('email');
-    provider.addScope('name');
-    
-    await auth.signInWithPopup(provider);
-    window.location.href = "mainbusinesshub.html";
-  } catch(err) {
-    isAuthFlowActive = false;
-    
-    if(err.code === "auth/account-exists-with-different-credential"){
-      alert("An account already exists with this email using a different sign-in method.");
-    } else if(err.code === "auth/popup-blocked"){
-      alert("Popup was blocked. Please allow popups for this site.");
-    } else if(err.code === "auth/popup-closed-by-user"){
-      // User closed popup, just return
-      return;
-    } else {
-      alert("Apple sign-in failed: " + err.message);
-    }
-  }
-}
-
-/* AUTH STATE LISTENER - Fixed to prevent loops */
-auth.onAuthStateChanged(async user => {
-  // Don't interfere if we're actively in an auth flow
-  if(isAuthFlowActive) return;
-  
-  if(!user){
-    // User is not signed in, show main modal
-    return;
-  }
-
-  try {
-    await user.reload();
-    
-    if(user.emailVerified){
-      // User is verified, redirect to hub
-      window.location.href = "mainbusinesshub.html";
-    } else {
-      // User exists but not verified
-      // Only show verification modal if they used email/password
-      const providerData = user.providerData[0];
-      if(providerData && providerData.providerId === "password"){
-        showVerifying();
-      }
-    }
-  } catch(err) {
-    console.error("Error in auth state:", err);
+/* AUTO LOGIN AFTER VERIFY */
+auth.onAuthStateChanged(async user=>{
+  if(!user) return;
+  await user.reload();
+  if(user.emailVerified){
+    location.href="mainbusinesshub.html";
+  }else{
+    showVerifying();
   }
 });
 </script>
