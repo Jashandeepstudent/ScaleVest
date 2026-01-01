@@ -298,7 +298,112 @@ h2 {
   background: #6d28d9;
   transform: scale(1.05);
 }
+/* Container for the buttons to keep them aligned and modern */
+.button-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
 
+/* Base style for the big modern buttons */
+.btn-modern {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  height: 52px; /* Bigger height for modern feel */
+}
+
+/* The Bulk Upload Button - Neon Indigo Gradient */
+.btn-bulk {
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  color: white;
+  box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+}
+
+.btn-bulk:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+  filter: brightness(1.1);
+}
+
+/* The Download Button - Glassmorphism Style */
+.btn-download {
+  background: #ffffff;
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.btn-download:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Active state for both */
+.btn-modern:active {
+  transform: translateY(0) scale(0.98);
+}
+/* Container for modal buttons */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Success/Save Button - Vibrant Emerald */
+.btn-save-all {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+}
+
+.btn-save-all:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.4);
+  filter: brightness(1.05);
+}
+
+/* Cancel Button - Soft Slate/Glass */
+.btn-cancel {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-cancel:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+/* Special styling for the Modal Table Inputs to match the beauty */
+#bulkTableBody input {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.2s;
+  outline: none;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+#bulkTableBody input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
 /* Modal */
 .modal {
   position: fixed;
@@ -531,17 +636,32 @@ h2 {
 </div>
 
 <div class="products-wrapper">
-  <div class="products-header">
-    <h3>📦 Product Pricing</h3>
-    <button class="btn-download" onclick="downloadProducts()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline; margin-right:6px;">
+ <div class="products-header" style="margin-bottom: 25px;">
+  <h3 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 0;">📦 Inventory Manager</h3>
+  
+  <div class="button-group">
+    
+    <button class="btn-modern btn-bulk" onclick="openTableUpload()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="12" y1="18" x2="12" y2="12"></line>
+        <line x1="9" y1="15" x2="15" y2="15"></line>
+      </svg>
+      Bulk Price Editor
+    </button>
+
+    <button class="btn-modern btn-download" onclick="downloadProducts()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:10px;">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
         <polyline points="7 10 12 15 17 10"/>
         <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
-      Download Report
+     Download Report
     </button>
+    
   </div>
+</div>
   <div class="grid-header">
     <div>Product Name</div>
     <div>Quantity</div>
@@ -597,10 +717,6 @@ h2 {
       <button class="btn-save" style="grid-column: span 2;" onclick="saveCurrency()">Save & Continue</button>
     </div>
   </div>
-</div>
-    <button class="exchange-btn" onclick="saveAllPrices()" style="margin-top: 20px;">
-        💾 Save All Changes
-    </button>
 </div>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -1052,7 +1168,66 @@ function render() {
         `;
     });
 }
+// 1. Function to open the window and show your products
+function openTableUpload() {
+    const tbody = document.getElementById('bulkTableBody');
+    tbody.innerHTML = ''; // Clear old list
+    
+    // We loop through the 'inventory' variable already in your script
+    Object.entries(inventory).forEach(([id, product]) => {
+        const pData = prices[id] || {};
+        const tr = document.createElement('tr');
+        
+        tr.innerHTML = `
+            <td style="padding:10px; border:1px solid #e2e8f0;">${product.name}</td>
+            <td style="padding:10px; border:1px solid #e2e8f0; text-align:center;">${product.quantity}</td>
+            <td style="padding:10px; border:1px solid #e2e8f0;">
+                <input type="number" class="bulk-cost" data-id="${id}" value="${pData.costPrice || ''}" placeholder="0" style="width:100%; padding:5px;">
+            </td>
+            <td style="padding:10px; border:1px solid #e2e8f0;">
+                <input type="number" class="bulk-sell" data-id="${id}" value="${pData.sellPrice || ''}" placeholder="0" style="width:100%; padding:5px;">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 
+    document.getElementById('tableUploadModal').style.display = 'flex';
+}
+
+// 2. Function to close the window
+function closeTableUpload() {
+    document.getElementById('tableUploadModal').style.display = 'none';
+}
+
+// 3. The "Save All" Logic
+async function saveAllPrices() {
+    const costInputs = document.querySelectorAll('.bulk-cost');
+    const sellInputs = document.querySelectorAll('.bulk-sell');
+    const updates = {};
+    const uid = auth.currentUser.uid;
+
+    costInputs.forEach((input, index) => {
+        const productId = input.getAttribute('data-id');
+        const costVal = input.value;
+        const sellVal = sellInputs[index].value;
+
+        // Only update if the user actually typed a number
+        if (costVal !== "" && sellVal !== "") {
+            updates[`Businesses/${uid}/prices/${productId}/costPrice`] = parseFloat(costVal);
+            updates[`Businesses/${uid}/prices/${productId}/sellPrice`] = parseFloat(sellVal);
+            updates[`Businesses/${uid}/prices/${productId}/updatedAt`] = firebase.database.ServerValue.TIMESTAMP;
+        }
+    });
+
+    // Send everything to Firebase in one single update (Bulk Update)
+    try {
+        await db.ref().update(updates);
+        showSuccess("✅ All Prices Updated!");
+        closeTableUpload();
+    } catch (error) {
+        alert("Error saving: " + error.message);
+    }
+}
 // MODAL CONTROLS
 function openPriceModal(productId, productName) {
     currentProductId = productId;
@@ -1116,16 +1291,24 @@ async function downloadProducts() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // 1. DYNAMICALLY GET BUSINESS NAME
-    // We try to get the name from your Firebase data, otherwise use a default
-    let businessName = "My Business"; 
+    let businessName = "My Business";
+    let userCurrency = "USD"; // Default fallback
+
+    // 1. DYNAMICALLY GET BUSINESS NAME & CURRENCY
     try {
-        const nameSnapshot = await db.ref(`BusinessOwners/${auth.currentUser.uid}/businessName`).once('value');
-        if (nameSnapshot.exists()) {
-            businessName = nameSnapshot.val().toUpperCase();
+        const ownerSnapshot = await db.ref(`BusinessOwners/${auth.currentUser.uid}`).once('value');
+        if (ownerSnapshot.exists()) {
+            const data = ownerSnapshot.val();
+            // Fetch businessName
+            businessName = data.businessName ? data.businessName.toUpperCase() : "MY BUSINESS";
+            
+            // Fetch National Currency code (e.g., "INR")
+            if (data["National Currency"] && data["National Currency"].currency) {
+                userCurrency = data["National Currency"].currency;
+            }
         }
     } catch (e) {
-        console.log("Could not fetch business name, using default.");
+        console.error("Error fetching business data:", e);
     }
 
     // 2. SET HEADER (BUSINESS NAME)
@@ -1150,18 +1333,19 @@ async function downloadProducts() {
         const cost = pData.costPrice ? (pData.costPrice.numericValue || pData.costPrice) : 0;
         const sell = pData.sellPrice ? (pData.sellPrice.numericValue || pData.sellPrice) : 0;
 
+        // Use the dynamic currency variable instead of '$'
         tableRows.push([
             product.name,
             product.quantity,
-            `$${parseFloat(cost).toFixed(2)}`,
-            `$${parseFloat(sell).toFixed(2)}`
+            `${userCurrency} ${parseFloat(cost).toFixed(2)}`,
+            `${userCurrency} ${parseFloat(sell).toFixed(2)}`
         ]);
     });
 
     // 5. GENERATE TABLE
     doc.autoTable({
         startY: 40,
-        head: [['Product Name', 'Quantity', 'Cost Price', 'Sales Price']],
+        head: [['Product Name', 'Quantity', `Cost (${userCurrency})`, `Sales (${userCurrency})` ]],
         body: tableRows,
         theme: 'striped',
         headStyles: { fillColor: [0, 243, 255], textColor: [0, 0, 0] },
@@ -1174,15 +1358,50 @@ async function downloadProducts() {
         }
     });
 
-    // 6. DYNAMIC FILENAME (e.g., AppleStore_ProductReport_1.pdf)
-    const sanitizedName = businessName.replace(/\s+/g, '_'); // Replace spaces with underscores
+    // 6. DYNAMIC FILENAME
+    const sanitizedName = businessName.replace(/\s+/g, '_');
     const fileName = `${sanitizedName}_ProductReport_${reportCounter}.pdf`;
     
     doc.save(fileName);
 
-    // 7. INCREMENT COUNTER FOR NEXT DOWNLOAD
+    // 7. INCREMENT COUNTER
     reportCounter++;
 }
 </script>
+<div id="tableUploadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:white; width:90%; max-width:900px; padding:30px; border-radius:15px; max-height:85vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2>Bulk Price Manager</h2>
+            <button onclick="closeTableUpload()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
+        </div>
+        
+        <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+            <thead style="background:#f8fafc;">
+                <tr>
+                    <th style="padding:12px; border:1px solid #e2e8f0; text-align:left;">Product</th>
+                    <th style="padding:12px; border:1px solid #e2e8f0;">Stock</th>
+                    <th style="padding:12px; border:1px solid #e2e8f0;">Cost Price</th>
+                    <th style="padding:12px; border:1px solid #e2e8f0;">Selling Price</th>
+                </tr>
+            </thead>
+            <tbody id="bulkTableBody">
+                </tbody>
+        </table>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn-modern btn-cancel" onclick="closeTableUpload()">
+                Cancel
+            </button>
+<button class="btn-modern btn-save-all" onclick="saveAllPrices()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Save All Changes
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
