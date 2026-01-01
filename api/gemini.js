@@ -18,8 +18,27 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Product name is required" });
     }
 
-    const prompt = `Provide origin, a 2-sentence story, and a sustainability score (1-100) for "${productName}". 
-    Respond ONLY with raw JSON. Format: {"origin": "...", "description": "...", "score": 85}`;
+const prompt = `
+You are an AI supply-chain analyst.
+
+For the product "${productName}", generate:
+1) A realistic sourcing origin
+2) A short, engaging 2–3 sentence product story (quality, usage, sourcing)
+3) A sustainability score from 1–100 based on sourcing, materials, and environmental impact
+
+IMPORTANT:
+- Explain the reasoning behind the sustainability score inside the description text
+- Keep the tone professional and premium
+- Respond ONLY with raw JSON (no markdown, no extra text)
+
+JSON format:
+{
+  "origin": "Country / Region",
+  "description": "2–3 sentence story including why the sustainability score makes sense",
+  "score": 75
+}
+`;
+
 
     try {
         const response = await fetch(
