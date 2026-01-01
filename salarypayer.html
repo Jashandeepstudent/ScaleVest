@@ -1135,6 +1135,13 @@ const storedX = inventory.x;
         }
 
 window.openStoryCard = async function(product) {
+console.log("STORY CARD PRODUCT:", product);
+
+if (!product) {
+  alert("Invalid product data");
+  return;
+}
+
     const storyCard = document.getElementById('storyCard');
     const overlay = document.getElementById('overlay');
     const content = document.getElementById('storyContent');
@@ -1154,8 +1161,15 @@ window.openStoryCard = async function(product) {
 
     try {
         // 2. Fetch from your Vercel Backend
-const productName = product?.name || "Unknown Product";
-const response = await fetch(`/api/gemini?productName=${encodeURIComponent(productName)}`);
+const productName =
+  typeof product === "string"
+    ? product
+    : product?.name || "Unknown Product";
+
+const response = await fetch(
+  `/api/gemini?productName=${encodeURIComponent(productName)}`
+);
+
 
         
         if (!response.ok) throw new Error('AI Server Offline');
