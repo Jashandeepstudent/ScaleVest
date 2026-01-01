@@ -1308,21 +1308,27 @@
             }
         };
 
-        function applyTimeTravelPredictions() {
-            productsData = JSON.parse(JSON.stringify(originalProductsData));
-            
-            productsData.forEach(product => {
-                const salesVelocity = product.sales;
-                const predictedStock = product.stock - salesVelocity;
-                product.predictedStock = Math.max(0, predictedStock);
-                
-                if (product.predictedStock === 0 && salesVelocity > 0) {
-                    product.sales = product.sales * 1.5;
-                }
-            });
-            
-            renderShop(productsData);
+function applyTimeTravelPredictions() {
+    productsData = JSON.parse(JSON.stringify(originalProductsData));
+    
+    productsData.forEach(product => {
+        // IMPROVED LOGIC:
+        // Current sales are treated as the 'Burn Rate' for 24 hours.
+        const burnRate = product.sales; 
+        const predictedStock = product.stock - burnRate;
+        
+        product.predictedStock = Math.max(0, predictedStock);
+        
+        // CRITICAL CHECK: 
+        // If sales are high enough that they equal or exceed current stock, 
+        // it MUST be flagged as predicted out.
+        if (product.sales >= product.stock && product.sales > 0) {
+            product.predictedStock = 0;
         }
+    });
+    
+    renderShop(productsData);
+}
 
         window.openStoryCard = async function(product) {
             const storyCard = document.getElementById('storyCard');
@@ -1396,39 +1402,53 @@
                     </div>
                     ` : ''}
                 `;
-            } catch (error) {
-                console.error("AI Error:", error);
-                const displayStock = product.predictedStock !== undefined ? product.predictedStock : product.stock;
-                
-                content.innerHTML = `
-                    <div style="background: rgba(255,0,0,0.1); border: 1px solid var(--neon-red); padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
-                        <p style="color: var(--neon-red); margin: 0; font-size: 13px;">⚠️ AI ENGINE OFFLINE - SHOWING CACHED DATA</p>
-                    </div>
-                    <h2>${product.icon} ${product.name}</h2>
-                    
-                    ${timeTravelMode ? `
-                    <div style="background: rgba(157, 0, 255, 0.2); border: 2px solid #9d00ff; padding: 12px; border-radius: 10px; margin-bottom: 20px;">
-                        <p style="color: #9d00ff; font-weight: bold; margin: 0; font-size: 14px;">⏰ TIME TRAVEL MODE: 24-HOUR PROJECTION</p>
-                    </div>
-                    ` : ''}
-                    
-                    <div class="story-section">
-                        <h3>📖 Product Journey</h3>
-                        <p>${product.story}</p>
-                        <p style="margin-top: 10px;"><strong>Sourced from:</strong> ${product.origin}</p>
-                    </div>
-                    <div class="story-section">
-                        <h3>💰 Price: <span style="color: var(--neon-accent)">${product.price}</span></h3>
-                        <h3>📦 ${timeTravelMode ? 'Predicted' : 'Current'} Stock: ${displayStock} units</h3>
-                        ${timeTravelMode && product.predictedStock !== undefined ? `
-                        <p style="font-size: 12px; color: #999;">
-                            Current: ${product.stock} | Sales: ${product.sales}/day | Predicted: ${product.predictedStock}
-                        </p>
-                        ` : ''}
-                    </div>
-                `;
-            }
-        };
+           } catch (error) {
+    console.error("AI Error:", error);
+    
+    // NEW LOGIC: Calculate if the item is "Velocity Sold Out"
+    const displayStock = timeTravelMode ? Math.max(0, product.stock - product.sales) : product.stock;
+    const isVelocityOut = timeTravelMode && (product.sales >= product.stock);
+    const finalDisplayStock = isVelocityOut ? 0 : displayStock;
+
+    content.innerHTML = `
+        <div style="background: rgba(255,0,0,0.1); border: 1px solid var(--neon-red); padding: 10px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+            <p style="color: var(--neon-red); margin: 0; font-size: 13px;">⚠️ AI ENGINE OFFLINE - SHOWING CACHED DATA</p>
+        </div>
+        
+        <h2>${product.icon} ${product.name}</h2>
+        
+        ${timeTravelMode ? `
+        <div style="background: rgba(157, 0, 255, 0.2); border: 2px solid #9d00ff; padding: 12px; border-radius: 10px; margin-bottom: 20px;">
+            <p style="color: #9d00ff; font-weight: bold; margin: 0; font-size: 14px;">⏰ TIME TRAVEL MODE: 24-HOUR PROJECTION</p>
+        </div>
+        ` : ''}
+        
+        <div class="story-section">
+            <h3>📖 Product Journey</h3>
+            <p>${product.story}</p>
+            <p style="margin-top: 10px;"><strong>Sourced from:</strong> ${product.origin}</p>
+        </div>
+
+        <div class="story-section">
+            <h3 style="margin-bottom:10px;">💰 Price: <span style="color: var(--neon-accent)">${product.price}</span></h3>
+            
+            <h3 style="color: ${isVelocityOut ? 'var(--neon-red)' : 'inherit'}">
+                📦 ${timeTravelMode ? 'Predicted' : 'Current'} Stock: ${finalDisplayStock} units
+            </h3>
+
+            ${timeTravelMode ? `
+            <div style="margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 12px;">
+                <p style="color: #bbb;">Current Inventory: ${product.stock}</p>
+                <p style="color: #ff4444;">Sales Velocity: ${product.sales} units / day</p>
+                <hr style="margin: 5px 0; border: 0; border-top: 1px solid #444;">
+                <p style="font-weight: bold; color: ${isVelocityOut ? 'var(--neon-red)' : 'var(--neon-accent)'}">
+                    ${isVelocityOut ? '❌ PREDICTION: SOLD OUT' : '✅ PREDICTION: STABLE'}
+                </p>
+            </div>
+            ` : ''}
+        </div>
+    `;
+}
 
         window.closeStoryCard = function() {
             document.getElementById('storyCard').classList.remove('active');
