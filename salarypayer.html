@@ -472,7 +472,11 @@
             color: #000;
             transform: rotate(90deg);
         }
-
+.grid-cell.heatmap-hot {
+    background: radial-gradient(circle, rgba(255, 165, 0, 0.6) 0%, rgba(255, 165, 0, 0.2) 100%);
+    border-color: #ffa500;
+    box-shadow: 0 0 40px #ffa500;
+}
         .controls {
             position: fixed;
             top: 30px;
@@ -523,13 +527,7 @@
             cursor: pointer;
             box-shadow: 0 0 10px var(--neon-primary);
         }
-/* Update this section in your <style> tag */
-.grid-cell.heatmap-hot {
-    background: radial-gradient(circle, rgba(255, 165, 0, 0.6) 0%, rgba(255, 165, 0, 0.2) 100%);
-    border-color: #ffa500; /* Orange */
-    box-shadow: 0 0 40px #ffa500;
-    animation: heatPulse 2s infinite;
-}
+
         input[type="range"]::-moz-range-thumb {
             width: 18px;
             height: 18px;
@@ -972,34 +970,31 @@
             };
         }
 
-        function updateHeatmap() {
-            const cells = document.querySelectorAll('.grid-cell');
-            
-            // Reset all cells first
-            cells.forEach(cell => {
-                cell.classList.remove('heatmap-hot', 'heatmap-cold');
-                cell.style.background = 'rgba(255, 255, 255, 0.03)'; // Back to default
-            });
+       function updateHeatmap() {
+    const cells = document.querySelectorAll('.grid-cell');
+    cells.forEach(cell => {
+        cell.classList.remove('heatmap-hot', 'heatmap-cold');
+        cell.style.background = 'rgba(255, 255, 255, 0.03)';
+    });
 
-            if (!heatmapEnabled) return;
+    if (!heatmapEnabled) return;
 
-productsData.forEach(product => {
-    const cellIndex = (product.y * 10) + product.x;
-    const cell = cells[cellIndex];
+    productsData.forEach(product => {
+        const cellIndex = (product.y * 10) + product.x;
+        const cell = cells[cellIndex];
 
-    if (cell) {
-        // If sales are 50 or more, make it HOT
-        if (product.sales >= 50) {
-            cell.classList.add('heatmap-hot');
-        } 
-        // Even if sales are 0, show COLD so the tile still changes color
-        else {
-            cell.classList.add('heatmap-cold');
+        if (cell) {
+            // Use Number() to make sure "51" is treated as 51
+            const salesCount = Number(product.sales); 
+
+            if (salesCount >= 50) { 
+                cell.classList.add('heatmap-hot'); // This will trigger the Orange/Red glow
+            } else if (salesCount > 0) {
+                cell.classList.add('heatmap-cold'); // This is your Blue glow
+            }
         }
-    }
-});
-        }
-        
+    });
+}
         // Expose to window for onclick handlers
         window.toggleHeatmap = function() {
             heatmapEnabled = !heatmapEnabled;
