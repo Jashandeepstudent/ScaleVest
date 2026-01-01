@@ -1167,7 +1167,7 @@ const productName =
     : product?.name || "Unknown Product";
 
 const response = await fetch(
-  `/api/gemini?productName=${encodeURIComponent(productName)}`
+  `https://ai-inventory-pro-sigma.vercel.app/api/gemini?productName=${encodeURIComponent(productName)}`
 );
 
 
