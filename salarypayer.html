@@ -1072,7 +1072,6 @@
                     window.location.href = "login.html"; 
                     return;
                 }
-loadSalesTransactions();
 
                 currentUserId = user.uid;
                 const businessRef = ref(database, `Businesses/${currentUserId}`);
@@ -1141,16 +1140,9 @@ const storedX = inventory.x;
                 });
             });
         }
-let salesTransactions = [];
-
-function loadSalesTransactions() {
-  if (!currentUserId) return;
-
-  const salesRef = ref(database, `Businesses/${currentUserId}/sales`);
-
-  onValue(salesRef, (snapshot) => {
-    salesTransactions = Object.values(snapshot.val() || {});
-  });
+if (!product || !product.name) {
+  alert("Invalid product data");
+  return;
 }
 
 window.openStoryCard = async function(product) {
@@ -1173,7 +1165,9 @@ window.openStoryCard = async function(product) {
 
     try {
         // 2. Fetch from your Vercel Backend
-        const response = await fetch(`/api/gemini?productName=${encodeURIComponent(product.name)}`);
+const productName = product?.name || "Unknown Product";
+const response = await fetch(`/api/gemini?productName=${encodeURIComponent(productName)}`);
+
         
         if (!response.ok) throw new Error('AI Server Offline');
         
@@ -1277,50 +1271,6 @@ window.toggleHeatmap = function() {
         showToast('❄️ Heatmap Off', 'Returning to standard view');
     }
 };
-window.openTimeTravel = async function () {
-  document.getElementById("timeTravelModal").classList.remove("hidden");
-  const box = document.getElementById("timeTravelContent");
-  box.innerHTML = "Analyzing data...";
-
-  const velocities = calculateSalesVelocity(salesTransactions);
-  const payload = { salesHistory: salesTransactions };
-
-  let ai = {};
-  try {
-    ai = await runTimeTravelAI(payload);
-  } catch {
-    ai = {};
-  }
-
-  box.innerHTML = velocities.map(v => {
-    const product = productsData.find(p => p.id === v.productId);
-    if (!product) return "";
-
-    const predicted = Math.max(
-      0,
-      Math.round(product.stock - v.velocityPerHour * 24)
-    );
-
-    return `
-      <div class="p-3 rounded-xl border border-cyan-400/30
-           ${predicted === 0 ? 'bg-red-900/40' : 'bg-slate-800'}">
-        <div class="font-bold text-cyan-300">${product.name}</div>
-        <div class="text-xs text-gray-300">
-          Current: ${product.stock} |
-          Velocity: ${v.velocityPerHour.toFixed(2)}/hr |
-          <span class="font-bold ${
-            predicted === 0 ? 'text-red-400' : 'text-green-400'
-          }">
-            Predicted (24h): ${predicted}
-          </span>
-        </div>
-      </div>
-    `;
-  }).join("");
-};
-window.closeTimeTravel = function () {
-  document.getElementById("timeTravelModal").classList.add("hidden");
-};
 
         document.getElementById('rotateX').addEventListener('input', (e) => {
             const value = e.target.value;
@@ -1341,64 +1291,9 @@ window.closeTimeTravel = function () {
         document.getElementById('overlay').addEventListener('click', () => {
             window.closeStoryCard();
         });
-function calculateSalesVelocity(transactions) {
-  const now = Date.now();
-  const map = {};
-
-  transactions.forEach(tx => {
-    if (!map[tx.productId]) {
-      map[tx.productId] = { qty: 0, first: tx.timestamp };
-    }
-    map[tx.productId].qty += tx.quantity;
-    map[tx.productId].first = Math.min(map[tx.productId].first, tx.timestamp);
-  });
-
-  return Object.entries(map).map(([pid, data]) => {
-    const hours = Math.max((now - data.first) / 3600000, 1);
-    return {
-      productId: pid,
-      velocityPerHour: data.qty / hours
-    };
-  });
-}
-async function runTimeTravelAI(payload) {
-  const res = await fetch(
-    "https://ai-inventory-pro-sigma.vercel.app/api/gemini",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    }
-  );
-  return res.json();
-}
 
         initFloor();
         listenToFirebase();
     </script>
-
-<div id="timeTravelModal"
-     class="hidden fixed inset-0 bg-black/80 z-[5000] flex items-center justify-center">
-
-  <div class="bg-slate-900 border border-cyan-400 rounded-2xl
-              w-[90%] max-w-2xl p-6 relative text-white">
-    <button onclick="closeTimeTravel()"
-            class="absolute top-3 right-4 text-xl">✖</button>
-
-    <h2 class="text-2xl text-cyan-400 mb-4">
-      🔮 Inventory Time Travel
-    </h2>
-
-    <div id="timeTravelContent"
-         class="space-y-3 text-sm text-gray-200">
-      Analyzing data...
-    </div>
-
-    <div class="mt-4 text-xs text-red-400 text-center">
-      ITS JUST A PREDICTION BY AN AI; WE DO NOT ASSURE THIS WILL HAPPEN.
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
