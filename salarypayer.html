@@ -1236,14 +1236,14 @@ node.style.transform = `translateZ(${floorZ}px)`;
                     <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
                         <button onclick="openInCardQty('${product.id}', 'decrease')" 
                             style="background:var(--neon-red); border:none; border-radius:6px; padding: 8px 14px; cursor:pointer; color:white; font-weight:bold; font-size:11px;">
-                            DECREASE
+                            Decrease Stock
                         </button>
 
                         <span id="modal-stock-val" style="font-size: 32px; font-weight: bold; min-width: 60px; text-align: center; color: var(--neon-primary); text-shadow: 0 0 10px var(--neon-primary);">${product.stock}</span>
                         
 <button onclick="openInCardQty('${product.id}', 'increase')" 
                             style="background: var(--neon-accent); border: none; padding: 8px 14px; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; font-size:11px;">
-                            RESTOCK
+                            Restock
                         </button>
                     </div>
                 </div>
@@ -1256,15 +1256,18 @@ node.style.transform = `translateZ(${floorZ}px)`;
                 </p>
             </div>
 
-            <div class="story-section">
-                <h3>📖 AI Product Journey</h3>
-                <p style="font-style: italic; color: #eee; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; line-height: 1.6;">
-                    "${aiData.description || 'Analyzing supply chain data...'}"
-                </p>
-                <div style="margin-top: 10px; font-size: 10px; color: var(--neon-secondary);">
-                    Sustainability Score: ${aiData.score || 0}/100
-                </div>
-            </div>
+<div class="story-section" style="padding: 10px; margin: 0;">
+    <h3 style="font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase;">📖 Product Journey</h3>
+    <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+        <p style="font-style: italic; color: #eee; font-size: 12px; line-height: 1.4; margin: 0;">
+            "${aiData.description || 'Data synced.'}"
+        </p>
+        <div style="margin-top: 5px; font-size: 10px; color: var(--neon-secondary); font-weight: bold; display: flex; justify-content: space-between;">
+            <span>Sustainability Score</span>
+            <span>${aiData.score || 0}%</span>
+        </div>
+    </div>
+</div>
 
             <div class="story-section">
                 <h3>📦 Inventory Level Status</h3>
