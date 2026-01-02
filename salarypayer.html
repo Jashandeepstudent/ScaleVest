@@ -1222,6 +1222,12 @@ node.style.transform = `translateZ(${floorZ}px)`;
             <h2 style="text-shadow: 0 0 15px var(--neon-primary); font-size: 28px; margin-bottom: 20px;">
                 ${product.icon} ${product.name}
             </h2>
+<div style="margin-top: 5px; font-size: 11px; color: var(--neon-secondary); font-weight: bold; display: flex; justify-content: space-between;">
+            <span>Sustainability Score</span>
+            <span>${aiData.score || 0}%</span>
+        </div>
+    </div>
+</div>
 
             <div class="story-section" style="border-left-color: var(--neon-accent); background: rgba(127, 255, 0, 0.05);">
                 <h3>💰 Price Value</h3>
