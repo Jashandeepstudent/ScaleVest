@@ -319,7 +319,48 @@ body {
             transform: translateZ(15px);
             z-index: 20;
         }
+/* Custom Quantity Popup Styling */
+.quantity-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 280px;
+    background: rgba(15, 15, 35, 0.95);
+    border: 2px solid var(--neon-primary);
+    border-radius: 20px;
+    padding: 20px;
+    z-index: 2100;
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+}
 
+.quantity-popup.active { transform: translate(-50%, -50%) scale(1); }
+
+.quantity-input {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--neon-primary);
+    color: white;
+    width: 100px;
+    font-size: 24px;
+    text-align: center;
+    border-radius: 10px;
+    margin: 15px 0;
+    padding: 5px;
+    outline: none;
+}
+
+.confirm-qty-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: 0.3s;
+}
         .product-price {
             font-size: 16px;
             font-weight: bold;
@@ -600,7 +641,12 @@ body {
             <label>🔍 Search Products</label>
             <input type="text" class="search-bar" id="searchBar" placeholder="Search products..." onkeyup="filterProducts(this.value)">
         </div>
-
+<div id="qtyPopup" class="quantity-popup">
+    <h4 id="qtyPopupTitle" style="color: var(--neon-primary); margin-bottom: 10px;">ENTER AMOUNT</h4>
+    <input type="number" id="qtyInput" class="quantity-input" value="1" min="1">
+    <button id="qtyConfirmBtn" class="confirm-qty-btn">Confirm</button>
+    <button onclick="closeQtyPopup()" style="background:none; border:none; color:#888; margin-top:10px; cursor:pointer;">Cancel</button>
+</div>
         <div class="control-group">
             <label>Rotate View (X-Axis): <span id="rotateX-value">60°</span></label>
             <input type="range" id="rotateX" min="0" max="90" value="60" oninput="updateRotation()">
@@ -1149,7 +1195,7 @@ node.style.transform = `translateZ(${floorZ}px)`;
             }
         }
 
-        window.openStoryCard = async function(product) {
+       window.openStoryCard = async function(product) {
     const storyCard = document.getElementById('storyCard');
     const overlay = document.getElementById('overlay');
     const content = document.getElementById('storyContent');
@@ -1169,7 +1215,7 @@ node.style.transform = `translateZ(${floorZ}px)`;
             </h2>
 
             <div class="story-section" style="border-left-color: var(--neon-accent); background: rgba(127, 255, 0, 0.05);">
-                <h3>💰 Your Sales Price</h3>
+                <h3>💰 Price Value</h3>
                 <p style="font-size: 24px; color: var(--neon-accent); font-weight: bold; text-shadow: 0 0 10px var(--neon-accent);">
                     ${product.price}
                 </p>
@@ -1194,13 +1240,34 @@ node.style.transform = `translateZ(${floorZ}px)`;
                             RESTOCK
                         </button>
                     </div>
-                    
-                    <p>
-                        <span id="stock-status-badge" style="font-size: 14px; padding: 4px 12px; border-radius: 4px; background: ${product.stock < 5 ? 'var(--neon-red)' : 'var(--neon-accent)'}; color: #000; font-weight: bold; transition: 0.3s;">
-                            ${product.stock < 5 ? 'LOW STOCK' : 'STABLE'}
-                        </span>
-                    </p>
                 </div>
+            </div>
+
+            <div class="story-section">
+                <h3>🌍 Sourcing Origin</h3>
+                <p style="color: var(--ice-blue); font-weight: bold; letter-spacing: 1px;">
+                    📍 ${aiData.origin || 'Global Distribution'}
+                </p>
+            </div>
+
+            <div class="story-section">
+                <h3>📖 AI Product Journey</h3>
+                <p style="font-style: italic; color: #eee; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; line-height: 1.6;">
+                    "${aiData.description || 'Analyzing supply chain data...'}"
+                </p>
+                <div style="margin-top: 10px; font-size: 12px; color: var(--neon-secondary);">
+                    Sustainability Score: ${aiData.score || 0}/100
+                </div>
+            </div>
+
+            <div class="story-section">
+                <h3>📦 Inventory Level Status</h3>
+                <p style="font-size: 20px; display: flex; align-items: center; gap: 10px; justify-content: center;">
+                    <span id="stock-status-text">${product.stock} Units Available</span>
+                    <span id="stock-status-badge" style="font-size: 14px; padding: 2px 8px; border-radius: 4px; background: ${product.stock < 5 ? 'var(--neon-red)' : 'var(--neon-accent)'}; color: #000; font-weight: bold;">
+                        ${product.stock < 5 ? 'LOW STOCK' : 'STABLE'}
+                    </span>
+                </p>
             </div>
 
             <style>
@@ -1216,19 +1283,42 @@ node.style.transform = `translateZ(${floorZ}px)`;
     }
 };
 
-window.updateStockPrompt = function(productId, mode) {
-    const promptMsg = mode === 'increase' ? "How many units are you adding to stock?" : "How many units are you removing from stock?";
-    const amount = prompt(promptMsg, "0");
-    
-    if (amount === null || amount === "" || isNaN(amount)) return;
-    
-    const change = Math.abs(parseInt(amount)); // Ensure positive number input
-    if (change === 0) return;
+let activeQtyProduct = null;
+let activeQtyMode = null;
 
-    const finalChange = mode === 'increase' ? change : -change;
-    updateStock(productId, finalChange);
+window.updateStockPrompt = function(productId, mode) {
+    activeQtyProduct = productId;
+    activeQtyMode = mode;
+    
+    const popup = document.getElementById('qtyPopup');
+    const title = document.getElementById('qtyPopupTitle');
+    const input = document.getElementById('qtyInput');
+    const confirmBtn = document.getElementById('qtyConfirmBtn');
+
+    title.innerText = mode === 'increase' ? "RESTOCK QUANTITY" : "DECREASE QUANTITY";
+    confirmBtn.style.background = mode === 'increase' ? "var(--neon-accent)" : "var(--neon-red)";
+    confirmBtn.style.boxShadow = `0 0 15px ${mode === 'increase' ? 'var(--neon-accent)' : 'var(--neon-red)'}`;
+    
+    input.value = mode === 'increase' ? "10" : "1";
+    popup.classList.add('active');
+    input.focus();
+
+    // Confirm logic
+    confirmBtn.onclick = () => {
+        const val = parseInt(input.value);
+        if(!isNaN(val) && val > 0) {
+            const finalChange = mode === 'increase' ? val : -val;
+            updateStock(productId, finalChange);
+            closeQtyPopup();
+        }
+    };
 };
 
+function closeQtyPopup() {
+    document.getElementById('qtyPopup').classList.remove('active');
+}
+
+// Supporting Function to Update UI & Firebase
 window.updateStock = function(productId, change) {
     const product = productsData.find(p => p.id === productId);
     if (!product) return;
@@ -1248,8 +1338,7 @@ window.updateStock = function(productId, change) {
             badge.style.background = newStock < 5 ? 'var(--neon-red)' : 'var(--neon-accent)';
         }
     });
-};
-        // --- INIT ---
+};        // --- INIT ---
         // 5. Performance: Prevent duplicate listeners
         if (!window.firebaseListenerActive) {
             window.firebaseListenerActive = true;
