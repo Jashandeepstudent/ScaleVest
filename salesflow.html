@@ -215,7 +215,49 @@ h2 {
   padding: 20px 24px;
   border-bottom: 1px solid #f1f5f9;
 }
+/* Base Style for Buttons - Responsive */
+.btn-modern {
+    padding: 10px 20px; /* Smaller default */
+    font-size: 14px;
+    height: auto; /* Remove fixed height for mobile */
+    min-height: 44px;
+    width: auto;
+}
 
+/* MOBILE FIXES (Screens smaller than 600px) */
+@media (max-width: 600px) {
+    /* 1. Make the modal fill the whole screen so it's not tiny */
+    #tableUploadModal > div {
+        width: 95% !important;
+        padding: 15px !important;
+        border-radius: 10px !important;
+    }
+
+    /* 2. Shrink the Save/Cancel buttons so they fit side-by-side */
+    .btn-modern {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        flex: 1; /* Make them equal width */
+    }
+
+    .btn-modern svg {
+        width: 16px !important;
+        height: 16px !important;
+        margin-right: 4px !important;
+    }
+
+    /* 3. Handle the Table: Hide less important columns or shrink text */
+    .modern-table th, .modern-table td {
+        padding: 8px 4px !important;
+        font-size: 12px !important;
+    }
+
+    /* Shrink the input boxes so they don't push the table off-screen */
+    .input-with-currency input {
+        width: 60px !important;
+        font-size: 12px !important;
+    }
+}
 .products-header h3 {
   margin: 0;
   font-size: 18px;
@@ -362,7 +404,42 @@ h2 {
   padding-top: 20px;
   border-top: 1px solid #f1f5f9;
 }
+/* Media Query for Mobile Devices */
+@media (max-width: 600px) {
+  /* 1. Make the header stack vertically to save horizontal space */
+  .products-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 15px;
+  }
 
+  .button-group {
+    width: 100%; /* Make buttons fill the width */
+    display: flex;
+    gap: 8px; /* Tighter gap on phone */
+  }
+
+  /* 2. Shrink the buttons for mobile */
+  .btn-modern {
+    padding: 8px 12px !important; /* Smaller padding */
+    font-size: 13px !important;    /* Smaller text */
+    height: 44px !important;      /* Slimmer height */
+    flex: 1;                      /* Makes both buttons equal width */
+    justify-content: center;
+  }
+
+  /* 3. Scale down the icons */
+  .btn-modern svg {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 6px !important;
+  }
+
+  /* 4. Shrink the main title slightly */
+  .products-header h3 {
+    font-size: 18px !important;
+  }
+}
 /* Success/Save Button - Vibrant Emerald */
 .btn-save-all {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -1422,36 +1499,38 @@ async function downloadProducts() {
 }
 </script>
 <div id="tableUploadModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
-    <div style="background:white; width:90%; max-width:900px; padding:30px; border-radius:15px; max-height:85vh; overflow-y:auto;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2>Bulk Price Manager</h2>
+    <div style="background:white; width:95%; max-width:900px; padding:20px; border-radius:15px; max-height:90vh; overflow-y:auto; display:flex; flex-direction:column;">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 style="font-size: 1.2rem; margin:0;">Bulk Price Manager</h2>
             <button onclick="closeTableUpload()" style="border:none; background:none; font-size:24px; cursor:pointer;">&times;</button>
         </div>
         
-        <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
-            <thead style="background:#f8fafc;">
-                <tr>
-                    <th style="padding:12px; border:1px solid #e2e8f0; text-align:left;">Product</th>
-                    <th style="padding:12px; border:1px solid #e2e8f0;">Stock</th>
-                    <th style="padding:12px; border:1px solid #e2e8f0;">Cost Price</th>
-                    <th style="padding:12px; border:1px solid #e2e8f0;">Selling Price</th>
-                </tr>
-            </thead>
-            <tbody id="bulkTableBody">
-                </tbody>
-        </table>
+        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom:20px;">
+            <table style="width:100%; border-collapse:collapse; min-width: 400px;">
+                <thead style="background:#f8fafc;">
+                    <tr>
+                        <th style="padding:10px; border:1px solid #e2e8f0; text-align:left; font-size:12px;">Product</th>
+                        <th style="padding:10px; border:1px solid #e2e8f0; font-size:12px;">Stock</th>
+                        <th style="padding:10px; border:1px solid #e2e8f0; font-size:12px;">Cost</th>
+                        <th style="padding:10px; border:1px solid #e2e8f0; font-size:12px;">Sell</th>
+                    </tr>
+                </thead>
+                <tbody id="bulkTableBody"></tbody>
+            </table>
+        </div>
 
-        <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <div style="display:flex; gap:8px; justify-content:flex-end; width:100%;">
             <button class="btn-modern btn-cancel" onclick="closeTableUpload()">
                 Cancel
             </button>
-<button class="btn-modern btn-save-all" onclick="saveAllPrices()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:8px;">
+            <button class="btn-modern btn-save-all" onclick="saveAllPrices()" style="white-space: nowrap;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:5px;">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                     <polyline points="17 21 17 13 7 13 7 21"></polyline>
                     <polyline points="7 3 7 8 15 8"></polyline>
                 </svg>
-                Save All Changes
+                Save All
             </button>
         </div>
     </div>
