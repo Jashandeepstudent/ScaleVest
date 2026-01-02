@@ -203,13 +203,10 @@
     <div class="container">
         <header class="glass">
             <div>
-                <h1>ScaleVest Hub</h1>
+                <h1>Business Vault</h1>
                 <div class="subtitle" id="user-status">Connecting...</div>
             </div>
-            <div id="header-actions">
-                <button class="btn btn-secondary" onclick="logout()">Logout</button>
-            </div>
-        </header>
+            </header>
 
         <div id="dashboard-view">
             <div class="dashboard-grid">
@@ -406,14 +403,20 @@
         </div>
     </div>
 
-    <div id="job-modal" class="modal-overlay">
-        <div class="modal glass">
-            <i class="fas fa-times close-modal" onclick="closeModals()"></i>
-            <h2>Assign Job</h2>
-            <input type="text" id="job-desc" placeholder="Job Description">
-            <button class="btn btn-primary" style="width:100%" onclick="saveJob()">Assign</button>
-        </div>
+<div id="job-modal" class="modal-overlay">
+    <div class="modal glass">
+        <i class="fas fa-times close-modal" onclick="closeModals()"></i>
+        <h2>Assign Job</h2>
+        
+        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Task Details</label>
+        <input type="text" id="job-desc" placeholder="What needs to be done?">
+        
+        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 5px;">Deadline / Last Date</label>
+        <input type="date" id="job-deadline">
+        
+        <button class="btn btn-primary" style="width:100%; margin-top: 10px;" onclick="saveJob()">Assign Task</button>
     </div>
+</div>
 
     <div id="preview-modal" class="modal-overlay" onclick="closeModals()">
         <img id="preview-img" style="max-width:90%; max-height:90vh; border-radius:8px; box-shadow:0 0 50px rgba(0,0,0,0.5);">
@@ -737,15 +740,28 @@
         }
 
         function saveJob() {
-            const desc = document.getElementById('job-desc').value;
-            if(!desc) return alert("Description required");
-            
-            db.ref(`BusinessOwners/${currentUserId}/BusinessItems/teamandstaff/${activeMemberId}/jobs`).push({
-                desc: desc, completed: false
-            });
-            closeModals();
-            document.getElementById('job-desc').value = '';
-        }
+    const desc = document.getElementById('job-desc').value;
+    const deadline = document.getElementById('job-deadline').value;
+
+    if (!desc || !deadline) return alert("Description and Deadline are required");
+
+    // Push new job to the specific team member
+    db.ref(`BusinessOwners/${currentUserId}/BusinessItems/teamandstaff/${activeMemberId}/jobs`).push({
+        desc: desc,
+        deadline: deadline,
+        completed: false,
+        timestamp: Date.now()
+    });
+
+    // Update the last activity date for the team section
+    const dateStr = new Date().toISOString().split('T')[0];
+    db.ref(`BusinessOwners/${currentUserId}/BusinessItems/meta/teamlastdate`).set(dateStr);
+
+    // UI Cleanup
+    closeModals();
+    document.getElementById('job-desc').value = '';
+    document.getElementById('job-deadline').value = '';
+}
 
         function toggleJob(jobId, status) {
             db.ref(`BusinessOwners/${currentUserId}/BusinessItems/teamandstaff/${activeMemberId}/jobs/${jobId}`).update({
