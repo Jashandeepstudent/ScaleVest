@@ -423,7 +423,10 @@
         <img id="preview-img" style="max-width:90%; max-height:90vh; border-radius:8px; box-shadow:0 0 50px rgba(0,0,0,0.5);">
     </div>
 
-
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <script>
         // --- 1. CONFIGURATION ---
         const firebaseConfig = {
@@ -441,7 +444,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-
+const storage = firebase.storage();
         let currentUserId = null;
         let activeMemberId = null;
 
