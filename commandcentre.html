@@ -2404,30 +2404,26 @@ function showTimeTravelAlert(alerts, isCritical) {
 // Enhanced toast function for multi-line and styled notifications
 let toastTimer; // Global variable to track the timer
 
-function showEnhancedToast(title, message, duration = 2000, severity = 'warning') {
+window.showToast = function(title, message, duration = 2000) {
     const toast = document.getElementById('toast');
     const toastTitle = document.getElementById('toastTitle');
     const toastMessage = document.getElementById('toastMessage');
     
-    // Clear any existing timer so the toast doesn't get confused
-    if (toastTimer) clearTimeout(toastTimer);
-    
     toastTitle.textContent = title;
-    toastMessage.innerHTML = message.replace(/\n/g, '<br>');
+    toastMessage.textContent = message;
     
-    // Reset and apply styling
+    // Reset classes
     toast.classList.remove('critical', 'warning', 'show');
-    toast.classList.add(severity);
     
-    // Animate in
+    // Show it
     setTimeout(() => toast.classList.add('show'), 10);
     
-    // AUTO-HIDE after the duration (Defaulted to 2000ms/2 seconds)
-    toastTimer = setTimeout(() => {
+    // FIX: This timer was missing, causing it to stay forever
+    if (window.toastTimer) clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(() => {
         toast.classList.remove('show');
     }, duration);
-}
-
+};
         // Display MEGA full-screen alert
         function showMegaAlert(alerts, isCritical) {
             console.log('🚨 SHOWING MEGA ALERT');
