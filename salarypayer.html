@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Command Centre</title>
+    <title> Digital Command Centre </title>
     <style>
         * {
             margin: 0;
@@ -22,8 +22,6 @@
             --ice-blue: #00d4ff;
             --neon-orange: #ffaa00;
             --neon-yellow: #ffff00;
---alert-color: var(--neon-primary);
---alert-glow: 0 0 20px var(--neon-primary);
             /* DYNAMIC SCALING VARIABLES */
             --grid-size: 9vw; /* Grid scales with phone width */
             --card-scale: 0.7;
@@ -150,27 +148,7 @@ body {
         .time-travel-active-world .future-reason {
             display: block;
         }
-#deadline-hud {
-    position: fixed;
-    top: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000;
-    padding: 10px 20px;
-    border-radius: 50px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    pointer-events: none;
-    display: none;
-    animation: pulseAlert 1.5s infinite;
-}
 
-@keyframes pulseAlert {
-    0% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-    50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
-    100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
-}
         .perspective-container {
             perspective: 2000px;
             width: 100%;
@@ -444,7 +422,37 @@ body {
             box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
             overflow-y: auto;
         }
+/* 🔥 MOBILE FIX FOR STORY CARD */
+@media (max-width: 768px) {
+    .story-card {
+        /* Adjust width to fit screen with small side margins */
+        width: 90%; 
+        max-width: 380px; /* Limits size on larger phones/tablets */
+        
+        /* Reduce padding to give content more room */
+        padding: 20px;
+        
+        /* Adjust height for smaller screens */
+        max-height: 80vh; 
+        
+        /* Tweak border and radius for a sleeker look on mobile */
+        border-width: 2px;
+        border-radius: 20px;
+        
+        /* Ensure the scaling transition still works perfectly */
+        transform: translate(-50%, -50%) scale(0);
+    }
 
+    /* Active state for the transition */
+    .story-card.active {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    /* Optional: Scale down the header inside the card */
+    .story-card h2 {
+        font-size: 20px !important;
+    }
+}
         .story-card.active { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         .story-card h2 { color: var(--neon-primary); margin-bottom: 25px; font-size: 32px; text-shadow: 0 0 20px var(--neon-primary); }
         .story-section { margin-bottom: 25px; padding: 20px; background: rgba(0, 0, 0, 0.3); border-radius: 15px; border-left: 4px solid var(--neon-secondary); }
@@ -482,27 +490,44 @@ body {
     overflow-y: auto;
 }
 
-/* 🔥 MOBILE FIX */
+/* 🔥 MOBILE FIX - COMPACT TOP-LEFT VERSION */
 @media (max-width: 768px) {
     .controls {
-        top: auto;
-        left: 50%;
-        bottom: 12px;
-        transform: translateX(-50%);
+        /* Position Fix: Top Left */
+        top: 15px;      
+        left: 15px;     
+        bottom: auto;   /* Removes the bottom alignment */
+        transform: none; /* Removes the centering transform */
 
-        width: calc(100% - 24px);
-        min-width: unset;
-        max-width: 420px;
+        /* Size Fix: Compact & Adaptive */
+        width: auto;
+        min-width: 140px; /* Smallest usable width */
+        max-width: 200px; /* Prevents it from covering the screen */
+        
+        /* Aesthetic Fix */
+        padding: 10px;
+        border-width: 1.5px; /* Thinner border for small screens */
+        border-radius: 10px;
+        background: rgba(15, 15, 35, 0.95); /* Slightly more solid for readability */
 
-        padding: 12px;
-        border-width: 2px;
-        border-radius: 12px;
+        /* Content Scaling */
+        max-height: 60vh; 
+        font-size: 12px;  /* Smaller text for a "mini" feel */
+    }
 
-        max-height: 45vh;
-        font-size: 14px;
+    /* Scaling down buttons or inputs inside the controls if they exist */
+    .controls button, 
+    .controls input {
+        padding: 6px 8px;
+        font-size: 11px;
+        margin-bottom: 5px;
+    }
+    
+    .controls h3 {
+        font-size: 13px;
+        margin-bottom: 8px;
     }
 }
-
         .controls h3 { color: var(--neon-primary); margin-bottom: 15px; font-size: 18px; }
         .control-group { margin-bottom: 15px; }
         .control-group label { display: block; margin-bottom: 8px; color: #ccc; font-size: 14px; }
@@ -631,138 +656,370 @@ body {
 
         .status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff4444; margin-right: 8px; animation: statusPulse 2s infinite; }
         .status-indicator.connected { background: var(--neon-accent); }
-        <h3 id="qtyTitle" style="color:var(--neon-primary); margin-bottom:15px; font-size:18px; text-shadow: 0 0 10px var(--neon-primary);">AMOUNT</h3>
-        <div class="product-card">
-            ${product.stock < 5 && product.stock > 0 ? `<span class="stock-badge" style="background:var(--neon-yellow);color:black;">${isTimeTravelMode ? 'LOW' : 'LOW'}</span>` : ''}
-            ${product.stock === 0 ? '<span class="stock-badge" style="background:var(--neon-red);">OUT</span>' : ''}
-            <div class="product-icon">${product.icon}</div>
-            <div class="product-name">${product.name}</div>
-            <div class="product-price">${isTimeTravelMode ? 'PREDICTED' : product.price}</div>
-            <div style="font-size: 10px; color: #ccc; margin-top: 4px;">STOCK: ${stockText}</div>
-            ${futureReasonHtml}
+        @keyframes statusPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <div style="color: var(--neon-primary); font-size: 18px;">Loading Digital Twin...</div>
+    </div>
+
+    <div class="time-warp-overlay"></div>
+
+    <div class="time-travel-active-overlay" id="timeTravelActiveIndicator">
+        <span style="font-size: 20px;">⏳</span>
+        <div style="text-align: center;">
+            <div style="font-weight: bold; letter-spacing: 1px;">FUTURE STATE (+24H)</div>
+            <div style="font-size: 10px; opacity: 0.8;">PREDICTED INVENTORY & SALES</div>
         </div>
-    `;
+        <button class="exit-time-travel" onclick="exitTimeTravel()">EXIT</button>
+    </div>
 
-    node.addEventListener('click', () => {
-        if (exchangeModeActive) {
-            handleProductGrab(product, node);
-        } else {
-            openStoryCard(product);
+    <div class="inventory-leaderboard" id="outOfStockPanel">
+        <div class="leaderboard-title">🚨 Out of Stock <span id="oosCount">0</span></div>
+        <div id="oosList"></div>
+    </div>
+
+    <div class="controls">
+        <h3><span class="status-indicator" id="statusIndicator"></span>🎮 Controls</h3>
+        
+        <div class="control-group">
+            <label>🔍 Search Products</label>
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search products..." onkeyup="filterProducts(this.value)">
+        </div>
+<div id="qtyPopup" class="quantity-popup">
+    <h4 id="qtyPopupTitle" style="color: var(--neon-primary); margin-bottom: 10px;">ENTER AMOUNT</h4>
+    <input type="number" id="qtyInput" class="quantity-input" value="1" min="1">
+    <button id="qtyConfirmBtn" class="confirm-qty-btn">Confirm</button>
+    <button onclick="closeQtyPopup()" style="background:none; border:none; color:#888; margin-top:10px; cursor:pointer;">Cancel</button>
+</div>
+        <div class="control-group">
+            <label>Rotate View (X-Axis): <span id="rotateX-value">60°</span></label>
+            <input type="range" id="rotateX" min="0" max="90" value="60" oninput="updateRotation()">
+        </div>
+
+        <div class="control-group">
+            <label>Rotate View (Z-Axis): <span id="rotateZ-value">360°</span></label>
+            <input type="range" id="rotateZ" min="0" max="360" value="360" oninput="updateRotation()">
+        </div>
+
+        <div class="control-group">
+            <label>🔥 Heatmap Overlay</label>
+            <div class="toggle-group">
+                <div class="toggle-switch" id="heatmapToggle" onclick="toggleHeatmap()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span style="color: #ccc; font-size: 12px;">Sales Performance</span>
+            </div>
+        </div>
+
+        <button class="exchange-btn" id="exchangeBtn" onclick="toggleExchangeMode()">
+            🔄 Exchange Places
+        </button>
+
+        <button class="time-travel-btn" onclick="openTimeTravel()">
+            <span style="font-size: 18px;">⏳</span> Time Travel
+        </button>
+    </div>
+
+    <div class="perspective-container" id="perspectiveContainer">
+        <div class="world" id="world">
+            <div id="floors-container">
+                <!-- Floors will be generated here -->
+            </div>
+            <div id="products-container"></div>
+        </div>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+    
+    <!-- Story/Detail Card -->
+    <div class="story-card" id="storyCard">
+        <button class="close-btn" onclick="closeStoryCard()">×</button>
+        <div id="storyContent"></div>
+<div id="inCardQtyPopup" style="display:none; position:absolute; inset:0; background:rgba(15,15,35,0.98); z-index:10; flex-direction:column; align-items:center; justify-content:center; border-radius:25px; padding:20px;">
+        <h3 id="qtyTitle" style="color:var(--neon-primary); margin-bottom:15px; font-size:18px; text-shadow: 0 0 10px var(--neon-primary);">AMOUNT</h3>
+        <input type="number" id="qtyInput" style="background:#000; border:2px solid var(--neon-primary); color:#fff; font-size:28px; text-align:center; width:120px; border-radius:10px; margin-bottom:20px; outline:none;">
+        <div style="display:flex; gap:10px; width:100%; max-width:300px;">
+            <button id="confirmQtyBtn" style="flex:1; padding:12px; border-radius:10px; border:none; font-weight:bold; cursor:pointer; text-transform:uppercase;">CONFIRM</button>
+            <button onclick="closeInCardQty()" style="flex:1; padding:12px; border-radius:10px; border:1px solid #444; background:none; color:#888; cursor:pointer; font-weight:bold;">CANCEL</button>
+        </div>
+    </div>
+</div>
+    </div>
+
+    <!-- Time Travel Modal -->
+    <div class="story-card" id="timeTravelModal" style="display: none; z-index: 2500;">
+        <button class="close-btn" onclick="closeTimeTravel()">×</button>
+        <div id="timeTravelContent"></div>
+    </div>
+
+    <div class="toast" id="toast">
+        <div class="toast-title" id="toastTitle"></div>
+        <div class="toast-message" id="toastMessage"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+            authDomain: "scalevest-163a0.firebaseapp.com",
+            databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+            projectId: "scalevest-163a0",
+            storageBucket: "scalevest-163a0.firebasestorage.app",
+            messagingSenderId: "938358950124",
+            appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
+            measurementId: "G-QD3TWBZHR0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const auth = getAuth();
+
+        let productsData = [];
+        let heatmapEnabled = false;
+        let exchangeModeActive = false;
+        let grabbedProduct = null;
+        let currentUserId = null;
+        let currentSearchTerm = '';
+        let isFirebaseListening = false;
+        let isTimeTravelMode = false;
+        let futureProductsData = [];
+
+        const iconMap = {
+            'apple': '🍎', 'bread': '🍞', 'milk': '🥛', 'fish': '🐟', 'salmon': '🐟',
+            'coffee': '☕', 'yogurt': '🥣', 'honey': '🍯', 'avocado': '🥑',
+            'pasta': '🍝', 'oil': '🫒', 'cheese': '🧀', 'egg': '🥚', 'tomato': '🍅',
+            'carrot': '🥕', 'banana': '🍌', 'orange': '🍊', 'grape': '🍇', 'strawberry': '🍓'
+        };
+
+        // Initialize multiple floors dynamically
+        function renderFloors(numFloors) {
+            const container = document.getElementById('floors-container');
+            container.innerHTML = ''; // Clear existing floors
+
+            for (let f = 0; f < numFloors; f++) {
+                const floor = document.createElement('div');
+                floor.className = 'floor';
+                floor.id = `floor-${f}`;
+                // Space floors by 250px on Z axis
+                floor.style.transform = `translate(-50%, -50%) translateZ(${-50 + (f * 250)}px)`; 
+                
+                for (let i = 0; i < 100; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.index = i;
+                    cell.dataset.floor = f;
+                    cell.dataset.x = i % 10;
+                    cell.dataset.y = Math.floor(i / 10);
+                    cell.addEventListener('click', handleCellClick);
+                    floor.appendChild(cell);
+                }
+                container.appendChild(floor);
+            }
         }
-    });
 
-    container.appendChild(node);
-});
+        function handleCellClick(e) {
+            if (!exchangeModeActive || !grabbedProduct) return;
+            const x = parseInt(e.target.dataset.x);
+            const y = parseInt(e.target.dataset.y);
+            const floor = parseInt(e.target.dataset.floor || 0);
 
-updateHeatmap(); // Apply heatmap if active
-updateOutOfStockLeaderboard(products);
-}
-
-function updateNodeVisuals(node, product) {
-node.classList.remove('is-out-of-stock', 'is-low-stock');
-if (product.stock === 0) {
-    node.classList.add('is-out-of-stock');
-} else if (product.stock < 5) {
-    node.classList.add('is-low-stock');
-}
-}
-function advanceTime() {
-    // Ensure HUD exists
-    if (!document.getElementById('deadline-hud')) {
-        const hudHTML = `
-        <div id="deadline-hud" style="position: fixed; top: 100px; left: 50%; transform: translateX(-50%); z-index: 10000; padding: 10px 20px; border-radius: 50px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; pointer-events: none; display: none; animation: pulseAlert 1.5s infinite; color: white;">
-            🚨 DEADLINE: <span id="urgent-item-name"></span>
-        </div>`;
-        document.body.insertAdjacentHTML('afterbegin', hudHTML);
-    }
-    // Ensure simulatedTime exists
-    if (typeof simulatedTime === 'undefined') window.simulatedTime = Date.now();
-
-    // Move forward 24 hours
-    simulatedTime += 24 * 60 * 60 * 1000;
-    
-    // Update the UI clock
-    if(typeof updateClockDisplay === 'function') updateClockDisplay();
-    
-    // Check business deadlines based on the NEW simulated time
-    if(typeof scanDeadlines === 'function') scanDeadlines();
-    
-    // Sync with Firebase (if available)
-    if (typeof database !== 'undefined' && typeof ref === 'function' && typeof update === 'function') {
-        update(ref(database, 'SimulationState'), {
-            simulatedTime: simulatedTime
-        });
-    }
-
-    // Visual feedback for time travel
-    document.body.style.filter = "hue-rotate(90deg)";
-    setTimeout(() => document.body.style.filter = "none", 500);
-}
-
-async function scanDeadlines() {
-    if (typeof auth === 'undefined' || !auth.currentUser) return;
-    const uid = auth.currentUser.uid;
-    const hud = document.getElementById('deadline-hud');
-    const hudName = document.getElementById('urgent-item-name');
-    
-    if (typeof simulatedTime === 'undefined') window.simulatedTime = Date.now();
-    const now = new Date(simulatedTime);
-    let alertLevel = 0; // 0: Normal, 1: One Day Left, 2: Deadline Today
-    let urgentTitle = "";
-
-    try {
-        if (typeof get !== 'function' || typeof child !== 'function' || typeof ref !== 'function') return;
-
-        const snapshot = await get(child(ref(database), `BusinessOwners/${uid}/BusinessItems`));
-        const data = snapshot.val();
-        if (!data) return;
-
-        Object.values(data).forEach(item => {
-            const dateStr = item.date || item.deadline || item.lastdate;
-            if (!dateStr) return;
-
-            const deadline = new Date(dateStr);
-            const d1 = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate());
-            const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            // Check if cell is occupied (simple check, not robust for multi-floor yet in legacy code, 
+            // but for auto-expand feature we just ensure visuals work. 
+            // Real logic needs Business data update which supports x/y. 
+            // Assuming simplified logic for now: only allow move on floor 0 for compatibility or upgrade DB logic.)
             
-            const diffDays = Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
+            // For now, allow move if no product at x,y on this floor
+            const occupied = productsData.some(p => p.x === x && p.y === y && (p.floor || 0) === floor && p.id !== grabbedProduct.id);
+            if (occupied) {
+                showToast('⚠️ Space Occupied', 'This tile already has a product');
+                return;
+            }
 
-            if (diffDays <= 0) {
-                alertLevel = 2; // RED
-                urgentTitle = item.name || "Task";
-            } else if (diffDays === 1 && alertLevel < 2) {
-                alertLevel = 1; // ORANGE
-                urgentTitle = item.name || "Task";
-            }
-        });
-
-        const root = document.documentElement;
-        if (alertLevel === 2) {
-            root.style.setProperty('--neon-primary', '#ff0040'); // RED
-            if(hud) {
-                hud.style.display = 'block';
-                hud.style.background = 'rgba(255, 0, 64, 0.9)';
-                hud.style.boxShadow = '0 0 30px #ff0040';
-                hudName.textContent = urgentTitle;
-            }
-        } else if (alertLevel === 1) {
-            root.style.setProperty('--neon-primary', '#ffaa00'); // ORANGE
-            if(hud) {
-                hud.style.display = 'block';
-                hud.style.background = 'rgba(255, 170, 0, 0.9)';
-                hud.style.boxShadow = '0 0 30px #ffaa00';
-                hudName.textContent = urgentTitle;
-            }
-        } else {
-            root.style.setProperty('--neon-primary', '#00f3ff'); // CYAN (Normal)
-            if(hud) hud.style.display = 'none';
+            moveProductToPosition(grabbedProduct, x, y, floor);
         }
 
-    } catch (e) {
-        console.error("Error checking deadlines:", e);
+// --- REPLACE moveProductToPosition ---
+function moveProductToPosition(product, newX, newY, newFloor) {
+    // Collision Detection: Check if any other product is already at these coordinates
+    const isOccupied = productsData.some(p => p.x === newX && p.y === newY && (p.floor || 0) === newFloor && p.id !== product.id);
+    
+    if (isOccupied) {
+        showToast('⚠️ Tile Occupied', 'Two products cannot be on the same tile.');
+        return; 
     }
-}
-window.checkDeadlines = scanDeadlines;
+
+    const updates = {};
+    updates[`Businesses/${currentUserId}/inventory/${product.id}/x`] = newX;
+    updates[`Businesses/${currentUserId}/inventory/${product.id}/y`] = newY;
+    updates[`Businesses/${currentUserId}/inventory/${product.id}/floor`] = newFloor;
+    
+    update(ref(database), updates).then(() => {
+        showToast('✅ Position Updated', `${product.name} moved to ${newX}, ${newY}.`);
+        // We do NOT set exchangeModeActive = false here so you can keep placing
+        grabbedProduct = null; 
+        document.querySelectorAll('.product-node').forEach(n => n.classList.remove('grabbed'));
+    });
+}        // --- CORE FEATURES ---
+
+        function updateHeatmap() {
+            if (!heatmapEnabled) {
+                document.querySelectorAll('.grid-cell').forEach(cell => {
+                    cell.className = 'grid-cell'; // Reset classes
+                    cell.style.background = '';
+                });
+                // Re-apply normal mode coloring in renderShop
+                const productNodes = document.querySelectorAll('.product-node');
+                productNodes.forEach(node => {
+                    // Re-add normal mode classes if needed (handled in renderShop generally)
+                    // But we can force redraw or toggle classes
+                    const pid = node.dataset.productId;
+                    const prod = productsData.find(p => p.id === pid);
+                    if (prod) updateNodeVisuals(node, prod);
+                });
+                return;
+            }
+
+            // Calculate Max Sales for normalization
+            const maxSales = Math.max(...productsData.map(p => p.sales || 0), 1);
+
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                const x = parseInt(cell.dataset.x);
+                const y = parseInt(cell.dataset.y);
+                const floor = parseInt(cell.dataset.floor || 0);
+                
+                const product = productsData.find(p => p.x === x && p.y === y && (p.floor || 0) === floor);
+
+                // Reset base
+                cell.className = 'grid-cell';
+                cell.style.background = '';
+
+                if (product) {
+                    if (product.stock === 0) {
+                        cell.classList.add('heatmap-oos'); // RED
+                    } else if (product.stock < 5) {
+                        cell.classList.add('heatmap-lowstock'); // YELLOW
+                    } else {
+                        // Sales Logic
+                        if (product.sales > 50) { // High / Most Selling
+                            cell.classList.add('heatmap-high'); // ORANGE
+                        } else if (product.sales < 10) { // Low Selling
+                            cell.classList.add('heatmap-low'); // BLUE
+                        } else {
+                            cell.classList.add('heatmap-med'); // Default/Med
+                        }
+                    }
+                }
+            });
+        }
+
+        window.toggleHeatmap = function() {
+            heatmapEnabled = !heatmapEnabled;
+            const toggle = document.getElementById('heatmapToggle');
+            toggle.classList.toggle('active');
+            updateHeatmap();
+            
+            // Toggle visibility of normal mode indicators on products
+            const products = document.querySelectorAll('.product-node');
+            products.forEach(p => {
+                if (heatmapEnabled) {
+                    p.classList.add('heatmap-active'); // Could hide borders if desired
+                } else {
+                    p.classList.remove('heatmap-active');
+                }
+            });
+
+            showToast(heatmapEnabled ? '🔥 Heatmap On' : '❄️ Heatmap Off', 'Visualizing sales & stock performance');
+        };
+
+        function renderShop(products) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+
+            // 3. AUTO-EXPAND 3D WORLD
+            // Calculate needed floors
+            const neededFloors = Math.max(1, Math.ceil(products.length / 100));
+            // Only re-render floors if count changes or init
+            const currentFloors = document.querySelectorAll('.floor').length;
+            if (currentFloors !== neededFloors) {
+                renderFloors(neededFloors);
+            }
+
+            products.forEach((product, index) => {
+                // Determine floor if not set (auto-layout logic)
+                if (product.floor === undefined) {
+                    product.floor = Math.floor(index / 100);
+                }
+
+// --- REPLACE RENDER LOGIC INSIDE renderShop loop ---
+const node = document.createElement('div');
+node.className = 'product-node';
+
+// FIX: Direct mapping ensures glow and card share the same origin
+node.style.left = `calc(${product.x} * var(--grid-size))`;
+node.style.top = `calc(${product.y} * var(--grid-size))`;
+node.style.width = 'var(--grid-size)';
+node.style.height = 'var(--grid-size)';
+                
+                // Normal Mode Colors (4)
+                updateNodeVisuals(node, product);
+
+const gridSize = 80; 
+const floorZ = (product.floor || 0) * 250; 
+
+// This math aligns the product node exactly with the grid cells
+node.style.left = `calc(50% - 400px + ${product.x * gridSize}px)`;
+node.style.top = `calc(50% - 400px + ${product.y * gridSize}px)`;
+node.style.transform = `translateZ(${floorZ}px)`;
+
+                const stockText = isTimeTravelMode 
+                    ? (product.stock <= 0 ? "OUT OF STOCK" : `OUT IN ${Math.ceil(product.stock / (product.velocity || 1))}D`)
+                    : product.stock;
+
+                const futureReasonHtml = isTimeTravelMode && product.futureReason 
+                    ? `<div class="future-reason">${product.futureReason}</div>`
+                    : '';
+
+                node.innerHTML = `
+                    <div class="product-card">
+                        ${product.stock < 5 && product.stock > 0 ? `<span class="stock-badge" style="background:var(--neon-yellow);color:black;">${isTimeTravelMode ? 'LOW' : 'LOW'}</span>` : ''}
+                        ${product.stock === 0 ? '<span class="stock-badge" style="background:var(--neon-red);">OUT</span>' : ''}
+                        <div class="product-icon">${product.icon}</div>
+                        <div class="product-name">${product.name}</div>
+                        <div class="product-price">${isTimeTravelMode ? 'PREDICTED' : product.price}</div>
+                        <div style="font-size: 10px; color: #ccc; margin-top: 4px;">STOCK: ${stockText}</div>
+                        ${futureReasonHtml}
+                    </div>
+                `;
+
+                node.addEventListener('click', () => {
+                    if (exchangeModeActive) {
+                        handleProductGrab(product, node);
+                    } else {
+                        openStoryCard(product);
+                    }
+                });
+
+                container.appendChild(node);
+            });
+
+            updateHeatmap(); // Apply heatmap if active
+            updateOutOfStockLeaderboard(products);
+        }
+
+        function updateNodeVisuals(node, product) {
+            node.classList.remove('is-out-of-stock', 'is-low-stock');
+            if (product.stock === 0) {
+                node.classList.add('is-out-of-stock');
+            } else if (product.stock < 5) {
+                node.classList.add('is-low-stock');
+            }
+        }
 
         // --- TIME TRAVEL (2) ---
         window.openTimeTravel = async function() {
@@ -972,7 +1229,7 @@ window.checkDeadlines = scanDeadlines;
             document.getElementById('overlay').classList.remove('active');
         };
 
-        window.showToast = function(title, message) {
+        function showToast(title, message) {
             const toast = document.getElementById('toast');
             document.getElementById('toastTitle').textContent = title;
             document.getElementById('toastMessage').textContent = message;
@@ -1027,7 +1284,7 @@ window.checkDeadlines = scanDeadlines;
             <div class="story-section" style="border-left-color: var(--neon-accent); background: rgba(127, 255, 0, 0.05);">
                 <h3>💰 Price Value</h3>
                 <p style="font-size: 24px; color: var(--neon-accent); font-weight: bold; text-shadow: 0 0 10px var(--neon-accent);">
-                    {product.price}
+                    ${product.price}
                 </p>
             </div>
 
@@ -1152,7 +1409,7 @@ window.updateStock = function(productId, change) {
                 currentUserId = user ? user.uid : "demo-user";
                 const businessRef = ref(database, `Businesses/${currentUserId}`);
                 
-                onValue(businessRef, (snapshot) => {
+onValue(businessRef, (snapshot) => {
     const business = snapshot.val();
     let newProducts = [];
     
@@ -1166,8 +1423,9 @@ window.updateStock = function(productId, change) {
             
             // FIX: Look up the price using the product key in the prices node
             const priceData = priceList[key];
-            const priceValue = priceData?.sellPrice?.numericValue || 0;
-            const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
+const priceValue = priceData?.sellPrice || 0; 
+
+const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
             
             newProducts.push({
                 id: key,
@@ -1198,62 +1456,10 @@ window.updateStock = function(productId, change) {
                 });
             });
         }
-async function checkDeadlines() {
-    if (!auth.currentUser) return;
-    const uid = auth.currentUser.uid;
-    const hud = document.getElementById('deadline-hud');
-    
-    // Reference the simulated time
-    const now = new Date(simulatedTime);
-    let alertLevel = 0; // 0: Normal, 1: One Day Left, 2: Deadline Today
-    let urgentTitle = "";
-
-    const snapshot = await get(child(ref(database), `BusinessOwners/${uid}/BusinessItems`));
-    const data = snapshot.val();
-    if (!data) return;
-
-    Object.values(data).forEach(item => {
-        const dateStr = item.date || item.deadline || item.lastdate;
-        if (!dateStr) return;
-        const deadline = new Date(dateStr);
-        // Normalize dates to midnight for accurate day comparison
-        const d1 = new Date(deadline.getFullYear(), deadline.getMonth(), deadline.getDate());
-        const d2 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
-        const diffDays = Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
-        // ... (existing logic in user file)
-    });
-}
-</script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // Initial render of floor
+        renderFloors(1);
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
-  authDomain: "scalevest-163a0.firebaseapp.com",
-  databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
-  projectId: "scalevest-163a0",
-  storageBucket: "scalevest-163a0.firebasestorage.app",
-  messagingSenderId: "938358950124",
-  appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
-  measurementId: "G-QD3TWBZHR0"
-};
-        window.app = initializeApp(firebaseConfig);
-        window.database = getDatabase(window.app);
-        window.auth = getAuth(window.app);
-        
-        // Expose Firebase functions globally for the existing script to use
-        window.ref = ref;
-        window.onValue = onValue;
-        window.update = update;
-        window.get = get;
-        window.child = child;
-        window.onAuthStateChanged = onAuthStateChanged;
-        
-        console.log("Firebase initialized");
     </script>
 </body>
 </html>
