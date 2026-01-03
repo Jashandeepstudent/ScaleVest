@@ -1770,33 +1770,42 @@
         </div>
     </div>
 
-    <!-- Team Member Modal -->
-    <div id="team-modal" class="modal-overlay">
-        <div class="modal glass">
-            <i class="fas fa-times close-modal" onclick="closeModals()"></i>
-            <h2 style="margin-bottom: 24px;">Add Team Member</h2>
-            
-            <label>Full Name</label>
-            <input type="text" id="team-name" placeholder="Enter full name">
-            
-            <label>Role</label>
-            <input type="text" id="team-role" placeholder="Position or job title">
-            
-            <label>Email</label>
-            <input type="email" id="team-email" placeholder="email@example.com">
-            
-            <label>Status</label>
-            <select id="team-status">
-                <option value="Active">Active</option>
-                <option value="Contractor">Contractor</option>
-                <option value="Part-Time">Part-Time</option>
-            </select>
-            
-            <button class="btn btn-primary" style="width:100%; margin-top: 8px;" onclick="saveMember()">
-                <i class="fas fa-user-plus"></i> Add Member
-            </button>
+   <div id="team-modal" class="modal-overlay">
+    <div class="modal glass">
+        <i class="fas fa-times close-modal" onclick="closeModals()"></i>
+        <h2 style="margin-bottom: 24px;">Add Team Member</h2>
+        
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div id="image-preview-container" onclick="document.getElementById('team-photo').click()" 
+                 style="width: 80px; height: 80px; border-radius: 50%; border: 2px dashed var(--neon-primary); margin: 0 auto; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; background: rgba(255,255,255,0.05);">
+                <img id="profile-preview" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                <i id="upload-icon" class="fas fa-camera" style="color: var(--neon-primary); font-size: 24px;"></i>
+            </div>
+            <p style="font-size: 11px; margin-top: 8px; color: #aaa;">Click to upload photo</p>
+            <input type="file" id="team-photo" accept="image/*" style="display: none;" onchange="previewImage(event)">
         </div>
+
+        <label>Full Name</label>
+        <input type="text" id="team-name" placeholder="Enter full name">
+        
+        <label>Role</label>
+        <input type="text" id="team-role" placeholder="Position or job title">
+        
+        <label>Email</label>
+        <input type="email" id="team-email" placeholder="email@example.com">
+        
+        <label>Status</label>
+        <select id="team-status">
+            <option value="Active">Active</option>
+            <option value="Contractor">Contractor</option>
+            <option value="Part-Time">Part-Time</option>
+        </select>
+        
+        <button class="btn btn-primary" id="save-btn" style="width:100%; margin-top: 8px;" onclick="saveMember()">
+            <i class="fas fa-user-plus"></i> Add Member
+        </button>
     </div>
+</div>
 
     <!-- Job Assignment Modal -->
     <div id="job-modal" class="modal-overlay">
@@ -2684,27 +2693,78 @@ localStorage.removeItem('megaAlertDismissed');
             document.getElementById('order-desc').value = '';
             document.getElementById('order-deadline').value = '';
         }
+function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function() {
+        const preview = document.getElementById('profile-preview');
+        const icon = document.getElementById('upload-icon');
+        preview.src = reader.result;
+        preview.style.display = 'block';
+        icon.style.display = 'none';
+    }
+    reader.readAsDataURL(event.target.files[0]);
+}
+       async function saveMember() {
+    const fileInput = document.getElementById('team-photo');
+    const file = fileInput.files[0];
+    const name = document.getElementById('team-name').value;
+    const role = document.getElementById('team-role').value;
+    const email = document.getElementById('team-email').value;
+    const status = document.getElementById('team-status').value;
+    const saveBtn = document.getElementById('save-btn');
 
-        function saveMember() {
-            const name = document.getElementById('team-name').value;
-            const role = document.getElementById('team-role').value;
-            const email = document.getElementById('team-email').value;
-            const status = document.getElementById('team-status').value;
+    // Validation
+    if (!name) {
+        alert("Please enter a name.");
+        return;
+    }
 
-            if(!name) return alert("Name required");
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
-            db.ref(`BusinessOwners/${currentUserId}/BusinessItems/teamandstaff`).push({
-                name, role, email, status, timestamp: Date.now()
-            });
-            
-            updateMeta('team');
-            closeModals();
-            
-            // Clear form
-            document.getElementById('team-name').value = '';
-            document.getElementById('team-role').value = '';
-            document.getElementById('team-email').value = '';
+    try {
+        let photoURL = "https://via.placeholder.com/150"; // Default avatar if no file
+
+        // Only upload if a file actually exists
+        if (file) {
+            const storageRef = firebase.storage().ref(`staff_photos/${Date.now()}_${file.name}`);
+            const snapshot = await storageRef.put(file);
+            photoURL = await snapshot.ref.getDownloadURL();
         }
+
+        // Save to Database
+        const newMemberRef = firebase.database().ref('team/').push();
+        await newMemberRef.set({
+            name: name,
+            role: role,
+            email: email,
+            status: status,
+            photoURL: photoURL,
+            createdAt: firebase.database.ServerValue.TIMESTAMP // Useful for sorting
+        });
+
+        // SUCCESS: Reset Modal
+        resetTeamModal(); 
+        closeModals();
+        
+    } catch (error) {
+        console.error("Upload Error:", error);
+        alert("Failed to save member. Check console for details.");
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-user-plus"></i> Add Member';
+    }
+}
+
+// Helper function to clear inputs after saving
+function resetTeamModal() {
+    document.getElementById('team-name').value = '';
+    document.getElementById('team-role').value = '';
+    document.getElementById('team-email').value = '';
+    document.getElementById('team-photo').value = '';
+    document.getElementById('profile-preview').style.display = 'none';
+    document.getElementById('upload-icon').style.display = 'block';
+}
 
         // --- TEAM MEMBER & JOB LOGIC ---
 
