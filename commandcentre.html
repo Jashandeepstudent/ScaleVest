@@ -1252,6 +1252,84 @@ body {
         gap: 8px;
     }
 }
+.toast { 
+    position: fixed; 
+    bottom: 30px; 
+    right: 30px; 
+    background: rgba(15, 15, 35, 0.98); 
+    backdrop-filter: blur(15px); 
+    border: 3px solid var(--neon-accent); 
+    border-radius: 16px; 
+    padding: 22px 28px; 
+    z-index: 2000; 
+    transform: translateY(150%); 
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.8); 
+    min-width: 350px;
+    max-width: 480px;
+}
+.toast.show { 
+    transform: translateY(0) scale(1.02); 
+}
+.toast.warning {
+    border-color: var(--neon-orange);
+    background: rgba(25, 20, 15, 0.98);
+    box-shadow: 0 15px 50px rgba(255, 170, 0, 0.5);
+    animation: toastPulse 2s ease-in-out infinite;
+}
+.toast.critical {
+    border-color: var(--neon-red);
+    background: rgba(30, 10, 15, 0.98);
+    box-shadow: 0 15px 50px rgba(255, 0, 64, 0.7);
+    animation: toastPulseCritical 1s ease-in-out infinite;
+}
+@keyframes toastPulse {
+    0%, 100% { 
+        box-shadow: 0 15px 50px rgba(255, 170, 0, 0.5);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 20px 60px rgba(255, 170, 0, 0.8);
+        transform: scale(1.03);
+    }
+}
+@keyframes toastPulseCritical {
+    0%, 100% { 
+        box-shadow: 0 15px 50px rgba(255, 0, 64, 0.7);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 20px 70px rgba(255, 0, 64, 1);
+        transform: scale(1.04);
+    }
+}
+.toast-title { 
+    color: var(--neon-accent); 
+    font-weight: 900; 
+    margin-bottom: 10px; 
+    font-size: 18px;
+    text-shadow: 0 0 15px currentColor;
+    letter-spacing: 1px;
+}
+.toast.warning .toast-title { 
+    color: var(--neon-orange); 
+}
+.toast.critical .toast-title { 
+    color: var(--neon-red);
+    animation: titleShake 0.3s ease-in-out infinite;
+}
+@keyframes titleShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    75% { transform: translateX(2px); }
+}
+.toast-message { 
+    color: #fff; 
+    font-size: 15px; 
+    line-height: 1.7;
+    white-space: pre-line;
+    font-weight: 500;
+}
 /* Touch Device Optimization */
 @media (hover: none) and (pointer: coarse) {
     /* Larger touch targets */
@@ -2335,21 +2413,67 @@ async function checkDeadlines(isSimulated = false) {
     }
 }
 // Show small bottom alert for Time Travel mode
+// Show enhanced bottom alert for Time Travel mode
 function showTimeTravelAlert(alerts, isCritical) {
     const daysLeft = isCritical ? 0 : 1;
-    const urgencyText = isCritical ? '🔥 DUE TODAY!' : '⏰ 1 Day Left';
-    const summary = alerts.length === 1 
-        ? alerts[0].title 
-        : `${alerts.length} deadlines approaching`;
+    const urgencyText = isCritical ? '🔥 DUE TODAY!' : '⏰ 1 DAY LEFT';
     
-    showToast(
+    // Build detailed summary showing WHAT deadlines are approaching
+    let detailedSummary = '';
+    
+    if (alerts.length === 1) {
+        // Single deadline - show full details
+        const alert = alerts[0];
+        const icon = alert.icon.includes('dollar') ? '💰' : 
+                     alert.icon.includes('box') ? '📦' : 
+                     alert.icon.includes('sticky') ? '📝' : 
+                     alert.icon.includes('tasks') ? '✓' : '📋';
+        detailedSummary = `${icon} ${alert.title}\n${alert.desc}`;
+    } else {
+        // Multiple deadlines - list them with icons
+        detailedSummary = `${alerts.length} Deadlines Approaching:\n\n`;
+        alerts.slice(0, 3).forEach((alert) => {
+            const icon = alert.icon.includes('dollar') ? '💰' : 
+                         alert.icon.includes('box') ? '📦' : 
+                         alert.icon.includes('sticky') ? '📝' : 
+                         alert.icon.includes('tasks') ? '✓' : '📋';
+            detailedSummary += `${icon} ${alert.title}\n`;
+        });
+        if (alerts.length > 3) {
+            detailedSummary += `\n...and ${alerts.length - 3} more items`;
+        }
+    }
+    
+    // Show enhanced toast with severity styling
+    showEnhancedToast(
         urgencyText,
-        summary,
-        isCritical ? 5000 : 3000
+        detailedSummary,
+        isCritical ? 8000 : 6000, // Longer display time
+        isCritical ? 'critical' : 'warning' // Color coding
     );
     
-    // Play subtle beep for time travel alerts
+    // Play attention-grabbing beep
     playBeepSound();
+}
+
+// Enhanced toast function for multi-line and styled notifications
+function showEnhancedToast(title, message, duration = 6000, severity = 'warning') {
+    const toast = document.getElementById('toast');
+    const toastTitle = document.getElementById('toastTitle');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastTitle.textContent = title;
+    toastMessage.innerHTML = message.replace(/\n/g, '<br>');
+    
+    // Apply severity styling
+    toast.classList.remove('critical', 'warning', 'show');
+    toast.classList.add(severity);
+    
+    // Animate in
+    setTimeout(() => toast.classList.add('show'), 10);
+    
+    // Auto-hide
+    setTimeout(() => toast.classList.remove('show'), duration);
 }
 
         // Display MEGA full-screen alert
