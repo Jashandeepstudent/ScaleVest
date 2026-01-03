@@ -2091,16 +2091,76 @@ function checkDeadlines() {
 }
 
 // Display MEGA full-screen alert
-// ============================================
-// MEGA ALERT SYSTEM - OPTIMIZED & COMBINED
-// ============================================
-
+function showMegaAlert(alerts, isCritical) {
+    const overlay = document.getElementById('mega-alert-overlay');
+    const title = document.getElementById('mega-alert-title');
+    const container = document.getElementById('deadline-list-container');
+    const countdown = document.getElementById('alert-countdown');
+    
+    // Update title based on urgency
+    if (isCritical) {
+        title.innerHTML = '🔥 URGENT DEADLINES TODAY! 🔥';
+        title.style.color = 'var(--danger)';
+        countdown.textContent = '0';
+    } else {
+        title.innerHTML = '⚠️ DEADLINE APPROACHING ⚠️';
+        title.style.color = 'var(--warning)';
+        countdown.textContent = '24';
+    }
+    
+    // Build deadline list (LIMIT ANIMATIONS FOR PERFORMANCE)
+    container.innerHTML = '';
+    alerts.forEach((alert, index) => {
+        const item = document.createElement('div');
+        item.className = 'deadline-item';
+        // Only animate first 5 items to reduce lag
+        if (index < 5) {
+            item.style.animationDelay = `${index * 0.1}s`;
+        } else {
+            item.style.animation = 'none'; // No animation for items beyond 5
+        }
+        
+        item.innerHTML = `
+            <div class="deadline-item-header">
+                <i class="fas ${alert.icon} deadline-item-icon"></i>
+                <div class="deadline-item-title">${alert.title}</div>
+            </div>
+            <div class="deadline-item-desc">${alert.desc}</div>
+        `;
+        container.appendChild(item);
+    });
+    
+    // Show overlay
+    overlay.style.display = 'flex';
+    
+    // Play alert sound (safe version)
+    try {
+        const sound = document.getElementById('alert-sound');
+        if (sound && audioPermissionGranted) {
+            sound.play().catch(e => console.log('Audio play failed:', e));
+        }
+    } catch (e) {
+        console.log('Sound error:', e);
+    }
+    
+    // Prevent closing by clicking outside
+    overlay.onclick = (e) => {
+        if (e.target === overlay) {
+            // Gentle shake instead of heavy animation
+            const container = document.querySelector('.mega-alert-container');
+            container.classList.add('shake-alert');
+            setTimeout(() => {
+                container.classList.remove('shake-alert');
+            }, 500);
+        }
+    };
+}
 // Play alert sound using Web Audio API (more reliable)
 function playAlertSound() {
     try {
         // Try HTML5 Audio first
         const sound = document.getElementById('alert-sound');
-        if (sound && audioPermissionGranted) {
+        if (sound) {
             sound.src = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'; // Emergency alert
             sound.volume = 0.7;
             sound.play().catch(() => {
@@ -2143,66 +2203,6 @@ function playBeepSound() {
     } catch (e) {
         console.log('Beep sound failed:', e);
     }
-}
-
-// Display MEGA full-screen alert (OPTIMIZED)
-function showMegaAlert(alerts, isCritical) {
-    const overlay = document.getElementById('mega-alert-overlay');
-    const title = document.getElementById('mega-alert-title');
-    const container = document.getElementById('deadline-list-container');
-    const countdown = document.getElementById('alert-countdown');
-    
-    // Update title based on urgency
-    if (isCritical) {
-        title.innerHTML = '🔥 URGENT DEADLINES TODAY! 🔥';
-        title.style.color = 'var(--danger)';
-        countdown.textContent = '0';
-    } else {
-        title.innerHTML = '⚠️ DEADLINE APPROACHING ⚠️';
-        title.style.color = 'var(--warning)';
-        countdown.textContent = '24';
-    }
-    
-    // Build deadline list (LIMIT ANIMATIONS FOR PERFORMANCE)
-    container.innerHTML = '';
-    alerts.forEach((alert, index) => {
-        const item = document.createElement('div');
-        item.className = 'deadline-item';
-        
-        // Only animate first 5 items to reduce lag
-        if (index < 5) {
-            item.style.animationDelay = `${index * 0.1}s`;
-        } else {
-            item.style.animation = 'none'; // No animation for items beyond 5
-        }
-        
-        item.innerHTML = `
-            <div class="deadline-item-header">
-                <i class="fas ${alert.icon} deadline-item-icon"></i>
-                <div class="deadline-item-title">${alert.title}</div>
-            </div>
-            <div class="deadline-item-desc">${alert.desc}</div>
-        `;
-        container.appendChild(item);
-    });
-    
-    // Show overlay
-    overlay.style.display = 'flex';
-    
-    // Play alert sound using the optimized function
-    playAlertSound();
-    
-    // Prevent closing by clicking outside (force user to acknowledge)
-    overlay.onclick = (e) => {
-        if (e.target === overlay) {
-            // Gentle shake instead of heavy animation
-            const alertContainer = document.querySelector('.mega-alert-container');
-            alertContainer.classList.add('shake-alert');
-            setTimeout(() => {
-                alertContainer.classList.remove('shake-alert');
-            }, 400);
-        }
-    };
 }
 // Dismiss mega alert
 function dismissMegaAlert() {
