@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Digital Command Centre </title>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -1503,6 +1502,7 @@ import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/
         let currentSearchTerm = '';
         let isFirebaseListening = false;
         let isTimeTravelMode = false;
+       let timeTravelDaysOffset = 0; 
         let futureProductsData = [];
 
         const iconMap = {
@@ -1738,6 +1738,12 @@ node.style.transform = `translateZ(${floorZ}px)`;
 
         // --- TIME TRAVEL (2) ---
         window.openTimeTravel = async function() {
+// Increment time travel offset
+timeTravelDaysOffset += 1;
+console.log(`⏳ Time Travel: +${timeTravelDaysOffset} days`);
+
+// Check deadlines in simulated time
+await checkDeadlines(true);
             // 1. Play Cinematic Animation
             document.body.classList.add('time-warp-active');
             
@@ -1833,6 +1839,7 @@ node.style.transform = `translateZ(${floorZ}px)`;
         };
 
         window.exitTimeTravel = function() {
+timeTravelDaysOffset = 0; // Reset time travel offset
             isTimeTravelMode = false;
             document.body.classList.remove('time-travel-active-world');
             document.getElementById('timeTravelActiveIndicator').classList.remove('active');
@@ -1944,13 +1951,13 @@ node.style.transform = `translateZ(${floorZ}px)`;
             document.getElementById('overlay').classList.remove('active');
         };
 
-        function showToast(title, message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastTitle').textContent = title;
-            document.getElementById('toastMessage').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
+function showToast(title, message, duration = 3000) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = title;
+    document.getElementById('toastMessage').textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), duration);
+}
 
         function updateOutOfStockLeaderboard(products) {
             const list = document.getElementById('oosList');
@@ -2168,153 +2175,182 @@ const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
                     renderShop(productsData);
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('statusIndicator').classList.add('connected');
-// ⚡ TRIGGER DEADLINE CHECK AFTER 3 SECONDS
-                    setTimeout(() => {
-                        console.log('🎯 Triggering deadline check for user:', currentUserId);
-                        checkDeadlines();
-                    }, 3000);
                 });
             });
         }
 
        // ============================================
-        // CORRECTED MEGA ALERT SYSTEM - FIREBASE V9+
-        // ============================================
+// UPGRADED MEGA ALERT SYSTEM WITH TIME TRAVEL
+// ============================================
 
-        // Check for approaching and overdue deadlines
-        async function checkDeadlines() {
-            console.log('🔍 Checking deadlines...');
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            const todayStr = today.toISOString().split('T')[0];
-            
-            console.log('Today:', todayStr, 'Tomorrow:', tomorrowStr);
-            
-            const baseRef = `BusinessOwners/${currentUserId}/BusinessItems`;
-            let urgentAlerts = []; // Tomorrow's deadlines
-            let criticalAlerts = []; // Today's deadlines
+async function checkDeadlines(isSimulated = false) {
+    console.log('🔍 Checking deadlines...', isSimulated ? `(Time Travel: +${timeTravelDaysOffset} days)` : '(Real Time)');
+    
+    // Calculate dates based on time travel mode
+    const baseDate = new Date();
+    if (isSimulated && timeTravelDaysOffset > 0) {
+        baseDate.setDate(baseDate.getDate() + timeTravelDaysOffset);
+    }
+    
+    const today = new Date(baseDate);
+    const tomorrow = new Date(baseDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const todayStr = today.toISOString().split('T')[0];
+    
+    console.log('Reference Date:', todayStr, 'Tomorrow:', tomorrowStr);
+    
+    const baseRef = `BusinessOwners/${currentUserId}/BusinessItems`;
+    let urgentAlerts = []; // Tomorrow's deadlines
+    let criticalAlerts = []; // Today's deadlines
 
-            try {
-                // Check Transactions
-                const transSnapshot = await get(ref(database, `${baseRef}/transactions`));
-                if (transSnapshot.exists()) {
-                    console.log('Found transactions');
-                    transSnapshot.forEach(child => {
-                        const t = child.val();
-                        if (t.date === tomorrowStr) {
-                            urgentAlerts.push({
-                                type: 'transaction',
-                                icon: 'fa-dollar-sign',
-                                title: `Payment: ${t.name}`,
-                                desc: `$${t.amount} - ${t.type === 'owe' ? 'You owe them' : 'They owe you'}`
-                            });
-                        }
-                        if (t.date === todayStr) {
-                            criticalAlerts.push({
-                                type: 'transaction',
-                                icon: 'fa-dollar-sign',
-                                title: `URGENT: Payment ${t.name}`,
-                                desc: `$${t.amount} - DUE TODAY!`
-                            });
+    try {
+        // Check Transactions
+        const transSnapshot = await get(ref(database, `${baseRef}/transactions`));
+        if (transSnapshot.exists()) {
+            console.log('Found transactions');
+            transSnapshot.forEach(child => {
+                const t = child.val();
+                if (t.date === tomorrowStr) {
+                    urgentAlerts.push({
+                        type: 'transaction',
+                        icon: 'fa-dollar-sign',
+                        title: `Payment: ${t.name}`,
+                        desc: `$${t.amount} - ${t.type === 'owe' ? 'You owe them' : 'They owe you'}`
+                    });
+                }
+                if (t.date === todayStr) {
+                    criticalAlerts.push({
+                        type: 'transaction',
+                        icon: 'fa-dollar-sign',
+                        title: `URGENT: Payment ${t.name}`,
+                        desc: `$${t.amount} - DUE TODAY!`
+                    });
+                }
+            });
+        }
+
+        // Check Orders
+        const ordersSnapshot = await get(ref(database, `${baseRef}/pendingorders`));
+        if (ordersSnapshot.exists()) {
+            console.log('Found orders');
+            ordersSnapshot.forEach(child => {
+                const o = child.val();
+                if (o.deadline === tomorrowStr) {
+                    urgentAlerts.push({
+                        type: 'order',
+                        icon: 'fa-box-open',
+                        title: `Order: ${o.category}`,
+                        desc: o.desc
+                    });
+                }
+                if (o.deadline === todayStr) {
+                    criticalAlerts.push({
+                        type: 'order',
+                        icon: 'fa-box-open',
+                        title: `URGENT ORDER: ${o.category}`,
+                        desc: o.desc + ' - DUE TODAY!'
+                    });
+                }
+            });
+        }
+
+        // Check Notes
+        const notesSnapshot = await get(ref(database, `${baseRef}/notes`));
+        if (notesSnapshot.exists()) {
+            console.log('Found notes');
+            notesSnapshot.forEach(child => {
+                const n = child.val();
+                if (n.date === tomorrowStr) {
+                    urgentAlerts.push({
+                        type: 'note',
+                        icon: 'fa-sticky-note',
+                        title: `Note: ${n.title}`,
+                        desc: n.content.substring(0, 60) + '...'
+                    });
+                }
+                if (n.date === todayStr) {
+                    criticalAlerts.push({
+                        type: 'note',
+                        icon: 'fa-sticky-note',
+                        title: `URGENT NOTE: ${n.title}`,
+                        desc: n.content.substring(0, 60) + '...'
+                    });
+                }
+            });
+        }
+
+        // Check Jobs
+        const teamSnapshot = await get(ref(database, `${baseRef}/teamandstaff`));
+        if (teamSnapshot.exists()) {
+            console.log('Found team members');
+            teamSnapshot.forEach(memberSnapshot => {
+                const member = memberSnapshot.val();
+                if (member.jobs) {
+                    Object.values(member.jobs).forEach(job => {
+                        if (!job.completed) {
+                            if (job.deadline === tomorrowStr) {
+                                urgentAlerts.push({
+                                    type: 'task',
+                                    icon: 'fa-tasks',
+                                    title: `Task for ${member.name}`,
+                                    desc: job.desc
+                                });
+                            }
+                            if (job.deadline === todayStr) {
+                                criticalAlerts.push({
+                                    type: 'task',
+                                    icon: 'fa-tasks',
+                                    title: `URGENT: ${member.name}'s Task`,
+                                    desc: job.desc + ' - DUE TODAY!'
+                                });
+                            }
                         }
                     });
                 }
-
-                // Check Orders
-                const ordersSnapshot = await get(ref(database, `${baseRef}/pendingorders`));
-                if (ordersSnapshot.exists()) {
-                    console.log('Found orders');
-                    ordersSnapshot.forEach(child => {
-                        const o = child.val();
-                        if (o.deadline === tomorrowStr) {
-                            urgentAlerts.push({
-                                type: 'order',
-                                icon: 'fa-box-open',
-                                title: `Order: ${o.category}`,
-                                desc: o.desc
-                            });
-                        }
-                        if (o.deadline === todayStr) {
-                            criticalAlerts.push({
-                                type: 'order',
-                                icon: 'fa-box-open',
-                                title: `URGENT ORDER: ${o.category}`,
-                                desc: o.desc + ' - DUE TODAY!'
-                            });
-                        }
-                    });
-                }
-
-                // Check Notes
-                const notesSnapshot = await get(ref(database, `${baseRef}/notes`));
-                if (notesSnapshot.exists()) {
-                    console.log('Found notes');
-                    notesSnapshot.forEach(child => {
-                        const n = child.val();
-                        if (n.date === tomorrowStr) {
-                            urgentAlerts.push({
-                                type: 'note',
-                                icon: 'fa-sticky-note',
-                                title: `Note: ${n.title}`,
-                                desc: n.content.substring(0, 60) + '...'
-                            });
-                        }
-                        if (n.date === todayStr) {
-                            criticalAlerts.push({
-                                type: 'note',
-                                icon: 'fa-sticky-note',
-                                title: `URGENT NOTE: ${n.title}`,
-                                desc: n.content.substring(0, 60) + '...'
-                            });
-                        }
-                    });
-                }
-
-                // Check Jobs
-                const teamSnapshot = await get(ref(database, `${baseRef}/teamandstaff`));
-                if (teamSnapshot.exists()) {
-                    console.log('Found team members');
-                    teamSnapshot.forEach(memberSnapshot => {
-                        const member = memberSnapshot.val();
-                        if (member.jobs) {
-                            Object.values(member.jobs).forEach(job => {
-                                if (!job.completed) {
-                                    if (job.deadline === tomorrowStr) {
-                                        urgentAlerts.push({
-                                            type: 'task',
-                                            icon: 'fa-tasks',
-                                            title: `Task for ${member.name}`,
-                                            desc: job.desc
-                                        });
-                                    }
-                                    if (job.deadline === todayStr) {
-                                        criticalAlerts.push({
-                                            type: 'task',
-                                            icon: 'fa-tasks',
-                                            title: `URGENT: ${member.name}'s Task`,
-                                            desc: job.desc + ' - DUE TODAY!'
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    });
-                }
-                
-                // Show mega alert if any deadlines found
-                const allAlerts = [...criticalAlerts, ...urgentAlerts];
-                console.log('Total alerts found:', allAlerts.length);
-                if (allAlerts.length > 0) {
-                    showMegaAlert(allAlerts, criticalAlerts.length > 0);
-                } else {
-                    console.log('✅ No deadlines approaching');
-                }
-            } catch (error) {
-                console.error('❌ Error checking deadlines:', error);
+            });
+        }
+        
+        // Show alerts based on mode
+        const allAlerts = [...criticalAlerts, ...urgentAlerts];
+        console.log('Total alerts found:', allAlerts.length);
+        
+        if (allAlerts.length > 0) {
+            if (isSimulated) {
+                // Time Travel Mode: Show small bottom toast
+                showTimeTravelAlert(allAlerts, criticalAlerts.length > 0);
+            } else {
+                // Normal Mode: Show full-screen mega alert
+                showMegaAlert(allAlerts, criticalAlerts.length > 0);
+            }
+        } else {
+            if (isSimulated) {
+                showToast('✅ Clear Horizon', 'No deadlines in the next 24 hours');
+            } else {
+                console.log('✅ No deadlines approaching');
             }
         }
+    } catch (error) {
+        console.error('❌ Error checking deadlines:', error);
+    }
+}
+// Show small bottom alert for Time Travel mode
+function showTimeTravelAlert(alerts, isCritical) {
+    const daysLeft = isCritical ? 0 : 1;
+    const urgencyText = isCritical ? '🔥 DUE TODAY!' : '⏰ 1 Day Left';
+    const summary = alerts.length === 1 
+        ? alerts[0].title 
+        : `${alerts.length} deadlines approaching`;
+    
+    showToast(
+        urgencyText,
+        summary,
+        isCritical ? 5000 : 3000
+    );
+    
+    // Play subtle beep for time travel alerts
+    playBeepSound();
+}
 
         // Display MEGA full-screen alert
         function showMegaAlert(alerts, isCritical) {
