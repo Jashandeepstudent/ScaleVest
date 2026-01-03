@@ -578,18 +578,7 @@ function renderPerformanceChart(filter) {
     }
   });
 }
-function openSettings() {
-  document.getElementById("settingsCurrencyInput").value = userCurrency;
-  document.getElementById("settingsModal").style.display = "flex";
-}
 
-function closeSettings() {
-  document.getElementById("settingsModal").style.display = "none";
-}
-
-function closeReasoning() {
-  document.getElementById("reasoningModal").style.display = "none";
-}
 // REASONING MODAL
 function showReasoning() {
   const filter = document.getElementById("timeFilter").value;
