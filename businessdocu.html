@@ -2085,19 +2085,20 @@ function showMegaAlert(alerts, isCritical) {
     const container = document.getElementById('deadline-list-container');
     const countdown = document.getElementById('alert-countdown');
 
-    // Check if the user already dismissed this alert during this session
+    // 1. Check if the user already dismissed this alert
     const isDismissed = localStorage.getItem('megaAlertDismissed');
 
-    // ONLY show if NOT dismissed and there are alerts
+    // 2. USE 'alerts.length' INSTEAD OF 'urgentItems.length'
     if (alerts.length > 0 && isDismissed !== 'true') {
         overlay.style.display = 'flex';
-        if(alertSound) alertSound.play();
+        // Note: Ensure alertSound variable is defined globally if used
+        if(typeof alertSound !== 'undefined' && alertSound) alertSound.play();
     } else {
         overlay.style.display = 'none';
-        return; // Stop execution if we aren't showing the alert
+        return; // Stop if there's nothing to show
     }
 
-    // Update title based on urgency
+    // 3. Update title based on urgency
     if (isCritical) {
         title.innerHTML = '🔥 URGENT DEADLINES TODAY! 🔥';
         title.style.color = 'var(--danger)';
@@ -2108,7 +2109,7 @@ function showMegaAlert(alerts, isCritical) {
         countdown.textContent = '24';
     }
 
-    // Build deadline list
+    // 4. Build deadline list
     container.innerHTML = '';
     alerts.forEach((alert, index) => {
         const item = document.createElement('div');
@@ -2123,7 +2124,7 @@ function showMegaAlert(alerts, isCritical) {
         `;
         container.appendChild(item);
     });
-}    
+}
     // Show overlay
     overlay.style.display = 'flex';
     
