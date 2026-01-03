@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Business Vault</title>
+    <title>ScaleVest Hub</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -942,8 +942,8 @@
             
             <label>Transaction Type</label>
             <select id="trans-type">
-                <option value="owe">I Owe Them (Red)</option>
-                <option value="owed">They Owe Me (Green)</option>
+                <option value="owe">I Owe Them </option>
+                <option value="owed">They Owe Me </option>
             </select>
             
             <label>Entity Name</label>
@@ -1058,9 +1058,13 @@
     </div>
 
     <!-- Preview Modal -->
-    <div id="preview-modal" class="modal-overlay" onclick="closeModals()">
-        <img id="preview-img" style="max-width:90%; max-height:90vh; border-radius:12px; box-shadow:0 0 60px rgba(0,0,0,0.7);">
+<div id="preview-modal" class="modal-overlay" onclick="this.style.display='none'">
+    <div class="modal glass" style="max-width: 800px; height: 80vh;" onclick="event.stopPropagation()">
+        <i class="fas fa-times close-modal" onclick="document.getElementById('preview-modal').style.display='none'"></i>
+        <div id="preview-container" style="width:100%; height:100%; overflow:hidden; border-radius:10px;">
+            </div>
     </div>
+</div>
 
     <script>
         // Setup PDF.js worker
@@ -1235,7 +1239,7 @@
                                     <i class="fas fa-calendar-alt"></i> ${t.date}
                                 </span>
                             </div>
-                            ${t.photo ? `<button class="btn btn-secondary" style="margin-top:12px; padding:8px 14px; font-size:0.8rem;" onclick="previewDoc('${t.photo}')"><i class="fas fa-receipt"></i> View Receipt</button>` : ''}
+                            ${t.photo ? `<button class="btn btn-secondary" style="margin-top:12px; padding:8px 14px; font-size:0.8rem;" onclick="previewDoc('${item.url}')"><i class="fas fa-receipt"></i> View Receipt</button>` : ''}
                         </div>
                         <div class="item-actions">
                             <button class="btn btn-danger" onclick="confirmDelete(() => deleteTransaction('${transKey}'))">
@@ -1421,7 +1425,7 @@
                     hideScanAnimation();
                     scanImg.style.display = 'none';
                     closeModals();
-                    alert("Document & Preview Saved!");
+                    alert("Document Saved!");
                 }, 800);
             }
         );
@@ -1451,35 +1455,91 @@
             document.getElementById('note-date').value = '';
         }
 
-        async function saveTransaction() {
-            const type = document.getElementById('trans-type').value;
-            const name = document.getElementById('trans-name').value;
-            const amount = document.getElementById('trans-amount').value;
-            const details = document.getElementById('trans-details').value;
-            const date = document.getElementById('trans-date').value;
-            const fileInput = document.getElementById('trans-file');
+async function saveTransaction() {
+    const type = document.getElementById('trans-type').value;
+    const name = document.getElementById('trans-name').value;
+    const amount = document.getElementById('trans-amount').value;
+    const details = document.getElementById('trans-details').value;
+    const date = document.getElementById('trans-date').value;
+    const fileInput = document.getElementById('trans-file');
+    
+    if(!name || !amount) return alert("Name and Amount required");
 
-            if(!name || !amount) return alert("Name and Amount required");
+    const file = fileInput.files[0];
+    const scanImg = document.getElementById('scan-preview-content');
+    const pctText = document.getElementById('upload-pct');
+    let thumbBlob = null;
 
-            let photo = "";
-            if(fileInput.files.length > 0) {
-                photo = await fileToBase64(fileInput.files[0]);
-            }
-
-            db.ref(`BusinessOwners/${currentUserId}/BusinessItems/transactions`).push({
-                type, name, amount, details, date, photo, timestamp: Date.now()
-            });
+    // --- PDF/IMAGE PREVIEW GENERATION ---
+    if (file) {
+        if (file.type === "application/pdf") {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 0.8 });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
             
-            updateMeta('transaction');
-            closeModals();
-            
-            // Clear form
-            document.getElementById('trans-name').value = '';
-            document.getElementById('trans-amount').value = '';
-            document.getElementById('trans-details').value = '';
-            document.getElementById('trans-date').value = '';
-            document.getElementById('trans-file').value = '';
+            scanImg.src = canvas.toDataURL('image/jpeg');
+            thumbBlob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.8));
+        } else if (file.type.startsWith("image/")) {
+            scanImg.src = URL.createObjectURL(file);
         }
+        scanImg.style.display = 'block';
+        showScanAnimation();
+    }
+
+    const fileId = Date.now();
+    let mainUrl = "";
+    let finalThumbUrl = "";
+
+    try {
+        if (file) {
+            const fileRef = storage.ref(`BusinessOwners/${currentUserId}/Receipts/${fileId}_${file.name}`);
+            const uploadTask = fileRef.put(file);
+
+            // Real-time Progress
+            uploadTask.on('state_changed', (snap) => {
+                const progress = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+                pctText.innerText = progress + "%";
+                document.getElementById('manual-progress').style.width = progress + "%";
+            }, null, async () => {
+                mainUrl = await uploadTask.snapshot.ref.getDownloadURL();
+                finalThumbUrl = mainUrl;
+
+                if (thumbBlob) {
+                    const tRef = storage.ref(`BusinessOwners/${currentUserId}/Receipts/thumbs/${fileId}.jpg`);
+                    await tRef.put(thumbBlob);
+                    finalThumbUrl = await tRef.getDownloadURL();
+                }
+                saveToTransDB();
+            });
+        } else {
+            saveToTransDB();
+        }
+
+        async function saveToTransDB() {
+            await db.ref(`BusinessOwners/${currentUserId}/BusinessItems/transactions`).push({
+                type, name, amount, details, date,
+                url: mainUrl, 
+                preview: finalThumbUrl || "", // Stores the actual PDF photo
+                timestamp: fileId
+            });
+            updateMeta('trans');
+            setTimeout(() => {
+                hideScanAnimation();
+                closeModals();
+                alert("Transaction Saved!");
+            }, 800);
+        }
+    } catch (e) {
+        console.error(e);
+        hideScanAnimation();
+    }
+}
 
         function saveOrder() {
             const cat = document.getElementById('order-cat').value;
@@ -1623,12 +1683,21 @@
 
         // --- PREVIEW FUNCTION ---
 
-        function previewDoc(url) {
-            if(!url) return;
-            const img = document.getElementById('preview-img');
-            img.src = url;
-            document.getElementById('preview-modal').style.display = 'flex';
-        }
+function previewDoc(url) {
+    if(!url) return;
+    const container = document.getElementById('preview-container');
+    
+    // Check if it's a PDF or Image
+    if (url.includes(".pdf") || url.includes("alt=media")) {
+        // Use iframe for PDF/Docs
+        container.innerHTML = `<iframe src="${url}" style="width:100%; height:100%; border:none;"></iframe>`;
+    } else {
+        // Use img for photos
+        container.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:contain;">`;
+    }
+    
+    document.getElementById('preview-modal').style.display = 'flex';
+}
 
     </script>
 </body>
