@@ -2705,65 +2705,46 @@ function previewImage(event) {
     reader.readAsDataURL(event.target.files[0]);
 }
        async function saveMember() {
-    const fileInput = document.getElementById('team-photo');
-    const file = fileInput.files[0];
+    const user = firebase.auth().currentUser;
+    if (!user) return alert("Please log in first!");
+
+    const file = document.getElementById('team-photo').files[0];
     const name = document.getElementById('team-name').value;
     const role = document.getElementById('team-role').value;
-    const email = document.getElementById('team-email').value;
     const status = document.getElementById('team-status').value;
     const saveBtn = document.getElementById('save-btn');
 
-    // Validation
-    if (!name) {
-        alert("Please enter a name.");
-        return;
-    }
+    if (!name || !file) return alert("Name and Photo are required!");
 
     saveBtn.disabled = true;
-    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    saveBtn.innerHTML = "Uploading...";
 
     try {
-        let photoURL = "https://via.placeholder.com/150"; // Default avatar if no file
+        // 1. SAVE PHOTO IN STORAGE
+        const storageRef = firebase.storage().ref(`staff_photos/${Date.now()}_${file.name}`);
+        const snapshot = await storageRef.put(file);
+        const photoURL = await snapshot.ref.getDownloadURL();
 
-        // Only upload if a file actually exists
-        if (file) {
-            const storageRef = firebase.storage().ref(`staff_photos/${Date.now()}_${file.name}`);
-            const snapshot = await storageRef.put(file);
-            photoURL = await snapshot.ref.getDownloadURL();
-        }
-
-        // Save to Database
-        const newMemberRef = firebase.database().ref('team/').push();
-        await newMemberRef.set({
+        // 2. SAVE INFO IN DATABASE (Inside your allowed path)
+        // Path: Businesses > YOUR_UID > team
+        const teamRef = firebase.database().ref(`Businesses/${user.uid}/team`).push();
+        
+        await teamRef.set({
             name: name,
             role: role,
-            email: email,
             status: status,
-            photoURL: photoURL,
-            createdAt: firebase.database.ServerValue.TIMESTAMP // Useful for sorting
+            photoURL: photoURL
         });
 
-        // SUCCESS: Reset Modal
-        resetTeamModal(); 
         closeModals();
-        
+        resetTeamModal(); // Clear the form
     } catch (error) {
-        console.error("Upload Error:", error);
-        alert("Failed to save member. Check console for details.");
+        console.error("Error:", error);
+        alert("Permission Denied or Upload Failed. Check Console.");
     } finally {
         saveBtn.disabled = false;
         saveBtn.innerHTML = '<i class="fas fa-user-plus"></i> Add Member';
     }
-}
-
-// Helper function to clear inputs after saving
-function resetTeamModal() {
-    document.getElementById('team-name').value = '';
-    document.getElementById('team-role').value = '';
-    document.getElementById('team-email').value = '';
-    document.getElementById('team-photo').value = '';
-    document.getElementById('profile-preview').style.display = 'none';
-    document.getElementById('upload-icon').style.display = 'block';
 }
 
         // --- TEAM MEMBER & JOB LOGIC ---
