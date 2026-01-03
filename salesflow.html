@@ -240,7 +240,7 @@ h2 { margin: 0; font-size: 26px; font-weight: 800; color: #1e293b; }
   </div>
 </div>
 
-<div id="settingsModal" class="modal">
+<div id="settingsModal" class="modal" onclick="if(event.target === this) closeSettings()">
   <div class="modal-box">
     <h3>⚙️ Settings</h3>
     <p>Change your currency</p>
@@ -256,7 +256,7 @@ h2 { margin: 0; font-size: 26px; font-weight: 800; color: #1e293b; }
     </div>
   </div>
 </div>
-<div id="reasoningModal" class="reasoning-modal">
+<div id="reasoningModal" class="reasoning-modal" onclick="if(event.target === this) closeReasoning()">
   <div class="reasoning-content">
     <div class="reasoning-header">
       <h3><span id="reasoningEmoji">📊</span> <span id="reasoningTitle">View Analysis</span></h3>
@@ -578,7 +578,18 @@ function renderPerformanceChart(filter) {
     }
   });
 }
+function openSettings() {
+  document.getElementById("settingsCurrencyInput").value = userCurrency;
+  document.getElementById("settingsModal").style.display = "flex";
+}
 
+function closeSettings() {
+  document.getElementById("settingsModal").style.display = "none";
+}
+
+function closeReasoning() {
+  document.getElementById("reasoningModal").style.display = "none";
+}
 // REASONING MODAL
 function showReasoning() {
   const filter = document.getElementById("timeFilter").value;
