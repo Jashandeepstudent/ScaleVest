@@ -2339,7 +2339,7 @@ db.ref(`${baseRef}/transactions`).on('value', snapshot => {
                             <div style="color: var(--text-secondary); font-size:0.95rem; margin:12px 0; white-space: pre-wrap; line-height: 1.6;">${n.content}</div>
                             <div class="card-meta"><i class="fas fa-calendar"></i> ${n.date || 'No date'}</div>
                         </div>
-                        <button class="btn btn-danger" style="margin-top: 16px; width: 100%;" onclick="confirmDelete(() => deleteNote('${noteKey}'))">
+                        <button class="btn btn-danger" style="margin-top: 16px; width: 20%;" onclick="confirmDelete(() => deleteNote('${noteKey}'))">
                             <i class="fas fa-trash"></i> Delete Note
                         </button>
                     `;
