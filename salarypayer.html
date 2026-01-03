@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> Digital Command Centre </title>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -2167,6 +2168,11 @@ const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
                     renderShop(productsData);
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('statusIndicator').classList.add('connected');
+// ⚡ TRIGGER DEADLINE CHECK AFTER 3 SECONDS
+                    setTimeout(() => {
+                        console.log('🎯 Triggering deadline check for user:', currentUserId);
+                        checkDeadlines();
+                    }, 3000);
                 });
             });
         }
