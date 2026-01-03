@@ -1901,8 +1901,8 @@ node.style.transform = `translateZ(${floorZ}px)`;
             }));
         }
 
-        renderShop(futureProductsData);
-        // NO TOAST HERE - deadline alerts will show automatically
+renderShop(futureProductsData);
+showToast('🚀 Peak Logic Synchronized', 'AI Intelligence & Calculus Engine integrated', 2000);
     }, 2000);
 };
 
@@ -1911,8 +1911,8 @@ window.exitTimeTravel = function() {
     isTimeTravelMode = false;
     document.body.classList.remove('time-travel-active-world');
     document.getElementById('timeTravelActiveIndicator').classList.remove('active');
-    renderShop(productsData);
-    // NO TOAST HERE - silent exit
+renderShop(productsData);
+showToast('🏠 Back to Present', 'Restored real-time inventory state', 2000);
 };
 
         function renderTimeTravelResults(container, data, aiResult) {
@@ -2258,6 +2258,15 @@ if (!window.hasCheckedInitialDeadlines) {
 // ============================================
 
 async function checkDeadlines(isSimulated = false) {
+
+if (!isSimulated) {
+    const lastDismissed = localStorage.getItem('lastDeadlineDismissed');
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (lastDismissed === todayStr) {
+        console.log('Alert already dismissed today. Skipping.');
+        return; 
+    }
+}
     console.log('🔍 Checking deadlines...', isSimulated ? `(Time Travel: +${timeTravelDaysOffset} days)` : '(Real Time)');
     
     // Calculate dates based on time travel mode
@@ -2551,12 +2560,13 @@ function showEnhancedToast(title, message, duration = 6000, severity = 'warning'
             }
         }
 
-        // Dismiss mega alert
-        window.dismissMegaAlert = function() {
-            console.log('Dismissing alert');
-            const overlay = document.getElementById('mega-alert-overlay');
-            overlay.style.display = 'none';
-        };
+window.dismissMegaAlert = function() {
+    console.log('Dismissing alert');
+    const overlay = document.getElementById('mega-alert-overlay');
+    overlay.style.display = 'none';
+
+    localStorage.setItem('lastDeadlineDismissed', new Date().toISOString().split('T')[0]);
+};
 
         // Snooze alert
         window.snoozeAlert = function() {
