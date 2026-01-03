@@ -1231,33 +1231,47 @@ function calculateFinancials() {
 
     if (typeof renderPerformanceChart === 'function') renderPerformanceChart(filter);
 }
-// Function to open settings and pre-fill the input with current currency
-function openSettingsModal() {
-    document.getElementById("settingsCurrencyInput").value = userCurrency;
+// Change 'openSettingsModal' to 'openSettings' to match your HTML
+function openSettings() {
+    // Ensure userCurrency is defined before setting the value
+    document.getElementById("settingsCurrencyInput").value = typeof userCurrency !== 'undefined' ? userCurrency : "";
     document.getElementById("settingsModal").style.display = "flex";
 }
 
-function closeSettingsModal() {
+// Change 'closeSettingsModal' to 'closeSettings' to match your HTML
+function closeSettings() {
     document.getElementById("settingsModal").style.display = "none";
 }
 
 // Function to save the new currency to Firebase
-function updateCurrency() {
-    const newCode = document.getElementById("settingsCurrencyInput").value.trim().toUpperCase();
-    if (newCode.length < 2) return alert("Please enter a valid currency code.");
+async function updateCurrencyFromSettings() {
+    const newCurrency = document.getElementById("settingsCurrencyInput").value.trim().toUpperCase();
+    
+    if (newCurrency.length < 2) {
+        alert("Please enter a valid 3-letter currency code (e.g., INR, USD)");
+        return;
+    }
 
-    const uid = auth.currentUser.uid;
-    db.ref(`BusinessOwners/${uid}/National Currency`).set({
-        currency: newCode,
-        updatedAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        showSuccess("Currency Updated!");
-        closeSettingsModal();
-        // The existing .on("value") listener in your auth state will 
-        // automatically trigger calculateFinancials() and render()
-    }).catch(error => {
-        alert("Error updating settings: " + error.message);
-    });
+    try {
+        const uid = auth.currentUser.uid;
+        // Save under BusinessOwners/uid/National Currency
+        await db.ref(`BusinessOwners/${uid}/National Currency`).set({
+            currency: newCurrency,
+            updatedAt: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        userCurrency = newCurrency; 
+        showSuccess(`Currency updated to ${newCurrency}`);
+        
+        // Refresh calculations and UI
+        if (typeof calculateFinancials === "function") calculateFinancials();
+        if (typeof render === "function") render(); 
+        
+        closeSettings();
+    } catch (error) {
+        console.error("Settings Update Failed:", error);
+        alert("Failed to save settings: " + error.message);
+    }
 }
 auth.onAuthStateChanged(user => {
     if (!user) return;
