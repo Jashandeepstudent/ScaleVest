@@ -103,15 +103,7 @@
             box-shadow: var(--shadow-lg);
             border-color: var(--primary);
         }
-.shake-alert {
-    animation: gentleShake 0.4s ease !important;
-}
 
-@keyframes gentleShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
         h1 { 
             font-weight: 700; 
             font-size: 1.75rem; 
@@ -1965,16 +1957,12 @@ function fetchUserCurrency() {
 
 // Check for approaching and overdue deadlines
 function checkDeadlines() {
-   const today = new Date().toISOString().split('T')[0];
-    const acknowledged = localStorage.getItem('megaAlertAcknowledged');
- const tomorrow = new Date(today);
+    const today = new Date();
+    const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
     const todayStr = today.toISOString().split('T')[0];
-     if (acknowledged === today) {
-        console.log('Alert already acknowledged today');
-        return; // Don't show alert again
-    }
+    
     const baseRef = `BusinessOwners/${currentUserId}/BusinessItems`;
     let urgentAlerts = []; // Tomorrow's deadlines
     let criticalAlerts = []; // Today's deadlines
@@ -2194,56 +2182,25 @@ function playBeepSound() {
 // Dismiss mega alert
 function dismissMegaAlert() {
     const overlay = document.getElementById('mega-alert-overlay');
+    overlay.style.animation = 'alertFadeOut 0.5s ease';
     
-    // 1. Save acknowledgment FIRST
-    const today = new Date().toISOString().split('T')[0];
-    localStorage.setItem('megaAlertAcknowledged', today);
-    console.log('Alert acknowledged for:', today);
-    
-    // 2. Fade out smoothly
-    overlay.style.opacity = '0';
-    overlay.style.transition = 'opacity 0.3s ease';
-    
-    // 3. After fade, hide and clean up
     setTimeout(() => {
         overlay.style.display = 'none';
-        overlay.style.opacity = '1'; // Reset for next time
-        
-        // Stop all animations by removing animated elements
-        const container = document.querySelector('.mega-alert-container');
-        if (container) {
-            container.style.animation = 'none';
-        }
-        
-        // Clear deadline list to stop item animations
-        document.getElementById('deadline-list-container').innerHTML = '';
-        
-        // Reset onclick
-        overlay.onclick = null;
-    }, 300);
+        overlay.style.animation = 'alertFadeIn 0.5s ease';
+    }, 500);
 }
 
 // Snooze alert for 1 hour
 function snoozeAlert() {
-    const overlay = document.getElementById('mega-alert-overlay');
-    
-    // Don't save acknowledgment (so it shows again later)
-    // Just hide the alert
-    overlay.style.opacity = '0';
-    overlay.style.transition = 'opacity 0.3s ease';
-    
-    setTimeout(() => {
-        overlay.style.display = 'none';
-        overlay.style.opacity = '1';
-        overlay.onclick = null;
-    }, 300);
+    dismissMegaAlert();
     
     // Set timeout to show again in 1 hour
     setTimeout(() => {
         checkDeadlines();
-    }, 3600000); // 1 hour
+    }, 3600000); // 1 hour in milliseconds
     
-    console.log('⏰ Alert snoozed for 1 hour');
+    // Show confirmation
+    alert('⏰ Alert snoozed! You will be reminded in 1 hour.');
 }
 
 // Add shake animation to CSS
