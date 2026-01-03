@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium Digital Twin Shop</title>
+    <title> Digital Command Centre </title>
     <style>
         * {
             margin: 0;
@@ -1423,8 +1423,9 @@ onValue(businessRef, (snapshot) => {
             
             // FIX: Look up the price using the product key in the prices node
             const priceData = priceList[key];
-            const priceValue = priceData?.sellPrice?.numericValue || 0;
-            const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
+const priceValue = priceData?.sellPrice || 0; 
+
+const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
             
             newProducts.push({
                 id: key,
