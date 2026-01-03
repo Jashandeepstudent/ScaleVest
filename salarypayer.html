@@ -660,6 +660,9 @@ body {
     </style>
 </head>
 <body>
+<div id="hudBanner" style="position: fixed; top: 0; left: 0; width: 100%; height: 50px; background: rgba(0,0,0,0.9); border-bottom: 3px solid var(--neon-primary); z-index: 5000; display: none; align-items: center; justify-content: center; font-weight: bold; letter-spacing: 2px; text-transform: uppercase;">
+    <span id="hudBannerText" style="color: white; text-shadow: 0 0 10px var(--neon-primary);"></span>
+</div>
     <div class="loading" id="loading">
         <div class="loading-spinner"></div>
         <div style="color: var(--neon-primary); font-size: 18px;">Loading Digital Twin...</div>
@@ -789,7 +792,64 @@ body {
         let isFirebaseListening = false;
         let isTimeTravelMode = false;
         let futureProductsData = [];
+// --- NEW GLOBAL STATE ---
+let simulatedTime = new Date();
+let businessItems = []; // To store mapped data from Firebase
 
+// --- SCAN DEADLINES FUNCTION ---
+async function scanDeadlines() {
+    let highestAlert = 0;
+    let urgentItemName = "";
+
+    // 1. Gather all deadlines from the current data
+    // (Ensure your Firebase listeners populate businessItems with dates/deadlines)
+    businessItems.forEach(item => {
+        const deadline = new Date(item.deadline || item.date || item.lastdate);
+        if (isNaN(deadline)) return;
+
+        // Requirement 5: Math Logic
+        const diffInMs = deadline.getTime() - simulatedTime.getTime();
+        const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
+
+        if (diffInDays <= 0) {
+            highestAlert = 2; // RED
+            urgentItemName = item.name || "Task/Payment";
+        } else if (diffInDays === 1) {
+            highestAlert = Math.max(highestAlert, 1); // ORANGE
+            urgentItemName = item.name || "Task/Payment";
+        }
+    });
+
+    updateGlobalTheme(highestAlert, urgentItemName);
+    
+    // Sync to SimulationState node
+    const simRef = ref(database, `SimulationState/${currentUserId}`);
+    update(simRef, {
+        simulatedTime: simulatedTime.toISOString(),
+        alertLevel: highestAlert,
+        urgentItem: urgentItemName
+    });
+}
+
+// --- DYNAMIC THEME UPDATE ---
+function updateGlobalTheme(level, name) {
+    const root = document.documentElement;
+    const banner = document.getElementById('hudBanner');
+    const bannerText = document.getElementById('hudBannerText');
+
+    if (level === 2) {
+        root.style.setProperty('--neon-primary', '#ff0040'); // Red
+        banner.style.display = 'flex';
+        bannerText.innerText = `🚨 DEADLINE: ${name}`;
+    } else if (level === 1) {
+        root.style.setProperty('--neon-primary', '#ffaa00'); // Orange
+        banner.style.display = 'flex';
+        bannerText.innerText = `⚠️ 1 DAY LEFT: ${name}`;
+    } else {
+        root.style.setProperty('--neon-primary', '#00f3ff'); // Normal
+        banner.style.display = 'none';
+    }
+}
         const iconMap = {
             'apple': '🍎', 'bread': '🍞', 'milk': '🥛', 'fish': '🐟', 'salmon': '🐟',
             'coffee': '☕', 'yogurt': '🥣', 'honey': '🍯', 'avocado': '🥑',
@@ -1026,12 +1086,19 @@ node.style.transform = `translateZ(${floorZ}px)`;
             // 1. Play Cinematic Animation
             document.body.classList.add('time-warp-active');
             
-            // 2. Transition World after delay
-            setTimeout(async () => {
-                document.body.classList.remove('time-warp-active');
-                isTimeTravelMode = true;
-                document.body.classList.add('time-travel-active-world');
-                document.getElementById('timeTravelActiveIndicator').classList.add('active');
+// 2. Transition World after delay
+    setTimeout(async () => {
+        document.body.classList.remove('time-warp-active');
+        isTimeTravelMode = true;
+        
+        // --- JUMP 24 HOURS ---
+        simulatedTime.setDate(simulatedTime.getDate() + 1);
+        
+        // --- TRIGGER DEADLINE SCAN ---
+        await scanDeadlines();
+
+        document.body.classList.add('time-travel-active-world');
+        document.getElementById('timeTravelActiveIndicator').classList.add('active');
                 
                 // --- ADVANCED MATHEMATICAL ENGINE ---
                 // Based on Monte Carlo Simulations and Markov Chain models for inventory drift
