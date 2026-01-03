@@ -85,7 +85,21 @@ h2 { margin: 0; font-size: 26px; font-weight: 800; color: #1e293b; }
 
 .success-popup { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 14px 28px; border-radius: 50px; font-weight: 600; display: none; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.2); animation: slideUp 0.3s ease; }
 @keyframes slideUp { from { bottom: -50px; opacity: 0; } to { bottom: 30px; opacity: 1; } }
-
+.reasoning-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); }
+.reasoning-content { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; border-radius: 24px; width: 90%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); overflow: hidden; animation: modalSlideIn 0.4s ease; }
+@keyframes modalSlideIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.reasoning-header { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 24px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.2); }
+.reasoning-header h3 { margin: 0; font-size: 24px; font-weight: 800; color: white; display: flex; align-items: center; gap: 12px; }
+.close-reasoning { background: rgba(255,255,255,0.2); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; font-size: 24px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; }
+.close-reasoning:hover { background: rgba(255,255,255,0.3); transform: rotate(90deg); }
+.reasoning-body { background: white; padding: 30px; max-height: 60vh; overflow-y: auto; }
+.reasoning-section { margin-bottom: 24px; padding: 20px; background: #f8fafc; border-radius: 16px; border-left: 4px solid #667eea; }
+.reasoning-section h4 { margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+.reasoning-section p { margin: 0; font-size: 14px; line-height: 1.6; color: #64748b; }
+.reasoning-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.reason-metric-card { background: white; padding: 16px; border-radius: 12px; border: 2px solid #e2e8f0; text-align: center; }
+.reason-metric-card .label { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.reason-metric-card .value { font-size: 20px; font-weight: 800; color: #1e293b; }
 /* MOBILE RESPONSIVE */
 @media (max-width: 1200px) { .metric-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {
@@ -211,7 +225,7 @@ h2 { margin: 0; font-size: 26px; font-weight: 800; color: #1e293b; }
       <div class="input-group">
         <label>Cost Price</label>
         <input type="number" id="costPriceInput" placeholder="200" step="0.01">
-        <div style="font-size: 11px; color: #ef4444; margin-top: 4px; font-weight: bold;">⚠️ Numbers only</div>
+        <div style="font-size: 11px; color: #ef4444; margin-top: 4px; font-weight: bold;"⚠️ Numbers only</div>
       </div>
       <div class="input-group">
         <label>Selling Price</label>
@@ -242,7 +256,17 @@ h2 { margin: 0; font-size: 26px; font-weight: 800; color: #1e293b; }
     </div>
   </div>
 </div>
-
+<div id="reasoningModal" class="reasoning-modal">
+  <div class="reasoning-content">
+    <div class="reasoning-header">
+      <h3><span id="reasoningEmoji">📊</span> <span id="reasoningTitle">View Analysis</span></h3>
+      <button class="close-reasoning" onclick="closeReasoning()">×</button>
+    </div>
+    <div class="reasoning-body" id="reasoningBody">
+      <!-- Content will be inserted here -->
+    </div>
+  </div>
+</div>
 <div id="currencyModal" class="modal">
   <div class="modal-box">
     <h3>🌍 Currency</h3>
@@ -558,28 +582,169 @@ function renderPerformanceChart(filter) {
 // REASONING MODAL
 function showReasoning() {
   const filter = document.getElementById("timeFilter").value;
-  let explanation = "";
+  const modal = document.getElementById("reasoningModal");
+  const body = document.getElementById("reasoningBody");
+  const title = document.getElementById("reasoningTitle");
+  const emoji = document.getElementById("reasoningEmoji");
+  
+  let content = "";
   
   switch(filter) {
     case "today":
-      explanation = "📊 TODAY VIEW\n\nChart: Hourly comparison of Today vs Yesterday (24 hours)\n• Revenue: Green line shows hourly sales today\n• Cost: Gray line shows hourly costs today\n\nMetrics:\n• Total Revenue: Sum of all sales today\n• Gross Profit: Revenue minus costs\n• Profit Margin: (Profit ÷ Revenue) × 100\n• Performance: Compares today vs yesterday";
+      emoji.textContent = ☀️";
+      title.textContent = "Today's Performance";
+      content = `
+        <div class="reasoning-section">
+          <h4>📈 Chart Visualization</h4>
+          <p>The chart displays <strong>24-hour hourly comparison</strong> between today and yesterday. This helps you identify peak sales hours and unusual patterns throughout the day.</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>🎨 Understanding the Lines</h4>
+          <p><strong style="color: #10b981;">● Green Line (Revenue):</strong> Shows your hourly sales income for today</p>
+          <p style="margin-top: 8px;"><strong style="color: #64748b;">● Gray Line (Cost):</strong> Displays the cost of goods sold each hour</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>💡 What This Means</h4>
+          <p>You're viewing <strong>real-time daily performance</strong>. The comparison with yesterday helps you understand if today's business is performing better or worse than usual.</p>
+        </div>
+        
+        <div class="reasoning-metrics">
+          <div class="reason-metric-card">
+            <div class="label">Tracking Period</div>
+            <div class="value">24 Hours</div>
+          </div>
+          <div class="reason-metric-card">
+            <div class="label">Comparison</div>
+            <div class="value">Yesterday</div>
+          </div>
+        </div>
+      `;
       break;
+      
     case "week":
-      explanation = "📊 THIS WEEK VIEW\n\nChart: Daily comparison (Sun-Sat)\n• Revenue: Green area shows daily sales this week\n• Cost: Gray area shows daily costs\n\nMetrics:\n• Total Revenue: Week-to-date sales\n• Comparison: This week vs last week\n• Performance indicator tracks growth";
+      emoji.textContent = "📅";
+      title.textContent = "This Week's Analysis";
+      content = `
+        <div class="reasoning-section">
+          <h4>📈 Chart Visualization</h4>
+          <p>The chart shows <strong>7-day daily performance</strong> from Sunday to Saturday, comparing this week with last week's data.</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>🎨 Understanding the Data</h4>
+          <p><strong style="color: #10b981;">● Green Area (Revenue):</strong> Your daily sales for each day of this week</p>
+          <p style="margin-top: 8px;"><strong style="color: #64748b;">● Gray Area (Cost):</strong> Daily costs associated with those sales</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>💡 What This Means</h4>
+          <p>You're tracking your <strong>week-to-date progress</strong>. The day-by-day breakdown helps identify which days perform best and whether this week is trending better than last week.</p>
+        </div>
+        
+        <div class="reasoning-metrics">
+          <div class="reason-metric-card">
+            <div class="label">Tracking Period</div>
+            <div class="value">7 Days</div>
+          </div>
+          <div class="reason-metric-card">
+            <div class="label">Comparison</div>
+            <div class="value">Last Week</div>
+          </div>
+        </div>
+      `;
       break;
+      
     case "month":
-      explanation = "📊 THIS MONTH VIEW\n\nChart: Daily performance for current month\n• Each point = one day's revenue and cost\n• Smooth curves show trends\n\nMetrics:\n• Total Revenue: Month-to-date\n• Profit Margin: Overall profitability\n• Comparison: vs last month's same period";
+      emoji.textContent = "🗓️";
+      title.textContent = "This Month's Overview";
+      content = `
+        <div class="reasoning-section">
+          <h4>📈 Chart Visualization</h4>
+          <p>The chart displays <strong>daily performance throughout the current month</strong>, showing trends and patterns across all days so far.</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>🎨 Understanding the Curves</h4>
+          <p><strong style="color: #10b981;">● Green Curve (Revenue):</strong> Each point represents one day's total sales</p>
+          <p style="margin-top: 8px;"><strong style="color: #64748b;">● Gray Curve (Cost):</strong> Each point shows that day's total costs</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>💡 What This Means</h4>
+          <p>You're viewing <strong>month-to-date performance</strong>. The smooth curves help you see overall trends - whether your business is growing, stable, or declining this month compared to last month.</p>
+        </div>
+        
+        <div class="reasoning-metrics">
+          <div class="reason-metric-card">
+            <div class="label">Tracking Period</div>
+            <div class="value">30+ Days</div>
+          </div>
+          <div class="reason-metric-card">
+            <div class="label">Comparison</div>
+            <div class="value">Last Month</div>
+          </div>
+        </div>
+      `;
       break;
+      
     case "all":
-      explanation = "📊 ALL TIME VIEW\n\nChart: Last 12 months overview\n• Revenue: Green shows monthly sales trend\n• Cost: Gray shows monthly spending\n\nMetrics:\n• Lifetime totals across all time\n• No comparison (viewing all data)\n• Total Spend includes all inventory purchases";
+      emoji.textContent = "🌍";
+      title.textContent = "All-Time Performance";
+      content = `
+        <div class="reasoning-section">
+          <h4>📈 Chart Visualization</h4>
+          <p>The chart shows your <strong>complete business history</strong> broken down by month over the last 12 months, giving you the big picture view.</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>🎨 Understanding the Overview</h4>
+          <p><strong style="color: #10b981;">● Green Trend (Revenue):</strong> Monthly sales totals showing long-term revenue patterns</p>
+          <p style="margin-top: 8px;"><strong style="color: #64748b;">● Gray Trend (Cost):</strong> Monthly spending showing your cost patterns over time</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>💡 What This Means</h4>
+          <p>You're seeing your <strong>lifetime business performance</strong>. This view has no comparison because it shows ALL your data. Use it to understand seasonal patterns and overall business growth trajectory.</p>
+        </div>
+        
+        <div class="reasoning-metrics">
+          <div class="reason-metric-card">
+            <div class="label">Tracking Period</div>
+            <div class="value">12 Months</div>
+          </div>
+          <div class="reason-metric-card">
+            <div class="label">Comparison</div>
+            <div class="value">None</div>
+          </div>
+        </div>
+      `;
       break;
+      
     default:
-      explanation = "📊 CUSTOM PERIOD\n\nShowing aggregated data for selected timeframe with comparison to previous equivalent period.";
+      emoji.textContent = "📊";
+      title.textContent = "Custom Period View";
+      content = `
+        <div class="reasoning-section">
+          <h4>📈 Chart Visualization</h4>
+          <p>You're viewing aggregated data for a specific time period with intelligent comparison to the equivalent previous period.</p>
+        </div>
+        
+        <div class="reasoning-section">
+          <h4>💡 What This Means</h4>
+          <p>This custom view allows you to analyze performance for any selected timeframe and understand how it compares to the past.</p>
+        </div>
+      `;
   }
   
-  alert(explanation);
+  body.innerHTML = content;
+  modal.style.display = "flex";
 }
 
+function closeReasoning() {
+  document.getElementById("reasoningModal").style.display = "none";
+}
 // FINANCIAL CALCULATIONS
 function calculateFinancials() {
   const filter = document.getElementById("timeFilter").value;
