@@ -2106,34 +2106,6 @@ document.querySelectorAll('.grid-cell').forEach(cell => {
             });
         }
 
-window.toggleHeatmap = function() {
-    heatmapEnabled = !heatmapEnabled;
-    const toggle = document.getElementById('heatmapToggle');
-    toggle.classList.toggle('active');
-    
-    // FIRST: Apply the heatmap colors
-    updateHeatmap();
-    
-    // THEN: Show the popup (if turning ON)
-    if (heatmapEnabled) {
-        const popup = document.getElementById('heatmap-legend-popup');
-        const overlay = document.getElementById('overlay');
-        overlay.classList.add('active');
-        popup.classList.add('active');
-        
-        // Auto-close after 3 seconds WITHOUT removing heatmap colors
-        setTimeout(() => {
-            popup.classList.remove('active');
-            overlay.classList.remove('active');
-            // RE-APPLY heatmap after popup closes to ensure colors stay
-            updateHeatmap();
-        }, 3000);
-        
-        showToast('🔥 Heatmap On', 'Color coding active');
-    } else {
-        showToast('❄️ Heatmap Off', 'Normal view restored');
-    }
-};
 window.closeHeatmapLegend = function() {
     document.getElementById('heatmap-legend-popup').classList.remove('active');
     document.getElementById('overlay').classList.remove('active');
