@@ -189,6 +189,17 @@ body{margin:0;background:#f6f7fb;padding:30px}
     border-color: #fef3c7;
     color: #f59e0b;
 }
+/* FORCE CLOSE BUTTON TO ALWAYS WORK */
+.btn-close {
+    position: relative !important;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+}
+
+.manual-modal-box {
+    position: relative;
+    z-index: 9998;
+}
 
 .decrease-text-btn:hover {
     background: #fef3c7;
@@ -1435,6 +1446,7 @@ auth.onAuthStateChanged(u => {
 
 // PRODUCT ANALYTICS SYSTEM
 // PRODUCT ANALYTICS SYSTEM - FIXED CALCULATION
+// PRODUCT ANALYTICS SYSTEM - ONLY ACTIVE PRODUCTS
 function updateProductAnalytics(productId, productName, quantitySold) {
     if (!currentUserId) {
         console.error("User not authenticated");
@@ -1457,10 +1469,14 @@ function updateProductAnalytics(productId, productName, quantitySold) {
             return;
         }
         
-        // Calculate TOTAL sales per product (all time)
+        // Get current inventory product IDs
+        const activeProductIds = new Set(Object.keys(inventory));
+        console.log("🔍 Active Products:", activeProductIds);
+        
+        // Calculate TOTAL sales per product (all time) - ONLY ACTIVE PRODUCTS
         const totalSalesPerProduct = {};
         
-        // Calculate RECENT sales per product (last 7 days)
+        // Calculate RECENT sales per product (last 7 days) - ONLY ACTIVE PRODUCTS
         const recentSalesPerProduct = {};
         
         Object.entries(sales).forEach(([saleId, sale]) => {
@@ -1468,6 +1484,12 @@ function updateProductAnalytics(productId, productName, quantitySold) {
             const pname = sale.productName;
             const qty = sale.quantity || 0;
             const saleTime = sale.timestamp || 0;
+            
+            // ✅ CRITICAL FIX: Only count sales for products that still exist
+            if (!activeProductIds.has(pid)) {
+                console.log(`⚠️ Skipping deleted product: ${pname} (${pid})`);
+                return; // Skip this sale
+            }
             
             // TOTAL SALES (All Time)
             if (!totalSalesPerProduct[pid]) {
@@ -1495,8 +1517,8 @@ function updateProductAnalytics(productId, productName, quantitySold) {
             }
         });
         
-        console.log("📈 Total Sales:", totalSalesPerProduct);
-        console.log("🔥 Recent Sales (7 days):", recentSalesPerProduct);
+        console.log("📈 Total Sales (Active Products Only):", totalSalesPerProduct);
+        console.log("🔥 Recent Sales (7 days, Active Products Only):", recentSalesPerProduct);
         
         // Convert to arrays for finding max/min
         const totalSalesArray = Object.entries(totalSalesPerProduct).map(([id, data]) => ({
@@ -1523,6 +1545,9 @@ function updateProductAnalytics(productId, productName, quantitySold) {
                 totalSold: mostSelling.totalSold,
                 lastUpdated: timestamp
             });
+        } else {
+            console.log("⚠️ No sales data for active products");
+            analyticsRef.child('mostSelling').remove();
         }
         
         // 2. LEAST SELLING - Lowest TOTAL sales (all time)
@@ -1539,6 +1564,9 @@ function updateProductAnalytics(productId, productName, quantitySold) {
                 totalSold: leastSelling.totalSold,
                 lastUpdated: timestamp
             });
+        } else {
+            console.log("⚠️ No sales data for active products");
+            analyticsRef.child('leastSelling').remove();
         }
         
         // 3. TRENDING - Most sales in LAST 7 DAYS
@@ -1567,7 +1595,6 @@ function updateProductAnalytics(productId, productName, quantitySold) {
         console.error("❌ Error updating analytics:", error);
     });
 }
-
 function sortAnalytics() {
     // This function is no longer needed but kept for compatibility
     console.log("sortAnalytics() called - analytics are updated in real-time");
@@ -2347,33 +2374,42 @@ document.getElementById("confirmQtyBtn").onclick = () => {
 
     const amount = Math.abs(parseFloat(val));
     const p = inventory[currentUpdateId];
+    const priceData = prices[currentUpdateId] || {};
     
     if (currentDirection > 0) {
-        // RESTOCKING - CHECK EXPIRY
+        // RESTOCKING
+        
+        // ✅ FIX: Only check expiry if it EXISTS
         if (p.expiryDate) {
             closeQtyModal();
             askExpiryForRestock(currentUpdateId, p, amount);
             return;
         }
         
-        // NO EXPIRY DATE - ADD NORMALLY
+        // NO EXPIRY DATE - ADD NORMALLY (THIS WAS MISSING!)
+        const costPrice = (typeof priceData.costPrice === 'object') 
+            ? (priceData.costPrice.numericValue || 0) 
+            : parseFloat(priceData.costPrice) || 0;
+        
         db.ref(`Businesses/${auth.currentUser.uid}/purchases`).push({
             productId: currentUpdateId,
             productName: p.name,
             quantity: amount,
-            totalCost: (priceData.costPrice || 0) * amount,
+            totalCost: costPrice * amount,
             timestamp: firebase.database.ServerValue.TIMESTAMP
         });
         
         const newQty = p.quantity + amount;
         invRef.child(currentUpdateId).update({ quantity: newQty }).then(() => {
             closeQtyModal();
-            triggerSuccess(`Added ${amount}`);
+            triggerSuccess(`✅ Added ${amount} ${p.unit}`);
         });
+        
     } else {
         // DECREASING STOCK (SELLING)
-        const priceData = prices[currentUpdateId] || {};
-        const sellPrice = (typeof priceData.sellPrice === 'object') ? priceData.sellPrice.numericValue : parseFloat(priceData.sellPrice) || 0;
+        const sellPrice = (typeof priceData.sellPrice === 'object') 
+            ? (priceData.sellPrice.numericValue || 0) 
+            : parseFloat(priceData.sellPrice) || 0;
         
         db.ref(`Businesses/${auth.currentUser.uid}/sales`).push({
             productId: currentUpdateId,
@@ -2386,7 +2422,7 @@ document.getElementById("confirmQtyBtn").onclick = () => {
         const newQty = Math.max(0, p.quantity - amount);
         invRef.child(currentUpdateId).update({ quantity: newQty }).then(() => {
             closeQtyModal();
-            triggerSuccess(`Sold ${amount}`);
+            triggerSuccess(`✅ Sold ${amount} ${p.unit}`);
             
             // UPDATE ANALYTICS
             updateProductAnalytics(currentUpdateId, p.name, amount);
@@ -2443,13 +2479,23 @@ async function openScanner() {
     }
     
     scannerModal.style.display = "flex";
+    
+    // Clear any existing scanner
+    if (html5QrCode) {
+        try {
+            await html5QrCode.stop();
+        } catch (e) {
+            console.warn("Clearing old scanner:", e);
+        }
+    }
+    
     html5QrCode = new Html5Qrcode("reader");
     
     // ENHANCED CONFIG FOR SMALL BARCODES
     const config = { 
-        fps: 60, // Increased from 30
-        qrbox: { width: 400, height: 200 }, // Larger scan area
-        aspectRatio: 2.0, // Better for wide barcodes
+        fps: 60,
+        qrbox: { width: 400, height: 200 },
+        aspectRatio: 2.0,
         disableFlip: false,
         experimentalFeatures: { 
             useBarCodeDetectorIfSupported: true 
@@ -2486,12 +2532,11 @@ async function openScanner() {
                     document.getElementById('torch-btn').style.display = "flex";
                 }
 
-                // MAXIMUM ZOOM & AUTO-FOCUS
                 const constraints = { advanced: [] };
                 
                 if (caps.zoom) {
                     const maxZoom = caps.zoom.max;
-                    const optimalZoom = Math.min(maxZoom, 3.5); // Optimal for barcodes
+                    const optimalZoom = Math.min(maxZoom, 3.5);
                     constraints.advanced.push({ zoom: optimalZoom });
                 }
                 
@@ -2515,22 +2560,61 @@ async function openScanner() {
         }, 1000);
 
     } catch (err) {
-        console.error("Scanner fail:", err);
-        alert("Camera access failed. Please allow camera permissions.");
+        console.error("❌ Scanner failed to start:", err);
+        
+        // CRITICAL FIX: Show error message and allow closing
+        const readerDiv = document.getElementById('reader');
+        if (readerDiv) {
+            readerDiv.innerHTML = `
+                <div style="padding: 40px; text-align: center; color: white; background: #ef4444; border-radius: 15px;">
+                    <h3 style="margin: 0 0 10px 0; font-size: 20px;">❌ Camera Access Failed</h3>
+                    <p style="margin: 0; font-size: 14px; line-height: 1.5;">
+                        Please allow camera permissions in your browser settings.
+                        <br><br>
+                        <strong>Settings → Privacy → Camera</strong>
+                        <br><br>
+                        Or use the buttons below to add products manually.
+                    </p>
+                </div>
+            `;
+        }
+        
+        // Clean up failed scanner instance
+        html5QrCode = null;
+        
+        // Alert user with helpful message
+        alert("⚠️ Camera Permission Denied\n\n" +
+              "To use the scanner:\n" +
+              "1. Go to browser Settings\n" +
+              "2. Find Privacy/Permissions\n" +
+              "3. Allow Camera access for this site\n" +
+              "4. Refresh and try again\n\n" +
+              "You can still use:\n" +
+              "• ⌨️ Type Code - Manual entry\n" +
+              "• 🔫 Gun Mode - Barcode gun");
     }
 }
-// BARCODE GUN CONNECTION
+// BARCODE GUN CONNECTION WITH VISUAL INDICATOR
 let barcodeGunConnected = false;
 let barcodeGunBuffer = "";
 
 function connectBarcodeGun() {
+    const gunBtn = document.querySelector('button[onclick="connectBarcodeGun()"]');
+    
     if (barcodeGunConnected) {
+        // DISCONNECT
         barcodeGunConnected = false;
         document.removeEventListener('keypress', handleBarcodeGunInput);
-        triggerSuccess("Barcode Gun Disconnected");
+        
+        // Reset button style
+        gunBtn.style.background = "#10b981";
+        gunBtn.innerHTML = "🔫 Gun Mode";
+        
+        triggerSuccess("🔴 Barcode Gun Disconnected");
         return;
     }
     
+    // CONNECT
     barcodeGunConnected = true;
     barcodeGunBuffer = "";
     
@@ -2548,7 +2632,21 @@ function connectBarcodeGun() {
     document.addEventListener('keypress', handleBarcodeGunInput);
     gunInput.focus();
     
-    triggerSuccess("✅ Barcode Gun Connected - Scan products now!");
+    // Keep input focused (important for gun)
+    setInterval(() => {
+        if (barcodeGunConnected) {
+            const input = document.getElementById('gunHiddenInput');
+            if (input && document.activeElement !== input) {
+                input.focus();
+            }
+        }
+    }, 1000);
+    
+    // Change button to show connected state
+    gunBtn.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+    gunBtn.innerHTML = "✅ Gun Connected";
+    
+    triggerSuccess("🟢 Barcode Gun Connected - Scan products now!");
     speakWithAI("Barcode gun connected. Ready to scan.");
 }
 
@@ -2557,6 +2655,7 @@ function handleBarcodeGunInput(e) {
     
     // Barcode guns send Enter key after scanning
     if (e.key === 'Enter' && barcodeGunBuffer.length > 0) {
+        console.log(`🔫 Gun scanned: ${barcodeGunBuffer}`);
         processScannedBarcode(barcodeGunBuffer.trim());
         barcodeGunBuffer = "";
         
@@ -2741,13 +2840,25 @@ function saveNewProduct(code, name) {
 }
 
 function stopScanner() {
+    const scannerModal = document.getElementById('scannerModal');
+    
     if (html5QrCode) {
         html5QrCode.stop().then(() => {
-            document.getElementById('scannerModal').style.display = "none";
+            if (scannerModal) scannerModal.style.display = "none";
             torchOn = false;
-        }).catch(() => {
-            document.getElementById('scannerModal').style.display = "none";
+            html5QrCode = null;
+            console.log("✅ Scanner stopped successfully");
+        }).catch((err) => {
+            console.warn("⚠️ Scanner stop error:", err);
+            // Force close anyway
+            if (scannerModal) scannerModal.style.display = "none";
+            torchOn = false;
+            html5QrCode = null;
         });
+    } else {
+        // No scanner instance, just close modal
+        if (scannerModal) scannerModal.style.display = "none";
+        console.log("✅ Modal closed (no active scanner)");
     }
 }
 // --- ULTIMATE PDF REPORT FUNCTIONS ---
