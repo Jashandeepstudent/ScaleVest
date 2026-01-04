@@ -227,7 +227,74 @@ body {
             background: rgba(0, 243, 255, 0.2) !important;
         }
 
+/* Expiry Warning Styles */
+.grid-cell.expiring-soon {
+    background: rgba(139, 69, 19, 0.6) !important;
+    border-color: #8B4513;
+    box-shadow: 0 0 30px #8B4513;
+    animation: expiryPulse 2s infinite;
+}
 
+.grid-cell.expired {
+    background: rgba(64, 64, 64, 0.8) !important;
+    border-color: #404040;
+    box-shadow: 0 0 40px #404040;
+    animation: expiredPulse 2s infinite;
+}
+
+@keyframes expiryPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes expiredPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.9; }
+}
+
+.product-node.is-expiring-soon .product-card {
+    background: linear-gradient(180deg, rgba(139, 69, 19, 0.45), rgba(101, 67, 33, 0.55));
+    box-shadow: 0 0 50px rgba(139, 69, 19, 0.9), inset 0 0 35px rgba(139, 69, 19, 0.7);
+}
+
+.product-node.is-expiring-soon .product-card::before {
+    border-color: #8B4513;
+    box-shadow: 0 0 30px #8B4513;
+}
+
+.product-node.is-expired .product-card {
+    background: linear-gradient(180deg, rgba(64, 64, 64, 0.45), rgba(32, 32, 32, 0.55));
+    box-shadow: 0 0 50px rgba(64, 64, 64, 0.9), inset 0 0 35px rgba(64, 64, 64, 0.7);
+    filter: grayscale(0.7);
+}
+
+.product-node.is-expired .product-card::before {
+    border-color: #404040;
+    box-shadow: 0 0 30px #404040;
+}
+
+.expiry-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #8B4513;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 5px;
+    font-size: 9px;
+    font-weight: bold;
+    transform: translateZ(25px);
+    animation: badgePulse 1.5s infinite;
+}
+
+.expiry-badge.expired {
+    background: #404040;
+}
+
+@keyframes badgePulse {
+    0%, 100% { transform: translateZ(25px) scale(1); }
+    50% { transform: translateZ(25px) scale(1.1); }
+}
         @keyframes heatPulse {
             0%, 100% { opacity: 0.8; }
             50% { opacity: 1; }
@@ -490,56 +557,70 @@ body {
     overflow-y: auto;
 }
 
+/* ============================================
+   MOBILE RESPONSIVE - OPTIMIZED FOR PHONES
+   ============================================ */
 @media (max-width: 768px) {
-    .controls {
-        /* Position: Top Left with safe breathing room */
-        top: 10px;      
-        left: 10px;     
-        bottom: auto;
-        transform: none;
+    .container { padding: 12px; }
+    
+    /* Make the dashboard items stack vertically */
+    .dashboard-grid { grid-template-columns: 1fr; gap: 16px; }
 
-        /* Size: Scale based on screen width rather than hard pixels */
-        width: 60vw;       /* Takes up 60% of screen width max */
-        min-width: 160px; 
-        max-width: 240px; 
-        
-        /* Aesthetic: Keeps your desktop "Neon" vibe */
-        padding: 12px;
-        border-width: 2px; /* Keeping it visible but scaled */
-        border-radius: 12px;
-        background: rgba(15, 15, 35, 0.92);
-        
-        /* Scrolling and Scaling */
-        max-height: 70vh; 
-        font-size: 13px;   /* Slightly larger than before for legibility */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Adds depth */
+    /* The main "Controls" or "Mega Alert" box fix */
+    .mega-alert-container, .controls {
+        padding: 20px 16px !important;
+        width: 92vw !important; /* Uses nearly full width but with safe margins */
+        max-width: 400px; 
+        max-height: 85vh;
+        border-radius: 16px;
+        overflow-y: auto;
     }
 
-    /* Fix for "Pressed" Buttons */
-    .controls button {
-        width: 100%;       /* Ensure buttons fill the mini-container */
-        padding: 10px;     /* More "tap-friendly" height */
-        margin-top: 8px;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
+    /* Scaling down text and icons so they fit without scrolling */
+    .mega-alert-title { 
+        font-size: 1.2rem !important; 
+        letter-spacing: 1px;
+    }
+
+    .mega-alert-icon { 
+        font-size: 3rem !important; 
+    }
+
+    .mega-alert-icon-wrapper { 
+        width: 80px; 
+        height: 80px; 
+        margin-bottom: 15px; 
+    }
+
+    /* Fix for Buttons being too big */
+    .mega-alert-actions, .item-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .btn-mega-primary, .btn-mega-secondary, .btn {
+        width: 100% !important;
+        padding: 12px !important;
+        font-size: 0.85rem !important;
         justify-content: center;
-        gap: 8px;          /* Space between icon and text */
     }
 
-    /* Small Trash Icon Button adjustment */
-    .controls .btn-danger {
-        width: auto !important; /* Overrides the 100% for the delete icon */
-        aspect-ratio: 1 / 1;    /* Makes it a perfect square */
-        padding: 8px;
+    /* Ensure list items don't overflow */
+    .deadline-list-container {
+        max-height: 180px !important;
+        padding: 10px;
     }
-}    
-    .controls h3 {
-        font-size: 13px;
-        margin-bottom: 8px;
-    }
+
+    .deadline-item-title { font-size: 0.9rem; }
+    .deadline-item-desc { font-size: 0.8rem; padding-left: 20px; }
 }
-        .controls h3 { color: var(--neon-primary); margin-bottom: 15px; font-size: 18px; }
+
+/* Extra small phones (iPhone SE, etc) */
+@media (max-width: 380px) {
+    h1 { font-size: 1.2rem; }
+    .mega-alert-title { font-size: 1rem !important; }
+    .mega-alert-timer { padding: 8px 15px; font-size: 0.8rem; }
+}        .controls h3 { color: var(--neon-primary); margin-bottom: 15px; font-size: 18px; }
         .control-group { margin-bottom: 15px; }
         .control-group label { display: block; margin-bottom: 8px; color: #ccc; font-size: 14px; }
 
@@ -1478,11 +1559,21 @@ body {
         </div>
         <button class="exit-time-travel" onclick="exitTimeTravel()">EXIT</button>
     </div>
-
-    <div class="inventory-leaderboard" id="outOfStockPanel">
+<div class="header-row" style="display: flex !important; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 20px; width: 100%;">
+    
+    <div class="inventory-leaderboard" id="outOfStockPanel" style="margin: 0; flex: 1; min-width: 0;">
         <div class="leaderboard-title">🚨 Out of Stock <span id="oosCount">0</span></div>
         <div id="oosList"></div>
     </div>
+
+    <a href="mainbusinesshub.html" class="btn btn-secondary" style="height: fit-content; padding: 12px 20px; white-space: nowrap; display: flex; align-items: center; text-decoration: none; color: white; background: #333; border-radius: 8px; flex-shrink: 0;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back
+    </a>
+    
+</div>
 
     <div class="controls">
         <h3><span class="status-indicator" id="statusIndicator"></span>🎮 Controls</h3>
@@ -1593,6 +1684,8 @@ import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/
         let isTimeTravelMode = false;
        let timeTravelDaysOffset = 0; 
         let futureProductsData = [];
+        let expiryNotificationDays = 3; 
+        let expiryAlerts = []; 
 
         const iconMap = {
             'apple': '🍎', 'bread': '🍞', 'milk': '🥛', 'fish': '🐟', 'salmon': '🐟',
@@ -1703,19 +1796,24 @@ function moveProductToPosition(product, newX, newY, newFloor) {
                 cell.className = 'grid-cell';
                 cell.style.background = '';
 
-                if (product) {
-                    if (product.stock === 0) {
-                        cell.classList.add('heatmap-oos'); // RED
+if (product) {
+                    const expiryStatus = getExpiryStatus(product);
+                    
+                    if (expiryStatus === 'expired') {
+                        cell.classList.add('expired');
+                    } else if (expiryStatus === 'expiring-soon') {
+                        cell.classList.add('expiring-soon');
+                    } else if (product.stock === 0) {
+                        cell.classList.add('heatmap-oos');
                     } else if (product.stock < 5) {
-                        cell.classList.add('heatmap-lowstock'); // YELLOW
+                        cell.classList.add('heatmap-lowstock');
                     } else {
-                        // Sales Logic
-                        if (product.sales > 50) { // High / Most Selling
-                            cell.classList.add('heatmap-high'); // ORANGE
-                        } else if (product.sales < 10) { // Low Selling
-                            cell.classList.add('heatmap-low'); // BLUE
+                        if (product.sales > 50) {
+                            cell.classList.add('heatmap-high');
+                        } else if (product.sales < 10) {
+                            cell.classList.add('heatmap-low');
                         } else {
-                            cell.classList.add('heatmap-med'); // Default/Med
+                            cell.classList.add('heatmap-med');
                         }
                     }
                 }
@@ -1781,6 +1879,27 @@ node.style.left = `calc(50% - 400px + ${product.x * gridSize}px)`;
 node.style.top = `calc(50% - 400px + ${product.y * gridSize}px)`;
 node.style.transform = `translateZ(${floorZ}px)`;
 
+                const expiryStatus = getExpiryStatus(product, isTimeTravelMode ? new Date(Date.now() + timeTravelDaysOffset * 86400000) : null);
+                const daysLeft = product.expiryDate ? getDaysUntilExpiry(product.expiryDate, isTimeTravelMode ? new Date(Date.now() + timeTravelDaysOffset * 86400000) : null) : null;
+                
+                let stockBadgeHtml = '';
+                let expiryBadgeHtml = '';
+                
+                // Determine stock badge
+                if (expiryStatus === 'expired') {
+                    stockBadgeHtml = '<span class="stock-badge expired" style="background:#404040;">EXPIRED</span>';
+                } else if (expiryStatus === 'expiring-soon' && product.stock > 0) {
+                    if (product.stock < 5) {
+                        stockBadgeHtml = `<span class="stock-badge" style="background:#8B4513;color:#fff;">LOW & ${daysLeft}D EXP</span>`;
+                    } else {
+                        expiryBadgeHtml = `<span class="expiry-badge">EXP ${daysLeft}D</span>`;
+                    }
+                } else if (product.stock < 5 && product.stock > 0) {
+                    stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-yellow);color:black;">LOW</span>';
+                } else if (product.stock === 0) {
+                    stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-red);">OUT</span>';
+                }
+                
                 const stockText = isTimeTravelMode 
                     ? (product.stock <= 0 ? "OUT OF STOCK" : `OUT IN ${Math.ceil(product.stock / (product.velocity || 1))}D`)
                     : product.stock;
@@ -1788,15 +1907,20 @@ node.style.transform = `translateZ(${floorZ}px)`;
                 const futureReasonHtml = isTimeTravelMode && product.futureReason 
                     ? `<div class="future-reason">${product.futureReason}</div>`
                     : '';
+                
+                const expiryInfoHtml = product.expiryDate && product.stock > 0
+                    ? `<div style="font-size: 9px; color: ${expiryStatus === 'expiring-soon' ? '#8B4513' : '#888'}; margin-top: 2px;">EXP: ${product.expiryDate}</div>`
+                    : '';
 
                 node.innerHTML = `
                     <div class="product-card">
-                        ${product.stock < 5 && product.stock > 0 ? `<span class="stock-badge" style="background:var(--neon-yellow);color:black;">${isTimeTravelMode ? 'LOW' : 'LOW'}</span>` : ''}
-                        ${product.stock === 0 ? '<span class="stock-badge" style="background:var(--neon-red);">OUT</span>' : ''}
+                        ${expiryBadgeHtml}
+                        ${stockBadgeHtml}
                         <div class="product-icon">${product.icon}</div>
                         <div class="product-name">${product.name}</div>
                         <div class="product-price">${isTimeTravelMode ? 'PREDICTED' : product.price}</div>
                         <div style="font-size: 10px; color: #ccc; margin-top: 4px;">STOCK: ${stockText}</div>
+                        ${expiryInfoHtml}
                         ${futureReasonHtml}
                     </div>
                 `;
@@ -1815,10 +1939,44 @@ node.style.transform = `translateZ(${floorZ}px)`;
             updateHeatmap(); // Apply heatmap if active
             updateOutOfStockLeaderboard(products);
         }
+// Calculate days until expiry
+        function getDaysUntilExpiry(expiryDate, simulatedDate = null) {
+            if (!expiryDate) return null;
+            
+            const today = simulatedDate ? new Date(simulatedDate) : new Date();
+            const expiry = new Date(expiryDate);
+            
+            today.setHours(0, 0, 0, 0);
+            expiry.setHours(0, 0, 0, 0);
+            
+            const diffTime = expiry - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return diffDays;
+        }
 
-        function updateNodeVisuals(node, product) {
-            node.classList.remove('is-out-of-stock', 'is-low-stock');
-            if (product.stock === 0) {
+        // Get expiry status
+        function getExpiryStatus(product, simulatedDate = null) {
+            if (!product.expiryDate || product.stock === 0) return null;
+            
+            const daysLeft = getDaysUntilExpiry(product.expiryDate, simulatedDate);
+            
+            if (daysLeft === null) return null;
+            if (daysLeft <= 0) return 'expired';
+            if (daysLeft <= expiryNotificationDays) return 'expiring-soon';
+            
+            return null;
+        }
+function updateNodeVisuals(node, product) {
+            node.classList.remove('is-out-of-stock', 'is-low-stock', 'is-expiring-soon', 'is-expired');
+            
+            const expiryStatus = getExpiryStatus(product);
+            
+            if (expiryStatus === 'expired') {
+                node.classList.add('is-expired');
+            } else if (expiryStatus === 'expiring-soon') {
+                node.classList.add('is-expiring-soon');
+            } else if (product.stock === 0) {
                 node.classList.add('is-out-of-stock');
             } else if (product.stock < 5) {
                 node.classList.add('is-low-stock');
@@ -2126,6 +2284,16 @@ function showToast(title, message, duration = 3000) {
 </div>
 
             <div class="story-section">
+${product.expiryDate ? `
+            <div class="story-section" style="border-left-color: ${expiryStatus === 'expired' ? '#404040' : expiryStatus === 'expiring-soon' ? '#8B4513' : 'var(--neon-primary)'};">
+                <h3>📅 Expiry Information</h3>
+                <div style="font-size: 18px; color: ${expiryStatus === 'expired' ? '#404040' : expiryStatus === 'expiring-soon' ? '#8B4513' : 'var(--neon-accent)'}; font-weight: bold;">
+                    ${expiryStatus === 'expired' ? '❌ EXPIRED' : expiryStatus === 'expiring-soon' ? ⚠️ EXPIRES IN ${daysLeft} DAYS` : `✅ EXPIRES: ${product.expiryDate}`}
+                </div>
+                ${expiryStatus === 'expiring-soon' ? '<p style="color: #ff8800; margin-top: 8px;">⚡ Action Required Soon!</p>' : ''}
+                ${expiryStatus === 'expired' ? '<p style="color: #ff4444; margin-top: 8px;">🚫 Product has expired - Remove from inventory</p>' : ''}
+            </div>
+            ` : ''}
                 <h3>📦 Inventory Level Status</h3>
                 <p style="font-size: 20px; display: flex; align-items: center; gap: 10px; justify-content: center;">
                     <span id="stock-status-text">${product.stock} Units Available</span>
@@ -2228,13 +2396,14 @@ const priceValue = priceData?.sellPrice || 0;
 
 const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
             
-            newProducts.push({
+newProducts.push({
                 id: key,
                 name: inv.name || key,
                 icon: iconMap[key.toLowerCase()] || '📦',
                 price: formattedPrice, 
                 stock: parseInt(inv.quantity || 0),
                 sales: parseInt(inv.sold || 0),
+                expiryDate: inv.expiryDate || null,
                 x: parseInt(inv.x !== undefined ? inv.x : index % 10),
                 y: parseInt(inv.y !== undefined ? inv.y : Math.floor(index / 10) % 10),
                 floor: Math.floor(index / 100) 
@@ -2249,6 +2418,14 @@ const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
                             {id: 'p4', name: 'Coffee', price: '$12.00', stock: 0, sales: 80, x: 5, y: 5, icon: '☕', floor: 0}, // OOS
                         ];
                     }
+// Load expiry notification settings
+                    const businessItemsRef = ref(database, `BusinessOwners/${currentUserId}/BusinessItems`);
+                    get(businessItemsRef).then(itemsSnapshot => {
+                        if (itemsSnapshot.exists()) {
+                            const items = itemsSnapshot.val();
+                            expiryNotificationDays = items.expiryDateNotification || 3;
+                        }
+                    });
                     
 productsData = newProducts;
 renderShop(productsData);
@@ -2284,7 +2461,49 @@ async function checkDeadlines(isSimulated = false) {
     const baseRef = `BusinessOwners/${currentUserId}/BusinessItems`;
     let urgentAlerts = []; 
     let criticalAlerts = [];
+    // Check for expiring products
+    const simulatedDate = isSimulated && timeTravelDaysOffset > 0 
+        ? new Date(Date.now() + timeTravelDaysOffset * 86400000)
+        : new Date();
     
+    productsData.forEach(product => {
+        if (product.expiryDate && product.stock > 0) {
+            const daysLeft = getDaysUntilExpiry(product.expiryDate, simulatedDate);
+            
+            if (daysLeft !== null) {
+                const uid = `expiry_${product.id}_${product.expiryDate}`;
+                
+                if (daysLeft === 0) {
+                    // Product expires today
+                    const data = {
+                        type: 'expiry',
+                        icon: 'fa-calendar-times',
+                        title: `${product.name} Expires Today!`,
+                        desc: `${product.stock} units will expire - Take action now`
+                    };
+                    processItem(uid, data, false, true);
+                } else if (daysLeft < 0) {
+                    // Product already expired
+                    const data = {
+                        type: 'expiry',
+                        icon: 'fa-trash-alt',
+                        title: `${product.name} Has Expired`,
+                        desc: `${product.stock} units expired - Remove from inventory`
+                    };
+                    processItem(uid, data, false, true);
+                } else if (daysLeft <= expiryNotificationDays) {
+                    // Product expiring soon
+                    const data = {
+                        type: 'expiry',
+                        icon: 'fa-exclamation-circle',
+                        title: `${product.name} Expiring Soon`,
+                        desc: `${product.stock} units expire in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`
+                    };
+                    processItem(uid, data, true, false);
+                }
+            }
+        }
+    });
     // Reset the tracker for items currently being displayed
     window.currentActiveAlertIds = [];
     
