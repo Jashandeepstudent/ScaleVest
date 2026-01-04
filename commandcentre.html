@@ -1492,19 +1492,19 @@ body {
         </div>
         <button class="exit-time-travel" onclick="exitTimeTravel()">EXIT</button>
     </div>
-<div class="header-row" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+<div class="header-row" style="display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px;">
     
-    <a href="mainbusinesshub.html" class="btn btn-secondary" style="height: fit-content; padding: 12px 20px; white-space: nowrap; display: flex; align-items: center; text-decoration: none; color: white;">
+    <div class="inventory-leaderboard" id="outOfStockPanel" style="margin: 0; flex-grow: 1;">
+        <div class="leaderboard-title">🚨 Out of Stock <span id="oosCount">0</span></div>
+        <div id="oosList"></div>
+    </div>
+
+    <a href="mainbusinesshub.html" class="btn btn-secondary" style="height: fit-content; padding: 12px 20px; white-space: nowrap; display: flex; align-items: center; text-decoration: none; color: white; background: #333; border-radius: 8px;">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
         Back
     </a>
-
-    <div class="inventory-leaderboard" id="outOfStockPanel" style="margin: 0; flex-grow: 1;">
-        <div class="leaderboard-title">🚨 Out of Stock <span id="oosCount">0</span></div>
-        <div id="oosList"></div>
-    </div>
     
 </div>
 
