@@ -2225,86 +2225,80 @@ function showToast(title, message, duration = 3000) {
         const response = await fetch(`https://ai-inventory-pro-sigma.vercel.app/api/gemini?productName=${encodeURIComponent(product.name)}`);
         const aiData = response.ok ? await response.json() : {};
         
-       const expiryStatus = getExpiryStatus(product);
+      const expiryStatus = getExpiryStatus(product);
 const daysLeft = product.expiryDate ? getDaysUntilExpiry(product.expiryDate) : null;
 
+// Show small expiry notification toast
+if (expiryStatus === 'expiring-soon') {
+    showToast(⚠️ Expiring Soon', `${product.name} expires in ${daysLeft} days`, 3000);
+} else if (expiryStatus === 'expired') {
+    showToast('❌ Expired', `${product.name} has expired - remove from inventory`, 4000);
+}
+
 content.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; border-bottom: 1px solid rgba(0, 243, 255, 0.2); padding-bottom: 15px;">
-        <h2 style="text-shadow: 0 0 15px var(--neon-primary); font-size: 24px; margin: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(0, 243, 255, 0.2); padding-bottom: 10px;">
+        <h2 style="text-shadow: 0 0 15px var(--neon-primary); font-size: 20px; margin: 0;">
             ${product.icon} ${product.name}
         </h2>
         
         <div style="text-align: right;">
-            <div style="font-size: 10px; color: var(--neon-secondary); text-transform: uppercase; letter-spacing: 1px; font-weight: bold;">
-                Sustainability
+            <div style="font-size: 8px; color: var(--neon-secondary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold;">
+                Quality
             </div>
-            <div style="font-size: 36px; font-weight: 900; color: var(--neon-secondary); text-shadow: 0 0 20px var(--neon-secondary); line-height: 1;">
+            <div style="font-size: 24px; font-weight: 900; color: var(--neon-secondary); text-shadow: 0 0 15px var(--neon-secondary); line-height: 1;">
                 ${aiData.score || 0}%
             </div>
         </div>
     </div>
 
     ${product.expiryDate ? `
-    <div class="story-section" style="border-left-color: ${expiryStatus === 'expired' ? '#404040' : expiryStatus === 'expiring-soon' ? '#8B4513' : 'var(--neon-primary)'};">
-        <h3>📅 Expiry Information</h3>
-        <div style="font-size: 18px; color: ${expiryStatus === 'expired' ? '#404040' : expiryStatus === 'expiring-soon' ? '#8B4513' : 'var(--neon-accent)'}; font-weight: bold;">
-            ${expiryStatus === 'expired' ? '❌ EXPIRED' : expiryStatus === 'expiring-soon' ? `⚠️ EXPIRES IN ${daysLeft} DAYS` : `✅ EXPIRES: ${product.expiryDate}`}
+    <div style="background: ${expiryStatus === 'expired' ? 'rgba(64,64,64,0.3)' : expiryStatus === 'expiring-soon' ? 'rgba(139,69,19,0.3)' : 'rgba(0,243,255,0.1)'}; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid ${expiryStatus === 'expired' ? '#404040' : expiryStatus === 'expiring-soon' ? '#8B4513' : 'var(--neon-primary)'};">
+        <div style="font-size: 11px; color: ${expiryStatus === 'expired' ? '#999' : expiryStatus === 'expiring-soon' ? '#D2691E' : '#00f3ff'}; font-weight: bold;">
+            📅 ${expiryStatus === 'expired' ? 'EXPIRED' : expiryStatus === 'expiring-soon' ? `⚠️ Expires in ${daysLeft}d` : `Expires: ${product.expiryDate}`}
         </div>
-        ${expiryStatus === 'expiring-soon' ? '<p style="color: #ff8800; margin-top: 8px;">⚡ Action Required Soon!</p>' : ''}
-        ${expiryStatus === 'expired' ? '<p style="color: #ff4444; margin-top: 8px;">🚫 Product has expired - Remove from inventory</p>' : ''}
     </div>
     ` : ''}
 
-    <div class="story-section" style="border-left-color: var(--neon-accent); background: rgba(127, 255, 0, 0.05);">
-        <h3>💰 Price Value</h3>
-        <p style="font-size: 24px; color: var(--neon-accent); font-weight: bold; text-shadow: 0 0 10px var(--neon-accent);">
-            ${product.price}
-        </p>
-    </div>
-
-    <div class="story-section">
-        <h3>📦 Inventory Management</h3>
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin-top: 15px;">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                <button onclick="openInCardQty('${product.id}', 'decrease')" 
-                    style="background:var(--neon-red); border:none; border-radius:6px; padding: 8px 14px; cursor:pointer; color:white; font-weight:bold; font-size:11px;">
-                    Decrease Stock
-                </button>
-
-                <span id="modal-stock-val" style="font-size: 32px; font-weight: bold; min-width: 60px; text-align: center; color: var(--neon-primary); text-shadow: 0 0 10px var(--neon-primary);">${product.stock}</span>
-                
-                <button onclick="openInCardQty('${product.id}', 'increase')" 
-                    style="background: var(--neon-accent); border: none; padding: 8px 14px; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; font-size:11px;">
-                    Restock
-                </button>
-            </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+        <div style="background: rgba(127, 255, 0, 0.1); padding: 12px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 11px; color: #999; margin-bottom: 4px;">💰 Price</div>
+            <div style="font-size: 18px; color: var(--neon-accent); font-weight: bold;">${product.price}</div>
+        </div>
+        <div style="background: rgba(0, 243, 255, 0.1); padding: 12px; border-radius: 10px; text-align: center;">
+            <div style="font-size: 11px; color: #999; margin-bottom: 4px;">📦 Stock</div>
+            <div style="font-size: 18px; color: ${product.stock < 5 ? 'var(--neon-red)' : 'var(--neon-primary)'}; font-weight: bold;">${product.stock}</div>
         </div>
     </div>
 
-    <div class="story-section">
-        <h3>🌍 Sourcing Origin</h3>
-        <p style="color: var(--ice-blue); font-weight: bold; letter-spacing: 1px;">
-            📍 ${aiData.origin || 'Global Distribution'}
-        </p>
-    </div>
+    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+        <div style="font-size: 13px; font-weight: bold; margin-bottom: 10px; color: var(--neon-primary);">📦 Manage Stock</div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+            <button onclick="openInCardQty('${product.id}', 'decrease')" 
+                style="background:var(--neon-red); border:none; border-radius:6px; padding: 8px 12px; cursor:pointer; color:white; font-weight:bold; font-size:11px;">
+                − Remove
+            </button>
 
-    <div class="story-section" style="padding: 10px; margin: 0;">
-        <h3 style="font-size: 12px; color: #888; margin-bottom: 4px; text-transform: uppercase;">📖 Product Journey</h3>
-        <div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-            <p style="font-style: italic; color: #eee; font-size: 13px; line-height: 1.4; margin: 0;">
-                "${aiData.description || 'Data synced.'}"
-            </p>
+            <span id="modal-stock-val" style="font-size: 28px; font-weight: bold; min-width: 50px; text-align: center; color: var(--neon-primary);">${product.stock}</span>
+            
+            <button onclick="openInCardQty('${product.id}', 'increase')" 
+                style="background: var(--neon-accent); border: none; padding: 8px 12px; border-radius: 6px; color: #000; font-weight: bold; cursor: pointer; font-size:11px;">
+                + Restock
+            </button>
         </div>
     </div>
 
-    <div class="story-section">
-        <h3>📦 Inventory Level Status</h3>
-        <p style="font-size: 20px; display: flex; align-items: center; gap: 10px; justify-content: center;">
-            <span id="stock-status-text">${product.stock} Units Available</span>
-            <span id="stock-status-badge" style="font-size: 14px; padding: 2px 8px; border-radius: 4px; background: ${product.stock < 5 ? 'var(--neon-red)' : 'var(--neon-accent)'}; color: #000; font-weight: bold;">
-                ${product.stock < 5 ? 'LOW STOCK' : 'STABLE'}
-            </span>
-        </p>
+    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
+        <div style="font-size: 11px; color: #888; margin-bottom: 4px;">🌍 Origin</div>
+        <div style="color: var(--ice-blue); font-weight: bold; font-size: 13px;">
+            ${aiData.origin || 'Global Distribution'}
+        </div>
+    </div>
+
+    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+        <div style="font-size: 11px; color: #888; margin-bottom: 6px;">📖 Info</div>
+        <div style="font-style: italic; color: #ccc; font-size: 12px; line-height: 1.4;">
+            "${aiData.description || 'Product details synced.'}"
+        </div>
     </div>
 
     <style>
@@ -2465,49 +2459,7 @@ async function checkDeadlines(isSimulated = false) {
     const baseRef = `BusinessOwners/${currentUserId}/BusinessItems`;
     let urgentAlerts = []; 
     let criticalAlerts = [];
-    // Check for expiring products
-    const simulatedDate = isSimulated && timeTravelDaysOffset > 0 
-        ? new Date(Date.now() + timeTravelDaysOffset * 86400000)
-        : new Date();
     
-    productsData.forEach(product => {
-        if (product.expiryDate && product.stock > 0) {
-            const daysLeft = getDaysUntilExpiry(product.expiryDate, simulatedDate);
-            
-            if (daysLeft !== null) {
-                const uid = `expiry_${product.id}_${product.expiryDate}`;
-                
-                if (daysLeft === 0) {
-                    // Product expires today
-                    const data = {
-                        type: 'expiry',
-                        icon: 'fa-calendar-times',
-                        title: `${product.name} Expires Today!`,
-                        desc: `${product.stock} units will expire - Take action now`
-                    };
-                    processItem(uid, data, false, true);
-                } else if (daysLeft < 0) {
-                    // Product already expired
-                    const data = {
-                        type: 'expiry',
-                        icon: 'fa-trash-alt',
-                        title: `${product.name} Has Expired`,
-                        desc: `${product.stock} units expired - Remove from inventory`
-                    };
-                    processItem(uid, data, false, true);
-                } else if (daysLeft <= expiryNotificationDays) {
-                    // Product expiring soon
-                    const data = {
-                        type: 'expiry',
-                        icon: 'fa-exclamation-circle',
-                        title: `${product.name} Expiring Soon`,
-                        desc: `${product.stock} units expire in ${daysLeft} day${daysLeft !== 1 ? 's' : ''}`
-                    };
-                    processItem(uid, data, true, false);
-                }
-            }
-        }
-    });
     // Reset the tracker for items currently being displayed
     window.currentActiveAlertIds = [];
     
@@ -2525,7 +2477,6 @@ async function checkDeadlines(isSimulated = false) {
             else urgentAlerts.push(data);
         }
     };
-
     try {
        // 1. Check Transactions (skip if completed)
         const transSnapshot = await get(ref(database, `${baseRef}/transactions`));
