@@ -1356,6 +1356,40 @@
         touch-action: manipulation;
     }
 }
+/* MOBILE FIX: Scale down the 4 Header Progress Cards */
+@media (max-width: 768px) {
+    header .progress-container { /* Ensure your grid div has a class like 'progress-container' */
+        gap: 5px !important;
+        padding: 5px !important;
+    }
+    header .progress-card { /* Ensure your card divs have a class like 'progress-card' */
+        padding: 6px 4px !important;
+        border-radius: 6px !important;
+    }
+    header .progress-card i {
+        font-size: 0.9rem !important; /* Smaller icons */
+        margin-bottom: 2px !important;
+    }
+    header .progress-card div:nth-child(2) {
+        font-size: 0.55rem !important; /* Smaller labels (Transactions, Orders, etc) */
+    }
+    header .progress-card div:nth-child(3) {
+        font-size: 0.9rem !important; /* Smaller numbers (0/0) */
+    }
+    header .progress-card div:last-child {
+        font-size: 0.5rem !important; /* Smaller "Completed" text */
+    }
+}
+/* DESKTOP FIX: Prevent cards from being too long/wide */
+@media (min-width: 769px) {
+    header .progress-container {
+        max-width: 800px; /* Limits the total width of the 4 cards */
+        margin: 0 auto;   /* Centers them in the header */
+    }
+    .progress-card {
+        max-width: 180px; /* Limits individual card length */
+    }
+}
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .mega-alert-container {
