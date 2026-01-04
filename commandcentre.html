@@ -159,7 +159,17 @@ body {
             position: relative;
             background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
             transition: background 1s ease;
+              overflow: hidden;
         }
+@media (max-width: 768px) {
+    .perspective-container {
+        perspective: 1000px; 
+    }
+    
+    .world {
+        transform: rotateX(var(--world-rotateX)) rotateZ(var(--world-rotateZ)) scale(0.5);
+    }
+}
 
         .world {
             transform-style: preserve-3d;
@@ -181,7 +191,41 @@ body {
     transform-style: preserve-3d;
 
 }
-
+/* MOBILE: Scale down the entire floor */
+@media (max-width: 768px) {
+    .floor {
+        width: 400px;
+        height: 400px;
+    }
+    
+    .product-node {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .product-card {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .product-icon {
+        font-size: 20px;
+    }
+    
+    .product-name {
+        font-size: 6px;
+        padding: 2px 4px;
+    }
+    
+    .product-price {
+        font-size: 7px;
+    }
+    
+    .stock-badge {
+        font-size: 6px;
+        padding: 2px 4px;
+    }
+}
         .grid-cell {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(0, 243, 255, 0.1);
@@ -1637,15 +1681,6 @@ box-sizing: border-box;
         <div id="oosList"></div>
     </div>
 
-    <a href="mainbusinesshub.html" class="btn btn-secondary" style="height: fit-content; padding: 12px 20px; white-space: nowrap; display: flex; align-items: center; text-decoration: none; color: white; background: #333; border-radius: 8px; flex-shrink: 0;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        Back
-    </a>
-    
-</div>
-
     <button class="control-toggle-btn" onclick="toggleControls()">
     <i class="fas fa-cog"></i> Digital Controls
 </button>
@@ -1779,15 +1814,19 @@ import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/
 
         // Initialize multiple floors dynamically
         function renderFloors(numFloors) {
-            const container = document.getElementById('floors-container');
-            container.innerHTML = ''; // Clear existing floors
+    const container = document.getElementById('floors-container');
+    container.innerHTML = '';
+    
+    const isMobile = window.innerWidth <= 768;
+    const floorWidth = isMobile ? 400 : 800;
 
-            for (let f = 0; f < numFloors; f++) {
-                const floor = document.createElement('div');
-                floor.className = 'floor';
-                floor.id = `floor-${f}`;
-                // Space floors by 250px on Z axis
-                floor.style.transform = `translate(-50%, -50%) translateZ(${-50 + (f * 250)}px)`; 
+    for (let f = 0; f < numFloors; f++) {
+        const floor = document.createElement('div');
+        floor.className = 'floor';
+        floor.id = `floor-${f}`;
+        floor.style.width = floorWidth + 'px';
+        floor.style.height = floorWidth + 'px';
+        floor.style.transform = `translate(-50%, -50%) translateZ(${f * 250}px)`;
                 
                 for (let i = 0; i < 100; i++) {
                     const cell = document.createElement('div');
@@ -1989,15 +2028,23 @@ node.dataset.productId = product.id;
 // Normal Mode Colors
 updateNodeVisuals(node, product);
 
-// Calculate exact grid positioning WITHOUT gap
-const floorWidth = 800;
+// Calculate grid size based on screen width
+const isMobile = window.innerWidth <= 768;
+const floorWidth = isMobile ? 400 : 800;
 const gridCells = 10;
-const cellSize = floorWidth / gridCells; // Exactly 80px per cell now (no gap)
+const cellSize = floorWidth / gridCells; // 40px on mobile, 80px on desktop
 const floorZ = (product.floor || 0) * 250;
 
+// FIXED: NO centering offset - align with grid corners
+const xPosition = -(floorWidth / 2) + (product.x * cellSize);
+const yPosition = -(floorWidth / 2) + (product.y * cellSize);
+
 // Calculate position: floor starts at -400, each cell is 80px
-const xPosition = -400 + (product.x * cellSize) + (cellSize / 2);
-const yPosition = -400 + (product.y * cellSize) + (cellSize / 2);
+// FIXED: Calculate position WITHOUT centering offset
+// Floor grid is 800px (10 cells × 80px), centered at origin
+// Cell (0,0) should be at top-left corner of grid at (-400, -400)
+const xPosition = -400 + (product.x * cellSize);
+const yPosition = -400 + (product.y * cellSize);
 
 node.style.position = 'absolute';
 node.style.left = '50%';
@@ -2900,15 +2947,18 @@ document.addEventListener('mouseup', () => {
 });
 
 // Touch support
+// Touch support with scroll prevention
 perspectiveContainer.addEventListener('touchstart', (e) => {
     if (e.target.closest('.product-node') || e.target.closest('.controls')) return;
+    e.preventDefault(); // PREVENT SCROLL
     isDragging = true;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-});
+}, { passive: false });
 
 document.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
+    e.preventDefault(); // PREVENT SCROLL
     const deltaX = e.touches[0].clientX - startX;
     const deltaY = e.touches[0].clientY - startY;
     
@@ -2920,7 +2970,7 @@ document.addEventListener('touchmove', (e) => {
     
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-});
+}, { passive: false });
 
 document.addEventListener('touchend', () => {
     isDragging = false;
