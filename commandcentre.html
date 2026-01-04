@@ -13,7 +13,7 @@
         }
 
 :root {
-            --world-rotateX: 60deg;
+            --world-rotateX: 45deg;
             --world-rotateZ: 45deg;
             --neon-primary: #00f3ff;
             --neon-secondary: #ff00ea;
@@ -1575,8 +1575,15 @@ body {
     
 </div>
 
-    <div class="controls">
-        <h3><span class="status-indicator" id="statusIndicator"></span>🎮 Controls</h3>
+    <button class="control-toggle-btn" onclick="toggleControls()">
+    <i class="fas fa-cog"></i> Digital Controls
+</button>
+
+<div class="controls" id="controlsPanel">
+    <h3>
+        <span>🎮 Controls</span>
+        <button class="close-controls-btn" onclick="toggleControls()">×</button>
+    </h3>
         
         <div class="control-group">
             <label>🔍 Search Products</label>
@@ -1590,7 +1597,7 @@ body {
 </div>
         <div class="control-group">
             <label>Rotate View (X-Axis): <span id="rotateX-value">60°</span></label>
-            <input type="range" id="rotateX" min="0" max="90" value="60" oninput="updateRotation()">
+            <input type="range" id="rotateX" min="0" max="90" value="45" oninput="updateRotation()">
         </div>
 
         <div class="control-group">
@@ -1673,6 +1680,11 @@ import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const auth = getAuth();
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentRotX = 45;
+        let currentRotZ = 45;
 
         let productsData = [];
         let heatmapEnabled = false;
@@ -1820,11 +1832,16 @@ if (product) {
             });
         }
 
-        window.toggleHeatmap = function() {
-            heatmapEnabled = !heatmapEnabled;
-            const toggle = document.getElementById('heatmapToggle');
-            toggle.classList.toggle('active');
-            updateHeatmap();
+window.toggleHeatmap = function() {
+    heatmapEnabled = !heatmapEnabled;
+    const toggle = document.getElementById('heatmapToggle');
+    toggle.classList.toggle('active');
+    
+    if (heatmapEnabled) {
+        showHeatmapLegend();
+    }
+    
+    updateHeatmap();
             
             // Toggle visibility of normal mode indicators on products
             const products = document.querySelectorAll('.product-node');
@@ -1838,6 +1855,26 @@ if (product) {
 
             showToast(heatmapEnabled ? '🔥 Heatmap On' : '❄️ Heatmap Off', 'Visualizing sales & stock performance');
         };
+function showHeatmapLegend() {
+    const legendHTML = `
+        <div style="text-align: left; line-height: 1.8;">
+            <div><span style="color: #ff0040;">🔴 Red</span> = Out of Stock</div>
+            <div><span style="color: #ffff00;">🟡 Yellow</span> = Low Stock (&lt;5)</div>
+            <div><span style="color: #ffaa00;">🟠 Orange</span> = High Sales (&gt;50)</div>
+            <div><span style="color: #00d4ff;">🔵 Blue</span> = Low Sales (&lt;10)</div>
+            <div><span style="color: #00f3ff;">💧 Cyan</span> = Normal Stock</div>
+        </div>
+    `;
+    
+    const toast = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = '🔥 Heatmap Legend';
+    document.getElementById('toastMessage').innerHTML = legendHTML;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
 
         function renderShop(products) {
             const container = document.getElementById('products-container');
@@ -1869,11 +1906,11 @@ updateNodeVisuals(node, product);
 const gridSize = 80; 
 const floorZ = (product.floor || 0) * 250; 
 
-// FIXED: Properly center product node over grid cell
 node.style.position = 'absolute';
-node.style.left = `${400 + (product.x * gridSize) + (gridSize / 2)}px`;
-node.style.top = `${400 + (product.y * gridSize) + (gridSize / 2)}px`;
-node.style.transform = `translate(-50%, -50%) translateZ(${floorZ}px)`;
+node.style.left = `${400 + (product.x * gridSize)}px`;
+node.style.top = `${400 + (product.y * gridSize)}px`;
+node.style.transform = `translateZ(${floorZ}px)`;
+node.style.transformStyle = 'preserve-3d';
 node.style.width = '160px';
 node.style.height = '160px';
 
@@ -2185,6 +2222,10 @@ showToast('🏠 Back to Present', 'Restored real-time inventory state', 2000);
             document.getElementById('timeTravelModal').style.display = 'none';
             document.getElementById('overlay').classList.remove('active');
         };
+window.toggleControls = function() {
+    const panel = document.getElementById('controlsPanel');
+    panel.classList.toggle('active');
+};
 
 function showToast(title, message, duration = 3000) {
     const toast = document.getElementById('toast');
@@ -2717,7 +2758,68 @@ window.dismissMegaAlert = function() {
             setTimeout(() => checkDeadlines(), 3600000); // 1 hour
             showToast('⏰ Alert Snoozed', 'Will remind you in 1 hour');
         };
+
         renderFloors(1);
+// Initialize Drag Controls
+const perspectiveContainer = document.getElementById('perspectiveContainer');
+
+perspectiveContainer.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.product-node') || e.target.closest('.controls')) return;
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const deltaX = e.clientX - startX;
+    const deltaY = e.clientY - startY;
+    
+    currentRotZ = (currentRotZ + deltaX * 0.3) % 360;
+    currentRotX = Math.max(0, Math.min(90, currentRotX - deltaY * 0.3));
+    
+    document.documentElement.style.setProperty('--world-rotateX', currentRotX + 'deg');
+    document.documentElement.style.setProperty('--world-rotateZ', currentRotZ + 'deg');
+    
+    document.getElementById('rotateX').value = currentRotX;
+    document.getElementById('rotateZ').value = currentRotZ;
+    document.getElementById('rotateX-value').textContent = Math.round(currentRotX) + '°';
+    document.getElementById('rotateZ-value').textContent = Math.round(currentRotZ) + '°';
+    
+    startX = e.clientX;
+    startY = e.clientY;
+});
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+});
+
+// Touch support
+perspectiveContainer.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.product-node') || e.target.closest('.controls')) return;
+    isDragging = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    const deltaX = e.touches[0].clientX - startX;
+    const deltaY = e.touches[0].clientY - startY;
+    
+    currentRotZ = (currentRotZ + deltaX * 0.3) % 360;
+    currentRotX = Math.max(0, Math.min(90, currentRotX - deltaY * 0.3));
+    
+    document.documentElement.style.setProperty('--world-rotateX', currentRotX + 'deg');
+    document.documentElement.style.setProperty('--world-rotateZ', currentRotZ + 'deg');
+    
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchend', () => {
+    isDragging = false;
+});
 // Check deadlines on page load (real-time mode)
 setTimeout(() => {
     if (currentUserId) {
