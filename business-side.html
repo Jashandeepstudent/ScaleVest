@@ -717,24 +717,80 @@ if (localStorage.getItem("businessProfileCreated") === "true") {
     </div>
   </div>
 </div>
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
-  authDomain: "scalevest-163a0.firebaseapp.com",
-  projectId: "scalevest-163a0",
-  storageBucket: "scalevest-163a0.firebasestorage.app",
-  messagingSenderId: "938358950124",
-  appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
-  measurementId: "G-QD3TWBZHR0"
-};
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+    authDomain: "scalevest-163a0.firebaseapp.com",
+    projectId: "scalevest-163a0",
+    databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com", // Ensure this is correct
+    storageBucket: "scalevest-163a0.firebasestorage.app",
+    messagingSenderId: "938358950124",
+    appId: "1:938358950124:web:043506aeaacea2a96bfdc9"
+  };
+
+  // Initialize
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const database = getDatabase(app);
+
+  // ==========================================
+  // AUTH GUARD: Redirect if not logged in
+  // ==========================================
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      // Not logged in? Save current URL to return later and redirect
+      console.log("No user found. Redirecting to login...");
+      window.location.href = "login.html";
+    } else {
+      console.log("User authenticated:", user.email);
+      // Check if they already have a profile
+      if (localStorage.getItem("businessProfileCreated") === "true") {
+        window.location.replace("mainbusinesshub.html");
+      }
+    }
+  });
+
+  // Export functions to window so the HTML buttons can see them
+  window.startLoading = async function() {
+    const name = document.getElementById("name").value.trim();
+    const age = document.getElementById("age").value.trim();
+    const businessType = document.getElementById("businessType").value.trim();
+    const employees = document.getElementById("employees").value.trim();
+
+    if (!name || !age || !businessType) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) return; // Safety check
+
+    closeModal();
+    document.getElementById('loadingScreen').style.display = 'flex';
+
+    try {
+      // Save data under the user's specific UID
+      const businessRef = ref(database, `BusinessOwners/${user.uid}`);
+      await set(businessRef, {
+        uid: user.uid,
+        name,
+        age,
+        businessType,
+        employees: employees || "N/A",
+        createdAt: new Date().toISOString()
+      });
+
+      localStorage.setItem("businessProfileCreated", "true");
+      runLoadingAnimation(); // Start the 5-image slide show
+    } catch (err) {
+      alert("Error saving data: " + err.message);
+    }
+  };
 </script>
-
 
 <script>
 function openModal(){document.getElementById('modal').style.display='flex'}
