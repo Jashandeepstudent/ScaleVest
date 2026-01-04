@@ -1414,6 +1414,55 @@
         touch-action: manipulation;
     }
 }
+
+.progress-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+@media (max-width: 1024px) {
+    .progress-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 360px) {
+    .progress-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* FORCE OVERRIDE INLINE GRID */
+@media (max-width: 1024px) {
+    header div[style*="grid-template-columns"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 600px) {
+    header div[style*="grid-template-columns"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    header div[style*="padding: 12px"] {
+        padding: 8px !important;
+    }
+
+    header i {
+        font-size: 1rem !important;
+    }
+
+    header span {
+        font-size: 1.05rem !important;
+    }
+}
+
+@media (max-width: 360px) {
+    header div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+
 /* MOBILE FIX: Scale down the 4 Header Progress Cards */
 @media (max-width: 768px) {
     header .progress-container { /* Ensure your grid div has a class like 'progress-container' */
@@ -1613,7 +1662,8 @@
 
     <!-- Progress Overview Cards INSIDE HEADER - Compact Version -->
    <div class="progress-cards">
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+<div class="progress-grid">
+
         <!-- Transactions Progress -->
         <div style="padding: 12px; text-align: center; background: rgba(255, 255, 255, 0.03); border-radius: 8px; border: 1px solid rgba(99, 102, 241, 0.15);">
             <i class="fas fa-chart-line" style="font-size: 1.3rem; color: var(--primary); margin-bottom: 6px; display: block;"></i>
