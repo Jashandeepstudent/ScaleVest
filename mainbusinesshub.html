@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ScaleVest | Executive Hub</title>
+<title>ScaleVest | Business Hub</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -42,6 +42,51 @@
 #createHubCard:hover img.hub-icon {
     transform: scale(1.1) rotate(-2deg);
 }
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Ensure the wrapper has a fixed height/width if not already set */
+}
+
+.icon-img {
+    width: 24px;   /* Match your original SVG size */
+    height: 24px;
+    display: block; /* Removes the "baseline" gap below images */
+    object-fit: contain; /* Prevents distortion */
+}
+
+    #createHubCard {
+    display: flex;
+    flex-direction: column; /* Stacks items vertically */
+    align-items: center;    /* Centers items horizontally */
+    justify-content: center;
+    text-align: center;     /* Centers the paragraph text */
+    padding: 20px;
+    width: 100%;            /* Ensures it fits the screen width */
+    box-sizing: border-box; /* Prevents padding from breaking width */
+}
+
+.hub-icon {
+    width: 60px;            /* Adjust size as needed */
+    height: auto;
+    margin-bottom: 15px;    /* Space between icon and title */
+    display: block;
+    flex-shrink: 0;         /* Prevents the SVG from getting squeezed */
+}
+
+#createHubCard h2 {
+    margin: 10px 0;
+    font-size: 1.5rem;      /* Adjust for mobile readability */
+}
+
+#createHubCard p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+    
     /* MODERN 5-BOX GRID */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 
@@ -98,7 +143,7 @@
 <div id="createHubCard">
     <img src="shop.svg" alt="Shop" class="hub-icon">
     <h2>Initialize Business Hub</h2>
-    <p>Launch your professional ecosystem and grow your Business with ScaleVest Brain</p>
+    <p>Launch your ecosystem and grow your Business with ScaleVest </p>
 </div>
 
 <div id="nameModal">
@@ -112,15 +157,14 @@
 <div id="dashboard">
     <div class="grid">
         
-<div class="box inventory-box" onclick="location.href='inventory.html'">
-    <div>
-        <div class="icon-wrapper">
+        <div class="box inventory-box" onclick="location.href='inventory.html'">
+            <div>
+                <div class="icon-wrapper">
             <img src="inventory.svg" alt="Inventory Icon" width="24" height="24">
         </div>
-        <div class="title">Inventory Hub</div>
-        <div class="desc">AI-powered stock tracking and neural item extraction.</div>
-    </div>
-</div>
+                <div class="title">Inventory Hub</div>
+                <div class="desc">AI-powered stock tracking and neural item extraction.</div>
+            </div>
             <div class="action-arrow">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </div>
@@ -137,15 +181,15 @@
             </div>
         </div>
 
-      <div class="box" onclick="window.location.href='salarypayer.html'">
-            <div>
-                <div class="icon-wrapper">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                </div>
-                <div class="title">Employee Payer</div>
-                <div class="desc">Automated payroll, staff hours, and compensation management.</div>
-            </div>
+<div class="box" onclick="window.location.href='commandcentre.html'">
+    <div>
+        <div class="icon-wrapper" style="width: 48px; height: 48px;"> 
+            <img src="personlaptop.svg" alt="Command Centre Icon" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
+        <div class="title">Digital Command Centre</div>
+        <div class="desc">Business Management and Analysis in Spatial or Digital 3D Twin View Centre.</div>
+    </div>
+</div>
 
         <div class="box" onclick="window.location.href='businessvault.html'">
 
@@ -153,8 +197,8 @@
                 <div class="icon-wrapper">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 </div>
-                <div class="title">Business Records</div>
-                <div class="desc">Digital vault for licenses, tax documents, and legal filings.</div>
+                <div class="title">Business Vault</div>
+                <div class="desc">Digital vault for notes, tax documents, staff tasks , pending orders and transactions.</div>
             </div>
         </div>
 
@@ -227,5 +271,6 @@ auth.onAuthStateChanged(user => {
 
 </body>
 </html>
+
 
 
