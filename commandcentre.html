@@ -2285,13 +2285,13 @@ function showToast(title, message, duration = 3000) {
 
             <div class="story-section">
 ${product.expiryDate ? `
-            <div class="story-section" style="border-left-color: ${expiryStatus === 'expired' ? '#404040' : expiryStatus === 'expiring-soon' ? '#8B4513' : 'var(--neon-primary)'};">
+            <div class="story-section" style="border-left-color: ${getExpiryStatus(product) === 'expired' ? '#404040' : getExpiryStatus(product) === 'expiring-soon' ? '#8B4513' : 'var(--neon-primary)'};">
                 <h3>📅 Expiry Information</h3>
-                <div style="font-size: 18px; color: ${expiryStatus === 'expired' ? '#404040' : expiryStatus === 'expiring-soon' ? '#8B4513' : 'var(--neon-accent)'}; font-weight: bold;">
-                    ${expiryStatus === 'expired' ? '❌ EXPIRED' : expiryStatus === 'expiring-soon' ? ⚠️ EXPIRES IN ${daysLeft} DAYS` : `✅ EXPIRES: ${product.expiryDate}`}
+                <div style="font-size: 18px; color: ${getExpiryStatus(product) === 'expired' ? '#404040' : getExpiryStatus(product) === 'expiring-soon' ? '#8B4513' : 'var(--neon-accent)'}; font-weight: bold;">
+                    ${getExpiryStatus(product) === 'expired' ? '❌ EXPIRED' : getExpiryStatus(product) === 'expiring-soon' ? ⚠️ EXPIRES IN ${getDaysUntilExpiry(product.expiryDate)} DAYS` : `✅ EXPIRES: ${product.expiryDate}`}
                 </div>
-                ${expiryStatus === 'expiring-soon' ? '<p style="color: #ff8800; margin-top: 8px;">⚡ Action Required Soon!</p>' : ''}
-                ${expiryStatus === 'expired' ? '<p style="color: #ff4444; margin-top: 8px;">🚫 Product has expired - Remove from inventory</p>' : ''}
+                ${getExpiryStatus(product) === 'expiring-soon' ? '<p style="color: #ff8800; margin-top: 8px;">⚡ Action Required Soon!</p>' : ''}
+                ${getExpiryStatus(product) === 'expired' ? '<p style="color: #ff4444; margin-top: 8px;">🚫 Product has expired - Remove from inventory</p>' : ''}
             </div>
             ` : ''}
                 <h3>📦 Inventory Level Status</h3>
