@@ -701,6 +701,45 @@ const firebaseConfig = {
       cfoLabel.innerHTML = `<span style="color: #3b82f6; font-weight: 700;">${name}</span> - Your CFO`;
       header.appendChild(cfoLabel);
   }
+
+async function askCFO(userInput) {
+    const adviceTextEl = document.querySelector('.advice-text');
+    
+    try {
+        const response = await fetch('/api/cfoscalevest', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                messages: [{ role: 'user', content: userInput }]
+            })
+        });
+
+        if (response.ok) {
+            // Print the success message to the console as requested
+            console.log("SCALEVEST CFO LIVE");
+
+            // Handle the streaming response
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            adviceTextEl.innerText = ""; // Clear existing placeholder text
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value, { stream: true });
+                const cleanChunk = chunk.replace(/0:\"/g, '').replace(/\"/g, '');
+                adviceTextEl.innerText += cleanChunk;
+            }
+        } else {
+            console.error("Connection failed:", response.statusText);
+            adviceTextEl.innerText = "CFO is currently offline. Please try again.";
+        }
+    } catch (error) {
+        console.error("Network Error:", error);
+        adviceTextEl.innerText = "Error connecting to ScaleVest CFO.";
+    }
+}
 </script>
 
 <div id="onboarding-overlay" style="position: fixed; inset: 0; z-index: 9999; background: #0a0e27; display: flex; align-items: center; justify-content: center; transition: opacity 1s ease;">
