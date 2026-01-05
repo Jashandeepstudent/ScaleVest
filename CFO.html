@@ -840,12 +840,14 @@ onAuthStateChanged(auth, (user) => {
         fetchAnalytics(user.uid); 
         fetchRevenuePulse(user.uid);
         setupProductAnalysisNavigation(user.uid);
-        fetchExpiryAlerts(user.uid); 
+        fetchExpiryAlerts(user.uid);
+        fetchPricingAnalysis(user.uid); 
         
-        // Refresh expiry alerts every hour
+        // Refresh alerts every hour
         setInterval(() => {
             fetchExpiryAlerts(user.uid);
-        }, 3600000); 
+            fetchPricingAnalysis(user.uid); 
+        }, 3600000); // 1 hour
     } else {
         window.location.href = "login.html";
     }
@@ -1204,10 +1206,14 @@ function updateCFOAdviceForExpiry(expiringProducts) {
     const adviceCard = document.querySelector('.advice-card .advice-text');
     
     if (expiringProducts.length === 0) {
-        // Keep default advice if no expiry issues
+        // Don't override if pricing advice is already there
+        if (!adviceCard.innerHTML.includes("Pricing Alerts")) {
+            adviceCard.innerHTML = "💡 <strong>Tip:</strong> Always set your selling and cost prices in Sales Flow to help ScaleVest CFO track your financial reports and provide better insights.";
+        }
         return;
     }
     
+    // Expiry takes priority over pricing
     const urgent = expiringProducts[0];
     const productName = urgent.name;
     const daysLeft = urgent.daysUntilExpiry;
@@ -1215,26 +1221,213 @@ function updateCFOAdviceForExpiry(expiringProducts) {
     let advice = "";
     
     if (daysLeft === 0) {
-        advice = `🚨 CRITICAL: ${productName} expires TODAY! Launch an immediate flash sale or donate to avoid loss. Consider bundling with popular items.`;
+        advice = `🚨 <strong>CRITICAL:</strong> ${productName} expires TODAY! Launch an immediate flash sale or donate to avoid loss. Consider bundling with popular items.`;
     } else if (daysLeft === 1) {
-        advice = `⚠️ URGENT: ${productName} expires in 24 hours! Start a flash sale NOW with 30-50% discount to move inventory quickly.`;
+        advice = `⚠️ <strong>URGENT:</strong> ${productName} expires in 24 hours! Start a flash sale NOW with 30-50% discount to move inventory quickly.`;
     } else if (daysLeft <= 2) {
-        advice = `⏰ ALERT: ${productName} expires in ${daysLeft} days. Recommend placing it at store front, offering bundle deals, or running a limited-time promotion.`;
+        advice = `⏰ <strong>ALERT:</strong> ${productName} expires in ${daysLeft} days. Recommend placing it at store front, offering bundle deals, or running a limited-time promotion.`;
     } else {
-        advice = `📢 Notice: ${productName} is expiring in ${daysLeft} days. Consider strategic placement and promotional planning to ensure sales before expiry.`;
+        advice = `📢 <strong>Notice:</strong> ${productName} is expiring in ${daysLeft} days. Consider strategic placement and promotional planning to ensure sales before expiry.`;
     }
     
     if (expiringProducts.length > 1) {
-        advice += ` Note: ${expiringProducts.length} products need attention.`;
+        advice += `<br><br><em>Note: ${expiringProducts.length} products need attention.</em>`;
     }
     
-    adviceCard.innerText = advice;
+    adviceCard.innerHTML = advice;
 }
 
 function launchFlashSale() {
     alert("Flash Sale feature coming soon! This will allow you to create instant discount campaigns.");
     // You can build this feature later to create automatic discounts
 }
+
+
+// Fetch and analyze pricing
+async function fetchPricingAnalysis(userId) {
+    const dbRef = ref(getDatabase());
+    
+    try {
+        // Fetch prices
+        const pricesSnapshot = await get(child(dbRef, `Businesses/${userId}/prices`));
+        if (!pricesSnapshot.exists()) {
+            updatePricingCard(null, []);
+            updateCFOAdviceForPricing([]);
+            return;
+        }
+        
+        const prices = pricesSnapshot.val();
+        
+        // Fetch inventory to get product names
+        const inventorySnapshot = await get(child(dbRef, `Businesses/${userId}/inventory`));
+        const inventory = inventorySnapshot.exists() ? inventorySnapshot.val() : {};
+        
+        const pricingIssues = [];
+        
+        // Analyze each product's pricing
+        for (const [productId, priceData] of Object.entries(prices)) {
+            const productName = inventory[productId]?.name || "Unknown Product";
+            const costPrice = parseFloat(priceData.costPrice);
+            const sellPrice = parseFloat(priceData.sellPrice);
+            
+            // Check if prices are set
+            if (!priceData.costPrice || !priceData.sellPrice) {
+                pricingIssues.push({
+                    type: "missing",
+                    productName,
+                    message: `${productName}: Prices not set`
+                });
+                continue;
+            }
+            
+            // Check if selling below cost (LOSS)
+            if (sellPrice < costPrice) {
+                const loss = costPrice - sellPrice;
+                const lossPercent = ((loss / costPrice) * 100).toFixed(1);
+                const suggestedPrice = (costPrice * 1.25).toFixed(2); // 25% profit margin
+                
+                pricingIssues.push({
+                    type: "loss",
+                    productName,
+                    costPrice,
+                    sellPrice,
+                    loss,
+                    lossPercent,
+                    suggestedPrice,
+                    message: `${productName}: Selling below cost (Loss: $${loss.toFixed(2)})`
+                });
+            }
+            // Check if margin is too high (might hurt sales)
+            else if (sellPrice > costPrice * 2.5) {
+                const margin = sellPrice - costPrice;
+                const marginPercent = ((margin / costPrice) * 100).toFixed(1);
+                const suggestedPrice = (costPrice * 1.4).toFixed(2); // 40% profit margin
+                
+                pricingIssues.push({
+                    type: "too_high",
+                    productName,
+                    costPrice,
+                    sellPrice,
+                    margin,
+                    marginPercent,
+                    suggestedPrice,
+                    message: `${productName}: Price too high (Margin: ${marginPercent}%)`
+                });
+            }
+            // Check if margin is healthy but could be optimized
+            else if (sellPrice < costPrice * 1.15) {
+                const margin = sellPrice - costPrice;
+                const marginPercent = ((margin / costPrice) * 100).toFixed(1);
+                const suggestedPrice = (costPrice * 1.25).toFixed(2); // 25% profit margin
+                
+                pricingIssues.push({
+                    type: "low_margin",
+                    productName,
+                    costPrice,
+                    sellPrice,
+                    margin,
+                    marginPercent,
+                    suggestedPrice,
+                    message: `${productName}: Low profit margin (${marginPercent}%)`
+                });
+            }
+        }
+        
+        // Update UI
+        updatePricingCard(prices, pricingIssues);
+        updateCFOAdviceForPricing(pricingIssues);
+        
+    } catch (error) {
+        console.error("Error fetching pricing analysis:", error);
+    }
+}
+
+function updatePricingCard(prices, issues) {
+    const momentumCard = document.querySelector('.momentum-card');
+    const momentumText = momentumCard.querySelector('.momentum-text');
+    const priceWarning = momentumCard.querySelector('.price-warning');
+    
+    if (!prices || Object.keys(prices).length === 0) {
+        momentumText.innerHTML = "No Pricing Data";
+        priceWarning.innerHTML = "⚠️ Set cost & selling prices in Sales Flow";
+        priceWarning.style.color = "rgba(251, 146, 60, 0.9)";
+        return;
+    }
+    
+    if (issues.length === 0) {
+        momentumText.innerHTML = "Pricing Health: Excellent ✓";
+        momentumText.style.color = "#4ade80";
+        priceWarning.innerHTML = "✓ All prices are optimized";
+        priceWarning.style.color = "rgba(74, 222, 128, 0.8)";
+        return;
+    }
+    
+    // Show most critical issue
+    const criticalIssue = issues.find(i => i.type === "loss") || 
+                          issues.find(i => i.type === "too_high") || 
+                          issues[0];
+    
+    if (criticalIssue.type === "loss") {
+        momentumText.innerHTML = `⚠️ ${criticalIssue.productName}`;
+        momentumText.style.color = "#f87171";
+        priceWarning.innerHTML = `🚨 Selling below cost! Loss: $${criticalIssue.loss.toFixed(2)} per unit`;
+        priceWarning.style.color = "rgba(248, 113, 113, 0.9)";
+    } else if (criticalIssue.type === "too_high") {
+        momentumText.innerHTML = `${criticalIssue.productName}`;
+        momentumText.style.color = "#fb923c";
+        priceWarning.innerHTML = `⚠️ Price too high (${criticalIssue.marginPercent}% margin) - May hurt sales`;
+        priceWarning.style.color = "rgba(251, 146, 60, 0.8)";
+    } else if (criticalIssue.type === "low_margin") {
+        momentumText.innerHTML = `${criticalIssue.productName}`;
+        momentumText.style.color = "#3b82f6";
+        priceWarning.innerHTML = `💡 Low margin (${criticalIssue.marginPercent}%) - Consider increasing`;
+        priceWarning.style.color = "rgba(59, 130, 246, 0.8)";
+    } else {
+        momentumText.innerHTML = "Pricing Issues Detected";
+        priceWarning.innerHTML = `⚠️ ${issues.length} product(s) need price setup`;
+        priceWarning.style.color = "rgba(251, 146, 60, 0.8)";
+    }
+}
+
+function updateCFOAdviceForPricing(pricingIssues) {
+    const adviceCard = document.querySelector('.advice-card .advice-text');
+    
+    if (pricingIssues.length === 0) {
+        // Check if there's already an expiry warning
+        if (!adviceCard.innerText.includes("expires") && !adviceCard.innerText.includes("CRITICAL")) {
+            adviceCard.innerHTML = "💡 <strong>Tip:</strong> Always set your selling and cost prices in Sales Flow to help ScaleVest CFO track your financial reports and provide better insights.";
+        }
+        return;
+    }
+    
+    let adviceHTML = "<strong>Pricing Alerts:</strong><br><br>";
+    
+    pricingIssues.forEach((issue, index) => {
+        if (index < 3) { // Show max 3 issues
+            if (issue.type === "loss") {
+                adviceHTML += `🚨 <strong>${issue.productName}:</strong> Selling at $${issue.sellPrice} but cost is $${issue.costPrice}. You're losing $${issue.loss.toFixed(2)} (${issue.lossPercent}%) per unit! <strong>Increase price to at least $${issue.suggestedPrice}</strong> for 25% profit margin.<br><br>`;
+            } else if (issue.type === "too_high") {
+                adviceHTML += `⚠️ <strong>${issue.productName}:</strong> Selling at $${issue.sellPrice} with ${issue.marginPercent}% margin. Price may be too high and hurt sales. <strong>Consider lowering to $${issue.suggestedPrice}</strong> for competitive 40% margin.<br><br>`;
+            } else if (issue.type === "low_margin") {
+                adviceHTML += `💡 <strong>${issue.productName}:</strong> Current margin is only ${issue.marginPercent}%. <strong>Increase price to $${issue.suggestedPrice}</strong> for healthier 25% profit margin.<br><br>`;
+            } else if (issue.type === "missing") {
+                adviceHTML += `⚙️ <strong>${issue.productName}:</strong> Prices not set. Go to Sales Flow and set cost & selling prices for accurate financial tracking.<br><br>`;
+            }
+        }
+    });
+    
+    if (pricingIssues.length > 3) {
+        adviceHTML += `<em>+ ${pricingIssues.length - 3} more pricing issue(s)</em>`;
+    }
+    
+    adviceCard.innerHTML = adviceHTML;
+}
+
+
+
+
+
+
 async function askCFO(userInput) {
     const adviceTextEl = document.querySelector('.advice-text');
     
