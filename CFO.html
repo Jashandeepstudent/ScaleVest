@@ -168,6 +168,7 @@
     height: 120px; /* Give the chart a specific height */
     padding: 10px 0;
     margin: 20px 0;
+   padding-bottom: 30px;
     gap: 5px;
 }
 
@@ -193,7 +194,16 @@
     margin-top: 8px;
     font-weight: bold;
 }
-
+.bar-day-label {
+    font-size: 9px; /* Slightly smaller font */
+    color: #94a3b8;
+    margin-top: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    /* This rotation prevents long names from overlapping */
+    transform: rotate(-45deg); 
+    white-space: nowrap;
+}
         .card:hover {
             transform: translateY(-8px);
             border-color: rgba(59, 130, 246, 0.4);
@@ -744,8 +754,8 @@ function updateCFOUI(current, previous, daily) {
     // 3. Dynamic Stock-style Bars
     updateStockChart(daily, diff >= 0);
 const activeDays = Object.keys(daily).length || 1;
-document.getElementById('burn-rate').innerText = `Velocity: $${(current / activeDays).toFixed(0)} / active day`;
-}
+const avgVelocity = current / activeDays;
+document.getElementById('burn-rate').innerText = `Velocity: $${avgVelocity.toFixed(0)} / active day`;
 
 function updateStockChart(daily, isPositive) {
     const chart = document.getElementById('revenue-chart');
@@ -777,7 +787,7 @@ function updateStockChart(daily, isPositive) {
         // The Label (S, M, T, W...)
         const label = document.createElement('div');
         label.className = 'bar-label';
-        label.innerText = day.charAt(0);
+        label.innerText = day;
 
         container.appendChild(bar);
         container.appendChild(label);
@@ -830,7 +840,7 @@ function updateProductUI(analytics) {
     // Update the footer reason
     if (analytics.trendingSelling) {
         document.getElementById('analytics-reason').innerText = 
-            `Momentum: ${analytics.trendingSelling.name} is the current trend!`;
+            `Momentum: ${analytics.trendingSelling.name} is the current trending product!`;
     }
 }
 // --- Auth State Logic ---
@@ -1010,7 +1020,7 @@ async function askCFO(userInput) {
 
         <div class="dashboard">
 <div class="card profit-card">
-    <div class="card-title">GLOBAL P&L PULSE</div>
+    <div class="card-title">Weekly Reports</div>
     <div style="display: flex; align-items: baseline; gap: 10px;">
         <div id="total-revenue" class="big-number">$0</div>
         <div id="trend-badge" style="padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
@@ -1036,7 +1046,7 @@ async function askCFO(userInput) {
         <div class="product">
             <div class="product-header">
                 <span class="star-badge">⭐</span>
-                <span>THE STAR</span>
+                <span>The Most Selling</span>
             </div>
             <div id="star-icon" class="dynamic-icon">?</div> 
             <div id="star-name" class="product-name">Loading...</div>
@@ -1056,7 +1066,7 @@ async function askCFO(userInput) {
         <div class="product">
             <div class="product-header">
                 <span class="ghost-badge">👻</span>
-                <span>THE GHOST</span>
+                <span>The Least Selling</span>
             </div>
             <div id="ghost-icon" class="dynamic-icon" style="opacity: 0.5;">?</div>
             <div id="ghost-name" class="product-name">Loading...</div>
