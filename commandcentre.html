@@ -2224,14 +2224,9 @@ node.style.height = '80px';
                     // Priority 4: LOW STOCK ONLY
                     stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-yellow);color:black;">LOW</span>';
                 } 
-                else if (expiryStatus === 'expiring-soon') {
+else if (expiryStatus === 'expiring-soon') {
                     // Priority 5: EXPIRING SOON ONLY (normal stock)
                     expiryBadgeHtml = `<span class="expiry-badge">EXP ${daysLeft}D</span>`;
-                }
-                } else if (product.stock < 5 && product.stock > 0) {
-                    stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-yellow);color:black;">LOW</span>';
-                } else if (product.stock === 0) {
-                    stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-red);">OUT</span>';
                 }
                 
                 const stockText = isTimeTravelMode 
