@@ -1164,10 +1164,7 @@ function setupProductAnalysisNavigation(userId) {
 // Fetch and display expiry alerts
 async function fetchExpiryAlerts(userId) {
     const dbRef = ref(getDatabase());
-    // Inside the function that finds expiring/low stock items:
-window.expiringProducts = expiringProducts; 
-window.lowStockAlerts = lowStockAlerts;
-window.pricingIssues = pricingIssues;
+    
     try {
         // Fetch notification preference (default 3 days if not set)
         const notificationSnapshot = await get(child(dbRef, `BusinessOwners/${userId}/__expiryDateNotification`));
@@ -2520,27 +2517,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div id="prioritized-tasks" style="display: none; margin-top: 30px;"></div>
     </div>
 </div>
-// EXPOSE FIREBASE
-window.auth = auth;
-window.db = db;
 
-// EXPOSE POPUP FUNCTIONS
-window.openFlashSale = openFlashSale;
-window.closeFlashSale = closeFlashSale;
-window.toggleProductSelection = toggleProductSelection;
-window.proceedToDiscount = proceedToDiscount;
-window.applySaleDiscount = applySaleDiscount;
-
-window.openOrderReceipt = openOrderReceipt;
-window.closeOrderReceipt = closeOrderReceipt;
-window.toggleStockSelection = toggleStockSelection;
-window.proceedToQuantity = proceedToQuantity;
-window.generateOrderPDF = generateOrderPDF;
-
-window.openSyncOperations = openSyncOperations;
-window.closeSyncOperations = closeSyncOperations;
-window.executeTask = executeTask;
-window.startPrioritize = startPrioritize;
 
 </body>
 </html>
