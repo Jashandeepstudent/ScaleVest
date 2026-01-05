@@ -2149,26 +2149,6 @@ window.closeHeatmapLegend = function() {
     document.getElementById('heatmap-legend-popup').classList.remove('active');
     document.getElementById('overlay').classList.remove('active');
 };
-function showHeatmapLegend() {
-    const legendHTML = `
-        <div style="text-align: left; line-height: 1.8;">
-            <div><span style="color: #ff0040;">🔴 Red</span> = Out of Stock</div>
-            <div><span style="color: #ffff00;">🟡 Yellow</span> = Low Stock (&lt;5)</div>
-            <div><span style="color: #ffaa00;">🟠 Orange</span> = High Sales (&gt;50)</div>
-            <div><span style="color: #00d4ff;">🔵 Blue</span> = Low Sales (&lt;10)</div>
-            <div><span style="color: #00f3ff;">💧 Cyan</span> = Normal Stock</div>
-        </div>
-    `;
-    
-    const toast = document.getElementById('toast');
-    document.getElementById('toastTitle').textContent = '🔥 Heatmap Legend';
-    document.getElementById('toastMessage').innerHTML = legendHTML;
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
 
         function renderShop(products) {
             const container = document.getElementById('products-container');
