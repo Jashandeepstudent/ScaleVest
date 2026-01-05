@@ -839,6 +839,7 @@ onAuthStateChanged(auth, (user) => {
         runOnboarding(user.uid);
         fetchAnalytics(user.uid); 
         fetchRevenuePulse(user.uid);
+        setupProductAnalysisNavigation(user.uid); 
     } else {
         window.location.href = "login.html";
     }
@@ -920,6 +921,189 @@ onAuthStateChanged(auth, (user) => {
       cfoLabel.innerHTML = `<span style="color: #3b82f6; font-weight: 700;">${name}</span> - Your CFO`;
       header.appendChild(cfoLabel);
   }
+
+// Fetch all products and calculate sales
+async function fetchProductAnalysis(userId) {
+    const dbRef = ref(getDatabase());
+    
+    try {
+        // Fetch inventory
+        const inventorySnapshot = await get(child(dbRef, `Businesses/${userId}/inventory`));
+        if (!inventorySnapshot.exists()) {
+            console.log("No inventory found");
+            return [];
+        }
+        
+        const inventory = inventorySnapshot.val();
+        
+        // Fetch sales
+        const salesSnapshot = await get(child(dbRef, `Businesses/${userId}/sales`));
+        const salesData = salesSnapshot.exists() ? salesSnapshot.val() : {};
+        
+        // Calculate sales for each product
+        const products = [];
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+        
+        for (const [productId, productData] of Object.entries(inventory)) {
+            let totalSold = 0;
+            let weekSold = 0;
+            let totalRevenue = 0;
+            let weekRevenue = 0;
+            
+            // Count sales for this product
+            Object.values(salesData).forEach(sale => {
+                if (sale.productId === productId) {
+                    const saleQty = parseInt(sale.quantity) || 0;
+                    const saleRev = parseFloat(sale.revenue) || 0;
+                    
+                    totalSold += saleQty;
+                    totalRevenue += saleRev;
+                    
+                    const saleDate = new Date(sale.timestamp);
+                    if (saleDate > sevenDaysAgo) {
+                        weekSold += saleQty;
+                        weekRevenue += saleRev;
+                    }
+                }
+            });
+            
+            // Determine status
+            let status = "Stable";
+            let statusColor = "#94a3b8";
+            
+            if (weekSold > 0) {
+                if (weekSold >= totalSold * 0.5) {
+                    status = "🔥 Hot Seller";
+                    statusColor = "#4ade80";
+                } else if (weekSold >= totalSold * 0.3) {
+                    status = "📈 Growing";
+                    statusColor = "#3b82f6";
+                }
+            } else if (totalSold === 0) {
+                status = "⚠️ No Sales Yet";
+                statusColor = "#fb923c";
+            } else {
+                status = "😴 Slow This Week";
+                statusColor = "#94a3b8";
+            }
+            
+            products.push({
+                id: productId,
+                name: productData.name || "Unnamed Product",
+                quantity: productData.quantity || 0,
+                unit: productData.unit || "units",
+                totalSold,
+                weekSold,
+                totalRevenue,
+                weekRevenue,
+                status,
+                statusColor
+            });
+        }
+        
+        return products;
+    } catch (error) {
+        console.error("Error fetching product analysis:", error);
+        return [];
+    }
+}
+
+// Display products on the analysis page
+function displayProductAnalysis(products) {
+    const grid = document.getElementById('products-grid');
+    
+    if (products.length === 0) {
+        grid.innerHTML = `
+            <div class="card" style="grid-column: 1/-1; text-align: center; padding: 60px;">
+                <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.3;">📦</div>
+                <div style="font-size: 20px; color: rgba(255,255,255,0.7);">No products in inventory yet</div>
+            </div>
+        `;
+        return;
+    }
+    
+    grid.innerHTML = products.map(product => {
+        const firstLetter = product.name.charAt(0).toUpperCase();
+        const weekPercentage = product.totalSold > 0 ? ((product.weekSold / product.totalSold) * 100).toFixed(0) : 0;
+        
+        return `
+            <div class="card" style="position: relative;">
+                <div style="position: absolute; top: 20px; right: 20px; padding: 6px 12px; background: rgba(${product.statusColor === '#4ade80' ? '74, 222, 128' : product.statusColor === '#3b82f6' ? '59, 130, 246' : product.statusColor === '#fb923c' ? '251, 146, 60' : '148, 163, 184'}, 0.15); border-radius: 8px; font-size: 11px; font-weight: 600; color: ${product.statusColor};">
+                    ${product.status}
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; color: white;">
+                        ${firstLetter}
+                    </div>
+                    <div>
+                        <div style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 4px;">${product.name}</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.5);">Stock: ${product.quantity} ${product.unit}</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">This Week</div>
+                        <div style="font-size: 28px; font-weight: 700; color: #3b82f6;">${product.weekSold}</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px;">$${product.weekRevenue.toFixed(2)}</div>
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">All Time</div>
+                        <div style="font-size: 28px; font-weight: 700; color: #4ade80;">${product.totalSold}</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px;">$${product.totalRevenue.toFixed(2)}</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <span style="font-size: 12px; color: rgba(255,255,255,0.6);">Weekly Performance</span>
+                        <span style="font-size: 12px; font-weight: 600; color: ${product.weekSold > 0 ? '#4ade80' : '#94a3b8'};">${weekPercentage}%</span>
+                    </div>
+                    <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${weekPercentage}%; background: linear-gradient(90deg, #3b82f6, #4ade80); border-radius: 3px; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Setup navigation
+function setupProductAnalysisNavigation(userId) {
+    const card = document.getElementById('product-analysis-card');
+    const page = document.getElementById('product-analysis-page');
+    const backBtn = document.getElementById('back-btn');
+    
+    card.addEventListener('click', async () => {
+        // Show page
+        page.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Update URL without reload
+        history.pushState({ page: 'analysis' }, '', '#product-analysis');
+        
+        // Fetch and display products
+        const products = await fetchProductAnalysis(userId);
+        displayProductAnalysis(products);
+    });
+    
+    backBtn.addEventListener('click', () => {
+        page.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        history.back();
+    });
+    
+    // Handle browser back button
+    window.addEventListener('popstate', () => {
+        page.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+}
+
+
 
 async function askCFO(userInput) {
     const adviceTextEl = document.querySelector('.advice-text');
@@ -1123,23 +1307,13 @@ async function askCFO(userInput) {
                 <button class="launch-btn">LAUNCH FLASH SALE</button>
             </div>
 
-            <div class="card momentum-card">
-                <div class="card-title">MOMENTUM</div>
-                <div class="line-chart">
-                    <svg viewBox="0 0 300 80" preserveAspectRatio="none">
-                        <defs>
-                            <linearGradient id="gradient2" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" style="stop-color:#4ade80;stop-opacity:0.3" />
-                                <stop offset="100%" style="stop-color:#4ade80;stop-opacity:0" />
-                            </linearGradient>
-                        </defs>
-                        <path d="M 0 55 L 40 52 L 80 58 L 120 50 L 160 45 L 200 38 L 240 45 L 280 40 L 300 42" 
-                              fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round"/>
-                        <path d="M 0 55 L 40 52 L 80 58 L 120 50 L 160 45 L 200 38 L 240 45 L 280 40 L 300 42 L 300 80 L 0 80 Z" 
-                              fill="url(#gradient2)"/>
-                    </svg>
-                </div>
-            </div>
+           <div class="card momentum-card" id="product-analysis-card" style="cursor: pointer;">
+    <div class="card-title">ALL PRODUCT ANALYSIS</div>
+    <div style="text-align: center; padding: 40px 0;">
+        <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
+        <div style="font-size: 16px; color: rgba(255,255,255,0.7);">Click to view detailed analysis</div>
+    </div>
+</div>
 
             <div class="card advice-card">
                 <div class="card-title">CFO ADVICE</div>
@@ -1237,6 +1411,23 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 </script>
+<!-- Product Analysis Page -->
+<div id="product-analysis-page" style="display: none; position: fixed; inset: 0; background: #0a0e27; z-index: 10000; overflow-y: auto; padding: 30px;">
+    <div class="container">
+        <button id="back-btn" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); padding: 12px 24px; border-radius: 12px; color: white; cursor: pointer; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            ← Back to Dashboard
+        </button>
+        
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="font-size: 42px; font-weight: 700; background: linear-gradient(135deg, #fff 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px;">Product Analysis</h1>
+            <p style="color: rgba(255,255,255,0.6); font-size: 16px;">Comprehensive performance metrics for all your products</p>
+        </div>
+        
+        <div id="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+            <!-- Products will be dynamically inserted here -->
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
