@@ -659,6 +659,39 @@ const firebaseConfig = {
   const auth = getAuth(app);
   const db = getDatabase(app);
 
+// Add this inside your <script type="module"> block
+
+window.openOrderReceipt = async function() {
+    try {
+        const user = auth.currentUser; // Now this can access 'auth' correctly
+        if (!user) {
+            alert("Please log in first");
+            return;
+        }
+        document.getElementById('order-receipt-popup').style.display = 'flex';
+        // Your logic to load receipt data...
+    } catch (error) {
+        console.error("Error opening Order Receipt:", error);
+    }
+};
+
+window.openFlashSale = function() {
+    const user = auth.currentUser;
+    if (user) {
+        document.getElementById('flash-sale-popup').style.display = 'flex';
+    }
+};
+
+window.openSyncOperations = function() {
+    const user = auth.currentUser;
+    if (user) {
+        document.getElementById('sync-operations-popup').style.display = 'flex';
+    }
+};
+
+window.closeSyncOperations = function() {
+    document.getElementById('sync-operations-popup').style.display = 'none';
+};
 async function fetchRevenuePulse(userId) {
     const dbRef = ref(getDatabase());
     const salesSnapshot = await get(child(dbRef, `Businesses/${userId}/sales`));
