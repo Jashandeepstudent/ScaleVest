@@ -144,6 +144,368 @@ body {
         font-size: 9px !important;
     }
 }
+
+/* ============================================
+   BENTO GRID - THE ARCHITECT'S ENGINE
+   ============================================ */
+
+.bento-grid-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 500;
+    pointer-events: none;
+}
+
+.bento-tile {
+    width: 320px;
+    height: 320px;
+    background: linear-gradient(135deg, rgba(15, 15, 35, 0.95), rgba(30, 30, 60, 0.9));
+    border: 3px solid var(--neon-primary);
+    border-radius: 24px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(20px);
+    pointer-events: auto;
+}
+
+/* High Sales Banner */
+.high-sales-banner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #ff0040, #ffaa00);
+    padding: 12px;
+    transform: translateY(-100%);
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(255, 170, 0, 0.6);
+}
+
+.high-sales-banner.active {
+    transform: translateY(0);
+    animation: bannerPulse 1s ease-in-out infinite;
+}
+
+@keyframes bannerPulse {
+    0%, 100% { box-shadow: 0 4px 20px rgba(255, 170, 0, 0.6); }
+    50% { box-shadow: 0 4px 30px rgba(255, 170, 0, 1); }
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-weight: bold;
+}
+
+.banner-content i {
+    font-size: 24px;
+    animation: trophySpin 2s linear infinite;
+}
+
+@keyframes trophySpin {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+.banner-title {
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+
+.banner-subtitle {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+/* Crystal Container */
+.crystal-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+}
+
+.crystal-octahedron {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    animation: crystalFloat 3s ease-in-out infinite;
+}
+
+@keyframes crystalFloat {
+    0%, 100% { transform: translateY(0px) rotateX(0deg) rotateY(0deg); }
+    50% { transform: translateY(-20px) rotateX(10deg) rotateY(5deg); }
+}
+
+/* Rotation States */
+.crystal-octahedron.state-idle { animation: crystalFloat 3s ease-in-out infinite; }
+.crystal-octahedron.state-active { animation: crystalFloat 3s ease-in-out infinite, crystalRotate 12s linear infinite; }
+.crystal-octahedron.state-enhanced { animation: crystalFloat 3s ease-in-out infinite, crystalRotate 7.2s linear infinite; }
+.crystal-octahedron.state-uncommon { animation: crystalFloat 3s ease-in-out infinite, crystalRotate 4.5s linear infinite; }
+.crystal-octahedron.state-rare { animation: crystalFloat 3s ease-in-out infinite, crystalRotate 3.6s linear infinite; }
+.crystal-octahedron.state-epic { animation: crystalFloat 3s ease-in-out infinite, crystalRotate 3s linear infinite; }
+.crystal-octahedron.state-legendary { animation: crystalFloat 3s ease-in-out infinite, crystalRotate 2.4s linear infinite; }
+
+@keyframes crystalRotate {
+    0% { transform: rotateY(0deg) rotateX(20deg); }
+    100% { transform: rotateY(360deg) rotateX(20deg); }
+}
+
+.crystal-face {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 50px solid transparent;
+    border-right: 50px solid transparent;
+    border-bottom: 86px solid rgba(0, 243, 255, 0.3);
+    transform-origin: center;
+    backface-visibility: hidden;
+}
+
+.crystal-face:nth-child(1) { transform: rotateY(0deg) translateZ(50px); }
+.crystal-face:nth-child(2) { transform: rotateY(90deg) translateZ(50px); }
+.crystal-face:nth-child(3) { transform: rotateY(180deg) translateZ(50px); }
+.crystal-face:nth-child(4) { transform: rotateY(270deg) translateZ(50px); }
+.crystal-face:nth-child(5) { transform: rotateX(90deg) translateZ(50px); border-bottom-color: rgba(0, 243, 255, 0.5); }
+.crystal-face:nth-child(6) { transform: rotateX(-90deg) translateZ(50px); border-bottom-color: rgba(0, 243, 255, 0.5); }
+.crystal-face:nth-child(7) { transform: rotateY(45deg) rotateX(45deg) translateZ(50px); }
+.crystal-face:nth-child(8) { transform: rotateY(-45deg) rotateX(45deg) translateZ(50px); }
+
+/* Glow Effects */
+.crystal-octahedron.glow-idle { filter: drop-shadow(0 0 20px rgba(0, 243, 255, 0.5)); }
+.crystal-octahedron.glow-active { filter: drop-shadow(0 0 30px rgba(0, 243, 255, 0.8)); }
+.crystal-octahedron.glow-enhanced { filter: drop-shadow(0 0 40px rgba(127, 255, 0, 0.8)); }
+.crystal-octahedron.glow-uncommon { filter: drop-shadow(0 0 50px rgba(255, 170, 0, 0.9)); }
+.crystal-octahedron.glow-rare { filter: drop-shadow(0 0 60px rgba(255, 0, 234, 0.9)); }
+.crystal-octahedron.glow-epic { filter: drop-shadow(0 0 70px rgba(255, 215, 0, 1)); }
+.crystal-octahedron.glow-legendary { filter: drop-shadow(0 0 80px rgba(255, 255, 255, 1)); }
+
+/* Equipment (Wings + Shield) */
+.crystal-equipment {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+    transition: opacity 1s ease;
+    pointer-events: none;
+}
+
+.crystal-equipment.active {
+    opacity: 1;
+}
+
+.crystal-wing {
+    position: absolute;
+    width: 80px;
+    height: 120px;
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.4), rgba(169, 169, 169, 0.6));
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    top: 50%;
+    transform: translateY(-50%);
+    animation: wingFlap 2s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(192, 192, 192, 0.8);
+}
+
+.wing-left {
+    left: -90px;
+    animation-delay: 0s;
+}
+
+.wing-right {
+    right: -90px;
+    animation-delay: 0.5s;
+}
+
+@keyframes wingFlap {
+    0%, 100% { transform: translateY(-50%) scaleX(1); }
+    50% { transform: translateY(-50%) scaleX(1.2); }
+}
+
+.crystal-shield {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 180px;
+    border: 4px solid rgba(0, 243, 255, 0.6);
+    border-radius: 50%;
+    animation: shieldPulse 2s ease-in-out infinite;
+}
+
+@keyframes shieldPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+}
+
+/* Particles */
+.particle-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: radial-gradient(circle, rgba(255, 170, 0, 1), rgba(255, 170, 0, 0));
+    border-radius: 50%;
+    animation: particleBurst 1s ease-out forwards;
+}
+
+@keyframes particleBurst {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Cash Notes */
+.cash-notes-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.cash-note {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 20px;
+    background: linear-gradient(135deg, #85bb65, #6fa84d);
+    border: 2px solid #4a7c34;
+    border-radius: 4px;
+    font-size: 10px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    animation: cashFall 3s ease-in forwards;
+    transform-origin: center;
+}
+
+@keyframes cashFall {
+    0% {
+        transform: translate(-50%, -50%) translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) translateY(300px) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* Stats Display */
+.engine-stats {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    text-align: center;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--neon-accent);
+    text-shadow: 0 0 20px var(--neon-accent);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 243, 255, 0.3);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-primary), var(--neon-accent));
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 20px var(--neon-primary);
+}
+
+/* Title */
+.engine-title {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--neon-primary);
+    text-shadow: 0 0 10px var(--neon-primary);
+    letter-spacing: 2px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .bento-grid-container {
+        bottom: 80px;
+        left: 10px;
+    }
+    
+    .bento-tile {
+        width: 280px;
+        height: 280px;
+        padding: 15px;
+    }
+    
+    .crystal-container {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .stat-row {
+        font-size: 24px;
+    }
+}
         .exit-time-travel {
             background: #fff;
             color: #7000ff;
@@ -1732,6 +2094,65 @@ box-sizing: border-box;
 <button class="control-toggle-btn" onclick="toggleControls()">
     <i class="fas fa-cog"></i> Digital Controls
 </button>
+<!-- ============================================
+   BENTO GRID - THE ARCHITECT'S ENGINE
+   ============================================ -->
+<div class="bento-grid-container">
+    <div class="bento-tile architects-engine" id="architectsEngine">
+        <!-- High Sales Banner -->
+        <div class="high-sales-banner" id="highSalesBanner">
+            <div class="banner-content">
+                <i class="fas fa-trophy"></i>
+                <div>
+                    <div class="banner-title">🏆 HIGH SALES DAY</div>
+                    <div class="banner-subtitle">SECTOR SECURED</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crystal Container -->
+        <div class="crystal-container" id="crystalContainer">
+            <div class="crystal-octahedron" id="crystal">
+                <div class="crystal-face"></div>
+                <div class="crystal-face"></div>
+                <div class="crystal-face"></div>
+                <div class="crystal-face"></div>
+                <div class="crystal-face"></div>
+                <div class="crystal-face"></div>
+                <div class="crystal-face"></div>
+                <div class="crystal-face"></div>
+            </div>
+            
+            <!-- Equipment (Wings + Shield) -->
+            <div class="crystal-equipment" id="crystalEquipment">
+                <div class="crystal-wing wing-left"></div>
+                <div class="crystal-wing wing-right"></div>
+                <div class="crystal-shield"></div>
+            </div>
+
+            <!-- Particle System -->
+            <div class="particle-container" id="particleContainer"></div>
+
+            <!-- Cash Notes -->
+            <div class="cash-notes-container" id="cashNotesContainer"></div>
+        </div>
+
+        <!-- Stats Display -->
+        <div class="engine-stats">
+            <div class="stat-row">
+                <i class="fas fa-dollar-sign"></i>
+                <span id="salesDisplay">$0.00</span>
+            </div>
+            <div class="stat-label">Daily Sales</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <div class="engine-title">⚙️ THE ARCHITECT'S ENGINE</div>
+    </div>
+</div>
 
 <!-- Top Right: Leaderboard + Back Button -->
 <div style="position: fixed; top: 10px; right: 10px; display: flex; gap: 10px; align-items: flex-start; z-index: 900;">
@@ -1771,7 +2192,6 @@ box-sizing: border-box;
         </div>
 
         <div class="control-group">
-<div class="control-group">
             <label>🔥 Heatmap Overlay</label>
             <div class="toggle-group">
                 <div class="toggle-switch" id="heatmapToggle" onclick="toggleHeatmap()">
@@ -1780,10 +2200,6 @@ box-sizing: border-box;
                 <span style="color: #ccc; font-size: 12px;">Sales Performance</span>
             </div>
         </div>
-
-        <button onclick="showHeatmapLegend()" style="width: 100%; padding: 12px; background: rgba(255, 170, 0, 0.15); border: 2px solid var(--neon-orange); border-radius: 10px; color: var(--neon-orange); font-weight: bold; cursor: pointer; margin-top: 10px; transition: all 0.3s; text-transform: uppercase; font-size: 13px;">
-            <i class="fas fa-info-circle"></i> View Heatmap Guide
-        </button>
 
         <button class="time-travel-btn" onclick="openTimeTravel()">
             <span style="font-size: 18px;">⏳</span> Time Travel
@@ -1823,42 +2239,49 @@ box-sizing: border-box;
     </div>
 <!-- Heatmap Legend Popup -->
 <div id="heatmap-legend-popup" class="heatmap-legend-popup">
-    <h3 style="color: var(--neon-orange); margin-bottom: 20px; text-align: center; font-size: 22px;">🔥 Heatmap Sales Guide</h3>
+    <h3 style="color: var(--neon-orange); margin-bottom: 20px; text-align: center; font-size: 22px;">🔥 Heatmap Guide</h3>
     
-    <div class="legend-item" style="border-color: var(--neon-orange);">
-        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, rgba(255, 170, 0, 0.8), rgba(255, 136, 0, 0.9)); border-radius: 10px; box-shadow: 0 0 20px var(--neon-orange);"></div>
+    <div class="legend-item" style="border-color: var(--neon-red);">
+        <div style="width: 40px; height: 40px; background: var(--neon-red); border-radius: 8px;"></div>
         <div>
-            <div style="font-weight: bold; color: var(--neon-orange); font-size: 14px;">🔥 ORANGE</div>
-            <div style="font-size: 13px; color: #ccc;">High Sales (&gt;50 sold)</div>
+            <div style="font-weight: bold; color: var(--neon-red);">Red</div>
+            <div style="font-size: 12px; color: #ccc;">Out of Stock</div>
         </div>
     </div>
     
-    <div class="legend-item" style="border-color: var(--neon-primary);">
-        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, rgba(0, 243, 255, 0.4), rgba(0, 168, 204, 0.5)); border-radius: 10px; box-shadow: 0 0 20px var(--neon-primary);"></div>
+    <div class="legend-item" style="border-color: var(--neon-yellow);">
+        <div style="width: 40px; height: 40px; background: var(--neon-yellow); border-radius: 8px;"></div>
         <div>
-            <div style="font-weight: bold; color: var(--neon-primary); font-size: 14px;">💧 CYAN</div>
-            <div style="font-size: 13px; color: #ccc;">Normal Sales (10-50)</div>
+            <div style="font-weight: bold; color: var(--neon-yellow);">Yellow</div>
+            <div style="font-size: 12px; color: #ccc;">Low Stock (&lt;5 items)</div>
+        </div>
+    </div>
+    
+    <div class="legend-item" style="border-color: var(--neon-orange);">
+        <div style="width: 40px; height: 40px; background: var(--neon-orange); border-radius: 8px;"></div>
+        <div>
+            <div style="font-weight: bold; color: var(--neon-orange);">Orange</div>
+            <div style="font-size: 12px; color: #ccc;">High Sales (&gt;50)</div>
         </div>
     </div>
     
     <div class="legend-item" style="border-color: var(--ice-blue);">
-        <div style="width: 50px; height: 50px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.8), rgba(0, 136, 204, 0.9)); border-radius: 10px; box-shadow: 0 0 20px var(--ice-blue);"></div>
+        <div style="width: 40px; height: 40px; background: var(--ice-blue); border-radius: 8px;"></div>
         <div>
-            <div style="font-weight: bold; color: var(--ice-blue); font-size: 14px;">🔵 DARK BLUE</div>
-            <div style="font-size: 13px; color: #ccc;">Low Sales (&lt;10 sold)</div>
+            <div style="font-weight: bold; color: var(--ice-blue);">Blue</div>
+            <div style="font-size: 12px; color: #ccc;">Low Sales (&lt;10)</div>
         </div>
     </div>
     
-    <div style="margin: 20px 0; padding: 15px; background: rgba(0, 243, 255, 0.1); border-radius: 10px; border-left: 4px solid var(--neon-primary);">
-        <div style="font-size: 12px; color: #aaa; line-height: 1.6;">
-            <strong style="color: var(--neon-primary);">⚠️ Priority Rules:</strong><br>
-            • Out of Stock / Expired products keep their warning colors<br>
-            • Sales colors only show for healthy stock items<br>
-            • Turn OFF heatmap to see normal product view
+    <div class="legend-item" style="border-color: var(--neon-primary);">
+        <div style="width: 40px; height: 40px; background: var(--neon-primary); border-radius: 8px;"></div>
+        <div>
+            <div style="font-weight: bold; color: var(--neon-primary);">Cyan</div>
+            <div style="font-size: 12px; color: #ccc;">Normal Stock</div>
         </div>
     </div>
     
-    <button onclick="closeHeatmapLegend()" style="width: 100%; margin-top: 10px; padding: 14px; background: var(--neon-accent); border: none; border-radius: 10px; color: #000; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase;">Got It!</button>
+    <button onclick="closeHeatmapLegend()" style="width: 100%; margin-top: 20px; padding: 12px; background: var(--neon-accent); border: none; border-radius: 10px; color: #000; font-weight: bold; cursor: pointer;">Got It!</button>
 </div>
     <div class="toast" id="toast">
         <div class="toast-title" id="toastTitle"></div>
@@ -1901,16 +2324,12 @@ import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/
         let expiryNotificationDays = 3; 
         let expiryAlerts = []; 
 
-const iconMap = {
+        const iconMap = {
             'apple': '🍎', 'bread': '🍞', 'milk': '🥛', 'fish': '🐟', 'salmon': '🐟',
             'coffee': '☕', 'yogurt': '🥣', 'honey': '🍯', 'avocado': '🥑',
             'pasta': '🍝', 'oil': '🫒', 'cheese': '🧀', 'egg': '🥚', 'tomato': '🍅',
             'carrot': '🥕', 'banana': '🍌', 'orange': '🍊', 'grape': '🍇', 'strawberry': '🍓'
         };
-
-        // Exchange Mode Variables (for future features)
-        let exchangeModeActive = false;
-        let grabbedProduct = null;
 
         // Initialize multiple floors dynamically
         function renderFloors(numFloors) {
@@ -1941,6 +2360,178 @@ const iconMap = {
                 container.appendChild(floor);
             }
         }
+// ============================================
+// THE ARCHITECT'S ENGINE - SALES VISUALIZER
+// ============================================
+
+let dailySalesTotal = 0;
+let lastResetDate = new Date().toDateString();
+
+// Initialize Engine
+function initArchitectsEngine() {
+    // Check if we need to reset (new day)
+    const today = new Date().toDateString();
+    if (today !== lastResetDate) {
+        dailySalesTotal = 0;
+        lastResetDate = today;
+        localStorage.setItem('lastResetDate', lastResetDate);
+        localStorage.setItem('dailySalesTotal', '0');
+    } else {
+        // Load saved sales
+        dailySalesTotal = parseFloat(localStorage.getItem('dailySalesTotal') || '0');
+        lastResetDate = localStorage.getItem('lastResetDate') || today;
+    }
+    
+    updateEngineVisuals();
+}
+
+// Update sales total (call this when a sale is made)
+function addSale(amount) {
+    dailySalesTotal += amount;
+    localStorage.setItem('dailySalesTotal', dailySalesTotal.toString());
+    updateEngineVisuals();
+}
+
+// Main update function
+function updateEngineVisuals() {
+    const crystal = document.getElementById('crystal');
+    const equipment = document.getElementById('crystalEquipment');
+    const banner = document.getElementById('highSalesBanner');
+    const salesDisplay = document.getElementById('salesDisplay');
+    const progressFill = document.getElementById('progressFill');
+    
+    if (!crystal) return;
+    
+    // Update display
+    salesDisplay.textContent = `$${dailySalesTotal.toFixed(2)}`;
+    
+    // Calculate progress (max $3500)
+    const progress = Math.min((dailySalesTotal / 3500) * 100, 100);
+    progressFill.style.width = `${progress}%`;
+    
+    // Remove old classes
+    crystal.className = 'crystal-octahedron';
+    
+    // Determine state and apply effects
+    if (dailySalesTotal >= 3000) {
+        // LEGENDARY STATE
+        crystal.classList.add('state-legendary', 'glow-legendary');
+        equipment.classList.add('active');
+        banner.classList.add('active');
+        spawnCashNotes();
+        spawnParticles(20);
+    } else if (dailySalesTotal >= 2001) {
+        // EPIC STATE
+        crystal.classList.add('state-epic', 'glow-epic');
+        equipment.classList.add('active');
+        banner.classList.remove('active');
+        spawnParticles(15);
+    } else if (dailySalesTotal >= 1501) {
+        // RARE STATE
+        crystal.classList.add('state-rare', 'glow-rare');
+        equipment.classList.remove('active');
+        banner.classList.remove('active');
+        spawnCashNotes();
+        spawnParticles(10);
+    } else if (dailySalesTotal >= 1001) {
+        // UNCOMMON STATE
+        crystal.classList.add('state-uncommon', 'glow-uncommon');
+        equipment.classList.remove('active');
+        banner.classList.remove('active');
+        spawnParticles(8);
+    } else if (dailySalesTotal >= 501) {
+        // ENHANCED STATE
+        crystal.classList.add('state-enhanced', 'glow-enhanced');
+        equipment.classList.remove('active');
+        banner.classList.remove('active');
+        spawnParticles(5);
+    } else if (dailySalesTotal >= 101) {
+        // ACTIVE STATE
+        crystal.classList.add('state-active', 'glow-active');
+        equipment.classList.remove('active');
+        banner.classList.remove('active');
+    } else {
+        // IDLE STATE
+        crystal.classList.add('state-idle', 'glow-idle');
+        equipment.classList.remove('active');
+        banner.classList.remove('active');
+    }
+}
+
+// Spawn particle effects
+function spawnParticles(count) {
+    const container = document.getElementById('particleContainer');
+    if (!container) return;
+    
+    // Clear old particles
+    container.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+        setTimeout(() => {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Random direction
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 50 + Math.random() * 100;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            
+            particle.style.setProperty('--tx', `${tx}px`);
+            particle.style.setProperty('--ty', `${ty}px`);
+            
+            container.appendChild(particle);
+            
+            // Remove after animation
+            setTimeout(() => particle.remove(), 1000);
+        }, i * 100);
+    }
+}
+
+// Spawn falling cash notes
+function spawnCashNotes() {
+    const container = document.getElementById('cashNotesContainer');
+    if (!container) return;
+    
+    // Spawn 3-5 notes
+    const noteCount = 3 + Math.floor(Math.random() * 3);
+    
+    for (let i = 0; i < noteCount; i++) {
+        setTimeout(() => {
+            const note = document.createElement('div');
+            note.className = 'cash-note';
+            note.textContent = '$';
+            note.style.left = `${30 + Math.random() * 40}%`;
+            note.style.animationDelay = `${Math.random() * 0.5}s`;
+            
+            container.appendChild(note);
+            
+            // Remove after animation
+            setTimeout(() => note.remove(), 3000);
+        }, i * 200);
+    }
+}
+
+// DEMO MODE: Simulate sales (remove this in production)
+function startDemoMode() {
+    setInterval(() => {
+        const randomSale = Math.random() * 200;
+        addSale(randomSale);
+        
+        // Reset at $3500 for demo
+        if (dailySalesTotal > 3500) {
+            dailySalesTotal = 0;
+            localStorage.setItem('dailySalesTotal', '0');
+            updateEngineVisuals();
+        }
+    }, 3000);
+}
+
+// Initialize engine when page loads
+setTimeout(() => {
+    initArchitectsEngine();
+    startDemoMode(); // Remove this in production
+}, 1000);
 
 function handleCellClick(e) {
     if (!exchangeModeActive || !grabbedProduct) return;
@@ -1993,166 +2584,145 @@ function moveProductToPosition(product, newX, newY, newFloor) {
 }        // --- CORE FEATURES ---
 
         function updateHeatmap() {
-    if (!heatmapEnabled) {
-        document.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.className = 'grid-cell';
-            cell.style.background = '';
-        });
-        
-        // RESET all product cards
-        document.querySelectorAll('.product-node').forEach(node => {
-            const card = node.querySelector('.product-card');
-            if (card) {
-                card.style.background = '';
-                card.style.filter = '';
-            }
-            const pid = node.dataset.productId;
-            const prod = productsData.find(p => p.id === pid);
-            if (prod) updateNodeVisuals(node, prod);
-        });
-        return;
-    }
-
-    // Calculate Max Sales for normalization
-    const maxSales = Math.max(...productsData.map(p => p.sales || 0), 1);
-
+            if (!heatmapEnabled) {
     document.querySelectorAll('.grid-cell').forEach(cell => {
-        const x = parseInt(cell.dataset.x);
-        const y = parseInt(cell.dataset.y);
-        const floor = parseInt(cell.dataset.floor || 0);
-        
-        // Find product at this EXACT position
-        const product = productsData.find(p => {
-            const match = p.x === x && p.y === y && (p.floor || 0) === floor;
-            return match;
-        });
-
-        // Reset base
         cell.className = 'grid-cell';
         cell.style.background = '';
-        
-        // If in exchange mode, add that class back
-        if (exchangeModeActive) {
-            cell.classList.add('exchange-mode');
-        }
-
-        if (product) {
-            const expiryStatus = getExpiryStatus(product);
-            const productNode = document.querySelector(`[data-product-id="${product.id}"]`);
-            
-            // ===== HEATMAP SALES COLORS WITH SMART PRIORITY =====
-            
-            if (product.stock === 0) {
-                // PRIORITY 1: Out of Stock (RED - always shows)
-                cell.classList.add('heatmap-oos');
-                if (productNode) {
-                    productNode.classList.add('is-out-of-stock');
-                    const card = productNode.querySelector('.product-card');
-                    if (card) {
-                        card.style.background = 'linear-gradient(180deg, rgba(255, 0, 64, 0.7), rgba(100, 0, 20, 0.8))';
-                        card.style.filter = 'saturate(1.5) brightness(1.2)';
-                    }
-                }
-            }
-            else if (expiryStatus === 'expired') {
-                // PRIORITY 2: Expired (GRAY - overrides sales)
-                cell.classList.add('expired');
-                if (productNode) {
-                    productNode.classList.add('is-expired');
-                    const card = productNode.querySelector('.product-card');
-                    if (card) {
-                        card.style.background = 'linear-gradient(180deg, rgba(64, 64, 64, 0.6), rgba(32, 32, 32, 0.7))';
-                        card.style.filter = 'grayscale(0.7)';
-                    }
-                }
-            }
-            else if (expiryStatus === 'expiring-soon') {
-                // PRIORITY 3: Expiring Soon (BROWN - overrides sales)
-                cell.classList.add('expiring-soon');
-                if (productNode) {
-                    productNode.classList.add('is-expiring-soon');
-                    const card = productNode.querySelector('.product-card');
-                    if (card) {
-                        card.style.background = 'linear-gradient(180deg, rgba(139, 69, 19, 0.6), rgba(101, 67, 33, 0.7))';
-                        card.style.filter = 'brightness(0.8) sepia(0.5)';
-                    }
-                }
-            }
-            else if (product.stock < 5) {
-                // PRIORITY 4: Low Stock (YELLOW - overrides sales)
-                cell.classList.add('heatmap-lowstock');
-                if (productNode) {
-                    productNode.classList.add('is-low-stock');
-                    const card = productNode.querySelector('.product-card');
-                    if (card) {
-                        card.style.background = 'linear-gradient(180deg, rgba(255, 255, 0, 0.6), rgba(180, 180, 0, 0.7))';
-                        card.style.filter = 'saturate(1.3) brightness(1.1)';
-                    }
-                }
-            }
-            else {
-                // ===== SALES PERFORMANCE COLORS (only for healthy stock) =====
-                if (product.sales > 50) {
-                    // HIGH SALES - ORANGE 🔥
-                    cell.classList.add('heatmap-high');
-                    if (productNode) {
-                        const card = productNode.querySelector('.product-card');
-                        if (card) {
-                            card.style.background = 'linear-gradient(180deg, rgba(255, 170, 0, 0.7), rgba(200, 120, 0, 0.8))';
-                            card.style.filter = 'hue-rotate(20deg) saturate(1.6) brightness(1.2)';
-                        }
-                    }
-                } else if (product.sales < 10) {
-                    // LOW SALES - DARK BLUE 🔵
-                    cell.classList.add('heatmap-low');
-                    if (productNode) {
-                        const card = productNode.querySelector('.product-card');
-                        if (card) {
-                            card.style.background = 'linear-gradient(180deg, rgba(0, 136, 204, 0.7), rgba(0, 80, 150, 0.8))';
-                            card.style.filter = 'hue-rotate(200deg) saturate(1.4) brightness(0.9)';
-                        }
-                    }
-                } else {
-                    // NORMAL SALES - CYAN 💧
-                    cell.classList.add('heatmap-med');
-                    if (productNode) {
-                        const card = productNode.querySelector('.product-card');
-                        if (card) {
-                            card.style.background = 'linear-gradient(180deg, rgba(0, 243, 255, 0.4), rgba(0, 168, 204, 0.5))';
-                            card.style.filter = 'saturate(1.2) brightness(1.05)';
-                        }
-                    }
-                }
-            }
-        }
     });
+    
+    // RESET all product cards
+    document.querySelectorAll('.product-node').forEach(node => {
+        const card = node.querySelector('.product-card');
+        if (card) {
+            card.style.background = '';
+            card.style.filter = '';
+        }
+        const pid = node.dataset.productId;
+        const prod = productsData.find(p => p.id === pid);
+        if (prod) updateNodeVisuals(node, prod);
+    });
+    return;
 }
 
+            // Calculate Max Sales for normalization
+            const maxSales = Math.max(...productsData.map(p => p.sales || 0), 1);
 
-window.toggleHeatmap = function() {
-    heatmapEnabled = !heatmapEnabled;
-    const toggle = document.getElementById('heatmapToggle');
-    toggle.classList.toggle('active');
+document.querySelectorAll('.grid-cell').forEach(cell => {
+    const x = parseInt(cell.dataset.x);
+    const y = parseInt(cell.dataset.y);
+    const floor = parseInt(cell.dataset.floor || 0);
     
-    // Show legend popup when heatmap is FIRST enabled
-    if (heatmapEnabled) {
-        showHeatmapLegend();
+    // Find product at this EXACT position
+    const product = productsData.find(p => {
+        const match = p.x === x && p.y === y && (p.floor || 0) === floor;
+        return match;
+    });
+
+    // Reset base
+    cell.className = 'grid-cell';
+    cell.style.background = '';
+    
+    // If in exchange mode, add that class back
+    if (exchangeModeActive) {
+        cell.classList.add('exchange-mode');
     }
-    
-    updateHeatmap();
-};
 
-function showHeatmapLegend() {
-    const popup = document.getElementById('heatmap-legend-popup');
-    const overlay = document.getElementById('overlay');
-    popup.classList.add('active');
-    overlay.classList.add('active');
+  if (product) {
+    const expiryStatus = getExpiryStatus(product);
+    const productNode = document.querySelector(`[data-product-id="${product.id}"]`);
+    
+    if (expiryStatus === 'expired') {
+        cell.classList.add('expired');
+        if (productNode) {
+            productNode.classList.add('is-expired');
+            const card = productNode.querySelector('.product-card');
+            if (card) {
+                card.style.background = 'linear-gradient(180deg, rgba(64, 64, 64, 0.6), rgba(32, 32, 32, 0.7))';
+                card.style.filter = 'grayscale(0.7)';
+            }
+        }
+    } else if (expiryStatus === 'expiring-soon') {
+        cell.classList.add('expiring-soon');
+        if (productNode) {
+            productNode.classList.add('is-expiring-soon');
+            const card = productNode.querySelector('.product-card');
+            if (card) {
+                card.style.background = 'linear-gradient(180deg, rgba(139, 69, 19, 0.6), rgba(101, 67, 33, 0.7))';
+                card.style.filter = 'brightness(0.8) sepia(0.5)';
+            }
+        }
+    } else if (product.stock === 0) {
+        cell.classList.add('heatmap-oos');
+        if (productNode) {
+            productNode.classList.add('is-out-of-stock');
+            const card = productNode.querySelector('.product-card');
+            if (card) {
+                card.style.background = 'linear-gradient(180deg, rgba(255, 0, 64, 0.7), rgba(100, 0, 20, 0.8))';
+                card.style.filter = 'saturate(1.5) brightness(1.2)';
+            }
+        }
+    } else if (product.stock < 5) {
+        cell.classList.add('heatmap-lowstock');
+        if (productNode) {
+            productNode.classList.add('is-low-stock');
+            const card = productNode.querySelector('.product-card');
+            if (card) {
+                card.style.background = 'linear-gradient(180deg, rgba(255, 255, 0, 0.6), rgba(180, 180, 0, 0.7))';
+                card.style.filter = 'saturate(1.3) brightness(1.1)';
+            }
+        }
+    } else {
+        if (product.sales > 50) {
+            cell.classList.add('heatmap-high');
+            if (productNode) {
+                const card = productNode.querySelector('.product-card');
+                if (card) {
+                    card.style.background = 'linear-gradient(180deg, rgba(255, 170, 0, 0.6), rgba(200, 120, 0, 0.7))';
+                    card.style.filter = 'hue-rotate(30deg) saturate(1.5)';
+                }
+            }
+        } else if (product.sales < 10) {
+            cell.classList.add('heatmap-low');
+            if (productNode) {
+                const card = productNode.querySelector('.product-card');
+                if (card) {
+                    card.style.background = 'linear-gradient(180deg, rgba(0, 212, 255, 0.6), rgba(0, 100, 200, 0.7))';
+                    card.style.filter = 'hue-rotate(180deg) brightness(1.1)';
+                }
+            }
+        } else {
+            cell.classList.add('heatmap-med');
+        }
+    }
 }
+
+            });
+        }
 
 window.closeHeatmapLegend = function() {
     document.getElementById('heatmap-legend-popup').classList.remove('active');
     document.getElementById('overlay').classList.remove('active');
 };
+function showHeatmapLegend() {
+    const legendHTML = `
+        <div style="text-align: left; line-height: 1.8;">
+            <div><span style="color: #ff0040;">🔴 Red</span> = Out of Stock</div>
+            <div><span style="color: #ffff00;">🟡 Yellow</span> = Low Stock (&lt;5)</div>
+            <div><span style="color: #ffaa00;">🟠 Orange</span> = High Sales (&gt;50)</div>
+            <div><span style="color: #00d4ff;">🔵 Blue</span> = Low Sales (&lt;10)</div>
+            <div><span style="color: #00f3ff;">💧 Cyan</span> = Normal Stock</div>
+        </div>
+    `;
+    
+    const toast = document.getElementById('toast');
+    document.getElementById('toastTitle').textContent = '🔥 Heatmap Legend';
+    document.getElementById('toastMessage').innerHTML = legendHTML;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
 
         function renderShop(products) {
             const container = document.getElementById('products-container');
@@ -2209,28 +2779,19 @@ node.style.height = '80px';
                 let stockBadgeHtml = '';
                 let expiryBadgeHtml = '';
                 
-                // ===== SMART BADGE PRIORITY SYSTEM =====
-                // Priority: OUT OF STOCK > EXPIRED > LOW+EXPIRING > LOW STOCK > EXPIRING SOON
-                
-                if (product.stock === 0) {
-                    // Priority 1: OUT OF STOCK (highest - ignores expiry)
-                    stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-red);">OUT</span>';
-                } 
-                else if (expiryStatus === 'expired') {
-                    // Priority 2: EXPIRED (only shows if stock > 0)
+                // Determine stock badge
+                if (expiryStatus === 'expired') {
                     stockBadgeHtml = '<span class="stock-badge expired" style="background:#404040;">EXPIRED</span>';
-                } 
-                else if (expiryStatus === 'expiring-soon' && product.stock < 5) {
-                    // Priority 3: LOW STOCK + EXPIRING SOON (combined warning)
-                    stockBadgeHtml = `<span class="stock-badge" style="background:#8B4513;color:#fff;">LOW & ${daysLeft}D EXP</span>`;
-                } 
-                else if (product.stock < 5) {
-                    // Priority 4: LOW STOCK ONLY
+                } else if (expiryStatus === 'expiring-soon' && product.stock > 0) {
+                    if (product.stock < 5) {
+                        stockBadgeHtml = `<span class="stock-badge" style="background:#8B4513;color:#fff;">LOW & ${daysLeft}D EXP</span>`;
+                    } else {
+                        expiryBadgeHtml = `<span class="expiry-badge">EXP ${daysLeft}D</span>`;
+                    }
+                } else if (product.stock < 5 && product.stock > 0) {
                     stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-yellow);color:black;">LOW</span>';
-                } 
-else if (expiryStatus === 'expiring-soon') {
-                    // Priority 5: EXPIRING SOON ONLY (normal stock)
-                    expiryBadgeHtml = `<span class="expiry-badge">EXP ${daysLeft}D</span>`;
+                } else if (product.stock === 0) {
+                    stockBadgeHtml = '<span class="stock-badge" style="background:var(--neon-red);">OUT</span>';
                 }
                 
                 const stockText = isTimeTravelMode 
@@ -2720,6 +3281,38 @@ newProducts.push({
                 floor: Math.floor(index / 100) 
             });
         });
+// ============================================
+        // 🔥 ARCHITECT'S ENGINE - REAL SALES TRACKING
+        // ============================================
+        
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayTimestamp = today.getTime();
+        
+        // Calculate total revenue from the sales node (TODAY ONLY)
+        let todayRevenue = 0;
+        const salesData = business?.sales || {};
+        
+        Object.values(salesData).forEach(sale => {
+            if (sale.timestamp && sale.revenue) {
+                const saleDate = new Date(sale.timestamp);
+                saleDate.setHours(0, 0, 0, 0);
+                
+                // Only count sales from today
+                if (saleDate.getTime() === todayTimestamp) {
+                    todayRevenue += parseFloat(sale.revenue || 0);
+                }
+            }
+        });
+        
+        console.log(`💰 Today's Revenue: $${todayRevenue.toFixed(2)}`);
+        
+        // Update The Architect's Engine
+        if (typeof window.updateArchitectWithRealSales === 'function') {
+            window.updateArchitectWithRealSales(todayRevenue);
+        }
+        // ============================================
     }else {
                         // Demo data
                         newProducts = [
