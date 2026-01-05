@@ -596,7 +596,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.x.x/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
   authDomain: "scalevest-163a0.firebaseapp.com",
@@ -613,38 +613,19 @@ const firebaseConfig = {
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // --- Auth State Logic ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // User is signed in, fetch their specific business analytics
-        const db = getDatabase();
-        const analyticsPath = `Businesses/${user.uid}/analytics`;
-        const analyticsRef = ref(db, analyticsPath);
+        // Now onValue will work because it is defined above
+        const analyticsRef = ref(db, `Businesses/${user.uid}/analytics`);
 
         onValue(analyticsRef, (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
-
-                // 1. Update MOST SELLING
-                const most = data.mostSelling;
-                document.getElementById('most-selling-name').innerText = most?.name || "No Data";
-                document.getElementById('most-selling-stat').innerText = `${most?.totalSold || 0} Total Sold`;
-
-                // 2. Update TRENDING
-                const trending = data.trendingSelling;
-                document.getElementById('trending-name').innerText = trending?.name || "No Data";
-                document.getElementById('trending-stat').innerText = `Recently: ${trending?.recentSold || 0}`;
-
-                // 3. Update LEAST SELLING
-                const least = data.leastSelling;
-                document.getElementById('least-selling-name').innerText = least?.name || "No Data";
-                document.getElementById('least-selling-stat').innerText = `Only ${least?.totalSold || 0} Sold`;
-
-                // 4. Update the Insight Reason
-                const reasonEl = document.getElementById('analytics-reason');
-                if (least) {
-                    reasonEl.innerText = `Reason: ${least.name} has low traction compared to ${most?.name}.`;
-                }
+                
+                // Update your UI elements here
+                document.getElementById('most-selling-name').innerText = data.mostSelling?.name || "N/A";
+                document.getElementById('trending-name').innerText = data.trendingSelling?.name || "N/A";
+                document.getElementById('least-selling-name').innerText = data.leastSelling?.name || "N/A";
             }
         });
 
