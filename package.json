@@ -1,10 +1,7 @@
 {
-  "name": "scalevest-backend",
-  "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@ai-sdk/google": "^1.0.0",
-    "ai": "^4.0.0",
-    "zod": "^3.0.0"
+    "@google/generative-ai": "^0.21.0",
+    "node-fetch": "^3.3.0"
   }
 }
