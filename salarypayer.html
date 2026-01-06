@@ -1,12 +1,12 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScaleVest: Salary Payroll</title>
+    <title>ScaleVest | Boss Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -21,6 +21,7 @@
         }
         .employee-card {
             transition: all 0.3s ease;
+            cursor: pointer;
         }
         .employee-card:hover {
             transform: translateY(-5px);
@@ -37,113 +38,31 @@
             border-radius: 50%;
             margin: 10px auto;
         }
+        .deduction-controls {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 8px;
+        }
+        .deduction-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+        .deduction-input:focus {
+            outline: none;
+            border-color: #4F46E5;
+        }
         .history-item {
             transition: all 0.2s ease;
         }
         .history-item:hover {
             background: rgba(79, 70, 229, 0.05);
             transform: translateX(5px);
-        }
-        .payment-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 9999;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-        .payment-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
-        }
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .payment-method-toggle {
-            display: inline-block;
-            margin: 15px 0;
-            padding: 10px 20px;
-            background: #f3f4f6;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9em;
-            color: #4F46E5;
-            font-weight: 600;
-        }
-        .payment-method-toggle:hover {
-            background: #e5e7eb;
-        }
-        .hidden-section {
-            display: none;
-        }
-        .upi-logo {
-            width: 80px;
-            height: 80px;
-            margin: 20px auto;
-            animation: bounce 1s infinite;
-        }
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .modern-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            transition: all 0.3s;
-            background: #f9fafb;
-        }
-        .modern-input:focus {
-            outline: none;
-            border-color: #4F46E5;
-            background: white;
-        }
-        .input-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.9rem;
-        }
-        .add-employee-modal {
-            max-width: 500px;
-            padding: 30px;
-        }
-        .photo-upload-area {
-            border: 2px dashed #d1d5db;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: #f9fafb;
-        }
-        .photo-upload-area:hover {
-            border-color: #4F46E5;
-            background: #f3f4f6;
-        }
-        .photo-preview-large {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 10px auto;
-            border: 4px solid #4F46E5;
         }
     </style>
 </head>
@@ -154,7 +73,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold text-indigo-900">ScaleVest</h1>
-                    <p class="text-sm text-gray-600">Salary Payroll</p>
+                    <p class="text-sm text-gray-600">Workforce Management Platform</p>
                 </div>
                 <div class="flex gap-2">
                     <button id="historyBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 md:px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
@@ -201,12 +120,6 @@
         </div>
     </div>
 
-    <div id="paymentOverlay" class="payment-overlay">
-        <div class="payment-card">
-            <div id="paymentContent"></div>
-        </div>
-    </div>
-
     <script>
 const firebaseConfig = {
   apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
@@ -224,14 +137,14 @@ const database = firebase.database();
 const storage = firebase.storage();
 const auth = firebase.auth();
 
+// Initialize variables
 let employees = {};
 let selectedEmployees = new Set();
 let employeeDeductions = {};
 let bossName = "Boss";
 let currentBossId = null;
-let currentPaymentSession = null;
-let bossUPIId = "";
 
+// Format currency helper - FIXED encoding issue
 function formatCurrency(amount) {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -241,6 +154,7 @@ function formatCurrency(amount) {
     }).format(amount).replace('₹', 'Rs. ');
 }
 
+// Auth check
 auth.onAuthStateChanged((user) => {
     if (!user) {
         alert("Please login first");
@@ -252,44 +166,9 @@ auth.onAuthStateChanged((user) => {
 });
 
 function initApp() {
-    loadBossInfo();
     loadEmployees();
     setupEventListeners();
     showWelcomePopup();
-}
-
-async function loadBossInfo() {
-    const bossRef = database.ref(`BusinessOwners/${currentBossId}`);
-    const snapshot = await bossRef.once('value');
-    const data = snapshot.val();
-    if (data && data.upiId) {
-        bossUPIId = data.upiId;
-    } else {
-        askForUPIId();
-    }
-}
-
-async function askForUPIId() {
-    const { value: upiId } = await Swal.fire({
-        title: 'Setup Your UPI ID',
-        text: 'Please enter your UPI ID to receive payments',
-        input: 'text',
-        inputPlaceholder: 'yourname@paytm',
-        allowOutsideClick: false,
-        inputValidator: (value) => {
-            if (!value) {
-                return 'UPI ID is required!';
-            }
-            if (!value.includes('@')) {
-                return 'Invalid UPI ID format!';
-            }
-        }
-    });
-
-    if (upiId) {
-        bossUPIId = upiId;
-        await database.ref(`BusinessOwners/${currentBossId}/upiId`).set(upiId);
-    }
 }
 
 function showWelcomePopup() {
@@ -329,14 +208,13 @@ function renderEmployees() {
     } else {
         emptyState.classList.add('hidden');
         grid.innerHTML = employeeList.map(([id, emp]) => {
-            const deductions = employeeDeductions[id] || { leaveDays: 0, flatDeduction: 0, bonus: 0 };
+            const deductions = employeeDeductions[id] || { leaveDays: 0, flatDeduction: 0 };
             const leaveDeduction = calculateLeaveDeduction(emp.salary, deductions.leaveDays);
             const totalDeduction = leaveDeduction + deductions.flatDeduction;
-            const netAmount = emp.salary + deductions.bonus - totalDeduction;
             const isSelected = selectedEmployees.has(id);
             
             return `
-            <div class="employee-card glass-card rounded-2xl shadow-lg p-6 ${isSelected ? 'selected-card' : ''}" onclick="toggleCardSelection('${id}')">
+            <div class="employee-card glass-card rounded-2xl shadow-lg p-6 ${isSelected ? 'selected-card' : ''}" data-id="${id}">
                 <div class="flex justify-between mb-2">
                     <button onclick="event.stopPropagation(); editEmployee('${id}')" class="text-indigo-500 hover:text-indigo-700">✏️ Edit</button>
                     <button onclick="event.stopPropagation(); deleteEmployee('${id}')" class="text-red-500 hover:text-red-700">🗑️ Remove</button>
@@ -360,23 +238,55 @@ function renderEmployees() {
                             Deductions: -${formatCurrency(totalDeduction)}
                         </p>
                     ` : ''}
-                    ${deductions.bonus > 0 ? `
-                        <p class="text-sm text-green-600 mt-2">
-                            Bonus: +${formatCurrency(deductions.bonus)}
-                        </p>
-                    ` : ''}
                 </div>
                 <div class="mt-3 text-xs text-gray-500">
                     <p>💳 ${emp.paymentDetails}</p>
                 </div>
-                <button onclick="event.stopPropagation(); paySingleEmployee('${id}')" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition">
-                    💸 Pay to ${emp.name}
-                </button>
+                ${isSelected ? `
+                <div class="deduction-controls" onclick="event.stopPropagation()">
+                    <h4 class="text-sm font-bold text-gray-700 mb-2">Adjustments</h4>
+                    <div class="mb-2">
+                        <label class="text-xs text-gray-600">Days of Leave</label>
+                        <input type="number" min="0" max="30" 
+                            class="deduction-input" 
+                            value="${deductions.leaveDays}"
+                            onchange="updateDeduction('${id}', 'leaveDays', parseFloat(this.value) || 0)"
+                            placeholder="0">
+                        ${deductions.leaveDays > 0 ? `
+                            <p class="text-xs text-red-500 mt-1">-${formatCurrency(leaveDeduction)}</p>
+                        ` : ''}
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-600">Flat Deduction</label>
+                        <input type="number" min="0" 
+                            class="deduction-input" 
+                            value="${deductions.flatDeduction}"
+                            onchange="updateDeduction('${id}', 'flatDeduction', parseFloat(this.value) || 0)"
+                            placeholder="Loans, penalties, etc.">
+                    </div>
+                </div>
+                ` : ''}
             </div>
             `;
         }).join('');
+        
+        document.querySelectorAll('.employee-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT' || 
+                    e.target.parentElement.tagName === 'BUTTON') return;
+                toggleCardSelection(card.dataset.id);
+            });
+        });
     }
 }
+
+window.updateDeduction = function(id, field, value) {
+    if (!employeeDeductions[id]) {
+        employeeDeductions[id] = { leaveDays: 0, flatDeduction: 0 };
+    }
+    employeeDeductions[id][field] = value;
+    renderEmployees();
+};
 
 function toggleCardSelection(id) {
     if (selectedEmployees.has(id)) {
@@ -385,7 +295,7 @@ function toggleCardSelection(id) {
     } else {
         selectedEmployees.add(id);
         if (!employeeDeductions[id]) {
-            employeeDeductions[id] = { leaveDays: 0, flatDeduction: 0, bonus: 0 };
+            employeeDeductions[id] = { leaveDays: 0, flatDeduction: 0 };
         }
     }
     renderEmployees();
@@ -396,80 +306,6 @@ function setupEventListeners() {
     document.querySelector('.add-first-btn')?.addEventListener('click', showAddEmployeeForm);
     document.getElementById('paySalaryBtn').addEventListener('click', handlePaySalary);
     document.getElementById('historyBtn').addEventListener('click', showPaymentHistory);
-}
-
-function detectUPIApp(upiId) {
-    if (!upiId) return 'upi';
-    const lower = upiId.toLowerCase();
-    if (lower.includes('paytm')) return 'paytm';
-    if (lower.includes('phonepe')) return 'phonepe';
-    if (lower.includes('gpay') || lower.includes('google')) return 'gpay';
-    return 'upi';
-}
-
-function getUPILogo(appType) {
-    const logos = {
-        'paytm': 'https://upload.wikimedia.org/wikipedia/commons/2/24/Paytm_Logo_%28standalone%29.svg',
-        'phonepe': 'https://upload.wikimedia.org/wikipedia/commons/0/04/PhonePe_Logo.png',
-        'gpay': 'https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg',
-        'upi': 'https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg'
-    };
-    return logos[appType] || logos['upi'];
-}
-
-async function paySingleEmployee(empId) {
-    const emp = employees[empId];
-    
-    const { value: formValues } = await Swal.fire({
-        title: `Pay ${emp.name}`,
-        html: `
-            <div style="text-align: left;">
-                <p class="text-sm text-gray-600 mb-4">Base Salary: ${formatCurrency(emp.salary)}</p>
-                
-                <label class="input-label">Bonus Amount</label>
-                <input id="bonus" type="number" min="0" class="modern-input" value="0" placeholder="0">
-                
-                <label class="input-label" style="margin-top: 15px;">Days of Leave</label>
-                <input id="leaveDays" type="number" min="0" max="30" class="modern-input" value="0" placeholder="0">
-                
-                <label class="input-label" style="margin-top: 15px;">Flat Deduction</label>
-                <input id="flatDeduction" type="number" min="0" class="modern-input" value="0" placeholder="Loans, penalties, etc.">
-            </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Continue to Payment',
-        confirmButtonColor: '#10B981',
-        customClass: {
-            popup: 'add-employee-modal'
-        },
-        preConfirm: () => ({
-            bonus: parseFloat(document.getElementById('bonus').value) || 0,
-            leaveDays: parseFloat(document.getElementById('leaveDays').value) || 0,
-            flatDeduction: parseFloat(document.getElementById('flatDeduction').value) || 0
-        })
-    });
-
-    if (formValues) {
-        const leaveDeduction = calculateLeaveDeduction(emp.salary, formValues.leaveDays);
-        const totalDeduction = leaveDeduction + formValues.flatDeduction;
-        const netAmount = emp.salary + formValues.bonus - totalDeduction;
-
-        const paymentData = {
-            employeeId: empId,
-            employeeName: emp.name,
-            employeeRole: emp.role,
-            baseSalary: emp.salary,
-            bonus: formValues.bonus,
-            leaveDays: formValues.leaveDays,
-            leaveDeduction: leaveDeduction,
-            flatDeduction: formValues.flatDeduction,
-            totalDeduction: totalDeduction,
-            netAmount: netAmount,
-            paymentDetails: emp.paymentDetails
-        };
-
-        initiateUPIPayment([paymentData]);
-    }
 }
 
 async function handlePaySalary() {
@@ -486,7 +322,7 @@ async function handlePaySalary() {
     }
 
     if (selectedEmployees.size > 0) {
-        await askForAdjustments();
+        await askForBonus();
         return;
     }
 
@@ -511,13 +347,13 @@ async function handlePaySalary() {
         
         Swal.fire({
             title: 'Select Employees',
-            text: 'Click on employee cards to select them',
+            text: 'Click on employee cards to select them and adjust deductions',
             icon: 'info',
             confirmButtonText: 'Continue to Payment',
             confirmButtonColor: '#4F46E5'
         }).then(async (result) => {
             if (result.isConfirmed && selectedEmployees.size > 0) {
-                await askForAdjustments();
+                await askForBonus();
             } else if (result.isConfirmed && selectedEmployees.size === 0) {
                 Swal.fire({
                     icon: 'warning',
@@ -532,29 +368,21 @@ async function handlePaySalary() {
 
 async function askForGlobalDeductions() {
     const { value: formValues } = await Swal.fire({
-        title: 'Global Adjustments',
+        title: 'Global Deductions',
         html: `
             <div style="text-align: left;">
-                <p class="text-sm text-gray-600 mb-4">Apply the same adjustments to all employees</p>
+                <p class="text-sm text-gray-600 mb-4">Apply the same deductions to all employees</p>
+                <label class="text-sm font-semibold">Days of Leave (for all)</label>
+                <input id="globalLeave" type="number" min="0" max="30" class="swal2-input" value="0" placeholder="0">
                 
-                <label class="input-label">Bonus (for all)</label>
-                <input id="globalBonus" type="number" min="0" class="modern-input" value="0" placeholder="0">
-                
-                <label class="input-label" style="margin-top: 15px;">Days of Leave (for all)</label>
-                <input id="globalLeave" type="number" min="0" max="30" class="modern-input" value="0" placeholder="0">
-                
-                <label class="input-label" style="margin-top: 15px;">Flat Deduction (for all)</label>
-                <input id="globalFlat" type="number" min="0" class="modern-input" value="0" placeholder="0">
+                <label class="text-sm font-semibold">Flat Deduction (for all)</label>
+                <input id="globalFlat" type="number" min="0" class="swal2-input" value="0" placeholder="0">
             </div>
         `,
         showCancelButton: true,
         confirmButtonText: 'Continue',
         confirmButtonColor: '#4F46E5',
-        customClass: {
-            popup: 'add-employee-modal'
-        },
         preConfirm: () => ({
-            bonus: parseFloat(document.getElementById('globalBonus').value) || 0,
             leaveDays: parseFloat(document.getElementById('globalLeave').value) || 0,
             flatDeduction: parseFloat(document.getElementById('globalFlat').value) || 0
         })
@@ -564,720 +392,74 @@ async function askForGlobalDeductions() {
         selectedEmployees = new Set(Object.keys(employees));
         Object.keys(employees).forEach(id => {
             employeeDeductions[id] = {
-                bonus: formValues.bonus,
                 leaveDays: formValues.leaveDays,
                 flatDeduction: formValues.flatDeduction
             };
         });
         renderEmployees();
-        await processMultiplePayments();
+        await askForBonus();
     }
 }
 
-async function askForAdjustments() {
+async function askForBonus() {
     if (selectedEmployees.size === 0) return;
 
-    const { value: formValues } = await Swal.fire({
-        title: 'Adjustments for Selected',
-        html: `
-            <div style="text-align: left;">
-                <p class="text-sm text-gray-600 mb-4">Apply to all selected employees</p>
-                
-                <label class="input-label">Bonus</label>
-                <input id="bonus" type="number" min="0" class="modern-input" value="0" placeholder="0">
-                
-                <label class="input-label" style="margin-top: 15px;">Days of Leave</label>
-                <input id="leaveDays" type="number" min="0" max="30" class="modern-input" value="0" placeholder="0">
-                
-                <label class="input-label" style="margin-top: 15px;">Flat Deduction</label>
-                <input id="flatDeduction" type="number" min="0" class="modern-input" value="0" placeholder="0">
-            </div>
-        `,
+    const { value: bonusAmount } = await Swal.fire({
+        title: '💰 Add Bonus?',
+        text: 'Would you like to add a bonus amount for selected employees?',
+        input: 'number',
+        inputPlaceholder: 'Enter bonus amount',
+        inputValue: 0,
         showCancelButton: true,
         confirmButtonText: 'Continue',
         confirmButtonColor: '#4F46E5',
-        customClass: {
-            popup: 'add-employee-modal'
-        },
-        preConfirm: () => ({
-            bonus: parseFloat(document.getElementById('bonus').value) || 0,
-            leaveDays: parseFloat(document.getElementById('leaveDays').value) || 0,
-            flatDeduction: parseFloat(document.getElementById('flatDeduction').value) || 0
-        })
-    });
-
-    if (formValues) {
-        selectedEmployees.forEach(id => {
-            employeeDeductions[id] = formValues;
-        });
-        renderEmployees();
-        await processMultiplePayments();
-    }
-}
-
-async function processMultiplePayments() {
-    const paymentsData = [];
-    
-    selectedEmployees.forEach(id => {
-        const emp = employees[id];
-        const deductions = employeeDeductions[id] || { leaveDays: 0, flatDeduction: 0, bonus: 0 };
-        const leaveDeduction = calculateLeaveDeduction(emp.salary, deductions.leaveDays);
-        const totalDeduction = leaveDeduction + deductions.flatDeduction;
-        const netAmount = emp.salary + deductions.bonus - totalDeduction;
-        
-        paymentsData.push({
-            employeeId: id,
-            employeeName: emp.name,
-            employeeRole: emp.role,
-            baseSalary: emp.salary,
-            bonus: deductions.bonus,
-            leaveDays: deductions.leaveDays,
-            leaveDeduction: leaveDeduction,
-            flatDeduction: deductions.flatDeduction,
-            totalDeduction: totalDeduction,
-            netAmount: netAmount,
-            paymentDetails: emp.paymentDetails
-        });
-    });
-
-    initiateUPIPayment(paymentsData);
-}
-
-async function initiateUPIPayment(paymentsData) {
-    const sessionId = Date.now().toString();
-    currentPaymentSession = {
-        sessionId: sessionId,
-        payments: paymentsData,
-        currentIndex: 0,
-        completedPayments: []
-    };
-
-    await database.ref(`BusinessOwners/${currentBossId}/pendingSessions/${sessionId}`).set({
-        createdAt: new Date().toISOString(),
-        payments: paymentsData,
-        status: 'pending'
-    });
-
-    processNextPayment();
-}
-
-function processNextPayment() {
-    const session = currentPaymentSession;
-    if (session.currentIndex >= session.payments.length) {
-        showAllPaymentsComplete();
-        return;
-    }
-
-    const payment = session.payments[session.currentIndex];
-    showPaymentScreen(payment);
-}
-
-function showPaymentScreen(payment) {
-    const overlay = document.getElementById('paymentOverlay');
-    const content = document.getElementById('paymentContent');
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    
-    let upiId = payment.paymentDetails.includes('@') ? payment.paymentDetails : bossUPIId;
-    const appType = detectUPIApp(upiId);
-    const logoUrl = getUPILogo(appType);
-    
-    content.innerHTML = `
-        <div class="mb-6">
-            <div class="w-24 h-24 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
-                ${payment.employeeName.charAt(0).toUpperCase()}
-            </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">${payment.employeeName}</h2>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <p class="text-sm text-gray-600">Amount to Pay</p>
-                <p class="text-3xl font-bold text-green-600">${formatCurrency(payment.netAmount)}</p>
-            </div>
-        </div>
-        
-        <div id="statusContainer">
-            ${isMobile ? `
-                <img src="${logoUrl}" alt="UPI App" class="upi-logo">
-                <p class="text-sm text-gray-500 mb-2">Opening UPI app in...</p>
-                <div id="timerText" class="text-3xl font-bold text-indigo-600 mb-6">3</div>
-            ` : `
-                <p class="text-sm text-gray-500 mb-6">Generating QR Code...</p>
-            `}
-        </div>
-    `;
-    
-    overlay.style.display = 'flex';
-    
-    if (isMobile) {
-        let countdown = 3;
-        const timerInterval = setInterval(() => {
-            countdown--;
-            const timerEl = document.getElementById('timerText');
-            if (timerEl) timerEl.textContent = countdown;
-            
-            if (countdown === 0) {
-                clearInterval(timerInterval);
-                openUPIApp(payment);
+        inputValidator: (value) => {
+            if (value < 0) {
+                return 'Bonus cannot be negative!';
             }
-        }, 1000);
-    } else {
-        setTimeout(() => {
-            openUPIApp(payment);
-        }, 500);
+        }
+    });
+
+    if (bonusAmount !== undefined) {
+        calculateAndShowSummary(parseFloat(bonusAmount) || 0);
     }
 }
-
-function openUPIApp(payment) {
-    let upiId = payment.paymentDetails.includes('@') ? payment.paymentDetails : bossUPIId;
-    upiId = upiId.trim().replace(/\s/g, ''); 
-    const amount = payment.netAmount.toFixed(2);
-    const payeeName = payment.employeeName.trim();
-    const note = encodeURIComponent(`Salary for ${payeeName}`);
-    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${note}`;
-
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-        window.location.href = upiLink;
-        setTimeout(() => {
-            showPaymentConfirmation(payment);
-        }, 2000);
-    } else {
-        const statusContainer = document.getElementById('statusContainer');
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`;
-        
-        statusContainer.innerHTML = `
-            <div class="p-2">
-                <img src="${qrCodeUrl}" alt="UPI QR" class="mx-auto mb-4 border-4 border-indigo-100 shadow-lg rounded-lg">
-                <p class="text-xs text-gray-500 mb-4">Scan with PhonePe, GPay, or Paytm</p>
-                <button onclick="showPaymentConfirmation(${JSON.stringify(payment).replace(/"/g, '&quot;')})" 
-                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition">
-                    I Have Paid ✓
-                </button>
-            </div>
-        `;
-    }
-}
-
-function showPaymentConfirmation(payment) {
-    const content = document.getElementById('paymentContent');
-    
-    content.innerHTML = `
-        <div class="mb-6">
-            <div class="w-24 h-24 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
-                ${payment.employeeName.charAt(0).toUpperCase()}
-            </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">${payment.employeeName}</h2>
-            <p class="text-3xl font-bold text-green-600 mb-6">${formatCurrency(payment.netAmount)}</p>
-        </div>
-        
-        <div class="mb-6">
-            <p class="text-lg font-semibold text-gray-700 mb-4">Did you complete the payment?</p>
-            <p class="text-sm text-gray-500 mb-6">Please confirm only after successful payment</p>
-        </div>
-        
-        <div class="flex gap-3">
-            <button onclick="confirmPaymentMade('${payment.employeeId}')" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg transition">
-                ✓ Yes, I Paid
-            </button>
-            <button onclick="paymentNotMade()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-lg transition">
-                ✗ Not Yet
-            </button>
-        </div>
-    `;
-}
-
-window.confirmPaymentMade = async function(employeeId) {
-    const { value: transactionDetails } = await Swal.fire({
-        title: 'Payment Verification',
-        html: `
-            <div style="text-align: left;">
-                <p class="text-sm text-gray-600 mb-4">Please provide payment details for verification</p>
-                
-                <label class="input-label">Your UPI ID (Payer)</label>
-                <input id="payerUPI" class="modern-input" placeholder="yourname@paytm" required>
-                
-                <label class="input-label" style="margin-top: 15px;">Payment Method</label>
-                <select id="paymentMethod" class="modern-input">
-                    <option value="UPI">UPI</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                </select>
-                
-                <label class="input-label" style="margin-top: 15px;">Transaction ID / Reference No.</label>
-                <input id="txnId" class="modern-input" placeholder="Enter transaction ID" required>
-            </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Confirm Payment',
-        confirmButtonColor: '#10B981',
-        customClass: {
-            popup: 'add-employee-modal'
-        },
-        preConfirm: () => {
-            const payerUPI = document.getElementById('payerUPI').value;
-            const txnId = document.getElementById('txnId').value;
-            
-            if (!payerUPI || !txnId) {
-                Swal.showValidationMessage('Please fill all fields');
-                return false;
-            }
-            
-            return {
-                payerUPI: payerUPI,
-                paymentMethod: document.getElementById('paymentMethod').value,
-                transactionId: txnId,
-                timestamp: new Date().toISOString()
-            };
-        }
-    });
-
-    if (transactionDetails) {
-        const session = currentPaymentSession;
-        const payment = session.payments[session.currentIndex];
-        
-        const completedPayment = {
-            ...payment,
-            ...transactionDetails,
-            paymentDate: new Date().toISOString()
-        };
-        
-        session.completedPayments.push(completedPayment);
-        session.currentIndex++;
-        
-        await savePaymentRecord(completedPayment);
-        
-        triggerConfetti();
-        
-        if (session.currentIndex < session.payments.length) {
-            setTimeout(() => {
-                processNextPayment();
-            }, 1500);
-        } else {
-            showAllPaymentsComplete();
-        }
-    }
-};
-
-window.paymentNotMade = function() {
-    Swal.fire({
-        icon: 'warning',
-        title: 'Payment Not Completed',
-        text: 'Please complete the payment in your UPI app first',
-        confirmButtonText: 'Try Again',
-        confirmButtonColor: '#4F46E5'
-    }).then(() => {
-        const session = currentPaymentSession;
-        const payment = session.payments[session.currentIndex];
-        openUPIApp(payment);
-    });
-};
-
-async function savePaymentRecord(payment) {
-    const recordRef = database.ref(`BusinessOwners/${currentBossId}/paymentHistory`).push();
-    
-    await recordRef.set({
-        sessionId: currentPaymentSession.sessionId,
-        employeeId: payment.employeeId,
-        employeeName: payment.employeeName,
-        employeeRole: payment.employeeRole,
-        baseSalary: payment.baseSalary,
-        bonus: payment.bonus,
-        leaveDays: payment.leaveDays,
-        leaveDeduction: payment.leaveDeduction,
-        flatDeduction: payment.flatDeduction,
-        totalDeduction: payment.totalDeduction,
-        netAmount: payment.netAmount,
-        paymentDetails: payment.paymentDetails,
-        payerUPI: payment.payerUPI,
-        paymentMethod: payment.paymentMethod,
-        transactionId: payment.transactionId,
-        paymentDate: payment.paymentDate,
-        verificationHash: generateVerificationHash(payment)
-    });
-}
-
-function generateVerificationHash(payment) {
-    const data = `${payment.transactionId}-${payment.employeeId}-${payment.netAmount}-${payment.paymentDate}`;
-    return btoa(data);
-}
-
-function triggerConfetti() {
-    const duration = 2000;
-    const end = Date.now() + duration;
-
-    (function frame() {
-        confetti({
-            particleCount: 3,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#4F46E5', '#10B981', '#F59E0B']
-        });
-        confetti({
-            particleCount: 3,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: ['#4F46E5', '#10B981', '#F59E0B']
-        });
-
-        if (Date.now() < end) {
-            requestAnimationFrame(frame);
-        }
-    }());
-}
-
-async function showAllPaymentsComplete() {
-    const overlay = document.getElementById('paymentOverlay');
-    overlay.style.display = 'none';
-    
-    const session = currentPaymentSession;
-    const totalPaid = session.completedPayments.reduce((sum, p) => sum + p.netAmount, 0);
-    
-    await database.ref(`BusinessOwners/${currentBossId}/pendingSessions/${session.sessionId}`).update({
-        status: 'completed',
-        completedAt: new Date().toISOString()
-    });
-    
-    Swal.fire({
-        title: '🎉 All Payments Completed!',
-        html: `
-            <div style="text-align: left; padding: 10px;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h3 style="margin: 0 0 10px 0; color: white;">Payment Summary</h3>
-                    <p style="margin: 5px 0; font-size: 1.2em;"><strong>Total Paid:</strong> ${formatCurrency(totalPaid)}</p>
-                    <p style="margin: 5px 0;"><strong>Employees:</strong> ${session.completedPayments.length}</p>
-                </div>
-
-                <div style="max-height: 300px; overflow-y: auto;">
-                    ${session.completedPayments.map((emp, index) => `
-                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <p style="font-weight: 600; margin: 0 0 5px 0;">${emp.employeeName}</p>
-                                <p style="font-size: 0.85em; color: #64748b; margin: 0;">${formatCurrency(emp.netAmount)} • ${emp.paymentMethod}</p>
-                            </div>
-                            <button onclick="generateEmployeeSlip(${index})" style="background: #4F46E5; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">
-                                📄 Slip
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-                    <button onclick="generateMasterReceipt()" style="background: #10B981; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1;">
-                        📥 Download Master Receipt
-                    </button>
-                </div>
-            </div>
-        `,
-        width: '700px',
-        showConfirmButton: true,
-        confirmButtonText: 'Done',
-        confirmButtonColor: '#4F46E5',
-        allowOutsideClick: false
-    }).then(() => {
-        selectedEmployees.clear();
-        employeeDeductions = {};
-        currentPaymentSession = null;
-        renderEmployees();
-    });
-    
-    window.currentCompletedPayments = session.completedPayments;
-}
-
-window.generateEmployeeSlip = function(empIndex) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const payment = window.currentCompletedPayments[empIndex];
-
-    doc.setFillColor(99, 102, 241);
-    doc.rect(0, 0, 210, 50, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(26);
-    doc.text('SALARY SLIP', 105, 22, { align: 'center' });
-    
-    doc.setFontSize(11);
-    doc.text('ScaleVest Payroll Management', 105, 35, { align: 'center' });
-
-    doc.setFillColor(248, 250, 252);
-    doc.rect(15, 60, 180, 50, 'F');
-    doc.setDrawColor(79, 70, 229);
-    doc.rect(15, 60, 180, 50);
-
-    doc.setTextColor(79, 70, 229);
-    doc.setFontSize(12);
-    doc.text('EMPLOYEE INFORMATION', 20, 70);
-
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-    doc.text('Name:', 20, 82);
-    doc.text(payment.employeeName, 65, 82);
-
-    doc.text('Role:', 20, 91);
-    doc.text(payment.employeeRole, 65, 91);
-    
-    doc.text('Payment Date:', 20, 100);
-    doc.text(new Date(payment.paymentDate).toLocaleString('en-IN'), 65, 100);
-
-    doc.setFillColor(248, 250, 252);
-    doc.rect(15, 120, 180, 40, 'F');
-    doc.setDrawColor(79, 70, 229);
-    doc.rect(15, 120, 180, 40);
-
-    doc.setTextColor(79, 70, 229);
-    doc.setFontSize(12);
-    doc.text('PAYMENT DETAILS', 20, 130);
-
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-    doc.text('Transaction ID:', 20, 140);
-    doc.text(payment.transactionId, 65, 140);
-
-    doc.text('Payer UPI:', 20, 148);
-    doc.text(payment.payerUPI, 65, 148);
-    
-    doc.text('Payment Method:', 20, 156);
-    doc.text(payment.paymentMethod, 65, 156);
-
-    doc.setFillColor(16, 185, 129);
-    doc.rect(15, 170, 180, 10, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
-    doc.text('EARNINGS BREAKDOWN', 20, 177);
-
-    let yPos = 190;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(10);
-
-    doc.setFillColor(248, 250, 252);
-    doc.rect(15, yPos - 5, 180, 10, 'F');
-    doc.text('Base Salary', 20, yPos);
-    doc.text('Rs. ' + payment.baseSalary.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
-    
-    yPos += 10;
-    if (payment.bonus > 0) {
-        doc.text('Bonus/Incentive', 20, yPos);
-        doc.text('Rs. ' + payment.bonus.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
-        yPos += 10;
-    }
-
-    if (payment.totalDeduction > 0) {
-        yPos += 5;
-        doc.setFillColor(239, 68, 68);
-        doc.rect(15, yPos, 180, 10, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.text('DEDUCTIONS', 20, yPos + 7);
-        
-        yPos += 15;
-        doc.setTextColor(0, 0, 0);
-        
-        if (payment.leaveDeduction > 0) {
-            doc.text('Leave Deduction (' + payment.leaveDays + ' days)', 20, yPos);
-            doc.text('-Rs. ' + payment.leaveDeduction.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
-            yPos += 10;
-        }
-        
-        if (payment.flatDeduction > 0) {
-            doc.text('Other Deductions', 20, yPos);
-            doc.text('-Rs. ' + payment.flatDeduction.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
-            yPos += 10;
-        }
-    }
-
-    yPos += 5;
-    doc.setLineWidth(1);
-    doc.line(15, yPos, 195, yPos);
-
-    yPos += 10;
-    doc.setFontSize(14);
-    doc.setTextColor(16, 185, 129);
-    doc.text('NET SALARY CREDITED', 20, yPos);
-    doc.text('Rs. ' + payment.netAmount.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
-
-    yPos += 15;
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139);
-    doc.text('Credited to: ' + payment.paymentDetails, 20, yPos);
-
-    yPos = 270;
-    doc.setFillColor(79, 70, 229);
-    doc.rect(0, yPos, 210, 27, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text('This is a computer-generated salary slip.', 105, yPos + 8, { align: 'center' });
-    doc.text('By ScaleVest Payroll', 105, yPos + 15, { align: 'center' });
-    doc.text('Verification Hash: ' + generateVerificationHash(payment).substring(0, 20) + '...', 105, yPos + 20, { align: 'center' });
-
-    doc.save(`SalarySlip_${payment.employeeName.replace(/\s+/g, '_')}_${payment.transactionId}.pdf`);
-};
-
-window.generateMasterReceipt = function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const payments = window.currentCompletedPayments;
-    const totalAmount = payments.reduce((sum, p) => sum + p.netAmount, 0);
-    
-    doc.setFillColor(79, 70, 229);
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.text('ScaleVest', 105, 18, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.text('Payroll Management Platform', 105, 28, { align: 'center' });
-
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(18);
-    doc.text('MASTER PAYMENT RECEIPT', 105, 55, { align: 'center' });
-
-    doc.setFillColor(248, 250, 252);
-    doc.rect(15, 65, 180, 30, 'F');
-    doc.setDrawColor(226, 232, 240);
-    doc.rect(15, 65, 180, 30);
-
-    doc.setFontSize(10);
-    doc.text('Session ID:', 20, 73);
-    doc.text('Date & Time:', 20, 82);
-    doc.text('Total Employees:', 20, 91);
-
-    doc.text(currentPaymentSession.sessionId, 60, 73);
-    doc.text(new Date().toLocaleString('en-IN'), 60, 82);
-    doc.text(payments.length.toString(), 60, 91);
-
-    doc.setFontSize(14);
-    doc.text('Payments Made', 15, 110);
-
-    doc.setFillColor(79, 70, 229);
-    doc.rect(15, 115, 180, 8, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9);
-    doc.text('Employee', 20, 120);
-    doc.text('Method', 80, 120);
-    doc.text('Payer UPI', 120, 120);
-    doc.text('Amount', 175, 120);
-
-    let yPos = 130;
-    doc.setTextColor(0, 0, 0);
-
-    payments.forEach((payment, index) => {
-        if (yPos > 270) {
-            doc.addPage();
-            yPos = 20;
-        }
-
-        if (index % 2 === 0) {
-            doc.setFillColor(248, 250, 252);
-            doc.rect(15, yPos - 5, 180, 8, 'F');
-        }
-
-        const nameText = payment.employeeName.substring(0, 15);
-        const methodText = payment.paymentMethod;
-        const upiText = payment.payerUPI.substring(0, 20);
-        const amountText = 'Rs. ' + payment.netAmount.toLocaleString('en-IN');
-
-        doc.text(nameText, 20, yPos);
-        doc.text(methodText, 80, yPos);
-        doc.text(upiText, 120, yPos);
-        doc.text(amountText, 175, yPos);
-        
-        yPos += 10;
-    });
-
-    yPos += 10;
-    doc.line(15, yPos, 195, yPos);
-    
-    yPos += 10;
-    doc.setFontSize(12);
-    doc.text('TOTAL AMOUNT PAID:', 120, yPos);
-    doc.text('Rs. ' + totalAmount.toLocaleString('en-IN'), 175, yPos);
-
-    doc.setFontSize(8);
-    doc.setTextColor(100, 116, 139);
-    doc.text('This is a computer-generated receipt.', 105, 285, { align: 'center' });
-    doc.text('By ScaleVest Payroll', 105, 290, { align: 'center' });
-
-    doc.save(`ScaleVest_MasterReceipt_${currentPaymentSession.sessionId}.pdf`);
-};
 
 async function showAddEmployeeForm() {
     const { value: formValues } = await Swal.fire({
         title: 'Add New Employee',
         html: `
             <div style="text-align: left;">
-                <label class="input-label">Full Name *</label>
-                <input id="empName" class="modern-input" placeholder="John Doe">
+                <input id="empName" class="swal2-input" placeholder="Full Name">
+                <input id="empRole" class="swal2-input" placeholder="Role (e.g. Manager)">
+                <input id="empSalary" class="swal2-input" type="number" placeholder="Salary">
                 
-                <label class="input-label" style="margin-top: 15px;">Role/Position *</label>
-                <input id="empRole" class="modern-input" placeholder="Manager, Developer, etc.">
-                
-                <label class="input-label" style="margin-top: 15px;">Monthly Salary *</label>
-                <input id="empSalary" class="modern-input" type="number" placeholder="50000">
-                
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
-                    <label class="input-label">💳 UPI ID *</label>
-                    <input id="empUPI" class="modern-input" placeholder="employee@paytm">
-                    
-                    <div class="payment-method-toggle" onclick="document.getElementById('bankDetails').classList.toggle('hidden-section')">
-                        ➕ Or use Bank Account Details
-                    </div>
-                    
-                    <div id="bankDetails" class="hidden-section">
-                        <label class="input-label">Bank Account Number</label>
-                        <input id="empAcc" class="modern-input" placeholder="1234567890">
-                        
-                        <label class="input-label" style="margin-top: 15px;">IFSC Code</label>
-                        <input id="empIFSC" class="modern-input" placeholder="SBIN0001234">
-                    </div>
-                </div>
+                <p style="margin-top:15px; font-weight:bold; color:#4F46E5;">Payment Method:</p>
+                <input id="empUPI" class="swal2-input" placeholder="UPI ID (e.g. name@upi)">
+                <div style="text-align:center; margin:5px; color:#aaa;">- OR -</div>
+                <input id="empAcc" class="swal2-input" placeholder="Bank Account Number">
+                <input id="empIFSC" class="swal2-input" placeholder="IFSC Code">
 
-                <div style="margin-top: 20px;">
-                    <label class="input-label">📸 Employee Photo (Optional)</label>
-                    <div class="photo-upload-area" onclick="document.getElementById('empPhoto').click()">
-                        <div id="photoPreview"></div>
-                        <p style="color: #6b7280; font-size: 0.9em; margin: 10px 0;">Click to upload photo</p>
-                        <p style="color: #9ca3af; font-size: 0.75em;">JPG, PNG (Max 5MB)</p>
-                    </div>
-                    <input id="empPhoto" type="file" accept="image/*" style="display: none;" onchange="previewPhoto(this)">
-                </div>
+                <label style="display:block; margin-top:10px;">Photo (Optional)</label>
+                <input id="empPhoto" type="file" accept="image/*" class="swal2-file">
             </div>
         `,
-        width: '600px',
-        showCancelButton: true,
-        confirmButtonText: 'Add Employee',
-        confirmButtonColor: '#4F46E5',
-        customClass: {
-            popup: 'add-employee-modal'
-        },
         preConfirm: () => {
             const name = document.getElementById('empName').value;
-            const role = document.getElementById('empRole').value;
-            const salary = parseFloat(document.getElementById('empSalary').value);
-            const upi = document.getElementById('empUPI').value.trim();
-            const acc = document.getElementById('empAcc').value.trim();
-            const ifsc = document.getElementById('empIFSC').value.trim();
+            const upi = document.getElementById('empUPI').value;
+            const acc = document.getElementById('empAcc').value;
+            const ifsc = document.getElementById('empIFSC').value;
 
-            if (!name || !role || !salary) {
-                Swal.showValidationMessage('Please fill all required fields');
-                return false;
-            }
-            
+            if (!name) return Swal.showValidationMessage('Name is required');
             if (!upi && (!acc || !ifsc)) {
-                Swal.showValidationMessage('Provide either UPI ID or Bank Account details');
-                return false;
-            }
-
-            let paymentDetails = upi;
-            if (!upi && acc && ifsc) {
-                paymentDetails = `${acc} (IFSC: ${ifsc})`;
+                return Swal.showValidationMessage('Provide a UPI ID or Account + IFSC');
             }
 
             return {
                 name: name,
-                role: role,
-                salary: salary,
-                paymentDetails: paymentDetails,
+                role: document.getElementById('empRole').value,
+                salary: parseFloat(document.getElementById('empSalary').value) || 0,
+                paymentDetails: upi ? upi : `${acc} (IFSC: ${ifsc})`,
                 photo: document.getElementById('empPhoto').files[0]
             };
         }
@@ -1285,18 +467,6 @@ async function showAddEmployeeForm() {
 
     if (formValues) await addEmployeeToFirebase(formValues);
 }
-
-window.previewPhoto = function(input) {
-    const preview = document.getElementById('photoPreview');
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `<img src="${e.target.result}" class="photo-preview-large" alt="Preview">`;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-};
-
 
 async function addEmployeeToFirebase(employeeData) {
     try {
@@ -1345,6 +515,456 @@ async function addEmployeeToFirebase(employeeData) {
     }
 }
 
+function calculateAndShowSummary(bonus) {
+    let totalSalary = 0;
+    let totalDeductions = 0;
+    const selectedEmps = [];
+
+    selectedEmployees.forEach(id => {
+        const emp = employees[id];
+        const deductions = employeeDeductions[id] || { leaveDays: 0, flatDeduction: 0 };
+        const leaveDeduction = calculateLeaveDeduction(emp.salary, deductions.leaveDays);
+        const totalEmpDeduction = leaveDeduction + deductions.flatDeduction;
+        const netAmount = emp.salary + bonus - totalEmpDeduction;
+        
+        totalSalary += netAmount;
+        totalDeductions += totalEmpDeduction;
+        
+        selectedEmps.push({
+            name: emp.name,
+            role: emp.role,
+            baseSalary: emp.salary,
+            bonus: bonus,
+            leaveDays: deductions.leaveDays,
+            leaveDeduction: leaveDeduction,
+            flatDeduction: deductions.flatDeduction,
+            totalDeduction: totalEmpDeduction,
+            total: netAmount,
+            paymentDetails: emp.paymentDetails
+        });
+    });
+
+    const platformFee = selectedEmployees.size * 5;
+    const grandTotal = totalSalary + platformFee;
+
+    Swal.fire({
+        title: '📊 Payment Summary',
+        html: `
+            <div style="text-align: left; max-height: 400px; overflow-y: auto;">
+                <h4 style="font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">Selected Employees (${selectedEmployees.size})</h4>
+                ${selectedEmps.map(e => `
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                        <p style="font-weight: 600; margin-bottom: 5px;">${e.name}</p>
+                        <p style="font-size: 0.85em; color: #64748b;">
+                            Base: ${formatCurrency(e.baseSalary)}
+                            ${e.bonus > 0 ? `+ Bonus: ${formatCurrency(e.bonus)}` : ''}
+                        </p>
+                        ${e.totalDeduction > 0 ? `
+                            <p style="font-size: 0.85em; color: #ef4444;">
+                                ${e.leaveDays > 0 ? `Leave (${e.leaveDays}d): -${formatCurrency(e.leaveDeduction)} ` : ''}
+                                ${e.flatDeduction > 0 ? `Deduction: -${formatCurrency(e.flatDeduction)}` : ''}
+                            </p>
+                        ` : ''}
+                        <p style="color: #10b981; font-weight: bold; margin-top: 5px;">Net: ${formatCurrency(e.total)}</p>
+                    </div>
+                `).join('')}
+                <div style="border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Subtotal (after deductions):</span>
+                        <span style="font-weight: 600;">${formatCurrency(totalSalary)}</span>
+                    </div>
+                    ${totalDeductions > 0 ? `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #ef4444;">
+                        <span>Total Deductions:</span>
+                        <span style="font-weight: 600;">-${formatCurrency(totalDeductions)}</span>
+                    </div>
+                    ` : ''}
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Platform Fee (Rs. 5 x ${selectedEmployees.size}):</span>
+                        <span style="font-weight: 600;">${formatCurrency(platformFee)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.3em; font-weight: bold; color: #4f46e5; margin-top: 12px;">
+                        <span>Grand Total:</span>
+                        <span>${formatCurrency(grandTotal)}</span>
+                    </div>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Proceed to Payment',
+        confirmButtonColor: '#10B981',
+        cancelButtonColor: '#6B7280',
+        width: '600px'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            processPayment(grandTotal, selectedEmps, bonus);
+        }
+    });
+}
+
+function processPayment(amount, selectedEmps, bonus) {
+    const paymentData = {
+        selectedEmps: selectedEmps,
+        totalAmount: amount,
+        bonus: bonus,
+        platformFee: selectedEmps.length * 5
+    };
+
+    const options = {
+        key: "rzp_test_1DP5mmOlF5G5ag",
+        amount: amount * 100,
+        currency: "INR",
+        name: "ScaleVest",
+        description: `Salary Payment for ${selectedEmps.length} employee(s)`,
+        handler: function (response) {
+            triggerConfetti();
+            savePaymentToHistory(response.razorpay_payment_id, paymentData);
+        },
+        prefill: { name: bossName },
+        theme: { color: "#4F46E5" }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+
+// Save payment to Firebase History
+async function savePaymentToHistory(paymentId, paymentData) {
+    const currentDate = new Date().toISOString();
+    const historyRef = database.ref(`BusinessOwners/${currentBossId}/paymentHistory`).push();
+    
+    await historyRef.set({
+        paymentId: paymentId,
+        date: currentDate,
+        totalAmount: paymentData.totalAmount,
+        platformFee: paymentData.platformFee,
+        bonus: paymentData.bonus,
+        employeeCount: paymentData.selectedEmps.length,
+        employees: paymentData.selectedEmps
+    });
+    
+    showPaymentSuccess(paymentId, paymentData);
+}
+
+// Trigger Confetti Celebration
+function triggerConfetti() {
+    const duration = 3000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+        confetti({
+            particleCount: 3,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#4F46E5', '#10B981', '#F59E0B']
+        });
+        confetti({
+            particleCount: 3,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#4F46E5', '#10B981', '#F59E0B']
+        });
+
+        if (Date.now() < end) {
+            requestAnimationFrame(frame);
+        }
+    }());
+}
+
+// Show Payment Success Screen
+function showPaymentSuccess(paymentId, paymentData) {
+    const currentDate = new Date().toLocaleString('en-IN', {
+        dateStyle: 'full',
+        timeStyle: 'short'
+    });
+
+    Swal.fire({
+        title: '🎉 Payment Successful!',
+        html: `
+            <div style="text-align: left; padding: 10px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 10px 0; color: white;">Transaction Details</h3>
+                    <p style="margin: 5px 0; font-size: 0.9em;"><strong>Payment ID:</strong> ${paymentId}</p>
+                    <p style="margin: 5px 0; font-size: 0.9em;"><strong>Date:</strong> ${currentDate}</p>
+                    <p style="margin: 5px 0; font-size: 1.2em;"><strong>Amount:</strong> ${formatCurrency(paymentData.totalAmount)}</p>
+                </div>
+
+                <h4 style="color: #4F46E5; margin-bottom: 15px;">Employees Paid (${paymentData.selectedEmps.length})</h4>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    ${paymentData.selectedEmps.map((emp, index) => `
+                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="font-weight: 600; margin: 0 0 5px 0;">${emp.name}</p>
+                                <p style="font-size: 0.85em; color: #64748b; margin: 0;">${emp.role} • ${formatCurrency(emp.total)}</p>
+                            </div>
+                            <button onclick="generateEmployeeSlip(${index}, '${paymentId}', '${currentDate}')" style="background: #4F46E5; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">
+                                📄 Slip
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                    <button onclick="generateMasterReceipt('${paymentId}', '${currentDate}')" style="background: #10B981; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; flex: 1;">
+                        📥 Download Master Receipt
+                    </button>
+                </div>
+            </div>
+        `,
+        width: '700px',
+        showConfirmButton: true,
+        confirmButtonText: 'Done',
+        confirmButtonColor: '#4F46E5',
+        allowOutsideClick: false
+    }).then(() => {
+        selectedEmployees.clear();
+        employeeDeductions = {};
+        renderEmployees();
+    });
+
+    window.currentPaymentData = paymentData;
+}
+
+// FIXED: Generate Master Receipt PDF
+window.generateMasterReceipt = function(paymentId, dateStr) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const paymentData = window.currentPaymentData;
+    
+    // Header
+    doc.setFillColor(79, 70, 229);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.text('ScaleVest', 105, 18, { align: 'center' });
+    
+    doc.setFontSize(12);
+    doc.text('Workforce Management Platform', 105, 28, { align: 'center' });
+
+    // Receipt Title
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(18);
+    doc.text('PAYMENT RECEIPT', 105, 55, { align: 'center' });
+
+    // Transaction Details Box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, 65, 180, 35, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(15, 65, 180, 35);
+
+    doc.setFontSize(10);
+    doc.text('Transaction ID:', 20, 73);
+    doc.text('Date & Time:', 20, 82);
+    doc.text('Payment Method:', 20, 91);
+
+    doc.text(paymentId, 60, 73);
+    doc.text(dateStr, 60, 82);
+    doc.text('Razorpay', 60, 91);
+
+    // Employee List Header
+    doc.setFontSize(14);
+    doc.text('Employees Paid', 15, 115);
+
+    doc.setFillColor(79, 70, 229);
+    doc.rect(15, 120, 180, 8, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text('Name', 20, 125);
+    doc.text('Role', 80, 125);
+    doc.text('Base', 130, 125);
+    doc.text('Net Amount', 165, 125);
+
+    let yPos = 135;
+    doc.setTextColor(0, 0, 0);
+
+    paymentData.selectedEmps.forEach((emp, index) => {
+        if (yPos > 270) {
+            doc.addPage();
+            yPos = 20;
+        }
+
+        if (index % 2 === 0) {
+            doc.setFillColor(248, 250, 252);
+            doc.rect(15, yPos - 5, 180, 8, 'F');
+        }
+
+        const nameText = emp.name.substring(0, 20);
+        const roleText = emp.role.substring(0, 15);
+        const baseText = 'Rs. ' + emp.baseSalary.toLocaleString('en-IN');
+        const totalText = 'Rs. ' + emp.total.toLocaleString('en-IN');
+
+        doc.text(nameText, 20, yPos);
+        doc.text(roleText, 80, yPos);
+        doc.text(baseText, 130, yPos);
+        doc.text(totalText, 165, yPos);
+        
+        yPos += 10;
+    });
+
+    // Summary
+    yPos += 10;
+    doc.line(15, yPos, 195, yPos);
+    
+    yPos += 10;
+    const subtotal = paymentData.totalAmount - paymentData.platformFee;
+    
+    doc.text('Subtotal:', 130, yPos);
+    doc.text('Rs. ' + subtotal.toLocaleString('en-IN'), 170, yPos);
+    
+    yPos += 8;
+    doc.text('Platform Fee (' + paymentData.selectedEmps.length + ' x Rs. 5):', 130, yPos);
+    doc.text('Rs. ' + paymentData.platformFee, 170, yPos);
+    
+    yPos += 10;
+    doc.setFontSize(12);
+    doc.text('Grand Total:', 130, yPos);
+    doc.text('Rs. ' + paymentData.totalAmount.toLocaleString('en-IN'), 170, yPos);
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(100, 116, 139);
+    doc.text('This is a computer-generated receipt.', 105, 285, { align: 'center' });
+    doc.text('Processed by ScaleVest - Powered by Razorpay', 105, 290, { align: 'center' });
+
+    doc.save(`ScaleVest_Receipt_${paymentId}.pdf`);
+};
+
+// FIXED: Generate Employee Salary Slip
+window.generateEmployeeSlip = function(empIndex, paymentId, dateStr) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const paymentData = window.currentPaymentData;
+    const emp = paymentData.selectedEmps[empIndex];
+
+    // Header
+    doc.setFillColor(99, 102, 241);
+    doc.rect(0, 0, 210, 50, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(26);
+    doc.text('SALARY SLIP', 105, 22, { align: 'center' });
+    
+    doc.setFontSize(11);
+    doc.text('ScaleVest Payment Management', 105, 35, { align: 'center' });
+
+    // Employee Info
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, 60, 180, 40, 'F');
+    doc.setDrawColor(79, 70, 229);
+    doc.rect(15, 60, 180, 40);
+
+    doc.setTextColor(79, 70, 229);
+    doc.setFontSize(12);
+    doc.text('EMPLOYEE INFORMATION', 20, 70);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.text('Name:', 20, 82);
+    doc.text(emp.name, 65, 82);
+
+    doc.text('Role/Position:', 20, 91);
+    doc.text(emp.role, 65, 91);
+
+    // Payment Details
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, 110, 180, 30, 'F');
+    doc.setDrawColor(79, 70, 229);
+    doc.rect(15, 110, 180, 30);
+
+    doc.setTextColor(79, 70, 229);
+    doc.setFontSize(12);
+    doc.text('PAYMENT DETAILS', 20, 120);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.text('Transaction ID:', 20, 130);
+    doc.text(paymentId, 65, 130);
+
+    doc.text('Payment Date:', 20, 137);
+    doc.text(dateStr, 65, 137);
+
+    // Earnings
+    doc.setFillColor(16, 185, 129);
+    doc.rect(15, 150, 180, 10, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.text('EARNINGS BREAKDOWN', 20, 157);
+
+    let yPos = 170;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+
+    doc.setFillColor(248, 250, 252);
+    doc.rect(15, yPos - 5, 180, 10, 'F');
+    doc.text('Base Salary', 20, yPos);
+    doc.text('Rs. ' + emp.baseSalary.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
+    
+    yPos += 10;
+    if (emp.bonus > 0) {
+        doc.text('Bonus/Incentive', 20, yPos);
+        doc.text('Rs. ' + emp.bonus.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
+        yPos += 10;
+    }
+
+    // Deductions
+    if (emp.totalDeduction > 0) {
+        yPos += 5;
+        doc.setFillColor(239, 68, 68);
+        doc.rect(15, yPos, 180, 10, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.text('DEDUCTIONS', 20, yPos + 7);
+        
+        yPos += 15;
+        doc.setTextColor(0, 0, 0);
+        
+        if (emp.leaveDeduction > 0) {
+            doc.text('Leave Deduction (' + emp.leaveDays + ' days)', 20, yPos);
+            doc.text('-Rs. ' + emp.leaveDeduction.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
+            yPos += 10;
+        }
+        
+        if (emp.flatDeduction > 0) {
+            doc.text('Other Deductions', 20, yPos);
+            doc.text('-Rs. ' + emp.flatDeduction.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
+            yPos += 10;
+        }
+    }
+
+    // Total
+    yPos += 5;
+    doc.setLineWidth(1);
+    doc.line(15, yPos, 195, yPos);
+
+    yPos += 10;
+    doc.setFontSize(14);
+    doc.setTextColor(16, 185, 129);
+    doc.text('NET SALARY CREDITED', 20, yPos);
+    doc.text('Rs. ' + emp.total.toLocaleString('en-IN'), 175, yPos, { align: 'right' });
+
+    // Payment Info
+    yPos += 15;
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text('Credited to: ' + emp.paymentDetails, 20, yPos);
+
+    // Footer
+    yPos = 270;
+    doc.setFillColor(79, 70, 229);
+    doc.rect(0, yPos, 210, 27, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text('This is a computer-generated salary slip.', 105, yPos + 8, { align: 'center' });
+    doc.text('Processed by ScaleVest - Secured by Razorpay', 105, yPos + 15, { align: 'center' });
+
+    doc.save(`SalarySlip_${emp.name.replace(/\s+/g, '_')}_${paymentId}.pdf`);
+};
+
+// NEW: Show Payment History
 async function showPaymentHistory() {
     const historyRef = database.ref(`BusinessOwners/${currentBossId}/paymentHistory`);
     const snapshot = await historyRef.once('value');
@@ -1363,10 +983,10 @@ async function showPaymentHistory() {
     const historyArray = Object.entries(historyData).map(([key, value]) => ({
         id: key,
         ...value
-    })).sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+    })).sort((a, b) => new Date(b.date) - new Date(a.date));
 
     const historyHTML = historyArray.map(payment => {
-        const date = new Date(payment.paymentDate).toLocaleDateString('en-IN', {
+        const date = new Date(payment.date).toLocaleDateString('en-IN', {
             day: 'numeric',
             month: 'short',
             year: 'numeric',
@@ -1375,14 +995,17 @@ async function showPaymentHistory() {
         });
 
         return `
-            <div class="history-item" style="background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #e2e8f0;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="history-item" style="background: #f8fafc; padding: 15px; border-radius: 10px; margin-bottom: 12px; cursor: pointer; border: 1px solid #e2e8f0;" onclick="viewPaymentDetails('${payment.id}')">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <div>
-                        <p style="font-weight: 600; margin: 0; color: #1f2937;">${payment.employeeName} - ${formatCurrency(payment.netAmount)}</p>
-                        <p style="font-size: 0.75em; color: #6b7280; margin: 0;">${payment.paymentMethod} • ${date}</p>
-                        <p style="font-size: 0.7em; color: #9ca3af; margin: 0;">Txn: ${payment.transactionId}</p>
+                        <p style="font-weight: 600; margin: 0; color: #1f2937;">${formatCurrency(payment.totalAmount)}</p>
+                        <p style="font-size: 0.75em; color: #6b7280; margin: 0;">${payment.employeeCount} employee(s) • ${date}</p>
                     </div>
+                    <button onclick="event.stopPropagation(); downloadHistoryReceipt('${payment.id}')" style="background: #4F46E5; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85em;">
+                        📥 Receipt
+                    </button>
                 </div>
+                <p style="font-size: 0.8em; color: #9ca3af; margin: 0;">ID: ${payment.paymentId}</p>
             </div>
         `;
     }).join('');
@@ -1400,6 +1023,71 @@ async function showPaymentHistory() {
     });
 }
 
+// View Payment Details from History
+window.viewPaymentDetails = async function(historyId) {
+    const paymentRef = database.ref(`BusinessOwners/${currentBossId}/paymentHistory/${historyId}`);
+    const snapshot = await paymentRef.once('value');
+    const payment = snapshot.val();
+
+    if (!payment) return;
+
+    const date = new Date(payment.date).toLocaleString('en-IN', {
+        dateStyle: 'full',
+        timeStyle: 'short'
+    });
+
+    Swal.fire({
+        title: 'Payment Details',
+        html: `
+            <div style="text-align: left; padding: 10px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <p style="margin: 5px 0;"><strong>Transaction ID:</strong> ${payment.paymentId}</p>
+                    <p style="margin: 5px 0;"><strong>Date:</strong> ${date}</p>
+                    <p style="margin: 5px 0; font-size: 1.2em;"><strong>Amount:</strong> ${formatCurrency(payment.totalAmount)}</p>
+                </div>
+
+                <h4 style="color: #4F46E5; margin-bottom: 15px;">Employees Paid (${payment.employeeCount})</h4>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    ${payment.employees.map((emp, index) => `
+                        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                            <p style="font-weight: 600; margin: 0 0 5px 0;">${emp.name}</p>
+                            <p style="font-size: 0.85em; color: #64748b; margin: 0;">${emp.role} • ${formatCurrency(emp.total)}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `,
+        width: '600px',
+        confirmButtonText: 'Close',
+        confirmButtonColor: '#4F46E5'
+    });
+};
+
+// Download Receipt from History
+window.downloadHistoryReceipt = async function(historyId) {
+    const paymentRef = database.ref(`BusinessOwners/${currentBossId}/paymentHistory/${historyId}`);
+    const snapshot = await paymentRef.once('value');
+    const payment = snapshot.val();
+
+    if (!payment) return;
+
+    const date = new Date(payment.date).toLocaleString('en-IN', {
+        dateStyle: 'full',
+        timeStyle: 'short'
+    });
+
+    // Set as current payment data for receipt generation
+    window.currentPaymentData = {
+        selectedEmps: payment.employees,
+        totalAmount: payment.totalAmount,
+        platformFee: payment.platformFee,
+        bonus: payment.bonus
+    };
+
+    generateMasterReceipt(payment.paymentId, date);
+};
+
+// DELETE EMPLOYEE
 async function deleteEmployee(id) {
     const result = await Swal.fire({
         title: 'Are you sure?',
@@ -1416,6 +1104,7 @@ async function deleteEmployee(id) {
     }
 }
 
+// EDIT EMPLOYEE
 async function editEmployee(id) {
     const emp = employees[id];
     const { value: formValues } = await Swal.fire({
@@ -1449,7 +1138,8 @@ function showTerms() {
             <div style="text-align: left; font-size: 0.85em; max-height: 300px; overflow-y: auto; color: #4b5563;">
                 <p><strong>1. Services:</strong> ScaleVest is an ecosystem to Scale. We provide best and revolutionary tools to scale and more for business, startups and investors.</p>
                 <p><strong>2. Accuracy:</strong> You are responsible for ensuring all Bank/UPI details are correct. ScaleVest is not responsible for lost funds due to user error.</p>
-                <p><strong>3. Compliance:</strong> All payments are subject to UPI transaction terms.</p>
+                <p><strong>3. Fees:</strong> Each transaction includes a Rs. 5 platform fee for digital processing and receipt generation.</p>
+                <p><strong>4. Compliance:</strong> All payments are subject to Razorpay's terms of service.</p>
             </div>
         `,
         confirmButtonColor: '#4F46E5'
@@ -1464,6 +1154,7 @@ function showPrivacy() {
                 <p><strong>Data Privacy:</strong> ScaleVest takes your data seriously.</p>
                 <p><strong>1. Collection:</strong> We store employee names and payment details solely for payroll purposes.</p>
                 <p><strong>2. Security:</strong> Your data is protected by Google Firebase encryption.</p>
+                <p><strong>3. Third Parties:</strong> We only share data with Razorpay to process your payments.</p>
             </div>
         `,
         confirmButtonColor: '#4F46E5'
