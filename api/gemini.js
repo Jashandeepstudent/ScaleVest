@@ -1,46 +1,60 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { streamText } from 'ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize the Google Provider
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-});
-
-export default async function handler(req) {
-  // 1. Handle CORS Pre-flight
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'X-Accel-Buffering': 'no', 
-  };
+export default async function handler(req, res) {
+  // 1. CORS HEADERS
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*'); 
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
   if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers });
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405, headers });
+    return res.status(405).send('Method Not Allowed');
+  }
+
+  // 2. Parse Body
+  const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+  const prompt = body?.prompt;
+
+  if (!prompt) {
+    return res.status(400).json({ error: "No prompt provided" });
   }
 
   try {
-    const { messages } = await req.json();
-
-    // 2. Stream the response using Gemini Flash (Fastest)
-    const result = await streamText({
-      model: google('gemini-1.5-flash-latest'),
-      messages,
-      system: `You are the ScaleVest Elite CFO. Analyze inventory (Chocolates, Biscuits, Ice Cream).`,
+    // 3. Initialize Gemini using GEMINI_KEY
+    // Ensure this matches your Vercel Environment Variable name!
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
+    
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      systemInstruction: `
+        You are an expert inventory manager and shopkeeper AI.
+        Identify intents: SOLD/USED -> decrease, BOUGHT/RESTOCKED -> add, REMOVE -> delete.
+        Match items intelligently (e.g., "eggs" to "grocery eggs").
+        Respond ONLY with raw JSON. No markdown.
+        
+        FORMAT:
+        { "action": "add"|"decrease"|"delete", "item": "name", "qty": number, "unit": "string", "reply": "msg" }
+        
+        If input is incomplete, return:
+        { "action": "wait", "reply": "Listening... please complete your command." }
+      `
     });
 
-    // 3. Convert the result to a Data Stream
-    return result.toDataStreamResponse({ headers });
+    const result = await model.generateContent(prompt);
+    const responseText = result.response.text();
+    
+    // 4. Clean Markdown formatting
+    const cleanJson = responseText.replace(/```json|```/g, "").trim();
+    
+    // 5. Final Response
+    res.status(200).json(JSON.parse(cleanJson));
 
   } catch (error) {
-    console.error("CFO API Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 500, 
-      headers 
-    });
+    console.error("CRITICAL ERROR:", error.message);
+    res.status(500).json({ error: "Internal Server Error", details: error.message });
   }
 }
