@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <title>ScaleVest CFO</title>
+    <title>ScaleVEEFest CFO</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
@@ -47,24 +47,7 @@
             pointer-events: none;
             z-index: 0;
         }
-.trend-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 10px;
-    margin-bottom: 10px;
-    border-left: 4px solid #00e5ff;
-}
-.trend-rank {
-    background: #00e5ff;
-    color: #000;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 800;
-}
+
         .orb1 {
             width: 500px;
             height: 500px;
@@ -113,7 +96,16 @@
             max-width: 1600px;
             margin: 0 auto;
         }
-
+.trend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    border-left: 4px solid #00e5ff;
+}
         .header {
             text-align: right;
             margin-bottom: 25px;
@@ -904,6 +896,52 @@ setupFinanceReportNavigation(user.uid);
         }, 3600000); // 1 hour
     } else {
         window.location.href = "login.html";
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const trendCard = document.getElementById('trend-analysis-card');
+    const overlay = document.getElementById('trend-overlay');
+    const closeBtn = document.getElementById('close-trend');
+    const content = document.getElementById('trend-list-content');
+
+    if(trendCard) {
+        trendCard.onclick = async () => {
+            overlay.style.display = 'flex';
+            content.innerHTML = '<p style="text-align: center; padding: 20px;">Fetching internet trends...</p>';
+
+            try {
+                // Fetch from your Vercel API
+                const response = await fetch('https://vercelapiai-inventory-pro-sigma.vercel.app/api/cfoscalevest');
+                const data = await response.json();
+                
+                // Use requested default products if API response is empty
+                const products = data.trending || [
+                    { name: "Artisanal Chocolates", growth: "+145%", type: "High Velocity" },
+                    { name: "Organic Biscuits", growth: "+88%", type: "Stable" },
+                    { name: "Premium Ice Creams", growth: "+210%", type: "Breakout" }
+                ];
+
+                content.innerHTML = products.map(item => `
+                    <div class="trend-item">
+                        <div>
+                            <strong style="font-size: 16px;">${item.name}</strong>
+                            <div style="font-size: 12px; color: #00e5ff;">${item.type}</div>
+                        </div>
+                        <div style="color: #4ade80; font-weight: 800; font-size: 18px;">${item.growth} ↑</div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                content.innerHTML = '<p style="color: #f87171; text-align: center;">Sync Error: Could not reach Vercel API.</p>';
+            }
+        };
+    }
+
+    if(closeBtn) {
+        closeBtn.onclick = () => {
+            overlay.style.display = 'none';
+        };
     }
 });
  async function runOnboarding(userId) {
@@ -2094,49 +2132,7 @@ function launchFlashSale() {
     alert("Flash Sale feature coming soon! This will allow you to create instant discount campaigns.");
     // You can build this feature later to create automatic discounts
 }
-document.addEventListener('DOMContentLoaded', () => {
-    const trendCard = document.getElementById('trend-analysis-card');
-    const trendOverlay = document.getElementById('trend-overlay');
-    const closeTrend = document.getElementById('close-trend');
-    const trendList = document.getElementById('trend-list-container');
 
-    trendCard.onclick = async () => {
-        trendOverlay.style.display = 'flex';
-        trendList.innerHTML = '<p style="text-align: center; padding: 20px;">Scanning Social & Search Trends...</p>';
-
-        try {
-            // Fetching from your specific Vercel API
-            const response = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/cfoscalevest');
-            const data = await response.json();
-            
-            // Map the data to HTML (Assuming API returns an array of products)
-            // If API fails or is empty, we show your requested defaults:
-            const products = data.trending || [
-                { name: "Artisanal Chocolates", growth: "+145%", type: "Food" },
-                { name: "Organic Biscuits", growth: "+88%", type: "Snack" },
-                { name: "Premium Ice Creams", growth: "+210%", type: "Dairy" }
-            ];
-
-            trendList.innerHTML = products.map((item, index) => `
-                <div class="trend-item">
-                    <div>
-                        <span class="trend-rank">#${index + 1}</span>
-                        <strong style="margin-left: 10px;">${item.name}</strong>
-                        <div style="font-size: 11px; color: #aaa; margin-top: 4px;">Category: ${item.type}</div>
-                    </div>
-                    <div style="color: #4ade80; font-weight: 800;">${item.growth} ↑</div>
-                </div>
-            `).join('');
-
-        } catch (error) {
-            trendList.innerHTML = '<p style="color: #f87171; text-align: center;">Error connecting to Trend Intelligence. Please try again later.</p>';
-        }
-    };
-
-    closeTrend.onclick = () => {
-        trendOverlay.style.display = 'none';
-    };
-});
 
 async function askCFO(userInput) {
     const adviceTextEl = document.querySelector('.advice-text');
@@ -2407,34 +2403,32 @@ async function askCFO(userInput) {
         </div>
     </div>
 </div>
-
-<div class="card" id="trend-analysis-card" style="cursor: pointer; transition: transform 0.2s;">
+<div class="card" id="trend-analysis-card" style="cursor: pointer; transition: all 0.3s ease;">
     <div class="card-title">TREND ANALYSIS</div>
-    <div style="text-align: center; padding: 20px 0;">
-        <div style="margin-bottom: 25px;">
+    <div style="text-align: center; padding: 25px 0;">
+        <div style="margin-bottom: 20px;">
             <div style="font-size: 40px;">📈</div>
         </div>
-        <div id="trend-status" style="font-size: 14px; color: #00e5ff; font-weight: 600; letter-spacing: 0.5px;">
-            LIVE MARKET TRENDS
+        <div id="trend-status" style="font-size: 14px; color: #00e5ff; font-weight: 700; letter-spacing: 0.5px;">
+            LIVE MARKET INTELLIGENCE
         </div>
         <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 10px;">
-            Click to discover high-velocity products
+            Click to view trending velocity
         </div>
     </div>
 </div>
 
-<div id="trend-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 14, 39, 0.95); z-index: 12000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
-    <div class="card" style="width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; border: 1px solid #00e5ff;">
+<div id="trend-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 14, 39, 0.95); z-index: 15000; justify-content: center; align-items: center; backdrop-filter: blur(10px);">
+    <div class="card" style="width: 90%; max-width: 550px; border: 1px solid #00e5ff;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="color: #00e5ff;">Global Trending Products</h2>
+            <h2 style="color: #00e5ff;">Market Velocity Analysis</h2>
             <button id="close-trend" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
         </div>
-        <div id="trend-list-container">
-            <p style="text-align: center; opacity: 0.6;">Fetching market intelligence...</p>
+        <div id="trend-list-content">
+            <p style="text-align: center; opacity: 0.6;">Connecting to Elite CFO Intelligence...</p>
         </div>
     </div>
 </div>
-
 <div class="card actions-card">
     <div class="card-title">QUICK ACTIONS</div>
     <div class="quick-actions">
