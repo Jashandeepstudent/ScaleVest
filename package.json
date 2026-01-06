@@ -1,9 +1,14 @@
 {
-  "name": "scalevest-backend",
+  "name": "scalevest-ai-backend",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
-    "@ai-sdk/google": "^1.0.0",
-    "ai": "^4.0.0"
+    "@google/generative-ai": "^0.21.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
   }
 }
