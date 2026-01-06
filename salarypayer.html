@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScaleVest Salary Payroll</title>
+    <title>ScaleVest: Salary Payroll</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -633,28 +633,53 @@ function showPaymentScreen(payment) {
 }
 
 function openUPIApp(payment) {
-    // 1. Clean the ID - Remove all whitespace to prevent encoding errors
-    const rawId = payment.paymentDetails.includes('@') ? payment.paymentDetails : '';
-    const cleanUpiId = rawId.replace(/\s/g, ''); 
-
-    if (!cleanUpiId) {
-        Swal.fire('Error', 'This employee does not have a valid UPI ID.', 'error');
-        return;
-    }
-
+    // 1. Clean the UPI ID and Data
+    let upiId = payment.paymentDetails.includes('@') ? payment.paymentDetails : bossUPIId;
+    upiId = upiId.trim().replace(/\s/g, ''); 
     const amount = payment.netAmount.toFixed(2);
-    // 2. Use the Employee's Name as the Payee Name (pn) to satisfy app security
     const payeeName = payment.employeeName.trim();
-    const note = `Salary for ${payeeName}`;
-    
-    // 3. Construct the link with the cleaned data
-    const upiLink = `upi://pay?pa=${cleanUpiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(note)}`;
-    
-    window.location.href = upiLink;
-    
-    setTimeout(() => {
-        showPaymentConfirmation(payment);
-    }, 2000);
+    const note = encodeURIComponent(`Salary for ${payeeName}`);
+
+    // 2. Construct the standard UPI Link
+    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${note}`;
+
+    // 3. Device Detection: Mobile vs Desktop
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+        // MOBILE LOGIC: Open PhonePe/GPay directly
+        window.location.href = upiLink;
+        
+        setTimeout(() => {
+            showPaymentConfirmation(payment);
+        }, 2000);
+    } else {
+        // DESKTOP/MAC LOGIC: Show QR Code
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`;
+        
+        Swal.fire({
+            title: `Scan to Pay ${payeeName}`,
+            html: `
+                <div class="p-4">
+                    <img src="${qrCodeUrl}" alt="UPI QR Code" style="margin: 0 auto; border: 10px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+                    <div class="mt-4 bg-gray-100 p-3 rounded-lg text-left">
+                        <p><strong>Amount:</strong> ${formatCurrency(payment.netAmount)}</p>
+                        <p><strong>UPI ID:</strong> ${upiId}</p>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-500">Scan this QR with PhonePe, GPay, or any UPI app on your phone.</p>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'I have Paid',
+            confirmButtonColor: '#10B981',
+            cancelButtonText: 'Close',
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                showPaymentConfirmation(payment);
+            }
+        });
+    }
 }
 function showPaymentConfirmation(payment) {
     const content = document.getElementById('paymentContent');
