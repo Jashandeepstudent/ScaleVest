@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <title>ScaleVest CFO</title>
+    <title>ScaleVesdt CFO</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
@@ -1531,76 +1531,90 @@ function generateExecutiveSummary(data) {
     modalContent.innerHTML = `
         <div style="text-align: center; padding: 40px;">
             <div class="loader" style="border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #00e5ff; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-            <p style="color: #00e5ff; font-weight: 600; letter-spacing: 1px;">CREATING CFO CERTIFICATE...</p>
+            <p style="color: #00e5ff; font-weight: 600; letter-spacing: 1px;">FORGING CERTIFICATE...</p>
         </div>
     `;
 
+    // 2. Create a clean wrapper for the PDF
     const pdfContainer = document.createElement('div');
-    pdfContainer.style.background = '#040711';
+    // Important: Force white background for the PDF engine to prevent black gaps
+    pdfContainer.style.cssText = "background: #040711; width: 800px; margin: 0; padding: 0;";
 
-    // Grabbing the Intelligence text we made in updateCFOUI
     const intelligenceText = document.getElementById('executive-summary').innerHTML;
 
+    // --- PAGE 1: THE CERTIFICATE ---
     const page1 = document.createElement('div');
+    page1.style.cssText = "height: 1120px; width: 800px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top,#101a40,#040711);";
+    
     page1.innerHTML = `
         <style>
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Great+Vibes&display=swap');
-            .cert-wrapper { background: radial-gradient(circle at top,#101a40,#040711); padding: 40px; display: flex; justify-content: center; font-family: 'Inter', sans-serif; color: white; }
-            .certificate { width: 850px; background: linear-gradient(180deg,#0e1640,#070b1c); border-radius: 26px; padding: 55px; border: 2px solid rgba(0,229,255,.25); box-shadow: 0 0 100px rgba(0,229,255,.2); position: relative; }
+            .certificate { width: 700px; background: linear-gradient(180deg,#0e1640,#070b1c); border-radius: 26px; padding: 45px; border: 2px solid rgba(0,229,255,.25); box-shadow: 0 0 100px rgba(0,229,255,.2); color: white; font-family: 'Inter', sans-serif; }
             .header { text-align: center; }
-            .header h1 { font-size: 40px; margin: 0; color: white; letter-spacing: 2px; }
-            .header h2 { font-size: 24px; color: #00e5ff; margin: 10px 0; text-transform: uppercase; letter-spacing: 3px; }
-            .badge-wrapper { display: flex; justify-content: center; margin: 40px 0; }
-            .cfo-badge { width: 180px; height: 180px; border-radius: 50%; border: 4px solid #c9a227; background: #0f1c44; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(0,229,255,0.5); }
-            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 30px 0; }
-            .stat-box { background: rgba(255,255,255,.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(0,229,255,.2); text-align: center; }
-            .summary-box { background: rgba(0,229,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid rgba(0,229,255,0.2); margin-top: 20px; }
-            .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 50px; }
-            .sig { font-family: 'Great Vibes', cursive; font-size: 35px; border-bottom: 1px solid #555; }
+            .header h1 { font-size: 36px; margin: 0; color: white; }
+            .header h2 { font-size: 22px; color: #00e5ff; margin: 10px 0; text-transform: uppercase; letter-spacing: 3px; }
+            .badge-wrapper { display: flex; justify-content: center; margin: 30px 0; }
+            .cfo-badge { width: 160px; height: 160px; border-radius: 50%; border: 4px solid #c9a227; background: #0f1c44; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(0,229,255,0.5); }
+            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 25px 0; }
+            .stat-box { background: rgba(255,255,255,.05); padding: 12px; border-radius: 12px; border: 1px solid rgba(0,229,255,.2); text-align: center; }
+            .summary-box { background: rgba(0,229,255,0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(0,229,255,0.2); }
+            .footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; }
+            .sig { font-family: 'Great Vibes', cursive; font-size: 32px; border-bottom: 1px solid #555; }
         </style>
-        <div class="cert-wrapper">
-            <div class="certificate">
-                <div class="header">
-                    <h1>ScaleVest</h1>
-                    <h2>Business Finance Certificate</h2> <div style="color: #93a4c8; font-size: 12px;">REPORT ID: ${reportName.toUpperCase()}</div>
-                </div>
-                <div class="badge-wrapper">
-                    <div class="cfo-badge"><h2 style="font-size: 50px; color: #00e5ff;">CFO</h2></div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-box"><small>REVENUE</small><p>$${data.totalRevenue.toLocaleString()}</p></div>
-                    <div class="stat-box"><small>NET PROFIT</small><p>$${data.netProfit.toLocaleString()}</p></div>
-                    <div class="stat-box"><small>MARGIN</small><p>${data.profitMargin}%</p></div>
-                    <div class="stat-box"><small>VALUATION</small><p>$${(data.netProfit * 1.5).toLocaleString()}</p></div>
-                </div>
-                <div class="summary-box">
-                    <h4 style="color: #00e5ff; margin-bottom: 10px; font-size: 12px; letter-spacing: 1px;">CFO INTELLIGENCE REPORT</h4>
-                    ${intelligenceText} </div>
-                <div class="footer">
-                    <div><div class="sig">ScaleVest AI</div><div style="font-size: 12px; color: #888;">Authorized Intelligence</div></div>
-                    <div style="width: 100px; height: 100px; background: radial-gradient(circle, #ffdf8c, #c9a227); border-radius: 50%; color: black; font-weight: 800; font-size: 10px; display: flex; align-items: center; justify-content: center; text-align: center;">OFFICIAL<br>VERIFIED</div>
-                </div>
+        <div class="certificate">
+            <div class="header">
+                <h1>ScaleVest</h1>
+                <h2>Business Finance Certificate</h2>
+                <div style="color: #93a4c8; font-size: 11px;">VERIFICATION ID: ${reportName.toUpperCase()}</div>
+            </div>
+            <div class="badge-wrapper">
+                <div class="cfo-badge"><h2 style="font-size: 40px; color: #00e5ff; margin: 0;">CFO</h2></div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box"><small style="font-size: 9px; color: #93a4c8;">REVENUE</small><p style="margin:5px 0 0; font-weight:800;">$${data.totalRevenue.toLocaleString()}</p></div>
+                <div class="stat-box"><small style="font-size: 9px; color: #93a4c8;">PROFIT</small><p style="margin:5px 0 0; font-weight:800;">$${data.netProfit.toLocaleString()}</p></div>
+                <div class="stat-box"><small style="font-size: 9px; color: #93a4c8;">MARGIN</small><p style="margin:5px 0 0; font-weight:800;">${data.profitMargin}%</p></div>
+                <div class="stat-box"><small style="font-size: 9px; color: #93a4c8;">GROWTH</small><p style="margin:5px 0 0; font-weight:800;">${data.weeklyGrowth}%</p></div>
+            </div>
+            <div class="summary-box">
+                <h4 style="color: #00e5ff; margin-bottom: 8px; font-size: 11px; letter-spacing: 1px;">INTELLIGENCE REPORT</h4>
+                <div style="font-size: 13px;">${intelligenceText}</div>
+            </div>
+            <div class="footer">
+                <div><div class="sig">ScaleVest AI</div><div style="font-size: 11px; color: #888;">Authorized Intelligence</div></div>
+                <div style="width: 80px; height: 80px; background: radial-gradient(circle, #ffdf8c, #c9a227); border-radius: 50%; color: black; font-weight: 800; font-size: 9px; display: flex; align-items: center; justify-content: center; text-align: center;">OFFICIAL<br>VERIFIED</div>
             </div>
         </div>
     `;
     pdfContainer.appendChild(page1);
 
-    // Page 2: Dashboard
+    // --- PAGE 2: DASHBOARD (Strictly formatted to avoid cutting) ---
     const page2 = document.createElement('div');
-    page2.style.cssText = 'page-break-before: always; background: #0a0e27; padding: 20px;';
-    page2.appendChild(document.getElementById('dashboard-container').cloneNode(true));
+    page2.style.cssText = 'page-break-before: always; background: #0a0e27; padding: 40px; min-height: 1120px;';
+    const dashboardClone = document.getElementById('dashboard-container').cloneNode(true);
+    dashboardClone.style.width = "100%";
+    page2.appendChild(dashboardClone);
     pdfContainer.appendChild(page2);
 
+    // 4. Generate PDF with "Letter" sizing and high-res scaling
     const opt = {
         margin: 0,
-        filename: `${reportName}.pdf`, // CUSTOM FILENAME FOR DOWNLOAD
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#040711' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        filename: `${reportName}.pdf`,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            scrollY: 0, 
+            windowWidth: 800, // Forces the width to prevent layout breaking
+            backgroundColor: '#040711'
+        },
+        jsPDF: { unit: 'pt', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: 'css', before: '.page-break' }
     };
 
     html2pdf().set(opt).from(pdfContainer).save().then(() => {
         document.getElementById('export-modal').style.display = 'none';
-        modalContent.innerHTML = originalHTML; // Reset modal for next time
+        modalContent.innerHTML = originalHTML; // Reset modal
     });
 }
 
