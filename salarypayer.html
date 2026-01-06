@@ -98,7 +98,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl md:text-3xl font-bold text-indigo-900">ScaleVest</h1>
-                    <p class="text-sm text-gray-600">Workforce Management Platform</p>
+                    <p class="text-sm text-gray-600">Salary Payroll</p>
                 </div>
                 <div class="flex gap-2">
                     <button id="historyBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 md:px-6 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
@@ -591,94 +591,79 @@ function processNextPayment() {
 function showPaymentScreen(payment) {
     const overlay = document.getElementById('paymentOverlay');
     const content = document.getElementById('paymentContent');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
+    // Initial content
     content.innerHTML = `
         <div class="mb-6">
             <div class="w-24 h-24 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto mb-4">
                 ${payment.employeeName.charAt(0).toUpperCase()}
             </div>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">${payment.employeeName}</h2>
-            <p class="text-gray-600 mb-4">${payment.employeeRole}</p>
             <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                 <p class="text-sm text-gray-600">Amount to Pay</p>
                 <p class="text-3xl font-bold text-green-600">${formatCurrency(payment.netAmount)}</p>
             </div>
         </div>
         
-        <div class="text-left text-sm text-gray-600 mb-6 bg-gray-50 p-4 rounded-lg">
-            <p class="mb-1">Base Salary: ${formatCurrency(payment.baseSalary)}</p>
-            ${payment.bonus > 0 ? `<p class="mb-1 text-green-600">Bonus: +${formatCurrency(payment.bonus)}</p>` : ''}
-            ${payment.totalDeduction > 0 ? `<p class="mb-1 text-red-600">Deductions: -${formatCurrency(payment.totalDeduction)}</p>` : ''}
+        <div id="statusContainer">
+            <p class="text-sm text-gray-500 mb-6">${isMobile ? 'Opening UPI app in...' : 'Generating QR Code...'}</p>
+            <div id="timerText" class="text-2xl font-bold text-indigo-600 mb-6">${isMobile ? '3' : ''}</div>
         </div>
-        
-        <p class="text-sm text-gray-500 mb-6">Opening UPI app in 3 seconds...</p>
-        <div class="pulse text-4xl mb-6">📱</div>
-        
-        <div id="timerText" class="text-2xl font-bold text-indigo-600 mb-6">3</div>
     `;
     
     overlay.style.display = 'flex';
     
-    let countdown = 3;
-    const timerInterval = setInterval(() => {
-        countdown--;
-        const timerEl = document.getElementById('timerText');
-        if (timerEl) timerEl.textContent = countdown;
-        
-        if (countdown === 0) {
-            clearInterval(timerInterval);
+    if (isMobile) {
+        let countdown = 3;
+        const timerInterval = setInterval(() => {
+            countdown--;
+            const timerEl = document.getElementById('timerText');
+            if (timerEl) timerEl.textContent = countdown;
+            
+            if (countdown === 0) {
+                clearInterval(timerInterval);
+                openUPIApp(payment); // This will trigger the app redirect
+            }
+        }, 1000);
+    } else {
+        // For Desktop, skip the timer and go straight to showing the QR
+        setTimeout(() => {
             openUPIApp(payment);
-        }
-    }, 1000);
+        }, 500);
+    }
 }
 
 function openUPIApp(payment) {
-    // 1. Clean the UPI ID and Data
     let upiId = payment.paymentDetails.includes('@') ? payment.paymentDetails : bossUPIId;
     upiId = upiId.trim().replace(/\s/g, ''); 
     const amount = payment.netAmount.toFixed(2);
     const payeeName = payment.employeeName.trim();
     const note = encodeURIComponent(`Salary for ${payeeName}`);
-
-    // 2. Construct the standard UPI Link
     const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${note}`;
 
-    // 3. Device Detection: Mobile vs Desktop
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (isMobile) {
-        // MOBILE LOGIC: Open PhonePe/GPay directly
         window.location.href = upiLink;
-        
         setTimeout(() => {
             showPaymentConfirmation(payment);
         }, 2000);
     } else {
-        // DESKTOP/MAC LOGIC: Show QR Code
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`;
+        // Update the existing payment overlay with the QR code
+        const statusContainer = document.getElementById('statusContainer');
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
         
-        Swal.fire({
-            title: `Scan to Pay ${payeeName}`,
-            html: `
-                <div class="p-4">
-                    <img src="${qrCodeUrl}" alt="UPI QR Code" style="margin: 0 auto; border: 10px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                    <div class="mt-4 bg-gray-100 p-3 rounded-lg text-left">
-                        <p><strong>Amount:</strong> ${formatCurrency(payment.netAmount)}</p>
-                        <p><strong>UPI ID:</strong> ${upiId}</p>
-                    </div>
-                    <p class="mt-4 text-sm text-gray-500">Scan this QR with PhonePe, GPay, or any UPI app on your phone.</p>
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'I have Paid',
-            confirmButtonColor: '#10B981',
-            cancelButtonText: 'Close',
-            allowOutsideClick: false
-        }).then((result) => {
-            if (result.isConfirmed) {
-                showPaymentConfirmation(payment);
-            }
-        });
+        statusContainer.innerHTML = `
+            <div class="p-2">
+                <img src="${qrCodeUrl}" alt="UPI QR" class="mx-auto mb-4 border-4 border-white shadow-sm">
+                <p class="text-xs text-gray-500 mb-4">Scan with PhonePe, GPay, or Paytm</p>
+                <button onclick="showPaymentConfirmation(${JSON.stringify(payment).replace(/"/g, '&quot;')})" 
+                        class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">
+                    I Have Paid
+                </button>
+            </div>
+        `;
     }
 }
 function showPaymentConfirmation(payment) {
