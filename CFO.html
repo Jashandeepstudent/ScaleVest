@@ -444,17 +444,20 @@
             font-weight: 500;
         }
 .salary-card-wide:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.05);
-        border-color: rgba(59, 130, 246, 0.5);
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    }
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.05);
     
-    .salary-card-wide:hover .svg-container {
-        border-color: rgba(59, 130, 246, 0.4);
-        background: rgba(59, 130, 246, 0.1);
-    }
+       border-color: #1e40af; 
+    
+     box-shadow: 0 0 20px rgba(30, 64, 175, 0.4), 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
 
+.salary-card-wide:hover .svg-container {
+   
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+}
         .launch-btn {
             background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
             border: none;
@@ -1833,15 +1836,10 @@ async function askCFO(userInput) {
         </div>
     </div>
 
-    <div style="margin-top: 10px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; gap: 10px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 3V11M22 11C22 11 22 15 18 15C14 15 14 11 14 11M14 7V11M10 5V11M6 10V16C6 16 6 21 11 21C16 21 16 16 16 16M6 10C6 10 6 7 4 7C2 7 2 10 2 10V17C2 17 2 21 6 21"></path>
-        </svg>
+<div style="margin-top: 10px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; gap: 12px;">
+        <img src="payrollpoint.svg" alt="Pointer" style="width: 20px; height: 20px; filter: brightness(0) invert(1);">
         <span style="font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255, 255, 255, 0.5); font-weight: 600;">
             Click here to open the <span style="color: #3b82f6;">Scalevest Salary Payroll</span>
-        </span>
-    </div>
-</div>
             <div class="card momentum-card">
                 <div class="card-title">MOMENTUM</div>
                 <div class="momentum-text">Waterproof Sprays +40%</div>
