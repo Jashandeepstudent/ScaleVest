@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <title>ScalrftgyeVest CFO</title>
+    <title>ScaleVest CFO</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
@@ -905,41 +905,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const content = document.getElementById('trend-list-content');
 
     const loadTrends = async () => {
-        content.innerHTML = '<p style="text-align: center; padding: 20px;">Scanning Jan 2026 Global Trends...</p>';
+    content.innerHTML = '<p style="text-align: center; padding: 20px;">Scanning 2026 Viral Trends (TikTok/Shorts)...</p>';
+    
+    try {
+        const response = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/gemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                prompt: "List 3 DISTINCT viral edible trends for Jan 2026. Use SPECIFIC names like 'Angel Hair Chocolate' or 'Ube Mochi Ice Cream'. Return as a JSON array." 
+            })
+        });
+
+        const data = await response.json();
         
-        try {
-            const response = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/gemini', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: "Analyze January 2026 viral snacks. Be specific." })
-            });
+        // SAFETY: Force data into an array even if Gemini sends one object
+        const products = Array.isArray(data) ? data : (data.trends || data.items || [data]);
 
-            const data = await response.json();
-            const products = Array.isArray(data) ? data : (data.trends || [data]);
-
-            content.innerHTML = `
-                <div id="trend-items-list">
-                    ${products.map(item => `
+        content.innerHTML = `
+            <div id="trend-items-list">
+                ${products.map(item => {
+                    // Mapping all possible key names the AI might use
+                    const name = item.name || item.item || "Angel Hair Chocolate";
+                    const growth = item.growth || "+3,900%";
+                    const type = item.type || item.reason || "Viral Breakout";
+                    
+                    return `
                         <div class="trend-item" style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
                             <div>
-                                <strong style="font-size: 16px; color:#fff;">${item.name || "Angel Hair Chocolate"}</strong>
-                                <div style="font-size: 12px; color: #00e5ff;">${item.type || "Market Breakout"}</div>
+                                <strong style="font-size: 16px; color:#fff;">${name}</strong>
+                                <div style="font-size: 12px; color: #00e5ff;">${type}</div>
                             </div>
-                            <div style="color: #4ade80; font-weight: 800; font-size: 18px;">${item.growth || '+40%'} ↑</div>
+                            <div style="color: #4ade80; font-weight: 800; font-size: 18px;">${growth} ↑</div>
                         </div>
-                    `).join('')}
-                </div>
-                <button id="refresh-trends-btn" style="width:100%; margin-top:20px; padding:12px; background:linear-gradient(45deg, #6366f1, #a855f7); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
-                    🔄 Refresh Market Data
-                </button>
-            `;
+                    `;
+                }).join('')}
+            </div>
+            <button id="refresh-trends-btn" style="width:100%; margin-top:20px; padding:12px; background:linear-gradient(45deg, #6366f1, #a855f7); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+                🔄 Show Other 2026 Trends
+            </button>
+        `;
 
-            document.getElementById('refresh-trends-btn').onclick = loadTrends;
+        // Refresh logic
+        document.getElementById('refresh-trends-btn').onclick = loadTrends;
 
-        } catch (error) {
-            content.innerHTML = `<p style="color: #f87171; text-align: center; padding:20px;">Sync Error: ${error.message}</p>`;
-        }
-    };
+    } catch (error) {
+        content.innerHTML = `<p style="color: #f87171; text-align: center; padding:20px;">Sync Error: ${error.message}</p>`;
+    }
+};
 
     if(trendCard) trendCard.onclick = () => { overlay.style.display = 'flex'; loadTrends(); };
 });
