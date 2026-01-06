@@ -230,6 +230,13 @@
             margin-bottom: 12px;
             line-height: 1;
         }
+#product-analysis-card img {
+       
+        filter: brightness(0) invert(1);
+        
+        
+        opacity: 0.9; 
+    }
 
         .profit-text {
             font-size: 17px;
@@ -1837,8 +1844,8 @@ async function askCFO(userInput) {
     </div>
 </div>
             <div class="card momentum-card">
-                <div class="card-title">MOMENTUM</div>
-                <div class="momentum-text">Waterproof Sprays +40%</div>
+                <div class="card-title">Momentum</div>
+                <div class="momentum-text"></div>
                 <div class="line-chart">
                     <svg viewBox="0 0 300 80" preserveAspectRatio="none">
                         <defs>
@@ -1858,14 +1865,22 @@ async function askCFO(userInput) {
 
             <div class="card alert-card">
                 <div class="card-title alert-title">EXPIRY ALERT</div>
-                <div class="alert-text">Milk Powder (Expires in 48h)</div>
-                <button class="launch-btn" onclick="launchFlashSale()">LAUNCH FLASH SALE</button>
+                <div class="alert-text"></div>
             </div>
 
-<div class="card momentum-card" id="product-analysis-card" style="cursor: pointer;">
-    <div class="card-title">All Product Analysis</div>
+<div class="card momentum-card" id="product-analysis-card" style="cursor: pointer; background-color: #333; padding: 20px; border-radius: 8px;">
+    <div class="card-title" style="color: white; font-weight: bold;">All Products Analytics</div>
+    
     <div style="text-align: center; padding: 40px 0;">
         <img src="chart.svg" alt="Product Analysis Chart" style="width: 60px; height: 60px; margin-bottom: 10px;">
+        
+        <div style="margin-bottom: 15px;">
+            <img src="paypoint.svg" alt="Paypoint Icon" style="width: 24px; height: 24px; vertical-align: middle;">
+        </div>
+
+        <div style="font-size: 16px; color: rgba(255,255,255,0.7);">Click here to open the analytics Page</div>
+    </div>
+</div>
         
         <div style="margin-bottom: 15px;">
             <img src="payrollpoint.svg" alt="Paypoint Icon" style="width: 24px; height: 24px; vertical-align: middle;">
@@ -1988,5 +2003,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
