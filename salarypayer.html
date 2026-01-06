@@ -499,20 +499,20 @@ async function askForAdjustments() {
     const { value: formValues } = await Swal.fire({
         title: 'Adjustments for Selected',
         html: `
-<div style="text-align: left; display: flex; flex-direction: column; gap: 12px;">
+<div style="text-align: left; display: flex; flex-direction: column; gap: 15px;">
     <p class="text-sm text-gray-400 mb-2">Apply to all selected employees</p>
     
-    <div style="display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
         <label class="text-sm font-semibold" style="margin-bottom: 5px; color: #fff;">Bonus</label>
         <input id="bonus" type="number" min="0" class="swal2-input" value="0" placeholder="0" style="width: 100%; margin: 0;">
     </div>
     
-    <div style="display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
         <label class="text-sm font-semibold" style="margin-bottom: 5px; color: #fff;">Days of Leave</label>
         <input id="leaveDays" type="number" min="0" max="30" class="swal2-input" value="0" placeholder="0" style="width: 100%; margin: 0;">
     </div>
     
-    <div style="display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
         <label class="text-sm font-semibold" style="margin-bottom: 5px; color: #fff;">Flat Deduction</label>
         <input id="flatDeduction" type="number" min="0" class="swal2-input" value="0" placeholder="0" style="width: 100%; margin: 0;">
     </div>
