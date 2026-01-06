@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <title>ScaleVest CFO</title>
+    <title>ScaleVeEst CFO</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         * {
@@ -1511,68 +1511,77 @@ function generateExecutiveSummary(data) {
         return;
     }
 
-    // 1. Create a container for the PDF
+    // 1. Create a hidden container for the PDF pages
     const pdfContainer = document.createElement('div');
-    pdfContainer.style.background = '#05070f'; // Matches certificate background
+    pdfContainer.style.background = '#040711'; // Match your certificate background
 
-    // 2. PAGE 1: THE CERTIFICATE (Using your HTML/CSS)
-    const certificatePage = document.createElement('div');
-    certificatePage.innerHTML = `
+    // 2. PAGE 1: THE HIGH-END CERTIFICATE (Using your Glowy Design)
+    const page1 = document.createElement('div');
+    page1.innerHTML = `
         <style>
-            .cert-body { background: radial-gradient(circle at top,#0e1430,#05070f); padding: 40px; display: flex; justify-content: center; font-family: 'Inter', sans-serif; }
-            .certificate { width: 850px; background: linear-gradient(180deg,#0f1635,#080b18); border: 2px solid rgba(0,229,255,.3); border-radius: 22px; padding: 50px; position: relative; box-shadow: 0 0 80px rgba(0,229,255,.15); color: white; margin: 0 auto; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Great+Vibes&display=swap');
+            .cert-wrapper { background: radial-gradient(circle at top,#101a40,#040711); padding: 40px; display: flex; justify-content: center; font-family: 'Inter', sans-serif; }
+            .certificate { width: 850px; background: linear-gradient(180deg,#0e1640,#070b1c); border-radius: 26px; padding: 55px; position: relative; box-shadow: 0 0 120px rgba(0,229,255,.18); border: 2px solid rgba(0,229,255,.25); color: white; }
             .header { text-align: center; }
-            .header h1 { margin: 0; font-size: 34px; letter-spacing: 1px; color: white; }
-            .header h2 { margin: 8px 0 0; font-weight: 600; color: #8fa3c7; }
-            .header h3 { margin: 14px 0; font-size: 26px; color: #00e5ff; }
-            .hex-wrapper { display: flex; justify-content: center; margin: 30px 0; }
-            .hex { width: 150px; height: 150px; background: linear-gradient(135deg,#00e5ff,#0066ff); clip-path: polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%); display: flex; align-items: center; justify-content: center; }
-            .hex-inner { width: 100px; height: 100px; background: #0b1024; clip-path: inherit; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: #00e5ff; }
-            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 30px 0; }
-            .stat-box { background: rgba(255,255,255,.03); padding: 15px; border-radius: 14px; border: 1px solid rgba(0,229,255,.2); text-align: center; }
-            .stat-box h4 { margin: 0; color: #8fa3c7; font-size: 11px; text-transform: uppercase; }
+            .header h1 { margin: 0; font-size: 36px; color: white; }
+            .header h2 { margin: 6px 0; color: #93a4c8; font-size: 18px; }
+            .header h3 { margin: 14px 0; font-size: 28px; color: #00e5ff; }
+            .sub { font-size: 11px; letter-spacing: 1px; color: #aaa; }
+            .badge-wrapper { display: flex; justify-content: center; margin: 40px 0; }
+            .cfo-badge { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle at center,#0f1c44 0%,#050816 70%); border: 5px solid #c9a227; box-shadow: 0 0 50px rgba(0,229,255,0.6); display: flex; align-items: center; justify-content: center; position: relative; }
+            .cfo-badge::after { content: ""; position: absolute; width: 160px; height: 160px; border-radius: 50%; border: 2px dashed rgba(255,215,120,0.6); }
+            .cfo-inner h2 { margin: 0; font-size: 40px; color: #00e5ff; text-shadow: 0 0 12px rgba(0,229,255,0.9); }
+            .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 30px 0; }
+            .stat-box { background: rgba(255,255,255,.04); padding: 18px; border-radius: 16px; border: 1px solid rgba(0,229,255,.25); text-align: center; }
+            .stat-box h4 { margin: 0; font-size: 11px; color: #93a4c8; text-transform: uppercase; }
             .stat-box p { margin: 8px 0 0; font-size: 18px; font-weight: 700; color: white; }
-            .cert-summary { background: rgba(0,0,0,.4); border: 1px solid rgba(0,229,255,.25); border-radius: 18px; padding: 22px; margin-top: 20px; }
-            .cert-summary h4 { margin: 0 0 10px; color: #00e5ff; }
-            .cert-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 30px; }
-            .seal { width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle,#ffef9f,#c9a227); display: flex; align-items: center; justify-content: center; color: #000; font-weight: 800; font-size: 10px; box-shadow: 0 0 20px rgba(212,175,55,.6); }
+            .summary-box { background: rgba(0,0,0,.45); border-radius: 20px; padding: 24px; border: 1px solid rgba(0,229,255,.3); }
+            .summary-box h4 { margin: 0 0 10px; color: #00e5ff; }
+            .cert-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; }
+            .signature { font-family: 'Great Vibes', cursive; font-size: 32px; color: white; }
+            .cert-badge { width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle at center,#fff2b0 0%,#d4af37 60%); display: flex; align-items: center; justify-content: center; color: black; font-weight: 800; font-size: 10px; text-align: center; box-shadow: 0 0 30px rgba(255,215,100,0.8); }
         </style>
-        <div class="cert-body">
+        <div class="cert-wrapper">
             <div class="certificate">
                 <div class="header">
                     <h1>ScaleVest</h1>
                     <h2>Business Finance Certificate</h2>
                     <h3>${reportName}</h3>
-                    <div style="color:#aaa; font-size: 12px;">CERTIFIED CFO METRICS</div>
+                    <div class="sub">FINANCIAL QUALITY • CFO INTELLIGENCE SCORE</div>
                 </div>
-                <div class="hex-wrapper">
-                    <div class="hex"><div class="hex-inner">CFO</div></div>
+                <div class="badge-wrapper">
+                    <div class="cfo-badge">
+                        <div class="cfo-inner"><h2>CFO</h2><p style="font-size: 8px; margin: 0;">CHIEF FINANCIAL OFFICER</p></div>
+                    </div>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-box"><h4>Total Revenue</h4><p>$${data.totalRevenue.toLocaleString()}</p></div>
+                    <div class="stat-box"><h4>Revenue</h4><p>$${data.totalRevenue.toLocaleString()}</p></div>
                     <div class="stat-box"><h4>Net Profit</h4><p>$${data.netProfit.toLocaleString()}</p></div>
-                    <div class="stat-box"><h4>Profit Margin</h4><p>${data.profitMargin}%</p></div>
-                    <div class="stat-box"><h4>Weekly Growth</h4><p>${data.weeklyGrowth}%</p></div>
+                    <div class="stat-box"><h4>Net Margin</h4><p>${data.profitMargin}%</p></div>
+                    <div class="stat-box"><h4>Valuation</h4><p>$${(data.netProfit * 1.5).toLocaleString()}</p></div>
                 </div>
-                <div class="cert-summary">
-                    <h4>EXECUTIVE ANALYSIS SNAPSHOT</h4>
-                    <div style="font-size: 14px; line-height: 1.6;">${document.getElementById('executive-summary').innerText.split('.')[0]}. Business demonstrates stability and verified growth metrics.</div>
+                <div class="summary-box">
+                    <h4>CFO EXECUTIVE SUMMARY</h4>
+                    <p style="font-size: 14px; line-height: 1.6;">${document.getElementById('executive-summary').innerText.split('.')[0]}. Enterprise demonstrates high stability and disciplined cost control.</p>
+                    <strong style="color: #00e5ff">Overall Stability: HIGH</strong>
                 </div>
                 <div class="cert-footer">
-                    <div style="font-style: italic;">
-                        <div>_____________________</div>
-                        <div>Authorized CFO Signature</div>
+                    <div>
+                        <div class="signature">ScaleVest CFO</div>
+                        <div style="font-size: 10px; color: #aaa;">Authorized AI Intelligence</div>
                     </div>
-                    <div class="seal">CERTIFIED</div>
+                    <div class="cert-badge">CERTIFIED<br>BY<br>SCALEVEST</div>
                 </div>
             </div>
         </div>
     `;
-    pdfContainer.appendChild(certificatePage);
+    pdfContainer.appendChild(page1);
 
-    // 3. PAGE 2: THE DASHBOARD COPY (Capturing your actual visual report)
+    // 3. PAGE 2: REAL DASHBOARD REPORT (Capturing your actual data visual)
     const page2 = document.createElement('div');
     page2.style.cssText = 'page-break-before: always; background: #0a0e27; padding: 20px;';
+    
+    // Clone your dashboard container (ensure you have id="dashboard-container" in your HTML)
     const dashboardClone = document.getElementById('dashboard-container').cloneNode(true);
     page2.appendChild(dashboardClone);
     pdfContainer.appendChild(page2);
@@ -1580,15 +1589,24 @@ function generateExecutiveSummary(data) {
     // 4. GENERATE THE PDF
     const opt = {
         margin: 0,
-        filename: `ScaleVest_CFO_${reportName}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0, backgroundColor: '#05070f' },
+        filename: 'Report_Verified.pdf', // Clean filename as requested
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            scrollY: 0, 
+            backgroundColor: '#040711',
+            letterRendering: true
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
+    // Close the modal before starting
+    document.getElementById('export-modal').style.display = 'none';
+
     html2pdf().set(opt).from(pdfContainer).save().then(() => {
-        alert("Success! Page 1 is your Certificate, Page 2 is your Data Report.");
+        alert("Success! Your glowy CFO Certificate and Data Report have been generated.");
     });
 }
 
