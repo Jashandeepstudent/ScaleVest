@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -832,10 +833,10 @@
     </div>
 
     <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
     <script>
         // Create animated stars
@@ -864,10 +865,10 @@
             measurementId: "G-QD3TWBZHR0"
         };
 
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
+firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database(); 
+    const storage = firebase.storage();
 
         let currentUser = null;
         let cofoundersData = [];
@@ -1070,143 +1071,108 @@
         }
 
        async function saveFounderDetails() {
-    // Check if user is actually logged in before showing loading
-    if (!currentUser) {
-        alert("Authentication Error: Your browser is blocking storage or you aren't logged in. Please check your privacy settings.");
-        window.location.href = 'login2.html';
-        return;
-    }
+        if (!validateFounderForm()) return;
 
-    if (!validateFounderForm()) {
-        return;
-    }
+        const cofounders = {}; // RTD works better with objects or indexed lists
+        cofoundersData.forEach((cf, idx) => {
+            const name = document.getElementById(`cofounderName${cf.index}`)?.value;
+            const email = document.getElementById(`cofounderEmail${cf.index}`)?.value;
+            const age = document.getElementById(`cofounderAge${cf.index}`)?.value;
+            if (name) cofounders[`founder_${idx}`] = { name, email, age: parseInt(age) };
+        });
 
-    // Show loading only after we know we have a user
-    document.getElementById('loading').style.display = 'block';
+        const founderData = {
+            location: document.getElementById('location').value,
+            languages: document.getElementById('languages').value,
+            age: parseInt(document.getElementById('userAge').value),
+            graduation: document.getElementById('graduation').value,
+            awards: document.getElementById('awards').value,
+            experience: document.getElementById('experience').value,
+            cofounders: cofounders,
+            createdAt: ServerValue.TIMESTAMP // Use firebase.database.ServerValue.TIMESTAMP
+        };
 
-    const cofounders = [];
-    for (let cf of cofoundersData) {
-        const name = document.getElementById(`cofounderName${cf.index}`)?.value;
-        const email = document.getElementById(`cofounderEmail${cf.index}`)?.value;
-        const age = document.getElementById(`cofounderAge${cf.index}`)?.value;
-        
-        if (name && email && age) {
-            cofounders.push({ name, email, age: parseInt(age) });
+        try {
+            document.getElementById('loading').style.display = 'block';
+            
+            // Saving to founderprofile/{uid}
+            await db.ref('founderprofile/' + currentUser.uid).set(founderData);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('founderScreen').classList.remove('active');
+            document.getElementById('startupScreen').classList.add('active');
+            updateStepProgress(2);
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving: ' + error.message);
+            document.getElementById('loading').style.display = 'none';
         }
     }
-
-    const founderData = {
-        location: document.getElementById('location').value,
-        languages: document.getElementById('languages').value,
-        age: parseInt(document.getElementById('userAge').value),
-        graduation: document.getElementById('graduation').value,
-        awards: document.getElementById('awards').value,
-        experience: document.getElementById('experience').value,
-        cofounders: cofounders,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    try {
-        await db.collection('scalestartup')
-            .doc('founderprofile')
-            .collection('users')
-            .doc(currentUser.uid)
-            .set(founderData);
-
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('founderScreen').classList.remove('active');
-        document.getElementById('startupScreen').classList.add('active');
-        updateStepProgress(2);
-    } catch (error) {
-        console.error('Error saving founder details:', error);
-        // CRITICAL: Hide loading on error so the screen isn't stuck
-        document.getElementById('loading').style.display = 'none';
-        alert('Error saving data: ' + error.message);
-    }
-}
 
         async function saveStartupProfile() {
-            if (!validateStartupForm()) {
-                return;
+        if (!validateStartupForm()) return;
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+            let logoUrl = '';
+            if (logoFile) {
+                const storageRef = storage.ref(`startup-logos/${currentUser.uid}/${logoFile.name}`);
+                const snapshot = await storageRef.put(logoFile);
+                logoUrl = await snapshot.ref.getDownloadURL();
             }
 
-            document.getElementById('loading').style.display = 'block';
+            const startupData = {
+                startupName: document.getElementById('startupName').value,
+                yearEstablished: parseInt(document.getElementById('yearEstablished').value),
+                location: {
+                    country: document.getElementById('country').value,
+                    state: document.getElementById('state').value,
+                    city: document.getElementById('city').value
+                },
+                logo: logoUrl,
+                category: document.getElementById('category').value,
+                stage: document.getElementById('stage').value
+            };
 
-            try {
-                let logoUrl = '';
-                
-                if (logoFile) {
-                    const storageRef = storage.ref(`startup-logos/${currentUser.uid}/${Date.now()}_${logoFile.name}`);
-                    const snapshot = await storageRef.put(logoFile);
-                    logoUrl = await snapshot.ref.getDownloadURL();
-                }
+            // Using update() to merge data in RTD
+            await db.ref('startupprofile/' + currentUser.uid).update(startupData);
 
-                const startupData = {
-                    startupName: document.getElementById('startupName').value,
-                    yearEstablished: parseInt(document.getElementById('yearEstablished').value),
-                    location: {
-                        country: document.getElementById('country').value,
-                        state: document.getElementById('state').value,
-                        city: document.getElementById('city').value
-                    },
-                    logo: logoUrl,
-                    category: document.getElementById('category').value,
-                    stage: document.getElementById('stage').value,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                await db.collection('scalestartup')
-                    .doc('startupprofile')
-                    .collection('users')
-                    .doc(currentUser.uid)
-                    .set(startupData, { merge: true });
-
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('startupScreen').classList.remove('active');
-                document.getElementById('businessScreen').classList.add('active');
-                updateStepProgress(3);
-            } catch (error) {
-                console.error('Error saving startup profile:', error);
-                alert('Error saving data. Please try again.');
-                document.getElementById('loading').style.display = 'none';
-            }
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('startupScreen').classList.remove('active');
+            document.getElementById('businessScreen').classList.add('active');
+            updateStepProgress(3);
+        } catch (error) {
+            alert('Error: ' + error.message);
+            document.getElementById('loading').style.display = 'none';
         }
+    }
 
-        async function completeSetup() {
-            if (!validateBusinessForm()) {
-                return;
-            }
+       async function completeSetup() {
+        if (!validateBusinessForm()) return;
+        document.getElementById('loading').style.display = 'block';
 
-            document.getElementById('loading').style.display = 'block';
+        try {
+            const businessData = {
+                valuation: parseFloat(document.getElementById('valuation').value) || 0,
+                companyDescription: document.getElementById('companyDescription').value,
+                revenue: parseFloat(document.getElementById('revenue').value) || 0,
+                userCount: parseInt(document.getElementById('userCount').value) || 0,
+                monetization: document.getElementById('monetization').value,
+                setupCompleted: true,
+                completedAt: firebase.database.ServerValue.TIMESTAMP
+            };
 
-            try {
-                const businessData = {
-                    valuation: parseFloat(document.getElementById('valuation').value) || 0,
-                    companyDescription: document.getElementById('companyDescription').value,
-                    revenue: parseFloat(document.getElementById('revenue').value) || 0,
-                    userCount: parseInt(document.getElementById('userCount').value) || 0,
-                    monetization: document.getElementById('monetization').value,
-                    setupCompleted: true,
-                    completedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
+            await db.ref('startupprofile/' + currentUser.uid).update(businessData);
 
-                await db.collection('scalestartup')
-                    .doc('startupprofile')
-                    .collection('users')
-                    .doc(currentUser.uid)
-                    .set(businessData, { merge: true });
-
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('businessScreen').classList.remove('active');
-                document.getElementById('completionScreen').classList.add('active');
-                document.getElementById('stepProgress').style.display = 'none';
-                updateStepProgress(4);
-            } catch (error) {
-                console.error('Error completing setup:', error);
-                alert('Error saving data. Please try again.');
-                document.getElementById('loading').style.display = 'none';
-            }
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('businessScreen').classList.remove('active');
+            document.getElementById('completionScreen').classList.add('active');
+            updateStepProgress(4);
+        } catch (error) {
+            alert('Error: ' + error.message);
+            document.getElementById('loading').style.display = 'none';
         }
+    }
 
         function createFirstVest() {
             window.location.href = 'vests.html';
