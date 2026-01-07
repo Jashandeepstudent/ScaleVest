@@ -537,10 +537,11 @@
                 </h2>
                 <p style="color: #888; margin-bottom: 30px;">Tell us about your startup</p>
 
-                <div class="form-group">
-                    <label>Startup Logo URL</label>
-                    <input type="url" id="startupLogo" placeholder="https://example.com/logo.png">
-                </div>
+<div class="form-group">
+    <label for="startupLogo">Upload Startup Logo</label>
+    <input type="file" id="startupLogo" accept="image/*">
+    <small>Supports PNG, JPG, or SVG</small>
+</div>
 
                 <div class="form-group">
                     <label>Startup Stage <span class="required">*</span></label>
@@ -639,7 +640,7 @@
                             <path d="M21 15L16 10L5 21" stroke="#3a86ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         <p>Click to upload transaction proof</p>
-                        <small style="color: #888;">Image or PDF</small>
+                        <small style="color: #888;">Image or PDF (OPTIONAL)</small>
                         <input type="file" id="transactionProof" accept="image/*,.pdf">
                     </div>
                     <div id="transactionProofName" style="margin-top: 10px; color: #10b981;"></div>
@@ -838,24 +839,23 @@
         import { getDatabase, ref, set, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
         import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
-        // Firebase configuration - REPLACE WITH YOUR CONFIG
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
 
+const firebaseConfig = {
+  apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+  authDomain: "scalevest-163a0.firebaseapp.com",
+  databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+  projectId: "scalevest-163a0",
+  storageBucket: "scalevest-163a0.firebasestorage.app",
+  messagingSenderId: "938358950124",
+  appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
+  measurementId: "G-QD3TWBZHR0"
+};
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const storage = getStorage(app);
 
         let currentStep = 1;
-        const userId = localStorage.getItem('userId') || 'user_' + Date.now();
-        localStorage.setItem('userId', userId);
+        const userId = user.id
         
         let uploadedFiles = {
             pitchDeck: null,
