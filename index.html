@@ -3,6 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>ScaleVest – Business & Investment Intelligence</title>
+  <script>
+    (function() {
+      // Check for different user types
+      const isBusiness = localStorage.getItem("businessProfileCreated");
+      const isStartup = localStorage.getItem("startupProfileCreated");
+      const isInvestor = localStorage.getItem("investorProfileCreated");
+
+      if (isBusiness === "true") {
+        window.location.replace("mainbusinesshub.html");
+      } else if (isStartup === "true") {
+        window.location.replace("mainstartuphub.html"); 
+      } else if (isInvestor === "true") {
+        window.location.replace("maininvestorhub.html");
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -778,9 +794,6 @@ if (localStorage.getItem("businessProfileCreated") === "true") {
 </script>
 <body>
 
-if (localStorage.getItem("businessProfileCreated") === "true") {
-  window.location.replace("mainbusinesshub.html");
-}
 <header>
   <div class="left">
     <!-- TEMP LOGO -->
@@ -1040,5 +1053,3 @@ if (localStorage.getItem("businessProfileCreated") === "true") {
 
 </body>
 </html>
-
-
