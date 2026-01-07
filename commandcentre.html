@@ -1931,33 +1931,17 @@ import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/
             }
         }
 
-function handleCellClick(cell) {
-    return;
-    
-    const cell = e.target.closest('.grid-cell');
-    if (!cell) return;
-    
-    const x = parseInt(cell.dataset.x);
-    const y = parseInt(cell.dataset.y);
-    const floor = parseInt(cell.dataset.floor || 0);
-    
-    console.log(`Placing product at x:${x}, y:${y}, floor:${floor}`);
-
-            // Check if cell is occupied (simple check, not robust for multi-floor yet in legacy code, 
-            // but for auto-expand feature we just ensure visuals work. 
-            // Real logic needs Business data update which supports x/y. 
-            // Assuming simplified logic for now: only allow move on floor 0 for compatibility or upgrade DB logic.)
-            
-            // For now, allow move if no product at x,y on this floor
-            const occupied = productsData.some(p => p.x === x && p.y === y && (p.floor || 0) === floor && p.id !== grabbedProduct.id);
-            if (occupied) {
-                showToast('⚠️ Space Occupied', 'This tile already has a product');
-                return;
-            }
-
+function handleCellClick(clickedCell) { 
+    // If you want to delete Exchange Mode, just leave this function empty:
+    if (typeof exchangeModeActive !== 'undefined' && exchangeModeActive) {
+        if (grabbedProduct) {
+            const x = parseInt(clickedCell.dataset.x);
+            const y = parseInt(clickedCell.dataset.y);
+            const floor = parseInt(clickedCell.dataset.floor || 0);
             moveProductToPosition(grabbedProduct, x, y, floor);
         }
-
+    }
+}
 // --- REPLACE moveProductToPosition ---
 function moveProductToPosition(product, newX, newY, newFloor) {
     // Collision Detection: Check if any other product is already at these coordinates
