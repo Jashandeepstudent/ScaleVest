@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CFddO Assistant Chat | ScaleVest</title>
+    <title>CFO Assistant Chat | ScaleVest</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #0a0e27; /* Matching your startup config theme */
+            background: #0a0e27;
             color: white;
             min-height: 100vh;
             display: flex;
@@ -28,7 +28,7 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
             max-width: 900px;
             width: 100%;
-            height: 80vh;
+            height: 85vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -45,9 +45,6 @@
         .chat-header h1 {
             font-size: 20px;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .user-info {
@@ -72,7 +69,6 @@
             border-radius: 15px;
             font-size: 15px;
             line-height: 1.6;
-            word-wrap: break-word;
         }
 
         .message.assistant {
@@ -141,18 +137,18 @@
     <div class="chat-container">
         <div class="chat-header">
             <h1>💼 CFO Strategic Assistant</h1>
-            <div id="userInfo" class="user-info">Verifying identity...</div>
+            <div id="userInfo" class="user-info">Authenticating session...</div>
         </div>
         
         <div class="chat-messages" id="chatMessages">
             <div class="message assistant">
-                System online. I have access to your startup profile and financial metrics. How can I assist with your strategy today?
+                Connection established. I am scanning your startup's financial profile now. How can I assist your strategy?
             </div>
         </div>
 
         <div class="chat-input-area">
-            <input type="text" id="chatInput" class="chat-input" placeholder="Analyze my burn rate..." autocomplete="off">
-            <button class="send-btn" onclick="handleSend()">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ask about your metrics..." autocomplete="off">
+            <button class="send-btn" id="sendBtn">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="22" y1="2" x2="11" y2="13"></line>
                     <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
@@ -170,103 +166,99 @@
         const firebaseConfig = {
             apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
             authDomain: "scalevest-163a0.firebaseapp.com",
-            databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
             projectId: "scalevest-163a0",
             storageBucket: "scalevest-163a0.firebasestorage.app",
             messagingSenderId: "938358950124",
             appId: "1:938358950124:web:043506aeaacea2a96bfdc9"
         };
 
-        // Initialize Firebase
+        // Initialize
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        // Initialize Vertex AI (Gemini)
         const vertexAI = getVertexAI(app);
         const model = getGenerativeModel(vertexAI, { 
             model: "gemini-1.5-flash",
-            systemInstruction: "You are the ScaleVest CFO Agent. You have access to the user's startup profile, valuation, and revenue. Your goal is to provide high-level financial advice. Be concise, use professional language, and always conclude with a specific 'CFO COMMAND'."
+            systemInstruction: "You are the ScaleVest CFO. Use the provided business metrics to analyze health. Always end with 'CFO COMMAND:'."
         });
 
-        let currentUser = null;
         let startupData = null;
 
-        // Auth Listener
+        // UI Selectors
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatMessages = document.getElementById('chatMessages');
+
+        // Check Auth
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentUser = user;
-                document.getElementById('userInfo').textContent = `Authorized: ${user.email}`;
-                await fetchStartupData(user.uid);
+                document.getElementById('userInfo').textContent = `Active: ${user.email}`;
+                await loadBusinessContext(user.uid);
             } else {
                 window.location.href = 'login2.html';
             }
         });
 
-        async function fetchStartupData(uid) {
+        async function loadBusinessContext(uid) {
             try {
+                // Adjusting path to match your Firestore structure from previous logs
                 const docRef = doc(db, "scalestartup", "startupprofile", "users", uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     startupData = docSnap.data();
-                    console.log("Startup Context Loaded:", startupData);
                 }
-            } catch (e) {
-                console.error("Error loading profile:", e);
+            } catch (err) {
+                console.error("Context Error:", err);
             }
         }
 
         async function handleSend() {
-            const input = document.getElementById('chatInput');
-            const text = input.value.trim();
-            if (!text) return;
+            const message = chatInput.value.trim();
+            if (!message) return;
 
-            // Add User Message
-            addMessage(text, 'user');
-            input.value = '';
-
-            // Add Loading Indicator
+            addMessage(message, 'user');
+            chatInput.value = '';
             const loadingId = addLoading();
 
             try {
-                // Construct context-aware prompt
                 const context = startupData ? 
-                    `Context: Startup Name: ${startupData.startupName}, Valuation: ${startupData.valuation} USD, Revenue: ${startupData.revenue} USD, Category: ${startupData.category}. ` : 
-                    "Context: Startup profile not yet completed.";
+                    `Current Business Data: ${JSON.stringify(startupData)}` : 
+                    "No business profile data found yet.";
 
-                const prompt = `${context} \n\n User Question: ${text}`;
-
-                // Call Gemini
-                const result = await model.generateContent(prompt);
-                const response = result.response.text();
+                const result = await model.generateContent(`${context}\n\nUser Question: ${message}`);
+                const responseText = result.response.text();
 
                 removeLoading(loadingId);
-                addMessage(response, 'assistant');
+                addMessage(responseText, 'assistant');
             } catch (error) {
                 removeLoading(loadingId);
-                addMessage("Analysis interrupted. Please ensure Vertex AI is enabled in your Firebase console.", 'assistant');
-                console.error(error);
+                addMessage("Brain connection error. Please verify Vertex AI is enabled in Firebase.", 'assistant');
             }
         }
 
+        // Event Listeners (Fixes the "ReferenceError")
+        sendBtn.addEventListener('click', handleSend);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+
+        // Helper Functions
         function addMessage(text, sender) {
-            const container = document.getElementById('chatMessages');
             const div = document.createElement('div');
             div.className = `message ${sender}`;
             div.textContent = text;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
 
         function addLoading() {
             const id = 'load-' + Date.now();
-            const container = document.getElementById('chatMessages');
             const div = document.createElement('div');
             div.className = 'message assistant';
             div.id = id;
             div.innerHTML = `<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
             return id;
         }
 
@@ -274,12 +266,6 @@
             const el = document.getElementById(id);
             if (el) el.remove();
         }
-
-        // Global shortcut
-        window.handleSend = handleSend;
-        document.getElementById('chatInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSend();
-        });
     </script>
 </body>
 </html>
