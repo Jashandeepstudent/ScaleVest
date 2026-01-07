@@ -1575,17 +1575,22 @@
   const auth = getAuth(app);
   const db = getFirestore(app, "scalestartup");
 
-  // 1. AUTH PROTECTOR (Runs immediately on load)
-  onAuthStateChanged(auth, (user) => {
-      if (!user) {
-          window.location.href = "login2.html";
-      } else {
-          const isCreated = localStorage.getItem('startupProfileCreated');
-          if (isCreated === 'true') {
-              window.location.href = "founderandstartupconfig.html";
-          }
-      }
-  });
+
+
+auth.onAuthStateChanged(async (user) => {
+    if (!user) {
+        // User truly isn't logged in
+        window.location.href = "login2.html";
+    } else {
+        // Check if they ALREADY finished this page
+        const docSnap = await db.collection("founderprofile").doc(user.uid).get();
+        if (docSnap.exists) {
+            // They shouldn't be here, send them to dashboard
+            window.location.href = "founderdashboard.html";
+        }
+        // Otherwise, stay here and let them fill out the form
+    }
+});
 
   // 2. SUBMIT FUNCTION
   window.submitForm = async function(event) {
