@@ -1712,19 +1712,6 @@ box-sizing: border-box;
         </div>
 
         <div class="control-group">
-            <label>🔥 Heatmap Overlay</label>
-            <div class="toggle-group">
-                <div class="toggle-switch" id="heatmapToggle" onclick="toggleHeatmap()">
-                    <div class="toggle-slider"></div>
-                </div>
-                <span style="color: #ccc; font-size: 12px;">Sales Performance</span>
-            </div>
-        </div>
-
-        <button class="exchange-btn" id="exchangeBtn" onclick="toggleExchangeMode()">
-            🔄 Exchange Places
-        </button>
-
         <button class="time-travel-btn" onclick="openTimeTravel()">
             <span style="font-size: 18px;">⏳</span> Time Travel
         </button>
@@ -2470,18 +2457,6 @@ content.innerHTML = `
     </div>
 
     <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 10px;">
-        <div style="font-size: 11px; color: #888; margin-bottom: 4px;">🌍 Origin</div>
-        <div style="color: var(--ice-blue); font-weight: bold; font-size: 13px;">
-            ${aiData.origin || 'Global Distribution'}
-        </div>
-    </div>
-
-    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-        <div style="font-size: 11px; color: #888; margin-bottom: 6px;">📖 Info</div>
-        <div style="font-style: italic; color: #ccc; font-size: 12px; line-height: 1.4;">
-            "${aiData.description || 'Product details synced.'}"
-        </div>
-    </div>
 
     <style>
         @keyframes pulseRed {
