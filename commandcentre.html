@@ -1770,6 +1770,15 @@ box-sizing: border-box;
             <input type="range" id="rotateZ" min="0" max="360" value="360" oninput="updateRotation()">
         </div>
 
+        <div class="control-group">
+            <label>🔥 Heatmap Overlay</label>
+            <div class="toggle-group">
+                <div class="toggle-switch" id="heatmapToggle" onclick="toggleHeatmap()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span style="color: #ccc; font-size: 12px;">Sales Performance</span>
+            </div>
+        </div>
 
         <button class="time-travel-btn" onclick="openTimeTravel()">
             <span style="font-size: 18px;">⏳</span> Time Travel
@@ -1931,9 +1940,9 @@ import { getDatabase, ref, onValue, update, get } from 'https://www.gstatic.com/
             }
         }
 
-function handleCellClick(e) {
-    if (!exchangeModeActive || !grabbedProduct) return;
-    
+function handleCellClick(cell) {
+    return; 
+}    
     const cell = e.target.closest('.grid-cell');
     if (!cell) return;
     
@@ -1981,32 +1990,26 @@ function moveProductToPosition(product, newX, newY, newFloor) {
     });
 }        // --- CORE FEATURES ---
 
-       function updateHeatmap() {
-    // If heatmap is disabled (which it is by default), just reset everything
-    if (!heatmapEnabled) {
-        // Reset the floor (grid cells)
-        document.querySelectorAll('.grid-cell').forEach(cell => {
-            cell.className = 'grid-cell';
-            cell.style.background = '';
-        });
-        
-        // Reset the product cards
-        document.querySelectorAll('.product-node').forEach(node => {
-            const card = node.querySelector('.product-card');
-            if (card) {
-                card.style.background = '';
-                card.style.filter = '';
-            }
-            const pid = node.dataset.productId;
-            const prod = productsData.find(p => p.id === pid);
-            if (prod) updateNodeVisuals(node, prod);
-        });
-        return;
-    }
+        function updateHeatmap() {
+            if (!heatmapEnabled) {
+    document.querySelectorAll('.grid-cell').forEach(cell => {
+        cell.className = 'grid-cell';
+        cell.style.background = '';
+    });
     
-    // Everything below this line should only run if heatmapEnabled is true
-    // Since you are removing the toggle, this part will essentially be ignored
-
+    // RESET all product cards
+    document.querySelectorAll('.product-node').forEach(node => {
+        const card = node.querySelector('.product-card');
+        if (card) {
+            card.style.background = '';
+            card.style.filter = '';
+        }
+        const pid = node.dataset.productId;
+        const prod = productsData.find(p => p.id === pid);
+        if (prod) updateNodeVisuals(node, prod);
+    });
+    return;
+}
 
             // Calculate Max Sales for normalization
             const maxSales = Math.max(...productsData.map(p => p.sales || 0), 1);
@@ -2860,12 +2863,7 @@ function showTimeTravelAlert(alerts, isCritical) {
     }
     
     // Show enhanced toast with severity styling
-    showEnhancedToast(
-        urgencyText,
-        detailedSummary,
-        isCritical ? 8000 : 6000, // Longer display time
-        isCritical ? 'critical' : 'warning' // Color coding
-    );
+showToast(urgencyText, detailedSummary, isCritical ? 8000 : 6000);
     
     // Play attention-grabbing beep
     playBeepSound();
