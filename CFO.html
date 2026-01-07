@@ -2144,7 +2144,15 @@ function launchFlashSale() {
     alert("Flash Sale feature coming soon! This will allow you to create instant discount campaigns.");
     // You can build this feature later to create automatic discounts
 }
-
+function openCFOChat() {
+    // Adding a small scale effect before navigating for that premium feel
+    const searchBar = document.querySelector('.search-bar');
+    searchBar.style.transform = 'scale(0.98)';
+    
+    setTimeout(() => {
+        window.location.href = 'cfochat.html';
+    }, 100);
+}
 
 async function askCFO(userInput) {
     const adviceTextEl = document.querySelector('.advice-text');
@@ -2226,12 +2234,12 @@ async function askCFO(userInput) {
             <div class="logo">SCALEVEST</div>
         </div>
 
-        <div class="search-bar">
-            <svg class="mic-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-            </svg>
-            <span class="search-text">Ask: "Why did my profit dip yesterday?</span>
-        </div>
+<div class="search-bar" onclick="openCFOChat()" style="cursor: pointer;">
+    <svg class="mic-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+    </svg>
+    <span class="search-text">Ask CFO: "Why did my profit dip?"</span>
+</div>
 
         <div class="dashboard">
 <div class="card profit-card">
