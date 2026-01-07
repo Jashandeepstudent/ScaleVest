@@ -1011,6 +1011,10 @@
 
         try {
             await processAllFiles(); // Upload files first
+const logoFile = document.getElementById('startupLogo').files[0];
+if (logoFile && !uploadedFiles.startupLogo) {
+    uploadedFiles.startupLogo = await uploadFile(logoFile, 'startup-logos');
+}
             const vestData = collectVestData();
             if (!vestData) return;
             vestData.status = 'draft';
@@ -1033,6 +1037,10 @@
 
         try {
             await processAllFiles(); // Upload files first
+const logoFile = document.getElementById('startupLogo').files[0];
+if (logoFile && !uploadedFiles.startupLogo) {
+    uploadedFiles.startupLogo = await uploadFile(logoFile, 'startup-logos');
+}
             const vestData = collectVestData();
             if (!vestData) return;
             vestData.status = 'live';
