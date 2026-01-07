@@ -115,30 +115,26 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 let isAuthFlowActive = false;
 
-/* --- SMART REDIRECT LOGIC --- */
+/* --- UPDATED SMART REDIRECT LOGIC --- */
 async function performSmartRedirect(user) {
     if (!user) return;
     try {
-        // We check Firestore to see if the founder profile document exists
+        // IMPORTANT: Ensure this collection name matches your Profile Save page!
         const docRef = db.collection("startupprofile").doc(user.uid);
         const docSnap = await docRef.get();
 
         if (docSnap.exists) {
-            // Profile exists in DB -> Go to Dashboard
-            localStorage.setItem('startupProfileCreated', 'true'); // Keep local storage in sync
-            window.location.href = "founderdashboard.html";
+            console.log("Profile exists. To Dashboard.");
+            window.location.replace("founderdashboard.html"); // Use .replace to prevent "Back" button loops
         } else {
-            // No profile in DB -> Go to Setup
-            localStorage.removeItem('startupProfileCreated');
-            window.location.href = "startup-side.html";
+            console.log("No profile. To Setup.");
+            window.location.replace("founderandstartupconfig.html");
         }
     } catch (error) {
         console.error("Redirect Error:", error);
-        // Fallback to config if DB is unreachable
-        window.location.href = "founderandstartupconfig.html";
+        // If there's a DB error, don't redirect yet to prevent infinite loops
     }
 }
-
 /* UI HELPERS */
 function emailAuthHandler(){ signupModal.style.display="flex"; signupError.style.display="none"; }
 function switchToSigninUI(){ signupModal.style.display="none"; signinModal.style.display="flex"; }
@@ -162,7 +158,7 @@ async function emailSignup() {
     isAuthFlowActive = true;
     try {
         await auth.createUserWithEmailAndPassword(email, password);
-        window.location.href = "founderandstartupconfig.html";
+        window.location.href = "startup-side.html";
     } catch (err) {
         isAuthFlowActive = false;
         showError('signupError', err.message);
