@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StartupSide - Where Ideas Become Reality</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --black: #000000;
+            --white: #ffffff;
+            --gray-dark: #0a0a0a;
+            --gray-medium: #1a1a1a;
+            --gray-light: #2a2a2a;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--black);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-light);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--white);
+        }
+
+        /* Animated Background Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--white);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float-particle 20s infinite ease-in-out;
+        }
+
+        @keyframes float-particle {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.1; }
+            50% { transform: translate(100px, -100px) scale(1.5); opacity: 0.3; }
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Navigation - Space Theme Inspired */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.5rem 5%;
+            backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+
+        nav.scrolled {
+            padding: 1rem 5%;
+            background: rgba(0, 0, 0, 0.95);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--white);
+            color: var(--black);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0,0,0,0.1), transparent);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(0deg) translate(-50%, -50%); }
+            100% { transform: rotate(360deg) translate(-50%, -50%); }
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 3rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+            transition: var(--transition);
+            padding: 0.5rem 0;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--white);
+            transition: var(--transition);
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+
+        .nav-btn-outline {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+
+        .nav-btn-outline:hover {
+            background: var(--white);
+            color: var(--black);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn-filled {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .nav-btn-filled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Hero Section - ChatGPT/Grok Inspired */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8rem 5% 4rem;
+            overflow: hidden;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.03;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, var(--white) 2px, var(--white) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, var(--white) 2px, var(--white) 4px);
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--white);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .hero h1 {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            letter-spacing: -2px;
+            background: linear-gradient(to right, var(--white), rgba(255, 255, 255, 0.6));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: text-shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes text-shimmer {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-search {
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: var(--gray-medium);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .search-container:focus-within {
+            border-color: var(--white);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 2rem;
+            width: 20px;
+            height: 20px;
+            opacity: 0.5;
+        }
+
+        .hero-search input {
+            flex: 1;
+            padding: 1.2rem 1.5rem 1.2rem 3.5rem;
+            border: none;
+            background: transparent;
+            color: var(--white);
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        .hero-search input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .hero-search button {
+            padding: 1rem 2.5rem;
+            background: var(--white);
+            color: var(--black);
+            border: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .hero-search button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-tags {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .hero-tag {
+            padding: 0.6rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .hero-tag:hover {
+            background: var(--white);
+            color: var(--black);
+            transform: translateY(-2px);
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 3rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+        }
+
+        /* Trusted By Section - Minimalist */
+        .trusted-section {
+            padding: 4rem 5%;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .trusted-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .trusted-title {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 3rem;
+        }
+
+        .trusted-logos {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 3rem;
+        }
+
+        .trusted-logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.3);
+            transition: var(--transition);
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .trusted-logo:hover {
+            color: var(--white);
+            transform: scale(1.1);
+        }
+
+        /* Features Section - Bento Box Layout (Grok Style) */
+        .features-section {
+            padding: 8rem 5%;
+            position: relative;
+        }
+
+        .section-header {
+            max-width: 800px;
+            margin: 0 auto 5rem;
+            text-align: center;
+        }
+
+        .section-label {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-description {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .bento-item {
+            background: var(--gray-medium);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            padding: 3rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bento-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .bento-item:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .bento-item:hover::before {
+            opacity: 1;
+        }
+
+        .bento-large {
+            grid-column: span 8;
+        }
+
+        .bento-medium {
+            grid-column: span 4;
+        }
+
+        .bento-small {
+            grid-column: span 6;
+        }
+
+        .bento-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .bento-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .bento-description {
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .bento-video {
+            margin-top: 2rem;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .bento-video video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Services Grid - Fiverr Inspired */
+        .services-section {
+            padding: 8rem 5%;
+            background: var(--gray-dark);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .service-card {
+            background: var(--gray-medium);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .service-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.8) 100%);
+            opacity: 0;
+            transition: var(--transition);
+            pointer-events: none;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .service-card:hover::after {
+            opacity: 1;
+        }
+
+        .service-media {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .service-media img,
+        .service-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .service-card:hover .service-media img,
+        .service-card:hover .service-media video {
+            transform: scale(1.1);
+        }
+
+        .service-info {
+            padding: 1.8rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .service-category {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 0.8rem;
+        }
+
+        .service-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+            line-height: 1.3;
+        }
+
+        .service-description {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .service-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .service-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .service-price {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Video Showcase Section */
+        .video-showcase {
+            padding: 8rem 5%;
+            position: relative;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .video-card {
+            background: var(--gray-medium);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .video-thumbnail video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .video-card:hover .video-play-overlay {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        .play-button {
+            width: 70px;
+            height: 70px;
+            background: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .video-card:hover .play-button {
+            transform: scale(1.1);
+        }
+
+        .play-icon {
+            width: 0;
+            height: 0;
+            border-left: 20px solid var(--black);
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 5px;
+        }
+
+        .video-content {
+            padding: 2rem;
+        }
+
+        .video-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.8rem;
+        }
+
+        .video-description {
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.5;
+            margin-bottom: 1.5rem;
+        }
+
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Testimonials Section - ChatGPT Style */
+        .testimonials-section {
+            padding: 8rem 5%;
+            background: var(--gray-dark);
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            background: var(--gray-medium);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 2.5rem;
+            transition: var(--transition);
+        }
+
+        .testimonial-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .testimonial-quote {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .author-info h4 {
+            font-size: 1rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .author-info p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* CTA Section - Bold & Centered */
+        .cta-section {
+            padding: 10rem 5%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cta-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-title {
+            font-size: clamp(2.5rem, 5vw, 5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            letter-spacing: -1px;
+        }
+
+        .cta-description {
+            font-size: 1.4rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-button {
+            padding: 1.3rem 3rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-button-primary {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        .cta-button-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 20px 60px rgba(255, 255, 255, 0.3);
+        }
+
+        .cta-button-secondary {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+
+        .cta-button-secondary:hover {
+            background: var(--white);
+            color: var(--black);
+            transform: translateY(-3px);
+        }
+
+        /* Footer - Comprehensive */
+        footer {
+            background: var(--gray-dark);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 5rem 5% 3rem;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .footer-brand {
+            max-width: 300px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--white);
+            color: var(--black);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.3rem;
+        }
+
+        .footer-logo-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .footer-tagline {
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .social-icon:hover {
+            background: var(--white);
+            border-color: var(--white);
+            transform: translateY(-3px);
+        }
+
+        .footer-column h3 {
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .footer-bottom {
+            padding-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-copyright {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .footer-company {
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-legal a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .footer-legal a:hover {
+            color: var(--white);
+        }
+
+        /* Modal Styles - Modern & Sleek */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--gray-medium);
+            margin: 3% auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.4s ease;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 2.5rem 2.5rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .modal-header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1rem;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+
+        .modal-close:hover {
+            background: var(--white);
+            color: var(--black);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: var(--white);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: var(--gray-dark);
+            color: var(--white);
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--white);
+            background: var(--black);
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 140px;
+            line-height: 1.6;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 1.3rem;
+            background: var(--white);
+            color: var(--black);
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .form-note {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .bento-large {
+                grid-column: span 12;
+            }
+
+            .bento-medium,
+            .bento-small {
+                grid-column: span 6;
+            }
+
+            .footer-top {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 968px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .hero {
+                padding: 6rem 5% 3rem;
+            }
+
+            .hero h1 {
+                font-size: 3rem;
+            }
+
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .bento-medium,
+            .bento-small {
+                grid-column: span 12;
+            }
+
+            .services-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-search {
+                flex-direction: column;
+            }
+
+            .search-container {
+                flex-direction: column;
+                border-radius: 16px;
+            }
+
+            .hero-search button {
+                width: 100%;
+                border-radius: 12px;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .trusted-logos {
+                flex-direction: column;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .cta-button {
+                width: 100%;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Selection Color */
+        ::selection {
+            background: var(--white);
+            color: var(--black);
+        }
+
+        /* Focus Visible */
+        *:focus-visible {
+            outline: 2px solid var(--white);
+            outline-offset: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <div class="logo-icon">SV</div>
+                <div class="logo-text">ScaleVest</div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#videos">Resources</a></li>
+                <li><a href="#testimonials">Stories</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <button class="nav-btn nav-btn-outline" onclick="scrollToSection('services')">Explore</button>
+                <button class="nav-btn nav-btn-filled" onclick="openModal()">Get Started</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                <span>Join 100,000+ Founders</span>
+            </div>
+            <h1>Build Your Startup<br>From Zero to Launch</h1>
+            <p class="hero-subtitle">
+                Connect with world-class talent, access cutting-edge tools, and transform your vision into a thriving business. Everything you need to succeed, all in one place.
+            </p>
+            <div class="hero-search">
+                <div class="search-container">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" placeholder="What do you need help with today?" id="heroSearchInput">
+                    <button onclick="handleSearch()">Search</button>
+                </div>
+            </div>
+            <div class="hero-tags">
+                <a href="#" class="hero-tag">🚀 Launch Strategy</a>
+                <a href="#" class="hero-tag">💻 Development</a>
+                <a href="#" class="hero-tag">🎨 Design</a>
+                <a href="#" class="hero-tag">📈 Growth Marketing</a>
+                <a href="#" class="hero-tag">💰 Funding</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">100K+</div>
+                    <div class="stat-label">Active Founders</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">$2.5B+</div>
+                    <div class="stat-label">Raised by Startups</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+            </div>
+
+            <div class="video-card" onclick="playVideo(this)">
+                <div class="video-thumbnail">
+                    <video>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-play-overlay">
+                        <div class="play-button">
+                            <div class="play-icon"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-content">
+                    <h3 class="video-title">Building a Remote Team</h3>
+                    <p class="video-description">
+                        How to hire, manage, and scale a distributed team effectively while maintaining culture and productivity.
+                    </p>
+                    <div class="video-meta">
+                        <span>41 min</span>
+                        <span>178K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card" onclick="playVideo(this)">
+                <div class="video-thumbnail">
+                    <video>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-play-overlay">
+                        <div class="play-button">
+                            <div class="play-icon"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-content">
+                    <h3 class="video-title">Product-Market Fit Workshop</h3>
+                    <p class="video-description">
+                        Deep dive into finding and validating product-market fit using data-driven methodologies and customer research.
+                    </p>
+                    <div class="video-meta">
+                        <span>56 min</span>
+                        <span>289K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card" onclick="playVideo(this)">
+                <div class="video-thumbnail">
+                    <video>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-play-overlay">
+                        <div class="play-button">
+                            <div class="play-icon"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-content">
+                    <h3 class="video-title">Revenue Models That Work</h3>
+                    <p class="video-description">
+                        Explore different monetization strategies and learn which revenue models work best for different types of startups.
+                    </p>
+                    <div class="video-meta">
+                        <span>43 min</span>
+                        <span>224K views</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <div class="section-header">
+            <div class="section-label">Success Stories</div>
+            <h2 class="section-title">Hear From Founders Like You</h2>
+            <p class="section-description">
+                Real stories from entrepreneurs who transformed their ideas into successful businesses with ScaleVest.
+            </p>
+        </div>
+
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "ScaleVest connected me with the perfect technical co-founder. Within 6 months, we built our MVP, raised our seed round, and now have 50K active users. The community support has been invaluable throughout our journey."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">SK</div>
+                    <div class="author-info">
+                        <h4>Sarah Kim</h4>
+                        <p>Founder, TechFlow AI</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "The mentorship program was a game-changer. Having weekly calls with successful founders who've been through it helped us avoid so many costly mistakes. We saved at least 6 months of trial and error."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">MR</div>
+                    <div class="author-info">
+                        <h4>Marcus Rodriguez</h4>
+                        <p>CEO, HealthSync</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "I found my entire initial team through ScaleVest - designer, developer, and growth marketer. The platform's vetting process meant I only connected with A-players. Best hiring experience I've ever had."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">JP</div>
+                    <div class="author-info">
+                        <h4>Jennifer Park</h4>
+                        <p>Founder, EcoCart</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "The resources library alone is worth it. From legal templates to growth playbooks, everything I needed was right there. Plus the community is incredibly active and helpful."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">DL</div>
+                    <div class="author-info">
+                        <h4>David Lee</h4>
+                        <p>Founder, FitTrack Pro</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "Got introduced to 3 VCs through ScaleVest's investor network. Closed our Series A within 4 months. The pitch practice sessions and feedback from other founders were crucial to our success."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">AN</div>
+                    <div class="author-info">
+                        <h4>Aisha Nakamura</h4>
+                        <p>CEO, CloudNest</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <p class="testimonial-quote">
+                    "From solo founder to 15-person team in 18 months. ScaleVest's tools for validation, hiring, and growth made all the difference. Can't imagine building a startup without this platform now."
+                </p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">TC</div>
+                    <div class="author-info">
+                        <h4>Tom Chen</h4>
+                        <p>Founder, DataPulse</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to Build Your Future?</h2>
+            <p class="cta-description">
+                Join 100,000+ founders who are turning their ideas into reality. Get started for free today and access everything you need to launch and scale your startup.
+            </p>
+            <div class="cta-buttons">
+                <button class="cta-button cta-button-primary" onclick="openModal()">Create Founder Profile</button>
+                <button class="cta-button cta-button-secondary" onclick="scrollToSection('features')">Learn More</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <div class="footer-logo-icon">SV</div>
+                        <div class="footer-logo-text">ScaleVest</div>
+                    </div>
+                    <p class="footer-tagline">
+                        Empowering entrepreneurs to build, launch, and scale innovative startups. Your journey from idea to success starts here.
+                    </p>
+                    <div class="footer-social">
+                        <div class="social-icon" title="Twitter">𝕏</div>
+                        <div class="social-icon" title="LinkedIn">in</div>
+                        <div class="social-icon" title="Facebook">f</div>
+                        <div class="social-icon" title="Instagram">📷</div>
+                        <div class="social-icon" title="YouTube">▶</div>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Platform</h3>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#videos">Resources</a></li>
+                        <li><a href="#" onclick="openModal(); return false;">Get Started</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">API</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Webinars</a></li>
+                        <li><a href="#">Playbooks</a></li>
+                        <li><a href="#">Templates</a></li>
+                        <li><a href="#">Community</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Press Kit</a></li>
+                        <li><a href="#">Partners</a></li>
+                        <li><a href="#">Investors</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Status</a></li>
+                        <li><a href="#">Trust & Safety</a></li>
+                        <li><a href="#">Report Issue</a></li>
+                        <li><a href="#">Feedback</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>
+                    <p class="footer-copyright">© 2026 ScaleVest. All rights reserved.</p>
+                    <p class="footer-company">Powered by UNIORAX PRIVATE LIMITED</p>
+                </div>
+                <ul class="footer-legal">
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Founder Profile Modal -->
+    <div id="founderModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2>Create Your Founder Profile</h2>
+                    <p class="modal-subtitle">Join 100,000+ entrepreneurs building the future</p>
+                </div>
+                <div class="modal-close" onclick="closeModal()">×</div>
+            </div>
+            <div class="modal-body">
+                <form id="founderForm" onsubmit="submitForm(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name *</label>
+                            <input type="text" id="firstName" required placeholder="John">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name *</label>
+                            <input type="text" id="lastName" required placeholder="Doe">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" required placeholder="john@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startupName">Startup Name *</label>
+                        <input type="text" id="startupName" required placeholder="What's your startup called?">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="industry">Industry *</label>
+                        <select id="industry" required>
+                            <option value="">Select your industry</option>
+                            <option value="fintech">FinTech</option>
+                            <option value="healthtech">HealthTech</option>
+                            <option value="edtech">EdTech</option>
+                            <option value="saas">SaaS</option>
+                            <option value="ecommerce">E-Commerce</option>
+                            <option value="ai">AI/ML</option>
+                            <option value="blockchain">Blockchain</option>
+                            <option value="social">Social Media</option>
+                            <option value="gaming">Gaming</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="stage">Startup Stage *</label>
+                        <select id="stage" required>
+                            <option value="">Where are you in your journey?</option>
+                            <option value="idea">Idea Stage</option>
+                            <option value="validation">Validation</option>
+                            <option value="mvp">Building MVP</option>
+                            <option value="launched">Launched</option>
+                            <option value="growth">Growth Stage</option>
+                            <option value="scale">Scaling</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startupIdea">Tell Us About Your Startup *</label>
+                        <textarea id="startupIdea" required placeholder="What problem are you solving? What's your solution? Who are your customers?"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goals">What Are Your Primary Goals? *</label>
+                        <textarea id="goals" required placeholder="e.g., Find a technical co-founder, validate my idea, raise funding, build an MVP..."></textarea>
+                    </div>
+
+                    <button type="submit" class="form-submit">Create My Profile</button>
+
+                    <p class="form-note">
+                        By creating a profile, you agree to our Terms of Service and Privacy Policy
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Particle Generation
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Navigation Scroll Effect
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            const currentScroll = window.pageYOffset;
+
+            if (currentScroll > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+
+            lastScroll = currentScroll;
+        });
+
+        // Modal Functions
+        function openModal() {
+            document.getElementById('founderModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('founderModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('founderModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Form Submission
+        function submitForm(event) {
+            event.preventDefault();
+            
+            const formData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                startupName: document.getElementById('startupName').value,
+                industry: document.getElementById('industry').value,
+                stage: document.getElementById('stage').value,
+                idea: document.getElementById('startupIdea').value,
+                goals: document.getElementById('goals').value
+            };
+
+            // Simulate form submission
+            const submitButton = event.target.querySelector('.form-submit');
+            const originalText = submitButton.textContent;
+            submitButton.innerHTML = '<span class="loading"></span> Creating Profile...';
+            submitButton.disabled = true;
+
+            setTimeout(() => {
+                alert(`Welcome aboard, ${formData.firstName}! 🚀\n\nYour founder profile for "${formData.startupName}" has been created successfully.\n\nCheck your email (${formData.email}) for next steps and exclusive resources to help you launch!`);
+                
+                document.getElementById('founderForm').reset();
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+                closeModal();
+            }, 2000);
+        }
+
+        // Search Handler
+        function handleSearch() {
+            const searchInput = document.getElementById('heroSearchInput');
+            const query = searchInput.value.trim();
+            
+            if (query) {
+                alert(`Searching for: "${query}"\n\nThis would normally take you to search results. For now, let's create your founder profile to get personalized recommendations!`);
+                openModal();
+            }
+        }
+
+        // Handle Enter key in search
+        document.getElementById('heroSearchInput')?.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        // Video Player
+        function playVideo(card) {
+            const video = card.querySelector('video');
+            const overlay = card.querySelector('.video-play-overlay');
+            
+            if (video.paused) {
+                video.play();
+                overlay.style.opacity = '0';
+                video.setAttribute('controls', 'true');
+            } else {
+                video.pause();
+                overlay.style.opacity = '1';
+            }
+        }
+
+        // Smooth Scroll Function
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe elements for animation
+        function initAnimations() {
+            const animatedElements = document.querySelectorAll('.service-card, .video-card, .testimonial-card, .bento-item');
+            animatedElements.forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(30px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        }
+
+        // Stats Counter Animation
+        function animateStats() {
+            const stats = document.querySelectorAll('.stat-number');
+            
+            stats.forEach(stat => {
+                const target = stat.textContent;
+                let current = 0;
+                const increment = parseInt(target.replace(/\D/g, '')) / 50;
+                const suffix = target.replace(/[\d.]/g, '');
+                
+                const updateCount = () => {
+                    current += increment;
+                    if (current < parseInt(target.replace(/\D/g, ''))) {
+                        stat.textContent = Math.floor(current) + suffix;
+                        requestAnimationFrame(updateCount);
+                    } else {
+                        stat.textContent = target;
+                    }
+                };
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            updateCount();
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                
+                observer.observe(stat);
+            });
+        }
+
+        // Service Card Click Analytics (Placeholder)
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const serviceName = this.querySelector('.service-title').textContent;
+                console.log(`Service clicked: ${serviceName}`);
+                // In production, this would track analytics
+            });
+        });
+
+        // Lazy Loading for Videos
+        function setupLazyLoading() {
+            const videos = document.querySelectorAll('video[autoplay]');
+            
+            const videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const video = entry.target;
+                        video.play().catch(err => console.log('Video autoplay prevented:', err));
+                    } else {
+                        entry.target.pause();
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            videos.forEach(video => videoObserver.observe(video));
+        }
+
+        // Add click handlers to trusted logos
+        document.querySelectorAll('.trusted-logo').forEach(logo => {
+            logo.addEventListener('click', function() {
+                console.log(`Trusted company clicked: ${this.textContent}`);
+            });
+        });
+
+        // Add hover effect to hero tags
+        document.querySelectorAll('.hero-tag').forEach(tag => {
+            tag.addEventListener('click', function(e) {
+                e.preventDefault();
+                const category = this.textContent.trim();
+                alert(`Browsing ${category} services...\n\nCreate your profile to see personalized recommendations!`);
+                openModal();
+            });
+        });
+
+        // Form validation enhancements
+        const formInputs = document.querySelectorAll('#founderForm input, #founderForm textarea, #founderForm select');
+        formInputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.value.trim() === '' && this.hasAttribute('required')) {
+                    this.style.borderColor = 'rgba(255, 100, 100, 0.5)';
+                } else {
+                    this.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                }
+            });
+
+            input.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--white)';
+            });
+        });
+
+        // Social icon interactions
+        document.querySelectorAll('.social-icon').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const platform = this.getAttribute('title');
+                console.log(`Social link clicked: ${platform}`);
+                alert(`This would open ScaleVest's ${platform} page.\n\nFollow us to stay updated with the latest startup resources!`);
+            });
+        });
+
+        // Testimonial card hover effects
+        document.querySelectorAll('.testimonial-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Bento item interactions
+        document.querySelectorAll('.bento-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const title = this.querySelector('.bento-title').textContent;
+                console.log(`Feature clicked: ${title}`);
+            });
+        });
+
+        // Dynamic year in footer
+        const updateFooterYear = () => {
+            const yearElements = document.querySelectorAll('.footer-copyright');
+            const currentYear = new Date().getFullYear();
+            yearElements.forEach(el => {
+                el.textContent = el.textContent.replace(/\d{4}/, currentYear);
+            });
+        };
+
+        // Track scroll depth for analytics
+        let maxScroll = 0;
+        window.addEventListener('scroll', () => {
+            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            if (scrollPercent > maxScroll) {
+                maxScroll = scrollPercent;
+                if (maxScroll > 25 && maxScroll < 30) {
+                    console.log('User engaged: 25% scroll depth');
+                } else if (maxScroll > 50 && maxScroll < 55) {
+                    console.log('User engaged: 50% scroll depth');
+                } else if (maxScroll > 75 && maxScroll < 80) {
+                    console.log('User engaged: 75% scroll depth');
+                } else if (maxScroll > 95) {
+                    console.log('User highly engaged: Reached bottom');
+                }
+            }
+        });
+
+        // Initialize everything when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            initAnimations();
+            animateStats();
+            setupLazyLoading();
+            updateFooterYear();
+            
+            console.log('%c🚀 Welcome to ScaleVest!', 'font-size: 20px; color: #fff; background: #000; padding: 10px;');
+            console.log('%cBuilt for founders, by founders.', 'font-size: 14px; color: #999;');
+        });
+
+        // Performance monitoring
+        window.addEventListener('load', function() {
+            const perfData = performance.timing;
+            const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+            console.log(`Page loaded in ${pageLoadTime}ms`);
+        });
+
+        // Error handling for videos
+        document.querySelectorAll('video').forEach(video => {
+            video.addEventListener('error', function() {
+                console.log('Video failed to load:', this.src);
+                const parent = this.parentElement;
+                if (parent.classList.contains('video-thumbnail') || parent.classList.contains('bento-video')) {
+                    parent.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+    <!-- Trusted By Section -->
+    <section class="trusted-section">
+        <div class="trusted-container">
+            <p class="trusted-title">Trusted by Industry Leaders</p>
+            <div class="trusted-logos">
+                <div class="trusted-logo">GOOGLE</div>
+                <div class="trusted-logo">MICROSOFT</div>
+                <div class="trusted-logo">AMAZON</div>
+                <div class="trusted-logo">NETFLIX</div>
+                <div class="trusted-logo">META</div>
+                <div class="trusted-logo">TESLA</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section - Bento Grid -->
+    <section id="features" class="features-section">
+        <div class="section-header">
+            <div class="section-label">Why Choose ScaleVest</div>
+            <h2 class="section-title">Everything You Need to Build & Scale</h2>
+            <p class="section-description">
+                From idea validation to launch and beyond, we provide the tools, talent, and community to make your startup dreams a reality.
+            </p>
+        </div>
+
+        <div class="bento-grid">
+            <div class="bento-item bento-large">
+                <div class="bento-icon">🚀</div>
+                <h3 class="bento-title">Launch Faster with Expert Guidance</h3>
+                <p class="bento-description">
+                    Get personalized mentorship from successful entrepreneurs who've been exactly where you are. Our community of 10,000+ founders shares real experiences, proven strategies, and actionable insights to help you avoid common pitfalls and accelerate your journey from idea to market.
+                </p>
+                <div class="bento-video">
+                    <video autoplay muted loop playsinline>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+
+            <div class="bento-item bento-medium">
+                <div class="bento-icon">💡</div>
+                <h3 class="bento-title">Validate Your Ideas</h3>
+                <p class="bento-description">
+                    Use our AI-powered validation tools to test your concept, analyze market demand, and refine your value proposition before investing time and resources.
+                </p>
+            </div>
+
+            <div class="bento-item bento-small">
+                <div class="bento-icon">👥</div>
+                <h3 class="bento-title">Find Your Co-Founder</h3>
+                <p class="bento-description">
+                    Connect with skilled professionals looking to join innovative startups. Our matching algorithm finds the perfect complement to your skills.
+                </p>
+            </div>
+
+            <div class="bento-item bento-small">
+                <div class="bento-icon">💰</div>
+                <h3 class="bento-title">Access Funding</h3>
+                <p class="bento-description">
+                    Get connected with investors, learn pitch strategies, and access exclusive funding opportunities tailored to your startup stage.
+                </p>
+            </div>
+
+            <div class="bento-item bento-medium">
+                <div class="bento-icon">🎯</div>
+                <h3 class="bento-title">Growth Tools & Analytics</h3>
+                <p class="bento-description">
+                    Track your progress with powerful analytics, automate workflows, and scale efficiently with enterprise-grade tools designed for startups.
+                </p>
+            </div>
+
+            <div class="bento-item bento-large">
+                <div class="bento-icon">🌐</div>
+                <h3 class="bento-title">Global Network & Resources</h3>
+                <p class="bento-description">
+                    Tap into our worldwide network of founders, investors, and industry experts. Access exclusive workshops, networking events, and educational content to continuously level up your entrepreneurial skills.
+                </p>
+                <div class="bento-video">
+                    <video autoplay muted loop playsinline>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section">
+        <div class="section-header">
+            <div class="section-label">Our Services</div>
+            <h2 class="section-title">Find the Perfect Service for Your Startup</h2>
+            <p class="section-description">
+                Browse thousands of services from vetted professionals ready to help you build, launch, and scale your business.
+            </p>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <video autoplay muted loop playsinline>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Development</div>
+                    <h3 class="service-title">Full-Stack Web Application</h3>
+                    <p class="service-description">
+                        Build scalable web applications with modern tech stacks. React, Node.js, MongoDB, and cloud deployment included.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 4.9 (2.4K reviews)
+                        </div>
+                        <div class="service-price">From $2,500</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800" alt="Analytics Dashboard">
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Analytics</div>
+                    <h3 class="service-title">Data Analytics & Strategy</h3>
+                    <p class="service-description">
+                        Transform your data into actionable insights. Custom dashboards, predictive analytics, and growth strategies.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 5.0 (1.8K reviews)
+                        </div>
+                        <div class="service-price">From $1,200</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800" alt="Mobile App">
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Mobile</div>
+                    <h3 class="service-title">iOS & Android App Development</h3>
+                    <p class="service-description">
+                        Native or cross-platform mobile apps built with React Native or Flutter. App Store submission included.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 4.8 (3.2K reviews)
+                        </div>
+                        <div class="service-price">From $3,500</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <video autoplay muted loop playsinline>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Design</div>
+                    <h3 class="service-title">Brand Identity & UI/UX Design</h3>
+                    <p class="service-description">
+                        Complete brand identity packages including logo, color palette, typography, and responsive web design.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 4.9 (2.7K reviews)
+                        </div>
+                        <div class="service-price">From $1,800</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800" alt="Marketing Analytics">
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Marketing</div>
+                    <h3 class="service-title">Growth Marketing Strategy</h3>
+                    <p class="service-description">
+                        Data-driven growth strategies including SEO, content marketing, paid ads, and conversion optimization.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 4.7 (1.9K reviews)
+                        </div>
+                        <div class="service-price">From $1,500</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800" alt="Business Meeting">
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Business</div>
+                    <h3 class="service-title">Startup Business Plan</h3>
+                    <p class="service-description">
+                        Investor-ready business plans with market research, financial projections, and pitch deck creation.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 5.0 (2.1K reviews)
+                        </div>
+                        <div class="service-price">From $900</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800" alt="AI Technology">
+                </div>
+                <div class="service-info">
+                    <div class="service-category">AI & ML</div>
+                    <h3 class="service-title">AI Integration & Automation</h3>
+                    <p class="service-description">
+                        Integrate AI/ML capabilities into your product. Custom models, API integration, and automation workflows.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 4.8 (1.5K reviews)
+                        </div>
+                        <div class="service-price">From $2,200</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <video autoplay muted loop playsinline>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Video</div>
+                    <h3 class="service-title">Product Demo & Explainer Videos</h3>
+                    <p class="service-description">
+                        Professional video production for product launches, explainers, and social media content.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 4.9 (2.3K reviews)
+                        </div>
+                        <div class="service-price">From $1,600</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-card" onclick="openModal()">
+                <div class="service-media">
+                    <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800" alt="Legal Documents">
+                </div>
+                <div class="service-info">
+                    <div class="service-category">Legal</div>
+                    <h3 class="service-title">Startup Legal Services</h3>
+                    <p class="service-description">
+                        Business registration, contracts, terms of service, privacy policies, and IP protection.
+                    </p>
+                    <div class="service-footer">
+                        <div class="service-rating">
+                            ⭐ 5.0 (1.6K reviews)
+                        </div>
+                        <div class="service-price">From $800</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Showcase Section -->
+    <section id="videos" class="video-showcase">
+        <div class="section-header">
+            <div class="section-label">Learn & Grow</div>
+            <h2 class="section-title">Master Startup Success</h2>
+            <p class="section-description">
+                Watch free tutorials, case studies, and expert interviews to level up your entrepreneurial skills.
+            </p>
+        </div>
+
+        <div class="video-grid">
+            <div class="video-card">
+                <div class="video-thumbnail">
+                    <video autoplay muted loop playsinline>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                    </video>
+                </div>
+                <div class="video-content">
+                    <h3 class="video-title">From Idea to MVP in 90 Days</h3>
+                    <p class="video-description">
+                        Learn the exact framework successful founders use to validate ideas and build minimum viable products quickly and efficiently.
+                    </p>
+                    <div class="video-meta">
+                        <span>45 min</span>
+                        <span>248K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card" onclick="playVideo(this)">
+                <div class="video-thumbnail">
+                    <video>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-play-overlay">
+                        <div class="play-button">
+                            <div class="play-icon"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-content">
+                    <h3 class="video-title">Mastering the Investor Pitch</h3>
+                    <p class="video-description">
+                        A comprehensive guide to creating compelling pitch decks and delivering presentations that win funding.
+                    </p>
+                    <div class="video-meta">
+                        <span>38 min</span>
+                        <span>195K views</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="video-card" onclick="playVideo(this)">
+                <div class="video-thumbnail">
+                    <video>
+                        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" type="video/mp4">
+                    </video>
+                    <div class="video-play-overlay">
+                        <div class="play-button">
+                            <div class="play-icon"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-content">
+                    <h3 class="video-title">Scaling from 0 to 100K Users</h3>
+                    <p class="video-description">
+                        Real-world strategies and tactics for acquiring your first 100,000 users and building sustainable growth loops.
+                    </p>
+                    <div class="video-meta">
+                        <span>52 min</span>
+                        <span>312K views</span>
+                    </div>
+                </div>
