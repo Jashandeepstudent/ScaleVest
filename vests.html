@@ -640,7 +640,7 @@
                             <path d="M21 15L16 10L5 21" stroke="#3a86ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         <p>Click to upload transaction proof</p>
-                        <small style="color: #888;">Image or PDF (OPTIONAL)</small>
+                        <small style="color: #888;">Image or PDF</small>
                         <input type="file" id="transactionProof" accept="image/*,.pdf">
                     </div>
                     <div id="transactionProofName" style="margin-top: 10px; color: #10b981;"></div>
@@ -850,12 +850,14 @@ const firebaseConfig = {
   appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
   measurementId: "G-QD3TWBZHR0"
 };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const storage = getStorage(app);
 
         let currentStep = 1;
-        const userId = user.id
+        const userId = localStorage.getItem('userId') || 'user_' + Date.now();
+        localStorage.setItem('userId', userId);
         
         let uploadedFiles = {
             pitchDeck: null,
