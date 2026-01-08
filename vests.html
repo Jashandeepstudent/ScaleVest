@@ -926,7 +926,7 @@ function loadFromLocalStorage() {
             const vestsSnapshot = await get(vestsRef);
             
             // Check if user has founder profile
-            const founderRef = ref(db, `founderProfile/${user.uid}`);
+            const founderRef = ref(db, `founderprofile/${user.uid}`);
             const founderSnapshot = await get(founderRef);
             
             // User is new if they have no vests AND no founder profile
@@ -1058,7 +1058,7 @@ function loadFromLocalStorage() {
         if (!currentUser) return;
         
         // FIXED: Correct case-sensitive paths
-        const founderProfileRef = ref(db, `founderProfile/${currentUser.uid}`);
+        const founderprofileRef = ref(db, `founderprofile/${currentUser.uid}`);
         const startupProfileRef = ref(db, `startupProfile/${currentUser.uid}`);
         const vestsRef = ref(db, `Vests/${currentUser.uid}`);
         
@@ -1067,7 +1067,7 @@ function loadFromLocalStorage() {
         let vestsData = {};
         
         try {
-            const founderSnap = await get(founderProfileRef);
+            const founderSnap = await get(founderprofileRef);
             founderData = founderSnap.val();
             
             // Auto-create founder profile if not exists
@@ -1085,7 +1085,7 @@ function loadFromLocalStorage() {
                     createdAt: new Date().toISOString()
                 };
                 
-                await set(founderProfileRef, founderData);
+                await set(founderprofileRef, founderData);
             }
             
             // Load startup profile
