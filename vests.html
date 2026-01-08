@@ -981,7 +981,7 @@ async function createDashboard() {
     if (!currentUser) return;
     
     // Fetch user data
-    const founderProfileRef = ref(db, `founderProfile/${currentUser.uid}`);
+    const founderProfileRef = ref(db, `founderprofile/${currentUser.uid}`);
     const startupProfileRef = ref(db, `startupprofile/${currentUser.uid}`);
     const vestsRef = ref(db, `Vests/${currentUser.uid}`);
     
