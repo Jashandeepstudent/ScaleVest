@@ -906,6 +906,7 @@
     </footer>
 
 <!-- Firebase v9 Compat -->
+<!-- Firebase v9 Compat -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -926,17 +927,8 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Set persistence to LOCAL (keeps user logged in)
-    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-        .then(() => {
-            console.log("✅ Auth persistence set to LOCAL");
-        })
-        .catch((error) => {
-            console.error("❌ Error setting persistence:", error);
-        });
-
     let currentUser = null;
-    let hasCheckedAuth = false;
+    let dataLoaded = false; // Prevents data from loading multiple times
 
     function generateUserId(username) {
         const hash = username.split('').reduce((acc, char) => {
@@ -953,7 +945,16 @@
     }
 
     async function loadUserData(user) {
+        // Only load data ONCE
+        if (dataLoaded) {
+            console.log("⚠️ Data already loaded, skipping...");
+            return;
+        }
+
         try {
+            console.log("📊 Loading user data...");
+            dataLoaded = true; // Mark as loaded
+
             const founderRef = db.ref(`founderProfile/${user.uid}`);
             const founderSnapshot = await founderRef.once('value');
             
@@ -963,6 +964,7 @@
             const userId = generateUserId(username);
 
             if (!founderSnapshot.exists()) {
+                console.log("📝 Creating new founder profile...");
                 await founderRef.set({
                     founderEmail: email,
                     founderImage: firstLetter,
@@ -978,6 +980,7 @@
                 userId: userId
             };
 
+            // Update UI
             document.getElementById('profileAvatar').textContent = founderData.founderImage;
             document.getElementById('profileIcon').innerHTML = `<div style="font-size: 1.2rem; font-weight: 600;">${founderData.founderImage}</div>`;
             document.getElementById('userName').textContent = founderData.founderUsername;
@@ -1002,46 +1005,40 @@
 
                 await startupRef.update({ startupId: startupId });
             }
+
+            console.log("✅ User data loaded successfully");
         } catch (error) {
             console.error('❌ Error loading data:', error);
+            dataLoaded = false; // Reset on error so it can retry
         }
     }
 
-    // Auth state listener
+    // Auth guard - protects the page but doesn't reload data
     auth.onAuthStateChanged((user) => {
         console.log("🔄 Auth state changed. User:", user ? user.email : "No user");
         
         if (user) {
             currentUser = user;
-            hasCheckedAuth = true;
-            console.log("✅ User authenticated:", user.email);
-            loadUserData(user);
-        } else {
-            if (!hasCheckedAuth) {
-                hasCheckedAuth = true;
-                console.log("⏳ Waiting for Firebase auth to initialize...");
-                
-                setTimeout(() => {
-                    if (!auth.currentUser) {
-                        console.log("❌ No user found after 2 seconds, redirecting to login...");
-                        window.location.href = 'login2.html';
-                    } else {
-                        console.log("✅ User found after waiting:", auth.currentUser.email);
-                    }
-                }, 2000);
-            } else {
-                console.log("🚪 User logged out, redirecting to login...");
-                window.location.href = 'login2.html';
+            console.log("✅ User is authenticated:", user.email);
+            
+            // Load data only if not already loaded
+            if (!dataLoaded) {
+                loadUserData(user);
             }
+        } else {
+            // No user - redirect to login
+            console.log("❌ No user authenticated, redirecting to login...");
+            window.location.href = 'login2.html';
         }
     });
 
     window.logout = async function() {
         try {
             console.log("🔓 Logging out user...");
+            dataLoaded = false; // Reset flag on logout
             await auth.signOut();
             console.log("✅ User signed out successfully");
-            window.location.href = 'login2.html';
+            // onAuthStateChanged will handle redirect
         } catch (error) {
             console.error('❌ Error logging out:', error);
             alert('Error logging out. Please try again.');
