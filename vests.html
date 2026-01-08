@@ -3023,16 +3023,22 @@ function editUsername() {
     }
 }
 function editTitle() {
-const newTitle = prompt('Enter your title:');
-if (newTitle && currentUser) {
-const founderRef = ref(db, founderProfile/${currentUser.uid});
-set(founderRef, { title: newTitle }, { merge: true })
-.then(() => {
-alert('Title updated!');
-createEditProfilePage();
-});
+    const newTitle = prompt('Enter your title:');
+    if (newTitle && currentUser) {
+        // Corrected: Wrapped the path in backticks ``
+        const founderRef = ref(db, `founderProfile/${currentUser.uid}`);
+        
+        set(founderRef, { title: newTitle }, { merge: true })
+            .then(() => {
+                alert('Title updated!');
+                createEditProfilePage();
+            })
+            .catch((error) => {
+                console.error("Update failed:", error);
+            });
+    }
 }
-}function editAbout() {
+function editAbout() {
 const newAbout = prompt('Tell us about yourself:');
 if (newAbout && currentUser) {
 const founderRef = ref(db, founderProfile/${currentUser.uid});
