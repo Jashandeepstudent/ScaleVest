@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Founder Dashboard - ScaleVest</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: #0a0a0a;
+            padding: 1.2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #fff;
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #1a1a1a;
+            min-width: 220px;
+            border-radius: 12px;
+            margin-top: 1rem;
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+
+        .dropdown:hover .dropdown-content,
+        .dropdown-content.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            padding: 1rem 1.5rem;
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .dropdown-item:hover {
+            background: #222;
+            border-left-color: #fff;
+            padding-left: 2rem;
+        }
+
+        .top-nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            border: 1px solid #222;
+        }
+
+        .icon-btn:hover {
+            background: #fff;
+            border-color: #fff;
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .icon-btn:hover svg {
+            stroke: #000;
+        }
+
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #1a1a1a;
+            min-width: 300px;
+            border-radius: 12px;
+            margin-top: 1rem;
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+            border: 1px solid #333;
+            padding: 1rem;
+            animation: fadeIn 0.3s;
+        }
+
+        .profile-dropdown-content.show {
+            display: block;
+        }
+
+        .profile-info {
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+            margin-bottom: 1rem;
+        }
+
+        .profile-username {
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .profile-userid {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .switch-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 0.9rem;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .switch-btn:hover {
+            background: #ddd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-section {
+            padding: 0.5rem 0;
+        }
+
+        .profile-link {
+            padding: 0.9rem 1rem;
+            display: block;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .profile-link:hover {
+            background: #222;
+            padding-left: 1.5rem;
+        }
+
+        /* Main Content */
+        .container {
+            padding: 3rem 3rem;
+            display: flex;
+            gap: 3rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .left-section {
+            width: 380px;
+            flex-shrink: 0;
+        }
+
+        .right-section {
+            flex: 1;
+        }
+
+        .welcome-section {
+            margin-bottom: 3rem;
+        }
+
+        .welcome-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-subtext {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        /* Left Cards Section */
+        .left-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background: #0a0a0a;
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid #222;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #fff 0%, #666 100%);
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            border-color: #444;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #fff;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .card-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-btn {
+            background: transparent;
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 0.9rem 1.5rem;
+            width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .card-btn:hover {
+            background: #fff;
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .startup-logo {
+            width: 90px;
+            height: 90px;
+            border-radius: 16px;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            overflow: hidden;
+            border: 2px solid #333;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .startup-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .availability-indicator {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .card-description {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 1.5rem;
+            line-height: 1.6;
+        }
+
+        /* Banners Section */
+        .banners-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .banner {
+            background: #0a0a0a;
+            border-radius: 16px;
+            padding: 3rem;
+            border: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #fff;
+            transform: scaleY(0);
+            transition: transform 0.4s;
+        }
+
+        .banner:hover::before {
+            transform: scaleY(1);
+        }
+
+        .banner:hover {
+            border-color: #444;
+            transform: translateX(10px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .banner-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .banner-content p {
+            color: #aaa;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .banner-icon {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1a1a1a;
+            border-radius: 20px;
+            border: 2px solid #333;
+            flex-shrink: 0;
+            margin-left: 2rem;
+        }
+
+        .vests-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .vests-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .vest-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            font-size: 0.9rem;
+            background: transparent;
+            border: 1px solid #333;
+        }
+
+        .vest-tab.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        .vest-tab:hover:not(.active) {
+            background: #222;
+            border-color: #444;
+        }
+
+        /* Footer */
+        .footer {
+            background: #0a0a0a;
+            border-top: 1px solid #222;
+            padding: 3rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .footer-logo-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .footer-company {
+            color: #fff;
+            font-size: 0.9rem;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+                         0 0 20px rgba(255, 255, 255, 0.3),
+                         0 0 30px rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-link {
+            color: #888;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            color: #fff;
+        }
+
+        .inbox-card {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .inbox-card::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .inbox-card::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 10px;
+        }
+
+        .inbox-card::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        .inbox-message {
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: #1a1a1a;
+            border-radius: 8px;
+            border-left: 3px solid #fff;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 2rem 1.5rem;
+                gap: 2rem;
+            }
+
+            .left-section {
+                width: 100%;
+            }
+
+            .top-nav {
+                padding: 1rem 1.5rem;
+                flex-wrap: wrap;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .welcome-text {
+                font-size: 1.8rem;
+            }
+
+            .banner {
+                padding: 2rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .banner-icon {
+                margin-left: 0;
+                margin-top: 1.5rem;
+            }
+
+            .banner-content h3 {
+                font-size: 1.4rem;
+            }
+
+            .card {
+                padding: 2rem;
+            }
+
+            .footer {
+                padding: 2rem 1.5rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+
+            .vests-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .vests-tabs {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .top-nav {
+                padding: 0.75rem 1rem;
+            }
+
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            .welcome-text {
+                font-size: 1.5rem;
+            }
+
+            .banner {
+                padding: 1.5rem;
+            }
+
+            .banner-content h3 {
+                font-size: 1.2rem;
+            }
+
+            .banner-content p {
+                font-size: 0.95rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .profile-avatar, .startup-logo, .availability-indicator {
+                width: 70px;
+                height: 70px;
+            }
+
+            .card-title {
+                font-size: 1.1rem;
+            }
+
+            .vest-tab {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .footer {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="logo">ScaleVest</div>
+        <div class="nav-links">
+            <a href="#" class="nav-link">Dashboard</a>
+            <a href="#" class="nav-link">My Startup</a>
+            <a href="#" class="nav-link">Analytics</a>
+            <div class="dropdown">
+                <span class="nav-link" onclick="toggleDropdown()">Scale and Elevate ▾</span>
+                <div class="dropdown-content" id="scaleDropdown">
+                    <a href="#" class="dropdown-item">Founder Emergence</a>
+                    <a href="#" class="dropdown-item">Referrals</a>
+                    <a href="#" class="dropdown-item">Contacts</a>
+                    <a href="#" class="dropdown-item">My Trials</a>
+                </div>
+            </div>
+        </div>
+        <div class="top-nav-right">
+            <div class="icon-btn" title="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </div>
+            <div class="icon-btn" title="Messages">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </div>
+            <div class="profile-dropdown">
+                <div class="icon-btn" onclick="toggleProfileDropdown()" id="profileIcon">
+                    <div style="font-size: 1.2rem; font-weight: 600;">U</div>
+                </div>
+                <div class="profile-dropdown-content" id="profileDropdown">
+                    <div class="profile-info">
+                        <div class="profile-username" id="dropdownUsername">Username</div>
+                        <div class="profile-userid" id="dropdownUserid">User ID</div>
+                    </div>
+                    <button class="switch-btn">Switch to Browse</button>
+                    <div class="profile-section">
+                        <a href="#" class="profile-link">Refer a Friend</a>
+                        <a href="#" class="profile-link">Profile</a>
+                        <a href="#" class="profile-link" onclick="logout()">Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Left Section -->
+        <div class="left-section">
+            <div class="left-cards">
+                <!-- Profile Card -->
+                <div class="card">
+                    <div class="profile-avatar" id="profileAvatar">U</div>
+                    <div class="card-title" id="userName">Username</div>
+                    <div class="card-subtitle" id="userId">User ID: Loading...</div>
+                    <button class="card-btn">View Profile</button>
+                </div>
+
+                <!-- Startup Card -->
+                <div class="card">
+                    <div class="startup-logo" id="startupLogo">
+                        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                    <div class="card-title" id="startupName">My Startup</div>
+                    <div class="card-subtitle" id="startupId">Startup ID: Loading...</div>
+                    <button class="card-btn">View Startup</button>
+                </div>
+
+                <!-- Availability Card -->
+                <div class="card">
+                    <div class="availability-indicator">
+                        <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <div class="card-title">Founder Availability</div>
+                    <button class="card-btn">Set Availability</button>
+                    <p class="card-description">Control when you're available. Your vests won't be visible on days you're unavailable.</p>
+                </div>
+
+                <!-- Inbox Card -->
+                <div class="card inbox-card">
+                    <div class="card-title" style="margin-bottom: 1.5rem;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                            <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                        </svg>
+                        Inbox
+                    </div>
+                    <div class="inbox-message">
+                        <strong>Welcome to ScaleVest!</strong><br>
+                        <small style="color: #888;">Start connecting with investors today.</small>
+                    </div>
+                    <div class="inbox-message">
+                        <strong>Complete your profile</strong><br>
+                        <small style="color: #888;">Add more details to attract investors.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+            <div class="welcome-section">
+                <h1 class="welcome-text">
+                    Welcome, <span id="founderName">Founder</span>!
+                    <svg width="35" height="35" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-left: 0.5rem;">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </h1>
+                <p class="welcome-subtext">Let's make today count and connect with potential investors</p>
+            </div>
+
+            <!-- Banners Section -->
+            <div class="banners-section">
+                <!-- Founder Emergence Banner -->
+                <div class="banner">
+                    <div class="banner-content">
+                        <h3>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            Start Founder Emergence
+                        </h3>
+                        <p>Reach out to more interested investors and expand your network. Launch your Founder Emergence campaign to help get your startup funded faster and connect with the right people.</p>
+                    </div>
+                    <div class="banner-icon">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Auto Replies Banner -->
+                <div class="banner">
+                    <div class="banner-content">
+                        <h3>
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                            Setup Auto Reply for Investors
+                        </h3>
+                        <p>Configure automatic first responses to greet your investors professionally. Make a great first impression and ensure no investor inquiry goes unnoticed with smart auto-replies.</p>
+                    </div>
+                    <div class="banner-icon">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            <path d="M8 10h8"></path>
+                            <path d="M8 14h4"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Active Vests Banner -->
+                <div class="banner">
+                    <div class="banner-content">
+                        <div class="vests-header">
+                            <h3>
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                                Active Vests
+                            </h3>
+                            <div class="vests-tabs">
+                                <div class="vest-tab active">Active (0)</div>
+                                <div class="vest-tab">Draft (0)</div>
+                            </div>
+                        </div>
+                        <p>Manage your active and draft vests to connect with the right investors. Track your outreach campaigns and optimize your investor engagement strategy.</p>
+                    </div>
+                    <div class="banner-icon">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="9" x2="15" y2="9"></line>
+                            <line x1="9" y1="15" x2="15" y2="15"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="footer-logo-text">ScaleVest</div>
+                <div class="footer-company">UnioraX Private Limited</div>
+            </div>
+            <div class="footer-links">
+                <a href="#" class="footer-link">About</a>
+                <a href="#" class="footer-link">Contact</a>
+                <a href="#" class="footer-link">Privacy</a>
+                <a href="#" class="footer-link">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getDatabase, ref, get, set, update } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHHFyH48gWaOCPL4kDSk9P1LspRfwdpRI",
+            authDomain: "scalevest-163a0.firebaseapp.com",
+            databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+            projectId: "scalevest-163a0",
+            storageBucket: "scalevest-163a0.firebasestorage.app",
+            messagingSenderId: "803559950121",
+            appId: "1:803559950121:web:1a1c3f3b3e3f3f3f3f3f3f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        function generateUserId(username) {
+            const hash = username.split('').reduce((acc, char) => {
+                return char.charCodeAt(0) + ((acc << 5) - acc);
+            }, 0);
+            return 'USR-' + Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
+        }
+
+        function generateStartupId(startupName) {
+            const hash = startupName.split('').reduce((acc, char) => {
+                return char.charCodeAt(0) + ((acc << 5) - acc);
+            }, 0);
+            return 'STP-' + Math.abs(hash).toString(16).toUpperCase().substring(0, 8);
+        }
+
+        async function loadUserData(user) {
+            try {
+                const founderRef = ref(db, `founderProfile/${user.uid}`);
+                const founderSnapshot = await get(founderRef);
+                
+                const email = user.email;
+                const firstLetter = email.charAt(0).toUpperCase();
+                const username = email.split('@')[0];
+                const userId = generateUserId(username);
+
+                if (!founderSnapshot.exists()) {
+                    await set(founderRef, {
+                        founderEmail: email,
+                        founderImage: firstLetter,
+                        founderUsername: username,
+                        userId: userId,
+                        createdAt: Date.now()
+                    });
+                }
+
+                const founderData = founderSnapshot.exists() ? founderSnapshot.val() : {
+                    founderImage: firstLetter,
+                    founderUsername: username,
+                    userId: userId
+                };
+
+                document.getElementById('profileAvatar').textContent = founderData.founderImage;
+                document.getElementById('profileIcon').innerHTML = `<div style="font-size: 1.2rem; font-weight: 600;">${founderData.founderImage}</div>`;
+                document.getElementById('userName').textContent = founderData.founderUsername;
+                document.getElementById('userId').textContent = `User ID: ${founderData.userId}`;
+                document.getElementById('founderName').textContent = founderData.founderUsername;
+                document.getElementById('dropdownUsername').textContent = founderData.founderUsername;
+                document.getElementById('dropdownUserid').textContent = founderData.userId;
+
+                const startupRef = ref(db, `startupprofile/${user.uid}`);
+                const startupSnapshot = await get(startupRef);
+
+                if (startupSnapshot.exists()) {
+                    const startupData = startupSnapshot.val();
+                    const startupId = generateStartupId(startupData.startupName);
+                    
+                    document.getElementById('startupName').textContent = startupData.startupName;
+                    document.getElementById('startupId').textContent = `Startup ID: ${startupId}`;
+                    
+                    if (startupData.logo) {
+                        document.getElementById('startupLogo').innerHTML = `<img src="${startupData.logo}" alt="Startup Logo">`;
+                    }
+
+                    await update(startupRef, {
+                        startupId: startupId
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadUserData(user);
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+                window.location.href = 'login2.html';
+            } catch (error) {
+                console.error('Error logging out:', error);
+            }
+        };
+
+        window.toggleDropdown = function() {
+            const dropdown = document.getElementById('scaleDropdown');
+            dropdown.classList.toggle('show');
+        };
+
+        window.toggleProfileDropdown = function() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        };
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown') && !e.target.closest('.profile-dropdown')) {
+                document.getElementById('scaleDropdown').classList.remove('show');
+                document.getElementById('profileDropdown').classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
