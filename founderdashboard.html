@@ -995,19 +995,30 @@
                 console.error('Error loading data:', error);
             }
         }
-// 1. Hide the dashboard body initially (Optional but recommended)
-document.body.style.visibility = 'hidden';
+// Add a flag to check if this is the first time the page is loading
+let isInitialLoad = false;
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // SUCCESS: User is logged in
-        console.log("User verified:", user.uid);
-        document.body.style.visibility = 'visible'; // Show the page
+        // User is authenticated
         loadUserData(user);
+        isInitialLoad = false;
     } else {
-        // FAIL: No session found after Firebase finished checking
-        console.log("No user found, redirecting...");
-        window.location.replace('login2.html'); 
+        // Only redirect if Firebase has finished checking and definitely found no user
+        if (!isInitialLoad) {
+            window.location.href = 'login2.html';
+        } else {
+            // If it's the first check and user is null, 
+            // wait a moment or check if a session exists
+            isInitialLoad = false;
+            
+            // Optional: Small delay to let Firebase finish verification
+            setTimeout(() => {
+                if (!auth.currentUser) {
+                    window.location.href = 'login2.html';
+                }
+            }, 1000); 
+        }
     }
 });
 
