@@ -926,8 +926,17 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
+    // Set persistence to LOCAL (keeps user logged in)
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+        .then(() => {
+            console.log("✅ Auth persistence set to LOCAL");
+        })
+        .catch((error) => {
+            console.error("❌ Error setting persistence:", error);
+        });
+
     let currentUser = null;
-    let isInitialLoad = true;
+    let hasCheckedAuth = false;
 
     function generateUserId(username) {
         const hash = username.split('').reduce((acc, char) => {
@@ -994,29 +1003,34 @@
                 await startupRef.update({ startupId: startupId });
             }
         } catch (error) {
-            console.error('Error loading data:', error);
+            console.error('❌ Error loading data:', error);
         }
     }
 
+    // Auth state listener
     auth.onAuthStateChanged((user) => {
+        console.log("🔄 Auth state changed. User:", user ? user.email : "No user");
+        
         if (user) {
             currentUser = user;
-            isInitialLoad = false;
-            console.log("✅ User verified:", user.uid);
+            hasCheckedAuth = true;
+            console.log("✅ User authenticated:", user.email);
             loadUserData(user);
         } else {
-            if (isInitialLoad) {
-                console.log("⏳ Firebase is still initializing...");
-                isInitialLoad = false;
+            if (!hasCheckedAuth) {
+                hasCheckedAuth = true;
+                console.log("⏳ Waiting for Firebase auth to initialize...");
                 
                 setTimeout(() => {
                     if (!auth.currentUser) {
-                        console.log("❌ No user found after 3 seconds, redirecting to login...");
+                        console.log("❌ No user found after 2 seconds, redirecting to login...");
                         window.location.href = 'login2.html';
+                    } else {
+                        console.log("✅ User found after waiting:", auth.currentUser.email);
                     }
-                }, 3000);
+                }, 2000);
             } else {
-                console.log("🚪 User logged out, redirecting...");
+                console.log("🚪 User logged out, redirecting to login...");
                 window.location.href = 'login2.html';
             }
         }
@@ -1024,6 +1038,7 @@
 
     window.logout = async function() {
         try {
+            console.log("🔓 Logging out user...");
             await auth.signOut();
             console.log("✅ User signed out successfully");
             window.location.href = 'login2.html';
@@ -1034,11 +1049,11 @@
     };
 
     window.toggleDropdown = function() {
-        document.getElementById('scaleDropdown').classList.toggle('show');
+        document.getElementById('scaleDropdown')?.classList.toggle('show');
     };
 
     window.toggleProfileDropdown = function() {
-        document.getElementById('profileDropdown').classList.toggle('show');
+        document.getElementById('profileDropdown')?.classList.toggle('show');
     };
 
     document.addEventListener('click', function(e) {
