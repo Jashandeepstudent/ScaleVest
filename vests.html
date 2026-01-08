@@ -981,7 +981,7 @@ async function createDashboard() {
     if (!currentUser) return;
     
     // Fetch user data
-    const founderprofileRef = ref(db, `founderprofile/${currentUser.uid}`);
+    const founderProfileRef = ref(db, `founderProfile/${currentUser.uid}`);
     const startupProfileRef = ref(db, `startupprofile/${currentUser.uid}`);
     const vestsRef = ref(db, `Vests/${currentUser.uid}`);
     
@@ -990,7 +990,7 @@ async function createDashboard() {
     let vestsData = {};
     
     try {
-        const founderSnap = await get(founderprofileRef);
+        const founderSnap = await get(founderProfileRef);
         founderData = founderSnap.val();
         
         // Auto-create founder profile if not exists
@@ -1008,7 +1008,7 @@ async function createDashboard() {
                 createdAt: new Date().toISOString()
             };
             
-            await set(founderprofileRef, founderData);
+            await set(founderProfileRef, founderData);
         }
         
         const startupSnap = await get(startupProfileRef);
@@ -1237,6 +1237,37 @@ async function createDashboard() {
         .profile-section {
             padding: 0.5rem 0;
         }
+/* ===== SVG ICON FIX (GLOBAL) ===== */
+svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Prevent stroke distortion */
+svg path,
+svg circle,
+svg polyline,
+svg rect,
+svg line {
+    vector-effect: non-scaling-stroke;
+}
+
+/* Banner + Card icons sizing */
+.banner h3 svg,
+.dash-card-title svg,
+.welcome-text svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
+}
+
+/* Right-side big icons */
+.banner-icon svg {
+    width: 56px;
+    height: 56px;
+    opacity: 0.9;
+}
 
         .profile-link {
             padding: 0.9rem 1rem;
@@ -1697,37 +1728,6 @@ max-width: 1100px;
             .card {
                 padding: 1.5rem;
             }
-/* ===== SVG ICON FIX (GLOBAL) ===== */
-svg {
-    display: inline-block;
-    vertical-align: middle;
-    flex-shrink: 0;
-}
-
-/* Prevent stroke distortion */
-svg path,
-svg circle,
-svg polyline,
-svg rect,
-svg line {
-    vector-effect: non-scaling-stroke;
-}
-
-/* Banner + Card icons sizing */
-.banner h3 svg,
-.dash-card-title svg,
-.welcome-text svg {
-    width: 24px;
-    height: 24px;
-    stroke-width: 2;
-}
-
-/* Right-side big icons */
-.banner-icon svg {
-    width: 56px;
-    height: 56px;
-    opacity: 0.9;
-}
 
             .profile-avatar, .startup-logo, .availability-indicator {
                 width: 70px;
