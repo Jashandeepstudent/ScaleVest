@@ -995,33 +995,19 @@
                 console.error('Error loading data:', error);
             }
         }
-// 1. Declare these variables at the top of your script area
-let isInitialLoad = true; 
-let currentUser = null;
+// 1. Hide the dashboard body initially (Optional but recommended)
+document.body.style.visibility = 'hidden';
 
-auth.onAuthStateChanged((user) => {
+onAuthStateChanged(auth, (user) => {
     if (user) {
-        currentUser = user;
-        isInitialLoad = false;
+        // SUCCESS: User is logged in
         console.log("User verified:", user.uid);
-        
-        // 2. CRITICAL: You must call this to actually show the names/IDs on the page
-        loadUserData(user); 
+        document.body.style.visibility = 'visible'; // Show the page
+        loadUserData(user);
     } else {
-        // Only redirect if Firebase has finished its initial check
-        if (!isInitialLoad) {
-            window.location.href = 'login2.html';
-        } else {
-            console.log("Firebase is still initializing...");
-            // After the first check, if user is null, wait a tiny bit 
-            // to be 100% sure before kicking them out
-            setTimeout(() => {
-                if (!auth.currentUser) {
-                    window.location.href = 'login2.html';
-                }
-            }, 1500);
-            isInitialLoad = false;
-        }
+        // FAIL: No session found after Firebase finished checking
+        console.log("No user found, redirecting...");
+        window.location.replace('login2.html'); 
     }
 });
 
