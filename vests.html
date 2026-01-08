@@ -1225,7 +1225,7 @@ let cachedStartupData = null;
     // SECTION 4: UPDATE createDashboard FUNCTION
     // ========================================
     
-   async function createDashboard() {
+  async function createDashboard() {
     if (!currentUser) return;
     
     // Use cached data if available, otherwise fetch
@@ -1240,9 +1240,11 @@ let cachedStartupData = null;
         founderData = founderSnap.val();
         cachedFounderData = founderData;
     }
+    
+    // Handle old profile structure (firstName/lastName) vs new (founderUsername)
     if (founderData && !founderData.founderUsername) {
         founderData.founderUsername = founderData.firstName 
-            ? `${founderData.firstName} ${founderData.lastName || ''}`
+            ? `${founderData.firstName} ${founderData.lastName || ''}`.trim()
             : (founderData.email || 'User').split('@')[0];
         
         founderData.founderImage = founderData.firstName 
@@ -1251,11 +1253,20 @@ let cachedStartupData = null;
         
         console.log('✅ Converted old profile to new format:', founderData);
     }
+    
+    // FIX: Always fetch fresh startup data
     if (!startupData) {
         const startupProfileRef = ref(db, `startupProfile/${currentUser.uid}`);
         const startupSnap = await get(startupProfileRef);
-        startupData = startupSnap.val();
-        cachedStartupData = startupData;
+        if (startupSnap.exists()) {
+            startupData = startupSnap.val();
+            cachedStartupData = startupData;
+            console.log('✅ Fetched startup data:', startupData);
+        } else {
+            console.log('⚠️ No startup profile found in database');
+        }
+    } else {
+        console.log('✅ Using cached startup data:', startupData);
     }
     
     // Always fetch fresh vests data
@@ -1269,6 +1280,7 @@ let cachedStartupData = null;
     
     const draftCount = Object.values(vestsData).filter(v => v.status === 'draft').length;
     const activeCount = Object.values(vestsData).filter(v => v.status === 'live').length;
+  
     
     const dashboardHTML = `
        <style>
