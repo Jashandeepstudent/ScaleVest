@@ -1028,7 +1028,7 @@ function loadFromLocalStorage() {
  let isNewUser = false; 
 let cachedFounderData = null;
 let cachedStartupData = null;
-    onAuthStateChanged(auth, async (user) => {
+   onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
         isInitialLoad = false;
@@ -1044,34 +1044,55 @@ let cachedStartupData = null;
                 get(ref(db, `startupProfile/${user.uid}`))
             ]);
             
-// Auto-create founder profile if not exists
-if (!founderSnapshot.exists()) {
-    const email = user.email || 'user@scalevest.com';
-    const username = email.split('@')[0];
-    const firstLetter = email.charAt(0).toUpperCase();
-    const userId = generateUserId(username);
-    
-    cachedFounderData = {
-        founderUsername: username,
-        founderImage: firstLetter,
-        userId: userId,
-        email: email,
-        title: '',
-        about: '',
-        createdAt: new Date().toISOString()
-    };
-    
-    // Save to Firebase and WAIT for it to complete
-    await set(ref(db, `founderProfile/${user.uid}`), cachedFounderData);
-    console.log('✅ Created new founder profile:', cachedFounderData);
-} else {
-    // Profile exists, just cache it
-    cachedFounderData = founderSnapshot.val();
-    console.log('✅ Loaded existing founder profile:', cachedFounderData);
-}
-
-// Cache startup data
-cachedStartupData = startupSnapshot.val();
+            // Auto-create founder profile if not exists
+            if (!founderSnapshot.exists()) {
+                const email = user.email || 'user@scalevest.com';
+                const username = email.split('@')[0];
+                const firstLetter = email.charAt(0).toUpperCase();
+                const userId = generateUserId(username);
+                
+                cachedFounderData = {
+                    founderUsername: username,
+                    founderImage: firstLetter,
+                    userId: userId,
+                    email: email,
+                    title: '',
+                    about: '',
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Save to Firebase and WAIT for it to complete
+                await set(ref(db, `founderProfile/${user.uid}`), cachedFounderData);
+                console.log('✅ Created new founder profile:', cachedFounderData);
+            } else {
+                // Profile exists, load it
+                cachedFounderData = founderSnapshot.val();
+                
+                // If old profile doesn't have userId, generate and save it
+                if (!cachedFounderData.userId) {
+                    const username = cachedFounderData.founderUsername 
+                        || (cachedFounderData.firstName ? `${cachedFounderData.firstName} ${cachedFounderData.lastName || ''}`.trim() : '')
+                        || cachedFounderData.email?.split('@')[0] 
+                        || 'User';
+                    
+                    cachedFounderData.userId = generateUserId(username);
+                    
+                    // Save updated profile with userId
+                    await set(ref(db, `founderProfile/${user.uid}`), cachedFounderData);
+                    console.log('✅ Generated userId for existing profile:', cachedFounderData.userId);
+                }
+                
+                console.log('✅ Loaded existing founder profile:', cachedFounderData);
+            }
+            
+            // Cache startup data - FIX: Always load from snapshot
+            if (startupSnapshot.exists()) {
+                cachedStartupData = startupSnapshot.val();
+                console.log('✅ Startup data loaded:', cachedStartupData);
+            } else {
+                cachedStartupData = null;
+                console.log('⚠️ No startup data found');
+            }
             
             isNewUser = !vestsSnapshot.exists();
             
