@@ -2960,14 +2960,25 @@ async function createEditProfilePage() {
                 }
             </div>
             
-            <!-- Work Experience -->
-            <divclass="profile-section">
-<div class="section-header">
-<h3>💼 Past Work</h3>
-${!founderData.workExperience ?
-'<button class="add-btn" onclick="addWork()">Add Experience</button>' : ''}
-</div>
-${founderData.workExperience ?                     <div class="entry-item">                         <h4>${founderData.workExperience.title || 'Job Title'}</h4>                         <p><strong>${founderData.workExperience.company || 'Company'}</strong></p>                         <p>${founderData.workExperience.stillWorking ? 'Currently working here' :                             Left: ${founderData.workExperience.endDate || 'N/A'}}</p>                         <button class="edit-btn" onclick="editWork()">                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>                             </svg>                         </button>                     </div>                  : '<div class="empty-state">No work experience added yet</div>'}
+           <div class="profile-section">
+    <div class="section-header">
+        <h3>💼 Past Work</h3>
+        ${!founderData.workExperience ? '<button class="add-btn" onclick="addWork()">Add Experience</button>' : ''}
+    </div>
+
+    ${founderData.workExperience ? `
+        <div class="entry-item">
+            <h4>${founderData.workExperience.title || 'Job Title'}</h4>
+            <p><strong>${founderData.workExperience.company || 'Company'}</strong></p>
+            <p>${founderData.workExperience.stillWorking ? 'Currently working here' : `Left: ${founderData.workExperience.endDate || 'N/A'}`}</p>
+            <button class="edit-btn" onclick="editWork()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </button>
+        </div>` 
+    : '<div class="empty-state">No work experience added yet</div>'}
 </div>
 </div>    <!-- Sidebar -->
     <div class="sidebar">
