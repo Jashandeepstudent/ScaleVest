@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1071,45 +1070,45 @@ firebase.initializeApp(firebaseConfig);
             return isValid;
         }
 
-      async function saveFounderDetails() {
-    if (!validateFounderForm()) return;
+       async function saveFounderDetails() {
+        if (!validateFounderForm()) return;
 
-    const cofounders = {}; 
-    cofoundersData.forEach((cf, idx) => {
-        const name = document.getElementById(`cofounderName${cf.index}`)?.value;
-        const email = document.getElementById(`cofounderEmail${cf.index}`)?.value;
-        const age = document.getElementById(`cofounderAge${cf.index}`)?.value;
-        if (name) cofounders[`founder_${idx}`] = { name, email, age: parseInt(age) };
-    });
+        const cofounders = {}; // RTD works better with objects or indexed lists
+        cofoundersData.forEach((cf, idx) => {
+            const name = document.getElementById(`cofounderName${cf.index}`)?.value;
+            const email = document.getElementById(`cofounderEmail${cf.index}`)?.value;
+            const age = document.getElementById(`cofounderAge${cf.index}`)?.value;
+            if (name) cofounders[`founder_${idx}`] = { name, email, age: parseInt(age) };
+        });
 
-    // These are the NEW fields from the configuration form
-    const founderConfigurationData = {
-        location: document.getElementById('location').value,
-        languages: document.getElementById('languages').value,
-        age: parseInt(document.getElementById('userAge').value),
-        graduation: document.getElementById('graduation').value,
-        awards: document.getElementById('awards').value,
-        experience: document.getElementById('experience').value,
-        cofounders: cofounders,
-        updatedAt: firebase.database.ServerValue.TIMESTAMP // Uses Compat syntax
-    };
+        const founderData = {
+            location: document.getElementById('location').value,
+            languages: document.getElementById('languages').value,
+            age: parseInt(document.getElementById('userAge').value),
+            graduation: document.getElementById('graduation').value,
+            awards: document.getElementById('awards').value,
+            experience: document.getElementById('experience').value,
+            cofounders: cofounders,
+           createdAt: firebase.database.ServerValue.TIMESTAMP
+        };
 
-    try {
-        document.getElementById('loading').style.display = 'block';
-        
-        // FIX: Use .update() instead of .set() to prevent overwriting existing name/email
-        await db.ref('founderProfile/' + currentUser.uid).update(founderConfigurationData);
+        try {
+            document.getElementById('loading').style.display = 'block';
+            
+            // Saving to founderprofile/{uid}
+            await db.ref('founderprofile/' + currentUser.uid).set(founderData);
 
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('founderScreen').classList.remove('active');
-        document.getElementById('startupScreen').classList.add('active');
-        updateStepProgress(2);
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error saving: ' + error.message);
-        document.getElementById('loading').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('founderScreen').classList.remove('active');
+            document.getElementById('startupScreen').classList.add('active');
+            updateStepProgress(2);
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error saving: ' + error.message);
+            document.getElementById('loading').style.display = 'none';
+        }
     }
-}
+
         async function saveStartupProfile() {
         if (!validateStartupForm()) return;
         document.getElementById('loading').style.display = 'block';
@@ -1163,7 +1162,7 @@ firebase.initializeApp(firebaseConfig);
                 completedAt: firebase.database.ServerValue.TIMESTAMP
             };
 
-            await db.ref('startupProfile/' + currentUser.uid).update(businessData);
+            await db.ref('startupprofile/' + currentUser.uid).update(businessData);
 
             document.getElementById('loading').style.display = 'none';
             document.getElementById('businessScreen').classList.remove('active');
