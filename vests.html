@@ -4796,8 +4796,6 @@ async function showEditStartup() {
         }
     }
 
-const filledFields = fields.filter(f => f && f !== '').length;
-const completionPercent = Math.round((filledFields / fields.length) * 100);
     // --- GENERATE TEAM LIST HTML ---
     const teamListHTML = (startupData.team && startupData.team.length > 0) 
         ? startupData.team.map(member => `
@@ -5557,16 +5555,7 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
 
                 </div> 
                 <div class="profile-sidebar">
-                    <div class="progress-card">
-                        <h3 class="section-title">Profile Completion</h3>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${completionPercent}%"></div>
-                        </div>
-                        <div class="progress-text">${completionPercent}%</div>
-                        <p style="color: #888; font-size: 0.9rem; text-align: center; margin-top: 1rem;">
-                            Complete your profile to attract more investors
-                        </p>
-                    </div>
+
                     
                     <div class="quick-links-card">
                         <h3 class="section-title">Quick Actions</h3>
