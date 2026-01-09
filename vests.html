@@ -2623,7 +2623,7 @@ async function showEditProfile() {
             }
             
 .edit-icon-btn {
-    width: 28px;
+    width: 8px;
     height: 28px;
     border-radius: 4px;  
     background: #1a1a1a;
@@ -3069,7 +3069,15 @@ async function showEditProfile() {
                 <div class="profile-main">
                     <!-- Header Card -->
                     <div class="profile-card profile-header-card">
-                        <div class="profile-avatar-large">${founderData.founderImage || 'U'}</div>
+<div style="position: relative;">
+    <div class="profile-avatar-large">${founderData.founderImage || 'U'}</div>
+    <button class="edit-avatar-btn" onclick="editProfileImage()" style="position: absolute; bottom: 0; right: 0; width: 36px; height: 36px; border-radius: 50%; background: #fff; border: 2px solid #0a0a0a; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+    </button>
+</div>
                         <div class="profile-header-info">
                             <div class="profile-name-row">
                                 <span class="profile-name">${founderData.founderUsername || 'Username'}</span>
