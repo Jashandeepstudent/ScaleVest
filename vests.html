@@ -3660,46 +3660,49 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
 </div>
                 
                    
-    <!-- Co-Founders - NOW THIRD -->
-    ${founderData?.coFounders?.length > 0 ? `
+  ${founderData?.coFounders ? (
+        Array.isArray(founderData.coFounders) && founderData.coFounders.length > 0 ? `
+        <div class="profile-card">
+            <h3 class="section-title">Co-Founders</h3>
+            ${founderData.coFounders.map(coFounder => `
+                <div class="cofounder-item">
+                    <div class="cofounder-name">${coFounder.name || 'No name'}</div>
+                    <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
+                </div>
+            `).join('')}
+            <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
+        </div>
+        ` : (Object.keys(founderData.coFounders).length > 0 ? `
+        <div class="profile-card">
+            <h3 class="section-title">Co-Founders</h3>
+            ${Object.entries(founderData.coFounders).map(([id, coFounder]) => `
+                <div class="cofounder-item">
+                    <div class="cofounder-name">${coFounder.name || 'No name'}</div>
+                    <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
+                </div>
+            `).join('')}
+            <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
+        </div>
+        ` : `
+        <div class="profile-card">
+            <h3 class="section-title">Co-Founders</h3>
+            <div class="empty-state" style="padding: 1.5rem;">
+                <p style="color: #666; margin-bottom: 1rem;">No co-founders added</p>
+                <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
+            </div>
+        </div>
+        `)
+    ) : `
     <div class="profile-card">
         <h3 class="section-title">Co-Founders</h3>
-        ${founderData.coFounders.map(coFounder => `
-            <div class="cofounder-item">
-                <div class="cofounder-name">${coFounder.name}</div>
-                <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
-            </div>
-        `).join('')}
-        <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
-    </div>
-    ` : `
-<!-- Co-Founders -->
-${founderData?.coFounders && Object.keys(founderData.coFounders).length > 0 ? `
-<div class="profile-card">
-    <h3 class="section-title">Co-Founders</h3>
-    ${Object.entries(founderData.coFounders).map(([id, coFounder]) => `
-        <div class="cofounder-item">
-            <div class="cofounder-name">${coFounder.name || 'No name'}</div>
-            <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
+        <div class="empty-state" style="padding: 1.5rem;">
+            <p style="color: #666; margin-bottom: 1rem;">No co-founders added</p>
+            <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
         </div>
-    `).join('')}
-    <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
-</div>
-` : `
-<div class="profile-card">
-    <h3 class="section-title">Co-Founders</h3>
-    <div class="empty-state" style="padding: 1.5rem;">
-        <p style="color: #666; margin-bottom: 1rem;">No co-founders added</p>
-        <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
     </div>
-</div>
-`}
-</div>
-            </div>
-        </div>
-    `;
+    `}
+`;
 }
-
 // ============================================
 // EDIT PROFILE FUNCTIONS - ALL WORKING
 // ============================================
