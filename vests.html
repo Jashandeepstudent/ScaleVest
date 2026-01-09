@@ -3585,126 +3585,121 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
                     
                   <!-- Education & Work Experience -->
 <div class="dual-section">
-    <!-- Education -->
-    <div class="profile-card">
-        <h3 class="section-title">Education</h3>
-        ${founderData?.education?.length > 0 ? `
-            ${founderData.education.map(edu => `
-                <div class="experience-item">
-                    <div class="exp-title">${edu.degree}</div>
-                    <div class="exp-subtitle">${edu.school}</div>
-                    <div class="exp-duration">${edu.year}</div>
+                <div class="profile-card">
+                    <h3 class="section-title">Education</h3>
+                    ${founderData?.education?.length > 0 ? `
+                        ${founderData.education.map(edu => `
+                            <div class="experience-item">
+                                <div class="exp-title">${edu.degree}</div>
+                                <div class="exp-subtitle">${edu.school}</div>
+                                <div class="exp-duration">${edu.year}</div>
+                            </div>
+                        `).join('')}
+                        <button class="add-item-btn" onclick="addEducation()">+ Add More</button>
+                    ` : `
+                        <div class="empty-state">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="margin-bottom: 1rem;">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                            </svg>
+                            <p>No education added yet</p>
+                            <button class="add-item-btn" onclick="addEducation()">+ Add Education</button>
+                        </div>
+                    `}
                 </div>
-            `).join('')}
-            <button class="add-item-btn" onclick="addEducation()">+ Add More</button>
-        ` : `
-            <div class="empty-state">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="margin-bottom: 1rem;">
-                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
-                    <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
-                </svg>
-                <p>No education added yet</p>
-                <button class="add-item-btn" onclick="addEducation()">+ Add Education</button>
+                
+                <div class="profile-card">
+                    <h3 class="section-title">Past Work</h3>
+                    ${founderData?.workExperience?.length > 0 ? `
+                        ${founderData.workExperience.map(work => `
+                            <div class="experience-item">
+                                <div class="exp-title">${work.position}</div>
+                                <div class="exp-subtitle">${work.company}</div>
+                                <div class="exp-duration">${work.duration}</div>
+                            </div>
+                        `).join('')}
+                        <button class="add-item-btn" onclick="addWorkExperience()">+ Add More</button>
+                    ` : `
+                        <div class="empty-state">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="margin-bottom: 1rem;">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                            </svg>
+                            <p>No past work yet</p>
+                            <button class="add-item-btn" onclick="addWorkExperience()">+ Add Experience</button>
+                        </div>
+                    `}
+                </div>
+            </div> </div> <div class="profile-sidebar">
+            <div class="quick-links-card">
+                <h3 class="section-title">Quick Links</h3>
+                <button class="quick-link-btn" onclick="window.location.hash='founder_dashboard'">
+                    📊 Dashboard
+                </button>
+                <button class="quick-link-btn" onclick="window.location.hash='vest_step1'">
+                    🚀 Create Vest
+                </button>
+                <button class="quick-link-btn">
+                    💼 My Vests
+                </button>
+                <button class="quick-link-btn">
+                    📈 Analytics
+                </button>
             </div>
-        `}
-    </div>
-    
-    <!-- Work Experience -->
-    <div class="profile-card">
-        <h3 class="section-title">Past Work</h3>
-        ${founderData?.workExperience?.length > 0 ? `
-            ${founderData.workExperience.map(work => `
-                <div class="experience-item">
-                    <div class="exp-title">${work.position}</div>
-                    <div class="exp-subtitle">${work.company}</div>
-                    <div class="exp-duration">${work.duration}</div>
+            
+            <div class="progress-card">
+                <h3 class="section-title">Profile Completion</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${completionPercent}%"></div>
                 </div>
-            `).join('')}
-            <button class="add-item-btn" onclick="addWorkExperience()">+ Add More</button>
-        ` : `
-            <div class="empty-state">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" style="margin-bottom: 1rem;">
-                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-                <p>No past work yet</p>
-                <button class="add-item-btn" onclick="addWorkExperience()">+ Add Experience</button>
+                <div class="progress-text">${completionPercent}%</div>
+                <p style="color: #888; font-size: 0.9rem; text-align: center; margin-top: 1rem;">
+                    Complete your profile to attract more investors
+                </p>
+            </div>                
+                    
+            ${founderData?.coFounders ? (
+                Array.isArray(founderData.coFounders) && founderData.coFounders.length > 0 ? `
+                <div class="profile-card">
+                    <h3 class="section-title">Co-Founders</h3>
+                    ${founderData.coFounders.map(coFounder => `
+                        <div class="cofounder-item">
+                            <div class="cofounder-name">${coFounder.name || 'No name'}</div>
+                            <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
+                        </div>
+                    `).join('')}
+                    <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
+                </div>
+                ` : (Object.keys(founderData.coFounders).length > 0 ? `
+                <div class="profile-card">
+                    <h3 class="section-title">Co-Founders</h3>
+                    ${Object.entries(founderData.coFounders).map(([id, coFounder]) => `
+                        <div class="cofounder-item">
+                            <div class="cofounder-name">${coFounder.name || 'No name'}</div>
+                            <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
+                        </div>
+                    `).join('')}
+                    <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
+                </div>
+                ` : `
+                <div class="profile-card">
+                    <h3 class="section-title">Co-Founders</h3>
+                    <div class="empty-state" style="padding: 1.5rem;">
+                        <p style="color: #666; margin-bottom: 1rem;">No co-founders added</p>
+                        <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
+                    </div>
+                </div>
+                `)
+            ) : `
+            <div class="profile-card">
+                <h3 class="section-title">Co-Founders</h3>
+                <div class="empty-state" style="padding: 1.5rem;">
+                    <p style="color: #666; margin-bottom: 1rem;">No co-founders added</p>
+                    <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
+                </div>
             </div>
-        `}
-    </div>
-</div>
- <div class="profile-sidebar">
-    <!-- 1. Quick Links FIRST -->
-    <div class="quick-links-card">
-        <h3 class="section-title">Quick Links</h3>
-        <button class="quick-link-btn" onclick="window.location.hash='founder_dashboard'">
-            📊 Dashboard
-        </button>
-        <button class="quick-link-btn" onclick="window.location.hash='vest_step1'">
-            🚀 Create Vest
-        </button>
-        <button class="quick-link-btn">
-            💼 My Vests
-        </button>
-        <button class="quick-link-btn">
-            📈 Analytics
-        </button>
-    </div>
-    
-    <!-- 2. Profile Progress SECOND -->
-    <div class="progress-card">
-        <h3 class="section-title">Profile Completion</h3>
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: ${completionPercent}%"></div>
-        </div>
-        <div class="progress-text">${completionPercent}%</div>
-        <p style="color: #888; font-size: 0.9rem; text-align: center; margin-top: 1rem;">
-            Complete your profile to attract more investors
-        </p>
-    </div>               
-                   
-  ${founderData?.coFounders ? (
-        Array.isArray(founderData.coFounders) && founderData.coFounders.length > 0 ? `
-        <div class="profile-card">
-            <h3 class="section-title">Co-Founders</h3>
-            ${founderData.coFounders.map(coFounder => `
-                <div class="cofounder-item">
-                    <div class="cofounder-name">${coFounder.name || 'No name'}</div>
-                    <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
-                </div>
-            `).join('')}
-            <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
-        </div>
-        ` : (Object.keys(founderData.coFounders).length > 0 ? `
-        <div class="profile-card">
-            <h3 class="section-title">Co-Founders</h3>
-            ${Object.entries(founderData.coFounders).map(([id, coFounder]) => `
-                <div class="cofounder-item">
-                    <div class="cofounder-name">${coFounder.name || 'No name'}</div>
-                    <div class="cofounder-desc">${coFounder.description || 'No description'}</div>
-                </div>
-            `).join('')}
-            <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
-        </div>
-        ` : `
-        <div class="profile-card">
-            <h3 class="section-title">Co-Founders</h3>
-            <div class="empty-state" style="padding: 1.5rem;">
-                <p style="color: #666; margin-bottom: 1rem;">No co-founders added</p>
-                <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
-            </div>
-        </div>
-        `)
-    ) : `
-    <div class="profile-card">
-        <h3 class="section-title">Co-Founders</h3>
-        <div class="empty-state" style="padding: 1.5rem;">
-            <p style="color: #666; margin-bottom: 1rem;">No co-founders added</p>
-            <button class="add-item-btn" onclick="addCoFounder()">+ Add Co-Founder</button>
-        </div>
-    </div>
-    `}
-`;
+            `}
+        </div> </div> `;
 }
 // ============================================
 // EDIT PROFILE FUNCTIONS - ALL WORKING
