@@ -928,8 +928,11 @@ function createNavBar() {
                     </svg>
                 </div>
                 <div class="profile-dropdown">
-                    <div class="icon-btn" onclick="toggleDashProfileDropdown()">
-                        <div style="font-size:1.2rem;font-weight:600;">${founderData.founderImage || 'U'}</div>
+<div class="icon-btn" onclick="toggleDashProfileDropdown()">
+    ${founderData?.photoURL 
+        ? `<img src="${founderData.photoURL}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+        : `<div style="font-size:1.2rem;font-weight:600;">${founderData.founderImage || 'U'}</div>`}
+</div>
                     </div>
                     <div class="profile-dropdown-content" id="dashProfileDropdown">
                         <div class="profile-info">
@@ -3482,36 +3485,6 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
     </div>
 </div>
 
-<!-- Sidebar -->
-<div class="profile-sidebar">
-    <!-- Quick Links - NOW AT TOP -->
-    <div class="quick-links-card">
-        <h3 class="section-title">Quick Links</h3>
-        <button class="quick-link-btn" onclick="window.location.hash='founder_dashboard'">
-            📊 Dashboard
-        </button>
-        <button class="quick-link-btn" onclick="window.location.hash='vest_step1'">
-            🚀 Create Vest
-        </button>
-        <button class="quick-link-btn">
-            💼 My Vests
-        </button>
-        <button class="quick-link-btn">
-            📈 Analytics
-        </button>
-    </div>
-    
-    <!-- Profile Progress - NOW SECOND -->
-    <div class="progress-card">
-        <h3 class="section-title">Profile Completion</h3>
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: ${completionPercent}%"></div>
-        </div>
-        <div class="progress-text">${completionPercent}%</div>
-        <p style="color: #888; font-size: 0.9rem; text-align: center; margin-top: 1rem;">
-            Complete your profile to attract more investors
-        </p>
-    </div>
 
 
 <!-- Location & Language Info Cards -->
@@ -3658,7 +3631,35 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
         `}
     </div>
 </div>
-                
+ <div class="profile-sidebar">
+    <!-- 1. Quick Links FIRST -->
+    <div class="quick-links-card">
+        <h3 class="section-title">Quick Links</h3>
+        <button class="quick-link-btn" onclick="window.location.hash='founder_dashboard'">
+            📊 Dashboard
+        </button>
+        <button class="quick-link-btn" onclick="window.location.hash='vest_step1'">
+            🚀 Create Vest
+        </button>
+        <button class="quick-link-btn">
+            💼 My Vests
+        </button>
+        <button class="quick-link-btn">
+            📈 Analytics
+        </button>
+    </div>
+    
+    <!-- 2. Profile Progress SECOND -->
+    <div class="progress-card">
+        <h3 class="section-title">Profile Completion</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: ${completionPercent}%"></div>
+        </div>
+        <div class="progress-text">${completionPercent}%</div>
+        <p style="color: #888; font-size: 0.9rem; text-align: center; margin-top: 1rem;">
+            Complete your profile to attract more investors
+        </p>
+    </div>               
                    
   ${founderData?.coFounders ? (
         Array.isArray(founderData.coFounders) && founderData.coFounders.length > 0 ? `
