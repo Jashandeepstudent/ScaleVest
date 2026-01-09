@@ -3887,29 +3887,23 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
 // Ensure this variable exists globally
 let currentEditAction = null;
 
-function createEditModal(title, currentValue, placeholder, isTextarea = false) {
-    const modal = document.createElement('div');
-    modal.className = 'edit-modal show'; // Add 'show' class immediately
-    modal.innerHTML = `
+function createEditModal(title, val, ph, isArea, callback) {
+    currentEditAction = callback; 
+    const m = document.createElement('div');
+    m.className = 'edit-modal show'; // Triggers CSS transition
+    m.innerHTML = `
         <div class="edit-modal-content">
-            <div class="edit-modal-header">
-                <h3>${title}</h3>
-                <button class="modal-close" onclick="closeEditModal()">×</button>
-            </div>
+            <div class="edit-modal-header"><h3>${title}</h3><button class="modal-close" onclick="closeEditModal()">×</button></div>
             <div class="edit-modal-body">
-                ${isTextarea 
-                    ? `<textarea id="editInput" placeholder="${placeholder}" rows="6">${currentValue}</textarea>`
-                    : `<input type="text" id="editInput" placeholder="${placeholder}" value="${currentValue}">`
-                }
+                ${isArea ? `<textarea id="editInput" rows="5" placeholder="${ph}">${val}</textarea>` : `<input type="text" id="editInput" value="${val}" placeholder="${ph}">`}
             </div>
             <div class="edit-modal-footer">
                 <button class="modal-btn-cancel" onclick="closeEditModal()">Cancel</button>
-                <button class="modal-btn-save" onclick="saveEditModal()">Save Changes</button>
+                <button class="modal-btn-save" onclick="saveEditModal()">Save</button>
             </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    document.getElementById('editInput').focus();
+        </div>`;
+    document.body.appendChild(m);
+    setTimeout(() => document.getElementById('editInput').focus(), 100);
 }
 
 window.closeEditModal = function() {
