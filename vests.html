@@ -3716,11 +3716,16 @@ window.editProfilePhoto = async function() {
     
     input.click();
 };
-function generateStartupId() {
-    // Generate PERMANENT startupId that NEVER changes
-    const timestamp = Date.now().toString().slice(-5);
-    const randomNum = Math.floor(Math.random() * 9000 + 1000);
-    return `STARTUP_${timestamp}${randomNum}`;
+function generateStartupId(startupName) {
+    if (!startupName) return 'STARTUP_' + Math.floor(Math.random() * 9000 + 1000);
+    
+    // Clean startup name - take first 6 chars, convert to uppercase
+    const cleanName = startupName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
+    
+    // Generate unique number (timestamp-based + random)
+    const uniqueNum = Date.now().toString().slice(-3) + Math.floor(Math.random() * 90 + 10);
+    
+    return `${cleanName}_${uniqueNum}`;
 }
 // Edit Location
 window.editLocation = function() {
@@ -4052,17 +4057,7 @@ window.saveWorkExperience = async function() {
         alert('❌ Failed to add work experience');
     }
 };
-function generateStartupId(startupName) {
-    if (!startupName) return 'STARTUP_' + Math.floor(Math.random() * 9000 + 1000);
-    
-    // Clean startup name - take first 6 chars, convert to uppercase
-    const cleanName = startupName.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6);
-    
-    // Generate unique number (timestamp-based + random)
-    const uniqueNum = Date.now().toString().slice(-3) + Math.floor(Math.random() * 90 + 10);
-    
-    return `${cleanName}_${uniqueNum}`;
-}
+
 
 window.filterVests = function(type) {
     alert(`Filtering ${type} vests - feature coming soon!`);
