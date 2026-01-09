@@ -5655,8 +5655,14 @@ button.upload-btn,
                         </div>
                     </div>
 
-                    <div class="profile-card">
-                        <h3 class="section-title">Interest Tracking Photos (Optional)</h3>
+                  <div class="profile-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 class="section-title" style="margin-bottom: 0;">Interest Tracking Photos (Optional)</h3>
+                            <button class="upload-btn" onclick="uploadTractionPhotos()" style="margin: 0; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                                ${startupData.tractionPhotos?.length > 0 ? 'Add More Photos' : 'Upload Photos'}
+                            </button>
+                        </div>
+
                         <p style="color: #888; margin-bottom: 1.5rem; font-size: 0.95rem;">
                             Upload screenshots of transactions, user growth, or any proof of traction
                         </p>
@@ -5677,10 +5683,6 @@ button.upload-btn,
                                 </svg>
                                 <p style="color: #666;">No traction photos uploaded</p>
                                </div>`}
-                        
-                        <button class="upload-btn" onclick="uploadTractionPhotos()">
-                            ${startupData.tractionPhotos?.length > 0 ? 'Add More Photos' : 'Upload Photos'}
-                        </button>
                     </div>
 
                     <div class="profile-card">
