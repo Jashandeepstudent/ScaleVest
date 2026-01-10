@@ -3217,11 +3217,10 @@ window.selectVestForApp = function(id, hook) {
 
 window.submitApplication = async function(appId) {
     const vestId = document.getElementById('selectedVestId').value;
-    const submitBtn = event.currentTarget; // The button clicked
+    const submitBtn = event.currentTarget; 
 
     if(!vestId) return alert("Please attach a vest before completing!");
 
-    // 1. Visual Feedback (Prevent double-clicks)
     submitBtn.disabled = true;
     submitBtn.innerText = "Processing...";
 
@@ -3237,16 +3236,21 @@ window.submitApplication = async function(appId) {
     };
 
     try {
-        // 2. Save to Firebase
+        // 1. Save to Firebase
         await set(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
         
-        // 3. CLEAR THE FORM IMMEDIATELY
-        // This ensures the old form is gone before the new list renders
+        // 2. Clear the screen immediately
         const container = document.getElementById('dashboardContainer');
-        container.innerHTML = ''; 
+        container.innerHTML = '<div style="text-align:center; padding:50px;"><div class="spinner"></div><p>Redirecting...</p></div>';
 
-        // 4. REDIRECT
+        // 3. FORCE THE HASH UPDATE
         window.location.hash = 'applications';
+
+        // 4. CRITICAL FIX: Manually trigger the list view 
+        // This ensures that even if the 'hashchange' listener is slow, the UI loads.
+        if (window.showApplicationsList) {
+            await window.showApplicationsList();
+        }
         
         // 5. SUCCESS TOAST
         if (window.showSuccessToast) {
