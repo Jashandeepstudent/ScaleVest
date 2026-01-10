@@ -148,7 +148,35 @@
             font-weight: 600;
             color: #fff;
         }
+.back-to-dash {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #888;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #222;
+    transition: all 0.3s ease;
+}
 
+.back-to-dash svg {
+    transition: transform 0.3s ease;
+}
+
+.back-to-dash:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #444;
+}
+
+.back-to-dash:hover svg {
+    transform: translateX(-5px); /* Smooth slide effect */
+    stroke: #ff006e; /* ScaleVest Pink accent on hover */
+}
         input, textarea, select {
             width: 100%;
             padding: 12px 16px;
@@ -1747,6 +1775,17 @@ async function showFounderEmergence() {
     document.querySelector('.vest-container').style.display = 'none';
 
     container.innerHTML = `
+     
+        <div class="emergence-page">
+            <div style="text-align: left; margin-bottom: 20px;">
+                <a href="#founder_dashboard" class="back-to-dash">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Back to Dashboard
+                </a>
+            </div>
 
         <div class="emergence-page">
             <div class="emergence-header">
@@ -1771,7 +1810,7 @@ async function showFounderEmergence() {
                     <div class="price-section">
                         <div class="price-row">
                             <span class="old-price">₹300</span>
-                            <span class="discount-pill">ScaleVest Launch Promo</span>
+                            <span class="discount-pill">ScaleVest Launch OFF</span>
                         </div>
                         <span class="new-price">₹150</span>
                     </div>
@@ -1791,7 +1830,7 @@ async function showFounderEmergence() {
                     <div class="price-section">
                         <div class="price-row">
                             <span class="old-price">₹400</span>
-                            <span class="discount-pill">ScaleVest Launch Promo</span>
+                            <span class="discount-pill">ScaleVest Launch OFF</span>
                         </div>
                         <span class="new-price">₹200</span>
                     </div>
@@ -1811,7 +1850,7 @@ async function showFounderEmergence() {
                     <div class="price-section">
                         <div class="price-row">
                             <span class="old-price">₹699</span>
-                            <span class="discount-pill">ScaleVest Launch Promo</span>
+                            <span class="discount-pill">ScaleVest Launch OFF</span>
                         </div>
                         <span class="new-price">₹350</span>
                     </div>
