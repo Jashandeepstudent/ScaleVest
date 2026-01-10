@@ -2657,7 +2657,7 @@ max-width: 1100px;
 
     <div class="card-title">Founder Availability</div>
 
-    <button class="card-btn">Set Availability</button>
+   <button class="card-btn" id="openModal">Set Availability</button>
 
     <p class="card-description">
         Control when you're available.
@@ -4191,7 +4191,35 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
 // ============================================
 // EDIT PROFILE FUNCTIONS - ALL WORKING
 // ============================================
+const modal = document.getElementById("availabilityModal");
+const btn = document.getElementById("openModal");
+const closeBtn = document.querySelector(".close-btn");
 
+// 1. Open popup when clicking "Set Availability"
+btn.onclick = function() {
+  modal.style.display = "block";
+}
+
+// 2. Close popup when clicking (X)
+closeBtn.onclick = function() {
+  modal.style.display = "none";
+}
+
+// 3. Close popup if clicking outside the box
+window.onclick = function(event) {
+  if (event.target == modal) {
+    modal.style.display = "none";
+  }
+}
+
+// 4. Handle Save
+document.getElementById("saveAvailability").onclick = function() {
+  const date = document.getElementById("unavailableDate").value;
+  const status = document.getElementById("status").value;
+  
+  alert("Availability Updated: " + status + " | Date: " + date);
+  modal.style.display = "none";
+}
 // Ensure this variable exists globally
 let currentEditAction = null;
 
@@ -6362,5 +6390,28 @@ window.closeFullScreenPDF = function() {
 </script>
 <!-- FOUNDER DASHBOARD -->
 <div id="dashboardContainer" style="display: none;"></div>
+<div id="availabilityModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3>Set Your Availability</h3>
+    
+    <div class="form-group">
+      <label>On which date are you unavailable?</label>
+      <input type="date" id="unavailableDate">
+    </div>
+
+    <div class="form-group">
+      <label>Current Status:</label>
+      <select id="status">
+        <option value="active">Active</option>
+        <option value="busy">Busy</option>
+      </select>
+    </div>
+
+    <button id="saveAvailability" class="card-btn">Save Status</button>
+  </div>
+</div>
+
+
 </body>
 </html>
