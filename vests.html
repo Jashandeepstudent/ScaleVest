@@ -101,7 +101,44 @@
     background: #000;
     border-radius: 1px;
 }
+.app-screenshot-preview {
+    height: 160px;
+    background: #111;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 20px;
+    position: relative;
+    border-bottom: 1px solid #222;
+}
 
+.mini-white-sheet {
+    width: 110px;
+    height: 140px;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.mini-title-box {
+    font-size: 7px;
+    font-weight: 900;
+    color: #000;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.status-pill-overlay {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+.pill-draft { background: #ffb703; color: #000; }
+.pill-completed { background: #10b981; color: #fff; }
 /* Status Overlay */
 .status-pill-overlay {
     position: absolute;
@@ -2993,13 +3030,12 @@ function getShopHeaderHTML(tokenCount, activeTab) {
 
 
 
-// --- 1. LIST VIEW: SHOW ALL APPLICATIONS ---
 window.showApplicationsList = async function() {
     const container = document.getElementById('dashboardContainer');
     document.querySelector('.vest-container').style.display = 'none';
     container.style.display = 'block';
     
-    // Force black background for dashboard list
+    // Reset background to dark dashboard theme
     document.body.style.background = "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)";
 
     const appRef = ref(db, `Applications/${currentUser.uid}`);
@@ -3022,13 +3058,15 @@ window.showApplicationsList = async function() {
                 ${Object.entries(apps).length > 0 ? 
                     Object.entries(apps).map(([id, app]) => {
                         
-                        // --- CONSTANTS MOVED INSIDE THE LOOP (FIXES THE ERROR) ---
+                        // --- ALL LOGIC MUST STAY INSIDE THIS BLOCK ---
                         const isDraft = app.status === 'incomplete';
                         
+                        // Define click behavior based on status
                         const clickAction = isDraft 
                             ? `window.renderApplicationForm('${id}', '${app.appName || "Draft"}')` 
                             : `window.location.hash='view_application_${id}'`;
 
+                        // Define the status badge
                         const statusPill = isDraft
                             ? `<div class="status-pill-overlay pill-draft">DRAFT</div>`
                             : `<div class="status-pill-overlay pill-completed">COMPLETED</div>`;
@@ -3038,7 +3076,9 @@ window.showApplicationsList = async function() {
                             <div class="app-screenshot-preview">
                                 <div class="mini-white-sheet">
                                     <div class="mini-line header"></div>
-                                    <div class="mini-title-box">${app.appHook ? app.appHook.substring(0, 25) + '...' : 'UNTITLED DOCUMENT'}</div>
+                                    <div class="mini-title-box">
+                                        ${app.appHook ? app.appHook.substring(0, 25) + '...' : 'UNTITLED DOCUMENT'}
+                                    </div>
                                     <div class="mini-body-content">
                                         <div class="mini-line"></div>
                                         <div class="mini-line"></div>
@@ -3060,7 +3100,7 @@ window.showApplicationsList = async function() {
                         `;
                     }).join('') : `
                     <div class="empty-state" style="grid-column: 1/-1; padding:100px; text-align:center;">
-                        <p style="color:#666;">No applications created. Click below to start.</p>
+                        <p style="color:#666;">No applications created yet. Click below to start.</p>
                     </div>
                 `}
             </div>
@@ -3070,7 +3110,6 @@ window.showApplicationsList = async function() {
         </div>
     `;
 };
-
 // --- 2. INITIALIZATION: NAME THE APPLICATION ---
 window.promptNewApplication = function() {
     const modal = document.createElement('div');
