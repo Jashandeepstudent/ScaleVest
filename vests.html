@@ -3081,11 +3081,11 @@ window.selectVestForApp = function(id, hook) {
     document.getElementById('tempPicker').remove();
 };
 
-// --- 5. SUBMISSION: SAVE DATA TO FIREBASE ---
 window.submitApplication = async function(appId) {
     const vestId = document.getElementById('selectedVestId').value;
-    if(!vestId) return alert("Please attach a vest!");
+    if(!vestId) return alert("Please attach a vest before completing!");
 
+    // Gather the data
     const data = {
         appHook: document.getElementById('appHook').value,
         startingContent: document.getElementById('appStarting').value,
@@ -3093,23 +3093,27 @@ window.submitApplication = async function(appId) {
         endingContent: document.getElementById('appEnding').value,
         founderName: document.getElementById('appFounderName').value,
         vestId: vestId,
-        timestamp: Date.now()
+        status: 'ready',
+        updatedAt: Date.now()
     };
 
-    // Processing UI
-    document.getElementById('dashboardContainer').innerHTML = `
-        <div class="loading-screen" style="flex-direction:column;">
-            <div class="spinner"></div>
-            <h2 style="margin-top:20px;">Generating Professional UI...</h2>
-        </div>`;
-
-    await set(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
-    
-    setTimeout(() => {
+    try {
+        // 1. Perform the save in the background
+        await set(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
+        
+        // 2. IMMEDIATE REDIRECT (No loading screen)
         window.location.hash = 'applications';
-    }, 1500);
+        
+        // 3. Trigger the success popup on the list page
+        if (window.showSuccessToast) {
+            window.showSuccessToast("Application Processed Successfully!");
+        }
+        
+    } catch (error) {
+        console.error("Save Error:", error);
+        alert("Failed to save application. Please check your connection.");
+    }
 };
-
 // --- 6. REVIEW: THE "MEGA OP" FINAL DOCUMENT PAGE ---
 window.renderFullApplicationPage = async function(appId) {
     const container = document.getElementById('dashboardContainer');
