@@ -205,7 +205,59 @@
     line-height: 1.5;
     margin-bottom: 30px;
 }
+/* --- DOCUMENT STYLE APPLICATION CARDS --- */
+.doc-card-header {
+    height: 120px;
+    background: #fff; /* White header for contrast on black cards */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
 
+.doc-sv-logo {
+    font-weight: 900;
+    font-size: 1.8rem;
+    color: #000;
+    border: 3px solid #000;
+    padding: 0 10px;
+    letter-spacing: -1px;
+}
+
+.doc-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #000;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 900;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+}
+
+.doc-id-tag {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: monospace;
+    opacity: 0.5;
+}
+
+/* Hover effect for document card */
+.vest-gig-card:hover .doc-card-header {
+    background: #f0f0f0;
+}
+
+.vest-gig-card:hover .doc-sv-logo {
+    transform: scale(1.1);
+    transition: 0.3s;
+}
 .input-wrapper-op label {
     font-size: 0.7rem;
     font-weight: 900;
@@ -2840,14 +2892,16 @@ window.showApplicationsList = async function() {
     const container = document.getElementById('dashboardContainer');
     document.querySelector('.vest-container').style.display = 'none';
     container.style.display = 'block';
+    
+    // Force black background for dashboard list
+    document.body.style.background = "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)";
 
-    // Fetch existing applications
     const appRef = ref(db, `Applications/${currentUser.uid}`);
     const snapshot = await get(appRef);
     const apps = snapshot.val() || {};
 
     container.innerHTML = `
-       
+        ${createNavBar()}
         <div class="manage-vests-page">
             <div class="header-row">
                 <a href="#founder_dashboard" class="back-to-dash">
@@ -2862,32 +2916,37 @@ window.showApplicationsList = async function() {
                 ${Object.keys(apps).length > 0 ? 
                     Object.entries(apps).map(([id, app]) => `
                         <div class="vest-gig-card" onclick="window.location.hash='view_application_${id}'">
-                            <div class="vest-thumb-wrapper" style="background:#fff; display:flex; align-items:center; justify-content:center;">
-                                <img src="logo.png" style="width:50px; filter:grayscale(1); opacity:0.2;">
-                                <div class="status-badge status-active">Ready to Review</div>
+                            <div class="doc-card-header">
+                                <div class="doc-badge">OFFICIAL</div>
+                                <div class="doc-sv-logo">SV</div>
+                                <div class="doc-id-tag">#${id.substring(0,6).toUpperCase()}</div>
                             </div>
+
                             <div class="vest-card-content">
-                                <h3 class="vest-hook-text">${app.appHook || 'Untitled Application'}</h3>
-                                <p class="vest-desc-text">Founder: ${app.founderName}</p>
-                                <div class="vest-card-footer">
-                                    <span class="startup-label">ID: ${id.substring(0,8).toUpperCase()}</span>
-                                   
+                                <h3 class="vest-hook-text">${app.appHook || 'Funding Application'}</h3>
+                                <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+                                     <div style="width:6px; height:6px; border-radius:50%; background:#10b981;"></div>
+                                     <p class="vest-desc-text" style="margin:0; font-weight:600; color:#fff;">Status: Review Ready</p>
+                                </div>
+                                
+                                <div class="vest-card-footer" style="margin-top:20px; border-top:1px solid #222; padding-top:15px;">
+                                    <span class="startup-label">${app.founderName || 'Founder'}</span>
+                                    <span class="equity-tag" style="color:#888; font-family:monospace;">DOC_PROCESSED</span>
                                 </div>
                             </div>
                         </div>
                     `).join('') : `
                     <div class="empty-state" style="grid-column: 1/-1; padding:100px; text-align:center;">
-                        <p style="color:#666; font-size:1.1rem;">No applications found. Create one to pitch to investors.</p>
+                        <p style="color:#666; font-size:1.1rem;">No applications created. Click below to start.</p>
                     </div>
                 `}
             </div>
             <div style="text-align:center; margin-top:40px;">
-                <button class="buy-btn-premium" style="width:auto; padding: 15px 40px;" onclick="window.promptNewApplication()">+ Create Funding Application</button>
+                <button class="buy-btn-premium" style="width:auto; padding: 12px 40px;" onclick="window.promptNewApplication()">+ Create New Application</button>
             </div>
         </div>
     `;
 };
-
 // --- 2. INITIALIZATION: NAME THE APPLICATION ---
 window.promptNewApplication = function() {
     const modal = document.createElement('div');
