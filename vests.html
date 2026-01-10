@@ -417,7 +417,35 @@
     justify-content: center;
     margin-bottom: 20px;
 }
+.success-toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #10b981; /* ScaleVest Green */
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-weight: 700;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 10000000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideInUp 0.4s ease forwards;
+}
 
+@keyframes slideInUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.toast-fade-out {
+    animation: fadeOut 0.5s ease forwards;
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateY(20px); }
+}
 /* Chest Image Styling - FIXED FOR WHITE COLOR */
 .chest-img {
     height: 100%;
@@ -2879,50 +2907,57 @@ window.confirmApplicationName = async function() {
         return;
     }
 
-    // 1. Remove the popup
+    // Close the popup immediately
     const modal = document.getElementById('appNameModal');
     if (modal) modal.remove();
 
-    // 2. Show Loading Screen
-    const container = document.getElementById('dashboardContainer');
-    container.innerHTML = `
-        <div class="loading-screen" style="background:#fff; color:#000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <div class="spinner" style="border-top-color:#000;"></div>
-            <p style="color:#000; letter-spacing:4px; font-weight:900; margin-top:30px;">AUTHENTICATING DOCUMENT</p>
-        </div>
-    `;
-
     try {
-        // 3. Database Operations
         const profileRef = ref(db, `founderProfile/${currentUser.uid}`);
         const snap = await get(profileRef);
-        
-        const currentCount = (snap.exists() && snap.val().applicationsCount) 
-            ? parseInt(snap.val().applicationsCount) 
-            : 0;
+        const currentCount = (snap.exists() && snap.val().applicationsCount) ? parseInt(snap.val().applicationsCount) : 0;
 
         const newAppRef = push(ref(db, `Applications/${currentUser.uid}`));
         const appId = newAppRef.key;
 
-        // Update count and create the new app node simultaneously
+        // Save to Database
         await update(ref(db), {
             [`founderProfile/${currentUser.uid}/applicationsCount`]: currentCount + 1,
             [`Applications/${currentUser.uid}/${appId}/appName`]: appName,
             [`Applications/${currentUser.uid}/${appId}/status`]: 'draft'
         });
         
-        // 4. Success: Move to the Form
+        // IMMEDIATE REDIRECT - No loading screen
+        window.location.hash = 'applications';
+        
+        // Show success toast after redirect
         setTimeout(() => {
-            window.renderApplicationForm(appId, appName);
-        }, 800);
+            showSuccessToast("Application Created Successfully!");
+        }, 500);
         
     } catch (error) {
-        console.error("STUCK ERROR:", error);
-        // 5. Emergency fallback if database fails
-        alert("Failed to initialize: " + error.message);
-        window.showApplicationsList(); // Send them back to the list
+        console.error("Database Error:", error);
+        alert("Failed to create application. Check your connection.");
+        window.location.hash = 'applications';
     }
 };
+window.showSuccessToast = function(message) {
+    const toast = document.createElement('div');
+    toast.className = 'success-toast';
+    toast.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        ${message}
+    `;
+    document.body.appendChild(toast);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.add('toast-fade-out');
+        setTimeout(() => toast.remove(), 500);
+    }, 3000);
+};
+
 // --- 3. INPUT FORM: THE WHITE PAPER INPUT INTERFACE ---
 window.renderApplicationForm = async function(appId, appName) {
     const container = document.getElementById('dashboardContainer');
