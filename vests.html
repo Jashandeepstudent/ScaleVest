@@ -3030,37 +3030,49 @@ window.showApplicationsList = async function() {
         </div>
     `;
 };
-window.saveApplication = async function(appId, isDraft) {
-    const vestId = document.getElementById('selectedVestId').value;
+window.promptNewApplication = function() {
+    // Create the modal overlay
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal show';
+    modal.id = 'appNameModal';
+    modal.style.background = "rgba(0,0,0,0.85)"; // Deep dark backdrop
     
-    // Validate only if completing
-    if(!isDraft && !vestId) return alert("Please attach a vest before completing.");
+    modal.innerHTML = `
+        <div class="special-app-popup">
+            <button class="close-x" onclick="this.closest('.edit-modal').remove()">×</button>
+            
+            <div class="app-popup-header">
+                <div class="logo-mini">SV</div>
+            </div>
+            
+            <div class="app-popup-content">
+                <h2>Application Identity</h2>
+                <p>Assign a professional title to this funding request. This title will be the primary reference for investors.</p>
+                
+                <div class="input-wrapper-op">
+                    <label>APPLICATION NAME</label>
+                    <input type="text" id="newAppNameInput" placeholder="e.g. Series A Equity Proposal - 2026">
+                </div>
+            </div>
 
-    const data = {
-        appHook: document.getElementById('appHook').value,
-        startingContent: document.getElementById('appStarting').value,
-        mainContent: document.getElementById('appMain').value,
-        endingContent: document.getElementById('appEnding').value,
-        founderName: document.getElementById('appFounderName').value,
-        vestId: vestId || '',
-        status: isDraft ? 'incomplete' : 'completed', // Status Logic
-        updatedAt: Date.now()
-    };
-
-    try {
-        await set(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
-        
-        window.location.hash = 'applications';
-        
-        setTimeout(() => {
-            window.showSuccessToast(isDraft ? "Draft Saved Successfully" : "Application Completed!");
-        }, 500);
-        
-    } catch (error) {
-        console.error("Save Error:", error);
-        alert("Critical Save Error. Check rules.");
-    }
+            <div class="app-popup-footer">
+                <button class="btn-cancel-op" onclick="this.closest('.edit-modal').remove()">Discard</button>
+                <button class="btn-confirm-op" onclick="window.confirmApplicationName()">
+                    <span>Initialize Document</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Auto-focus the input for speed
+    setTimeout(() => document.getElementById('newAppNameInput').focus(), 200);
 };
+
+// --- Logic to handle the "Initialize" click ---
 window.confirmApplicationName = async function() {
     const input = document.getElementById('newAppNameInput');
     const appName = input.value.trim();
@@ -3070,39 +3082,34 @@ window.confirmApplicationName = async function() {
         return;
     }
 
-    // 1. Close the popup immediately
-    const modal = document.getElementById('appNameModal');
-    if (modal) modal.remove();
+    // Remove the popup immediately
+    document.getElementById('appNameModal').remove();
 
     try {
-        // Prepare Firebase References
+        // Prepare Firebase Path
         const profileRef = ref(db, `founderProfile/${currentUser.uid}`);
         const snap = await get(profileRef);
         const currentCount = (snap.exists() && snap.val().applicationsCount) ? parseInt(snap.val().applicationsCount) : 0;
 
+        // Create new Application entry
         const newAppRef = push(ref(db, `Applications/${currentUser.uid}`));
         const appId = newAppRef.key;
 
-        // 2. Save initial data
+        // Save initial node
         await update(ref(db), {
             [`founderProfile/${currentUser.uid}/applicationsCount`]: currentCount + 1,
             [`Applications/${currentUser.uid}/${appId}/appName`]: appName,
-            [`Applications/${currentUser.uid}/${appId}/founderName`]: cachedFounderData?.founderUsername || 'Founder',
-            [`Applications/${currentUser.uid}/${appId}/status`]: 'draft',
-            [`Applications/${currentUser.uid}/${appId}/createdAt`]: Date.now()
+            [`Applications/${currentUser.uid}/${appId}/status`]: 'incomplete', // Marked as Draft
+            [`Applications/${currentUser.uid}/${appId}/updatedAt`]: Date.now()
         });
         
-        // 3. SUCCESS UI
+        // Show success and Open Editor directly
         if (window.showSuccessToast) window.showSuccessToast("ID Generated. Opening Editor...");
-
-        // 4. FORCE RENDER EDITOR
-        // We call this directly. We do NOT change window.location.hash yet
-        // to prevent the router from jumping to the List view.
-        await window.renderApplicationForm(appId, appName);
+        window.renderApplicationForm(appId, appName);
         
     } catch (error) {
-        console.error("Database Error:", error);
-        alert("Critical Error: " + error.message);
+        console.error("Critical Error:", error);
+        alert("Failed to initialize. Check your Firebase Rules.");
     }
 };
 window.showSuccessToast = function(message) {
