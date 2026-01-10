@@ -1253,7 +1253,49 @@
 .pdf-filesize {
     font-size: 0.85rem; color: #888;
 }
-
+.white-paper-form {
+    background: #fff;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 40px;
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+.form-group-white { margin-bottom: 25px; }
+.form-group-white label { color: #333; font-weight: 700; margin-bottom: 8px; display: block; }
+.form-group-white input, .form-group-white textarea {
+    background: #fff !important;
+    border: 1px solid #ddd !important;
+    color: #000 !important;
+    border-radius: 0 !important; /* Professional look */
+}
+.attach-btn {
+    padding: 10px 20px;
+    background: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    font-weight: 600;
+}
+.app-footer {
+    margin-top: 50px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+    color: #999;
+    font-size: 0.8rem;
+}
+.picker-modal {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(0,0,0,0.8); z-index: 100000;
+    display:flex; align-items:center; justify-content:center;
+}
+.picker-content {
+    background: #111; padding:30px; border-radius:15px; width:90%; max-width:400px;
+}
+.picker-item {
+    padding:15px; border-bottom: 1px solid #222; cursor:pointer;
+}
+.picker-item:hover { background: #222; }
 .open-pitch-btn {
     background: #fff;
     color: #000;
@@ -1772,7 +1814,7 @@ function createNavBar() {
                        <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
                         <a href="#" class="dropdown-item">Referrals</a>
                         <a href="#" class="dropdown-item">Contacts</a>
-                        <a href="#" class="dropdown-item">My Applications</a>
+                        <a href="#applications" class="dropdown-item">My Applications</a>
                     </div>
                 </div>
             </div>
@@ -2570,6 +2612,224 @@ function getShopHeaderHTML(tokenCount, activeTab) {
         <div style="display: flex; gap: 15px;">${navButtons}</div>
     </div>`;
 }
+
+// --- APPLICATIONS LIST PAGE ---
+window.showApplicationsList = async function() {
+    const container = document.getElementById('dashboardContainer');
+    document.querySelector('.vest-container').style.display = 'none';
+    container.style.display = 'block';
+
+    const appRef = ref(db, `Applications/${currentUser.uid}`);
+    const snapshot = await get(appRef);
+    const apps = snapshot.val() || {};
+
+    container.innerHTML = `
+                <div class="manage-vests-page">
+            <div class="header-row">
+                <a href="#founder_dashboard" class="back-to-dash"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Dashboard</a>
+                <h1>My Funding Applications</h1>
+            </div>
+            
+            <div class="vest-cards-grid" id="appsGrid">
+                ${Object.keys(apps).length > 0 ? 
+                    Object.entries(apps).map(([id, app]) => `
+                        <div class="vest-gig-card" onclick="window.location.hash='view_application_${id}'">
+                            <div class="vest-thumb-wrapper">
+                                <img src="${app.thumbnailUrl || 'https://via.placeholder.com/400x225?text=Application'}" class="chest-img">
+                            </div>
+                            <div class="vest-card-content">
+                                <h3 class="vest-hook-text">${app.appHook}</h3>
+                                <p class="vest-desc-text">Founder: ${app.founderName}</p>
+                                <div class="vest-card-footer">
+                                    <span class="startup-label">ID: ${id.substring(0,8)}</span>
+                                    <span class="status-badge status-active">Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') : `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <p>No applications found. Create one to send to investors.</p>
+                    </div>
+                `}
+            </div>
+            <div style="text-align:center; margin-top:40px;">
+                <button class="buy-btn-premium" onclick="promptNewApplication()">+ Create Funding Application</button>
+            </div>
+        </div>
+    `;
+};
+
+// --- STEP 1: NAME THE APPLICATION ---
+window.promptNewApplication = async function() {
+    const appName = prompt("Enter a name for this funding application:");
+    if (!appName) return;
+
+    const profileRef = ref(db, `founderProfile/${currentUser.uid}`);
+    const snap = await get(profileRef);
+    const currentCount = (snap.val()?.applicationsCount || 0) + 1;
+
+    // Create Entry in Firebase
+    const newAppRef = push(ref(db, `Applications/${currentUser.uid}`));
+    const appId = newAppRef.key;
+
+    await update(profileRef, { applicationsCount: currentCount });
+    
+    renderApplicationForm(appId, appName);
+};
+
+// --- STEP 2: THE FORM (Clean White UI) ---
+window.renderApplicationForm = async function(appId, appName) {
+    const container = document.getElementById('dashboardContainer');
+    container.innerHTML = `
+        <div class="app-form-overlay" style="background:#f4f4f4; min-height:100vh; padding: 50px 20px; color:#000;">
+            <div class="white-paper-form">
+                <h2 style="margin-bottom:10px;">${appName}</h2>
+                <p style="color:#666; margin-bottom:30px;">Application ID: ${appId}</p>
+
+                <div class="form-group-white">
+                    <label>Application Heading (The Hook Line)</label>
+                    <input type="text" id="appHook" placeholder="The first line that catches investor eyes..." oninput="limitWords(this, 50)">
+                </div>
+
+                <div class="form-group-white">
+                    <label>Starting Content</label>
+                    <textarea id="appStarting" placeholder="Introduce your intent..." oninput="limitWords(this, 50)"></textarea>
+                </div>
+
+                <div class="form-group-white">
+                    <label>The Main Proportion (Core Details)</label>
+                    <textarea id="appMain" style="height:150px;" placeholder="Explain the main opportunity..." oninput="limitWords(this, 50)"></textarea>
+                </div>
+
+                <div class="form-group-white">
+                    <label>Ending Hooks (Call to Action)</label>
+                    <textarea id="appEnding" placeholder="How should the investor respond?" oninput="limitWords(this, 50)"></textarea>
+                </div>
+
+                <div class="form-group-white">
+                    <label>Founder Name</label>
+                    <input type="text" id="appFounderName" value="${cachedFounderData?.founderUsername || ''}">
+                </div>
+
+                <div class="form-group-white">
+                    <label>Attach Vest</label>
+                    <button class="attach-btn" onclick="openVestPicker()">Choose a Vest to Attach</button>
+                    <div id="attachedVestName" style="margin-top:10px; font-weight:bold; color:#10b981;"></div>
+                    <input type="hidden" id="selectedVestId">
+                </div>
+
+                <button class="buy-btn-premium" style="background:#000; color:#fff; width:100%;" onclick="submitApplication('${appId}')">Complete Application</button>
+                
+                <div class="app-footer">
+                    <img src="logo.png" style="width:30px; filter: grayscale(1);">
+                    <p><strong>ScaleVest</strong> | UnioraX Private Limited</p>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+// --- ATTACH VEST PICKER ---
+window.openVestPicker = async function() {
+    const snap = await get(ref(db, `Vests/${currentUser.uid}`));
+    const vests = snap.val();
+    if(!vests) return alert("No vests found. Create a vest first!");
+
+    let pickerHtml = '<div class="picker-modal"><div class="picker-content"><h3>Select a Vest</h3>';
+    Object.entries(vests).forEach(([id, v]) => {
+        pickerHtml += `<div class="picker-item" onclick="selectVestForApp('${id}', '${v.MainVest.hook}')">${v.MainVest.hook}</div>`;
+    });
+    pickerHtml += '<button onclick="this.parentElement.parentElement.remove()">Cancel</button></div></div>';
+    
+    const div = document.createElement('div');
+    div.id = "tempPicker";
+    div.innerHTML = pickerHtml;
+    document.body.appendChild(div);
+};
+
+window.selectVestForApp = function(id, hook) {
+    document.getElementById('selectedVestId').value = id;
+    document.getElementById('attachedVestName').innerText = "Attached: " + hook;
+    document.getElementById('tempPicker').remove();
+};
+
+// --- SUBMIT & SAVE ---
+window.submitApplication = async function(appId) {
+    const data = {
+        appHook: document.getElementById('appHook').value,
+        startingContent: document.getElementById('appStarting').value,
+        mainContent: document.getElementById('appMain').value,
+        endingContent: document.getElementById('appEnding').value,
+        founderName: document.getElementById('appFounderName').value,
+        vestId: document.getElementById('selectedVestId').value,
+        timestamp: Date.now()
+    };
+
+    if(!data.vestId) return alert("Please attach a vest!");
+
+    // Processing...
+    document.getElementById('dashboardContainer').innerHTML = `<div class="loading-screen"><div class="spinner"></div><p>Processing OP UI...</p></div>`;
+
+    await set(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
+    
+    setTimeout(() => {
+        window.location.hash = 'applications';
+    }, 1500);
+};
+
+// --- FULL VIEW PAGE (The White Sheet) ---
+window.renderFullApplicationPage = async function(appId) {
+    const snap = await get(ref(db, `Applications/${currentUser.uid}/${appId}`));
+    const app = snap.val();
+    
+    // Fetch attached vest details
+    const vestSnap = await get(ref(db, `Vests/${currentUser.uid}/${app.vestId}`));
+    const vest = vestSnap.val();
+
+    document.getElementById('dashboardContainer').innerHTML = `
+        <div class="full-app-page" style="background:#fff; color:#000; min-height:100vh; padding:60px 20px; font-family:serif;">
+             <div style="max-width:800px; margin:0 auto; border:1px solid #eee; padding:50px; box-shadow:0 0 20px rgba(0,0,0,0.05);">
+                <p style="text-align:right; font-size:12px; color:#999;">ScaleVest Application Review #${appId.substring(0,6)}</p>
+                
+                <h1 style="font-size:32px; border-bottom:2px solid #000; padding-bottom:10px; margin-top:30px;">${app.appHook}</h1>
+                
+                <div style="margin-top:40px; line-height:1.8; font-size:18px;">
+                    <p style="margin-bottom:20px;">${app.startingContent}</p>
+                    <p style="margin-bottom:20px;">${app.mainContent}</p>
+                    <p style="margin-bottom:40px;">${app.endingContent}</p>
+                </div>
+
+                <div style="margin-top:50px; border-top:1px solid #eee; padding-top:20px;">
+                    <p>Respectfully,</p>
+                    <h2 style="font-size:24px;">${app.founderName}</h2>
+                </div>
+
+                <div class="attached-vest-card" style="margin-top:60px; background:#fafafa; border:1px solid #ddd; padding:20px; border-radius:10px;">
+                    <p style="font-size:12px; text-transform:uppercase; color:#888;">Attached Startup Vest</p>
+                    <h3>${vest.MainVest.hook}</h3>
+                    <p>${vest.MainVest.description.substring(0,100)}...</p>
+                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-weight:bold;">
+                        <span>Ask: $${vest.MainVest.fundAsk}</span>
+                        <span>Equity: ${vest.MainVest.equityOffered}%</span>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-top:80px; opacity:0.6;">
+                    <p style="font-family:sans-serif; font-size:14px;"><strong>ScaleVest</strong> | UnioraX Private Limited</p>
+                </div>
+             </div>
+        </div>
+    `;
+}
+
+// Word Limiter Helper
+window.limitWords = function(element, limit) {
+    const words = element.value.split(/\s+/);
+    if (words.length > limit) {
+        element.value = words.slice(0, limit).join(" ");
+        alert("Maximum 50 words allowed per section.");
+    }
+};
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -2708,7 +2968,12 @@ function handleHashChange() {
         showFounderEmergence();
  } else if (hash === 'manage_vests') {
         showManageVests();
+ } else if (hash === 'applications') {
+       showApplicationsList();
 
+} else if (hash.startsWith('view_application_')) {
+    const appId = hash.replace('view_application_', '');
+    renderFullApplicationPage(appId);
 
     } else if (hash === 'edit_startup') {
         showEditStartup();
@@ -3727,7 +3992,7 @@ max-width: 1100px;
        <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
         <a href="#" class="dropdown-item">Referrals</a>
         <a href="#" class="dropdown-item">Contacts</a>
-        <a href="#" class="dropdown-item">My Applications</a>
+        <a href="#applications" class="dropdown-item">My Applications</a>
     </div>
 </div>
     </div>
