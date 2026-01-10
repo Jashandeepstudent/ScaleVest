@@ -1387,18 +1387,72 @@ button {
     }
 </style>
 
-<!-- Celebration -->
-<div class="celebration" id="celebration">
-    <svg style="width: 120px; height: 120px; margin-bottom: 30px;" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-        <line x1="9" y1="9" x2="9.01" y2="9"></line>
-        <line x1="15" y1="9" x2="15.01" y2="9"></line>
-    </svg>
-    <h2>Vest Successfully Launched!</h2>
-    <p>Your vest is now live and visible to investors</p>
-    <a href="#founder_dashboard" class="dashboard-btn">Go to Dashboard</a>
+<!-- Celebration Screen -->
+<div class="celebration" id="celebration" style="display: none;">
+    <div style="text-align: center; padding: 3rem 2rem;">
+        <!-- Animated Success Icon -->
+        <div style="font-size: 8rem; margin-bottom: 2rem; animation: bounceIn 1s ease;">🎉</div>
+        
+        <!-- Success Message -->
+        <h2 style="font-size: 3rem; font-weight: 800; color: #fff; margin-bottom: 1rem;">
+            Vest Successfully Launched!
+        </h2>
+        
+        <p style="color: #888; font-size: 1.2rem; margin-bottom: 3rem;">
+            Your vest is now live and visible to investors
+        </p>
+        
+        <!-- Success Checklist -->
+        <div style="background: #0a0a0a; border: 1px solid #222; border-radius: 12px; padding: 2rem; margin-bottom: 3rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+            <h3 style="color: #10b981; margin-bottom: 1.5rem; text-align: center;">✅ Your Vest is Live!</h3>
+            
+            <div style="text-align: left; color: #aaa; line-height: 2;">
+                <p>✓ Visible to investors worldwide</p>
+                <p>✓ Searchable by category and stage</p>
+                <p>✓ Accessible from your dashboard</p>
+                <p>✓ Ready to receive investor interest</p>
+            </div>
+        </div>
+        
+        <!-- Dashboard Button -->
+        <a href="#founder_dashboard" class="dashboard-btn" style="display: inline-block; padding: 1.2rem 3rem; background: linear-gradient(135deg, #10b981, #3a86ff); color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; transition: all 0.3s;">
+            🚀 Go to Dashboard
+        </a>
+    </div>
 </div>
+
+<!-- Celebration Animation -->
+<style>
+    @keyframes bounceIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .celebration {
+        display: none;
+        min-height: 100vh;
+        background: #000;
+        padding: 2rem;
+    }
+    
+    .celebration.active {
+        display: block !important;
+    }
+    
+    .dashboard-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+    }
+</style>
 
    <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
@@ -1732,8 +1786,6 @@ window.launchVest = async function() {
         const vestData = window.collectVestData();
         if (!vestData) throw new Error("Data collection failed");
         
-        console.log('Vest data collected:', vestData);
-        
         vestData.status = 'live';
         vestData.launchedAt = new Date().toISOString();
 
@@ -1750,33 +1802,50 @@ window.launchVest = async function() {
         });
         console.log('✅ Founder profile updated');
         
-        // Step 5: Update Startup Profile (only if startup name exists)
+        // Step 5: Update Startup Profile
         if (vestData.StartupDetails?.startupName) {
             console.log('🏢 Saving startup profile...');
             await saveStartupProfile(vestData);
             console.log('✅ Startup profile saved');
         }
         
-        // Step 6: Show celebration
+        // Step 6: FORCE SHOW CELEBRATION (Multiple methods to ensure it works)
         console.log('🎉 Showing celebration...');
-        closeCompletionPopup();
-        document.querySelector('.vest-container').style.display = 'none';
         
+        // Close popup
+        const popup = document.getElementById('completionPopup');
+        if (popup) {
+            popup.classList.remove('show');
+            popup.style.display = 'none';
+        }
+        
+        // Hide vest container
+        const vestContainer = document.querySelector('.vest-container');
+        if (vestContainer) {
+            vestContainer.style.display = 'none';
+        }
+        
+        // Show celebration with multiple fallbacks
         const celebration = document.getElementById('celebration');
-        celebration.classList.add('active');
-        celebration.style.display = 'block';
+        if (celebration) {
+            celebration.style.display = 'block';
+            celebration.classList.add('active');
+            celebration.style.opacity = '1';
+            celebration.style.visibility = 'visible';
+        } else {
+            console.error('❌ Celebration element not found!');
+        }
         
-        window.scrollTo(0, 0);
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
         console.log('✅ LAUNCH SUCCESSFUL!');
         
     } catch (error) {
         console.error('❌ Launch error:', error);
-        console.error('Error stack:', error.stack);
         
         btn.innerHTML = '❌ Launch Failed';
-        btn.disabled = false;
-        
-        alert(`❌ Launch failed!\n\nError: ${error.message}\n\nCheck console (F12) for details.`);
+        alert(`❌ Launch failed: ${error.message}`);
         
         setTimeout(() => {
             btn.innerHTML = originalText;
