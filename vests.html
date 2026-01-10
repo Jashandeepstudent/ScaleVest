@@ -3130,66 +3130,52 @@ window.showSuccessToast = function(message) {
     }, 3500);
 };
 
-// --- 3. INPUT FORM: THE WHITE PAPER INPUT INTERFACE ---
 window.renderApplicationForm = async function(appId, appName) {
     const container = document.getElementById('dashboardContainer');
-    container.style.display = 'block';
-    document.body.style.background = "#f4f4f4";
-
-    // Fetch existing data if it's a draft
-    const snap = await get(ref(db, `Applications/${currentUser.uid}/${appId}`));
-    const app = snap.val() || {};
-
     container.innerHTML = `
-        <div class="app-form-overlay" style="padding: 50px 20px; color:#000; min-height:100vh;">
-            <div class="white-paper-form" style="background:#fff; max-width:700px; margin:0 auto; padding:40px; box-shadow:0 10px 30px rgba(0,0,0,0.1); border-radius:4px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
-                    <div>
-                        <h2 style="margin:0;">${appName}</h2>
-                        <span class="status-pill ${app.status === 'incomplete' ? 'pill-draft' : 'pill-new'}">
-                            ${app.status === 'incomplete' ? 'DRAFT MODE' : 'NEW DOCUMENT'}
-                        </span>
-                    </div>
-                    <span style="color:#999; font-size:12px;">ID: ${appId}</span>
+        <div class="app-form-overlay" style="background:#f4f4f4; min-height:100vh; padding: 50px 20px; color:#000;">
+            <div class="white-paper-form" style="background:#fff; max-width:700px; margin:0 auto; padding:40px; border-radius:4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:30px;">
+                    <h2 style="margin:0;">${appName}</h2>
+                    <span style="color:#999; font-size:12px;"></span>
                 </div>
 
                 <div class="form-group-white">
-                    <label>Application Heading</label>
-                    <input type="text" id="appHook" value="${app.appHook || ''}" oninput="window.limitWords(this, 50)">
-                </div>
-                <div class="form-group-white">
-                    <label>Starting Content</label>
-                    <textarea id="appStarting" oninput="window.limitWords(this, 50)">${app.startingContent || ''}</textarea>
-                </div>
-                <div class="form-group-white">
-                    <label>Main Proportion</label>
-                    <textarea id="appMain" style="height:150px;" oninput="window.limitWords(this, 50)">${app.mainContent || ''}</textarea>
-                </div>
-                <div class="form-group-white">
-                    <label>Ending Hooks</label>
-                    <textarea id="appEnding" oninput="window.limitWords(this, 50)">${app.endingContent || ''}</textarea>
-                </div>
-                
-                <div class="form-group-white">
-                    <label>Vest Attachment</label>
-                    <button class="attach-btn" onclick="window.openVestPicker()">+ Link Vest</button>
-                    <div id="attachedVestName" style="margin-top:10px; font-weight:bold; color:#10b981;">
-                        ${app.vestId ? '✓ Vest Linked' : ''}
-                    </div>
-                    <input type="hidden" id="selectedVestId" value="${app.vestId || ''}">
+                    <label>Application Hook Line (Catchy Header)</label>
+                    <input type="text" id="appHook" placeholder="First line that catches investor eyes..." oninput="window.limitWords(this, 50)">
                 </div>
 
-                <div style="display:flex; gap:15px; margin-top:30px;">
-                    <button class="btn-cancel-op" style="flex:1; background:#eee;" onclick="window.saveApplication('${appId}', true)">
-                        Save as Draft
-                    </button>
-                    <button class="buy-btn-premium" style="flex:2; background:#000; color:#fff;" onclick="window.saveApplication('${appId}', false)">
-                        Complete Application
-                    </button>
+                <div class="form-group-white">
+                    <label>Starting Content (The Hook)</label>
+                    <textarea id="appStarting" placeholder="Brief intro..." oninput="window.limitWords(this, 50)"></textarea>
                 </div>
+
+                <div class="form-group-white">
+                    <label>Main Proportion (The Core Details)</label>
+                    <textarea id="appMain" style="height:150px;" placeholder="The main proposal content..." oninput="window.limitWords(this, 50)"></textarea>
+                </div>
+
+                <div class="form-group-white">
+                    <label>Ending Hooks (Call to Action)</label>
+                    <textarea id="appEnding" placeholder="How should they reach back?..." oninput="window.limitWords(this, 50)"></textarea>
+                </div>
+
+                <div class="form-group-white">
+                    <label>Founder Name</label>
+                    <input type="text" id="appFounderName" value="${cachedFounderData?.founderUsername || ''}">
+                </div>
+
+                <div class="form-group-white">
+                    <label>Link Startup Vest</label>
+                    <button class="attach-btn" onclick="window.openVestPicker()" style="width:100%; border-style:dashed;">+ Choose a Vest to Attach</button>
+                    <div id="attachedVestName" style="margin-top:10px; font-weight:bold; color:#10b981;"></div>
+                    <input type="hidden" id="selectedVestId">
+                </div>
+
+                <button class="buy-btn-premium" style="background:#000; color:#fff; width:100%; border:none; margin-top:20px;" onclick="window.submitApplication('${appId}')">Complete & Process Application</button>
                 
-                <div class="app-footer" style="text-align:center; margin-top:30px; border-top:1px solid #eee; padding-top:20px; opacity:0.5;">
-                    <p><strong>ScaleVest</strong> | Document Editor</p>
+                <div class="app-footer" style="text-align:center; margin-top:50px; border-top:1px solid #eee; padding-top:20px; opacity:0.6;">
+                    <p style="font-size:12px; color:#000;"><strong>ScaleVest</strong> | UnioraX Private Limited</p>
                 </div>
             </div>
         </div>
