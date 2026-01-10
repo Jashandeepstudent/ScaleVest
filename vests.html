@@ -1710,45 +1710,67 @@ window.launchVest = async function() {
     // Close completion popup if open
     closeCompletionPopup();
     
-    const btn = event.target.closest('button');
+    const btn = event?.target?.closest('button');
+    if (!btn) {
+        console.error('Button not found');
+        return;
+    }
+    
+    const originalText = btn.innerHTML;
     btn.innerHTML = '⏳ Launching...';
     btn.disabled = true;
 
     try {
-        if (typeof processAllFiles === 'function') await processAllFiles();
+        // Process files (safely handles missing inputs)
+        await processAllFiles();
         
+        // Collect vest data
         const vestData = window.collectVestData();
         if (!vestData) throw new Error("Data collection failed");
         
         vestData.status = 'live';
         vestData.launchedAt = new Date().toISOString();
 
+        // Save to Firebase
         await set(ref(db, `Vests/${currentUser.uid}/Vest1`), vestData);
         
-        // Update profile
+        // Update profile stats
         await update(ref(db, `founderProfile/${currentUser.uid}`), { 
             activeVestsCount: 1,
             lastLaunchedVest: new Date().toISOString()
         });
         
-        // Update Startup Profile if needed
-        if (typeof saveStartupProfile === 'function' && vestData.StartupDetails.startupName) {
+        // Update Startup Profile if startup name exists
+        if (vestData.StartupDetails?.startupName) {
             await saveStartupProfile(vestData);
         }
         
-        // Hide vest form and show celebration
+        // Hide popup and vest form, show celebration
+        closeCompletionPopup();
         document.querySelector('.vest-container').style.display = 'none';
-        document.getElementById('celebration').classList.add('active');
-        document.getElementById('celebration').style.display = 'block';
+        
+        const celebration = document.getElementById('celebration');
+        celebration.classList.add('active');
+        celebration.style.display = 'block';
+        
+        // Scroll to top to see celebration
+        window.scrollTo(0, 0);
         
     } catch (error) {
         console.error('Launch error:', error);
-        btn.innerHTML = '❌ Error';
+        btn.innerHTML = '❌ Launch Failed';
         btn.disabled = false;
-        alert('Launch failed. Please try again.');
+        
+        // Show user-friendly error
+        alert(`❌ Launch failed: ${error.message}\n\nPlease check the console for details and try again.`);
+        
+        // Re-enable button after 2 seconds
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 2000);
     }
-};
-// ======================================================
+};// ======================================================
 // Simple validation helper
 function validateStep(step) {
     const activeStep = document.querySelector(`.step-content[data-step="${step}"]`);
@@ -5237,27 +5259,20 @@ function updateStepDisplay() {
         }
     }
 
-    async function processAllFiles() {
-        const logoFile = document.getElementById('startupLogo').files[0];
-        const pitchFile = document.getElementById('pitchDeck').files[0];
-        const transFile = document.getElementById('transactionProof').files[0];
-         const demoFile = document.getElementById('demoVideo').files[0];
+   async function processAllFiles() {
+    // Safely check and upload files only if they exist
+    const pitchFile = document.getElementById('pitchDeck')?.files?.[0];
+    const demoFile = document.getElementById('demoVideo')?.files?.[0];
 
-
-        if (logoFile && !uploadedFiles.startupLogo) {
-            uploadedFiles.startupLogo = await uploadFileToStorage(logoFile, 'startup-logos');
-        }
-        if (pitchFile && !uploadedFiles.pitchDeck) {
-            uploadedFiles.pitchDeck = await uploadFileToStorage(pitchFile, 'pitch-decks');
-        }
-if (demoFile && !uploadedFiles.demoVideo) {
-        uploadedFiles.demoVideo = await uploadFileToStorage(demoFile, 'demo-videos');
-}
-
-        if (transFile && !uploadedFiles.transactionProof) {
-            uploadedFiles.transactionProof = await uploadFileToStorage(transFile, 'transactions');
-        }
+    if (pitchFile && !uploadedFiles.pitchDeck) {
+        uploadedFiles.pitchDeck = await uploadFileToStorage(pitchFile, 'pitch-decks');
     }
+    
+    if (demoFile && !uploadedFiles.demoVideo) {
+        uploadedFiles.demoVideo = await uploadFileToStorage(demoFile, 'demo-videos');
+    }
+    
+ }
 
     // 5. Data Collection & Saving
   window.collectVestData = function() {
