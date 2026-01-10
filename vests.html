@@ -73,7 +73,77 @@
 .application-doc-card:hover .mini-white-sheet {
     transform: translateY(-5px);
 }
+/* Container for the mini-document */
+.app-screenshot-preview {
+    height: 180px;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 25px;
+    position: relative;
+    border-bottom: 1px solid #222;
+}
 
+/* The Paper Simulation */
+.mini-white-sheet {
+    width: 110px;
+    height: 145px;
+    background: #fff;
+    padding: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    border-radius: 1px;
+    transition: transform 0.3s ease;
+}
+
+.application-doc-card:hover .mini-white-sheet {
+    transform: translateY(-5px) scale(1.02);
+}
+
+/* Internal Paper Content */
+.mini-title-box {
+    font-size: 6px;
+    font-weight: 900;
+    color: #000;
+    margin-bottom: 12px;
+    border-left: 2px solid #000;
+    padding-left: 4px;
+    font-family: sans-serif;
+}
+
+.mini-line {
+    height: 2px;
+    background: #eee;
+    margin-bottom: 5px;
+}
+
+.mini-black-card {
+    margin-top: 15px;
+    height: 35px;
+    background: #000;
+    border-radius: 2px;
+}
+
+/* Overlays */
+.status-pill-overlay {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.pill-draft { background: #ffb703; color: #000; }
+.pill-completed { background: #10b981; color: #fff; }
+
+.doc-id-tag {
+    font-family: monospace;
+    font-size: 11px;
+    color: #555;
+}
 /* Miniature Content Inside the Snapshot */
 .mini-line {
     height: 3px;
@@ -101,44 +171,7 @@
     background: #000;
     border-radius: 1px;
 }
-.app-screenshot-preview {
-    height: 160px;
-    background: #111;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: 20px;
-    position: relative;
-    border-bottom: 1px solid #222;
-}
 
-.mini-white-sheet {
-    width: 110px;
-    height: 140px;
-    background: #fff;
-    padding: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-
-.mini-title-box {
-    font-size: 7px;
-    font-weight: 900;
-    color: #000;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-}
-
-.status-pill-overlay {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    font-size: 9px;
-    font-weight: 900;
-    padding: 3px 8px;
-    border-radius: 4px;
-}
-.pill-draft { background: #ffb703; color: #000; }
-.pill-completed { background: #10b981; color: #fff; }
 /* Status Overlay */
 .status-pill-overlay {
     position: absolute;
@@ -3032,18 +3065,19 @@ function getShopHeaderHTML(tokenCount, activeTab) {
 
 window.showApplicationsList = async function() {
     const container = document.getElementById('dashboardContainer');
+    if (!container) return;
+
+    // UI Preparation
     document.querySelector('.vest-container').style.display = 'none';
     container.style.display = 'block';
-    
-    // Reset background to dark dashboard theme
     document.body.style.background = "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)";
 
+    // Data Fetching
     const appRef = ref(db, `Applications/${currentUser.uid}`);
     const snapshot = await get(appRef);
     const apps = snapshot.val() || {};
 
     container.innerHTML = `
-        ${createNavBar()}
         <div class="manage-vests-page">
             <div class="header-row">
                 <a href="#founder_dashboard" class="back-to-dash">
@@ -3054,20 +3088,20 @@ window.showApplicationsList = async function() {
                 <h1>My Funding Applications</h1>
             </div>
             
-            <div class="vest-cards-grid" id="appsGrid">
+            <div class="vest-cards-grid">
                 ${Object.entries(apps).length > 0 ? 
                     Object.entries(apps).map(([id, app]) => {
                         
-                        // --- ALL LOGIC MUST STAY INSIDE THIS BLOCK ---
+                        // 1. Logic for Draft vs Completed
                         const isDraft = app.status === 'incomplete';
                         
-                        // Define click behavior based on status
+                        // 2. Action based on status
                         const clickAction = isDraft 
                             ? `window.renderApplicationForm('${id}', '${app.appName || "Draft"}')` 
                             : `window.location.hash='view_application_${id}'`;
 
-                        // Define the status badge
-                        const statusPill = isDraft
+                        // 3. Visual Status Pill
+                        const statusBadge = isDraft
                             ? `<div class="status-pill-overlay pill-draft">DRAFT</div>`
                             : `<div class="status-pill-overlay pill-completed">COMPLETED</div>`;
 
@@ -3075,37 +3109,37 @@ window.showApplicationsList = async function() {
                         <div class="vest-gig-card application-doc-card" onclick="${clickAction}">
                             <div class="app-screenshot-preview">
                                 <div class="mini-white-sheet">
-                                    <div class="mini-line header"></div>
                                     <div class="mini-title-box">
-                                        ${app.appHook ? app.appHook.substring(0, 25) + '...' : 'UNTITLED DOCUMENT'}
+                                        ${app.appHook ? app.appHook.substring(0, 22).toUpperCase() : 'UNTITLED DOCUMENT'}
                                     </div>
                                     <div class="mini-body-content">
-                                        <div class="mini-line"></div>
-                                        <div class="mini-line"></div>
-                                        <div class="mini-line short"></div>
+                                        <div class="mini-line" style="width: 100%"></div>
+                                        <div class="mini-line" style="width: 80%"></div>
+                                        <div class="mini-line" style="width: 90%"></div>
                                     </div>
                                     ${!isDraft ? `<div class="mini-black-card"></div>` : ''}
                                 </div>
-                                ${statusPill}
+                                ${statusBadge}
                             </div>
-
                             <div class="vest-card-content">
                                 <h3 class="vest-hook-text">${app.appHook || 'New Funding Proposal'}</h3>
                                 <div class="vest-card-footer">
                                     <span class="startup-label">${app.founderName || 'Founder'}</span>
-                                    <span class="doc-date">ID: ${id.substring(0,6).toUpperCase()}</span>
+                                    <span class="doc-id-tag">#${id.substring(0,6).toUpperCase()}</span>
                                 </div>
                             </div>
-                        </div>
-                        `;
+                        </div>`;
                     }).join('') : `
-                    <div class="empty-state" style="grid-column: 1/-1; padding:100px; text-align:center;">
-                        <p style="color:#666;">No applications created yet. Click below to start.</p>
+                    <div class="empty-state" style="grid-column: 1/-1; padding: 100px; text-align: center;">
+                        <p style="color: #666; font-size: 1.1rem;">No documents found. Start your first application.</p>
                     </div>
                 `}
             </div>
+            
             <div style="text-align:center; margin-top:40px;">
-                <button class="buy-btn-premium" style="width:auto; padding: 12px 40px;" onclick="window.promptNewApplication()">+ Create New Application</button>
+                <button class="buy-btn-premium" style="width:auto; padding: 12px 40px;" onclick="window.promptNewApplication()">
+                    + Create New Application
+                </button>
             </div>
         </div>
     `;
