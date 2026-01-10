@@ -616,6 +616,27 @@
 </script>
 </head>
 <body>
+<div id="availabilityModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3>Set Your Availability</h3>
+    
+    <div class="form-group">
+      <label>On which date are you unavailable?</label>
+      <input type="date" id="unavailableDate">
+    </div>
+
+    <div class="form-group">
+      <label>Current Status:</label>
+      <select id="status">
+        <option value="active">Active</option>
+        <option value="busy">Busy</option>
+      </select>
+    </div>
+
+    <button id="saveAvailability" class="card-btn">Save Status</button>
+  </div>
+</div>
 
 <div class="loading-screen" id="loadingScreen">
     <div class="spinner"></div>
@@ -4188,27 +4209,6 @@ const completionPercent = Math.round((filledFields / fields.length) * 100);
             `}
         </div> </div> `;
 }
-<div id="availabilityModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <h3>Set Your Availability</h3>
-    
-    <div class="form-group">
-      <label>On which date are you unavailable?</label>
-      <input type="date" id="unavailableDate">
-    </div>
-
-    <div class="form-group">
-      <label>Current Status:</label>
-      <select id="status">
-        <option value="active">Active</option>
-        <option value="busy">Busy</option>
-      </select>
-    </div>
-
-    <button id="saveAvailability" class="card-btn">Save Status</button>
-  </div>
-</div>
 // ============================================
 // EDIT PROFILE FUNCTIONS - ALL WORKING
 // ============================================
