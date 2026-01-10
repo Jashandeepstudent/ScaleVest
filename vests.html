@@ -641,27 +641,27 @@
         </div>
 
        <div class="roadmap">
-    <div class="step-indicator active" data-step="1">
+    <div class="step-indicator active" onclick="goToStep(1)" style="cursor: pointer;">
         <div class="step-circle">1</div>
         <div class="step-label">Main Vest</div>
     </div>
-    <div class="step-indicator" data-step="2">
+    <div class="step-indicator" onclick="goToStep(2)" style="cursor: pointer;">
         <div class="step-circle">2</div>
         <div class="step-label">Startup</div>
     </div>
-    <div class="step-indicator" data-step="3">
+    <div class="step-indicator" onclick="goToStep(3)" style="cursor: pointer;">
         <div class="step-circle">3</div>
         <div class="step-label">Audit</div>
     </div>
-    <div class="step-indicator" data-step="4">
+    <div class="step-indicator" onclick="goToStep(4)" style="cursor: pointer;">
         <div class="step-circle">4</div>
         <div class="step-label">Roadmap</div>
     </div>
-    <div class="step-indicator" data-step="5">
+    <div class="step-indicator" onclick="goToStep(5)" style="cursor: pointer;">
         <div class="step-circle">5</div>
         <div class="step-label">Presence</div>
     </div>
-    <div class="step-indicator" data-step="6">
+    <div class="step-indicator" onclick="goToStep(6)" style="cursor: pointer;">
         <div class="step-circle">6</div>
         <div class="step-label">Launch</div>
     </div>
@@ -847,40 +847,54 @@
         </div>
     </div>
 
-    <div class="step-content" data-step="5" id="vest_step5">
-        <h2>Founder Presence</h2>
-        <p style="color: #888; margin-bottom: 25px;">The team behind the dream.</p>
+   <div class="step-content" data-step="5" id="vest_step5">
+    <h2>Founder Presence</h2>
+    <p style="color: #888; margin-bottom: 25px;">The team behind the dream.</p>
 
-        <div class="form-group">
-            <label>Founder Name</label>
-            <input type="text" id="fpName" placeholder="Your Full Name">
+    <div class="form-group">
+        <label>Founder Name (You)</label>
+        <input type="text" id="fpName" placeholder="Your Full Name">
+    </div>
+
+    <div class="form-group">
+        <label>Do you have Co-Founders?</label>
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <button class="btn-back" id="btnNoCF" onclick="toggleCoFounders(false)" style="flex:1; border:1px solid #333;">No, Solo Founder</button>
+            <button class="btn-back" id="btnYesCF" onclick="toggleCoFounders(true)" style="flex:1; border:1px solid #333;">Yes, I have a team</button>
         </div>
-
-        <div class="form-group">
-            <label>Co-Founders</label>
-            <input type="text" id="fpCoFounders" placeholder="How many? Names?">
-        </div>
-
-        <div class="form-group">
-            <label>Demo Video (Upload)</label>
-            <div class="file-upload" onclick="document.getElementById('newDemoVideo').click()">
-                <p>Click to Upload Video</p>
-                <input type="file" id="newDemoVideo" accept="video/*">
+        
+        <div id="coFounderSection" style="display: none; border-left: 2px solid #8338ec; padding-left: 15px; margin-left: 5px;">
+            <div class="form-group">
+                <label>How many Co-Founders?</label>
+                <input type="number" id="fpCoFounderCount" placeholder="e.g. 2">
             </div>
-            <div id="newDemoVideoName" style="color: #10b981; margin-top: 5px;"></div>
-        </div>
-
-        <div class="form-group">
-            <label>Responsibilities / Work</label>
-            <textarea id="fpWork" placeholder="What work do you and your co-founders do?" style="height: 100px;"></textarea>
-        </div>
-
-        <div class="buttons">
-            <button class="btn-back" onclick="previousStep()">Back</button>
-            <button class="btn-draft" onclick="saveNewVestAsDraft()">Save Draft</button>
-            <button class="btn-next" onclick="nextStep()">Next: Launch</button>
+            <div class="form-group">
+                <label>Co-Founder Names & Roles</label>
+                <textarea id="fpCoFoundersDetails" placeholder="e.g. John Doe (CTO), Jane Smith (CMO)"></textarea>
+            </div>
         </div>
     </div>
+
+    <div class="form-group">
+        <label>Demo Video (Upload)</label>
+        <div class="file-upload" onclick="document.getElementById('newDemoVideo').click()">
+            <p>Click to Upload Video</p>
+            <input type="file" id="newDemoVideo" accept="video/*">
+        </div>
+        <div id="newDemoVideoName" style="color: #10b981; margin-top: 5px;"></div>
+    </div>
+
+    <div class="form-group">
+        <label>Responsibilities / Work</label>
+        <textarea id="fpWork" placeholder="What work do you and your co-founders do?" style="height: 100px;"></textarea>
+    </div>
+
+    <div class="buttons">
+        <button class="btn-back" onclick="previousStep()">Back</button>
+        <button class="btn-draft" onclick="saveNewVestAsDraft()">Save Draft</button>
+        <button class="btn-next" onclick="nextStep()">Next: Launch</button>
+    </div>
+</div>
 
     <div class="step-content" data-step="6" id="vest_step6">
         <div style="text-align: center; padding: 40px 0;">
@@ -1209,7 +1223,16 @@ if(vidInput) vidInput.addEventListener('change', (e) => {
     }
 
     // 5. Data Collection & Saving
-function collectNewVestData(deckUrl, videoUrl) {
+window.collectNewVestData = function(deckUrl, videoUrl) {
+    // Determine Co-Founder Data
+    const cfCount = document.getElementById('fpCoFounderCount')?.value || '0';
+    const cfDetails = document.getElementById('fpCoFoundersDetails')?.value || '';
+    
+    // Logic: If inputs are empty, assume Solo Founder
+    const coFounderString = (cfCount > 0) 
+        ? `${cfCount} Co-Founders: ${cfDetails}` 
+        : "Solo Founder";
+
     return {
         MainVest: {
             hook: document.getElementById('vestHook').value || '',
@@ -1244,15 +1267,15 @@ function collectNewVestData(deckUrl, videoUrl) {
         },
         FounderPresence: {
             founderName: document.getElementById('fpName').value || '',
-            coFounders: document.getElementById('fpCoFounders').value || '',
+            // UPDATED HERE:
+            coFounders: coFounderString, 
             responsibilities: document.getElementById('fpWork').value || '',
             demoVideoUrl: videoUrl || ''
         },
         createdAt: new Date().toISOString(),
-        userId: currentUser.uid
+        userId: currentUser ? currentUser.uid : 'anonymous'
     };
-}
-
+};
 // 3. File Upload Helper for New Flow
 async function processNewFiles() {
     const deckFile = document.getElementById('newPitchDeck')?.files[0];
@@ -1326,7 +1349,7 @@ window.launchNewVest = async function() {
         await update(profileRef, {
             activeVestsCount: currentCount + 1
         });
-
+         clearFormStorage();
         // 5. Redirect to Dashboard
         alert("Vest Launched Successfully!");
         window.location.hash = 'founder_dashboard';
@@ -1338,7 +1361,98 @@ window.launchNewVest = async function() {
         btn.disabled = false;
     }
 };
+// ============================================
+// 1. ROADMAP NAVIGATION
+// ============================================
+window.goToStep = function(stepNum) {
+    currentStep = stepNum;
+    updateStepDisplay();
+    window.location.hash = `vest_step${currentStep}`;
+    window.scrollTo(0, 0);
+};
 
+// ============================================
+// 2. LOCAL STORAGE PERSISTENCE
+// ============================================
+const FORM_STORAGE_KEY = 'scalevest_draft_inputs';
+
+// List of all text/number/textarea IDs to track
+const inputIds = [
+    'vestHook', 'vestDesc', 'vestProblem', 'vestSolution', 'vestAdvantage', 'vestEquity', 'vestAsk',
+    'stName', 'stDesc', 'stCategory', 'stStage', 'stRevenue', 'stValuation',
+    'auditScale', 'auditMarket', 'auditCompetitors', 'auditDifferent', 'auditMoney',
+    'roadFundUsage', 'roadYearGoal', 'roadVision', 'roadStrategy',
+    'fpName', 'fpWork', 'fpCoFounderCount', 'fpCoFoundersDetails'
+];
+
+// Save to Local Storage on every keystroke
+document.addEventListener('input', (e) => {
+    if (inputIds.includes(e.target.id)) {
+        const formData = {};
+        inputIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) formData[id] = el.value;
+        });
+        localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formData));
+    }
+});
+
+// Load from Local Storage on Page Load
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem(FORM_STORAGE_KEY);
+    if (saved) {
+        const formData = JSON.parse(saved);
+        inputIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && formData[id]) {
+                el.value = formData[id];
+            }
+        });
+        // Special check: If co-founder details exist, open the section
+        if (formData['fpCoFounderCount'] || formData['fpCoFoundersDetails']) {
+            toggleCoFounders(true);
+        }
+    }
+});
+
+// Clear Storage (Call this after successful launch)
+window.clearFormStorage = function() {
+    localStorage.removeItem(FORM_STORAGE_KEY);
+    inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    console.log("Form storage cleared.");
+};
+
+// ============================================
+// 3. CO-FOUNDER TOGGLE LOGIC
+// ============================================
+window.toggleCoFounders = function(hasCoFounders) {
+    const section = document.getElementById('coFounderSection');
+    const btnYes = document.getElementById('btnYesCF');
+    const btnNo = document.getElementById('btnNoCF');
+
+    if (hasCoFounders) {
+        section.style.display = 'block';
+        // Style Buttons
+        btnYes.style.background = 'linear-gradient(135deg, #ff006e, #8338ec)';
+        btnYes.style.border = 'none';
+        btnNo.style.background = '#222';
+        btnNo.style.border = '1px solid #333';
+    } else {
+        section.style.display = 'none';
+        // Clear values if they selected No
+        document.getElementById('fpCoFounderCount').value = '';
+        document.getElementById('fpCoFoundersDetails').value = '';
+        
+        // Style Buttons
+        btnNo.style.background = '#333'; // Active state look
+        btnNo.style.border = '1px solid #fff';
+        btnYes.style.background = '#222';
+        btnYes.style.border = '1px solid #333';
+    }
+};
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -1431,42 +1545,111 @@ window.launchNewVest = async function() {
     // Handle hash navigation
     window.addEventListener('hashchange', handleHashChange);
 
-    function handleHashChange() {
+    // ==========================================
+// 1. ROUTING GATEKEEPER (Strict Custom Check)
+// ==========================================
+function handleHashChange() {
+    // 1. Wait for data
     if (!currentUser || !cachedFounderData) {
         console.log("Waiting for data...");
         return;
     }
-    
+
+    const currentId = cachedFounderData.userId;
+    const firebaseUid = currentUser.uid;
+
+    // 2. CHECK: Is ID missing OR is it just the default Firebase UID?
+    // We want to FORCE a custom ID (e.g. "elon_musk"), not "A1b2C3d4..."
+    if (!currentId || currentId === firebaseUid) {
+        console.log("⚠️ ID is missing or generic. Triggering Custom Input...");
+        
+        // Hide Loader & Dashboard
+        document.getElementById('loadingScreen').classList.add('hidden'); 
+        document.querySelector('.vest-container').style.display = 'none';
+        const dash = document.getElementById('dashboardContainer');
+        if (dash) dash.style.display = 'none';
+
+        // Show the Manual Input Modal
+        showUserIdSetupModal(); 
+        return; // STOP EXECUTION
+    }
+
+    // 3. If we have a custom ID, proceed as normal
     const hash = window.location.hash.slice(1);
-    console.log("Hash changed to:", hash);
     
     // Hide everything first
     document.querySelector('.vest-container').style.display = 'none';
     const dashContainer = document.getElementById('dashboardContainer');
     if (dashContainer) dashContainer.style.display = 'none';
-    
-    // Then show the right thing
+
+    // Show the section
     if (hash === 'founder_dashboard') {
         showDashboard();
     } else if (hash === 'edit_founderprofile') {
         showEditProfile();
-} else if (hash === 'edit_startup') {
-    showEditStartup();
+    } else if (hash === 'edit_startup') {
+        showEditStartup();
     } else if (hash.startsWith('vest_step')) {
         const stepNum = parseInt(hash.replace('vest_step', ''));
-        if (stepNum >= 1 && stepNum <= 5) {
+        if (stepNum >= 1 && stepNum <= 6) {
             currentStep = stepNum;
             updateStepDisplay();
             showVestForm();
         }
-    } else if (!hash) {
-        if (isNewUser) {
-            window.location.hash = 'vest_step1';
-        } else {
-            window.location.hash = 'founder_dashboard';
-        }
+    } else {
+        window.location.hash = 'founder_dashboard';
     }
 }
+// ==========================================
+// 2. SAVE CUSTOM ID
+// ==========================================
+window.saveCustomUserId = async function() {
+    const input = document.getElementById('customUserIdInput');
+    const saveBtn = document.querySelector('.modal-btn-save');
+    const rawId = input.value.trim();
+    
+    // VALIDATION
+    if (!rawId) return alert("❌ Please type a User ID.");
+    if (rawId.length < 4) return alert("❌ Too short (min 4 chars).");
+    if (/\s/.test(rawId)) return alert("❌ No spaces allowed.");
+    
+    // Prevent them from saving the Firebase UID again
+    if (rawId === currentUser.uid) {
+        return alert("❌ You cannot use your system ID. Please choose a custom name.");
+    }
+
+    saveBtn.innerHTML = "Saving...";
+    saveBtn.disabled = true;
+
+    try {
+        const updates = {};
+        // Save the NEW custom ID
+        updates[`founderProfile/${currentUser.uid}/userId`] = rawId;
+        
+        // Sync username if missing
+        if (!cachedFounderData.founderUsername || cachedFounderData.founderUsername === currentUser.uid) {
+            updates[`founderProfile/${currentUser.uid}/founderUsername`] = rawId;
+        }
+
+        await update(ref(db), updates);
+
+        // CRITICAL: Update local cache so the Gatekeeper lets us in immediately
+        cachedFounderData.userId = rawId;
+        if (updates[`founderProfile/${currentUser.uid}/founderUsername`]) {
+            cachedFounderData.founderUsername = rawId;
+        }
+
+        // Close and Refresh
+        document.querySelector('.userid-modal').remove();
+        handleHashChange(); // Retry navigation
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Save failed. Check connection.");
+        saveBtn.innerHTML = "Set ID";
+        saveBtn.disabled = false;
+    }
+};
 
     function showVestForm() {
         document.title = "Create Your Vest | ScaleVest"; 
