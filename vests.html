@@ -2935,11 +2935,12 @@ window.confirmApplicationName = async function() {
         return;
     }
 
-    // 1. Remove the name-input popup immediately
+    // 1. Close the popup immediately
     const modal = document.getElementById('appNameModal');
     if (modal) modal.remove();
 
     try {
+        // Prepare Firebase References
         const profileRef = ref(db, `founderProfile/${currentUser.uid}`);
         const snap = await get(profileRef);
         const currentCount = (snap.exists() && snap.val().applicationsCount) ? parseInt(snap.val().applicationsCount) : 0;
@@ -2947,26 +2948,26 @@ window.confirmApplicationName = async function() {
         const newAppRef = push(ref(db, `Applications/${currentUser.uid}`));
         const appId = newAppRef.key;
 
-        // 2. Save data to Firebase
+        // 2. Save initial data
         await update(ref(db), {
             [`founderProfile/${currentUser.uid}/applicationsCount`]: currentCount + 1,
             [`Applications/${currentUser.uid}/${appId}/appName`]: appName,
+            [`Applications/${currentUser.uid}/${appId}/founderName`]: cachedFounderData?.founderUsername || 'Founder',
             [`Applications/${currentUser.uid}/${appId}/status`]: 'draft',
-            [`Applications/${currentUser.uid}/${appId}/founderName`]: cachedFounderData?.founderUsername || 'Founder'
+            [`Applications/${currentUser.uid}/${appId}/createdAt`]: Date.now()
         });
         
-        // 3. IMMEDIATE REDIRECT - No loading screen
-        window.location.hash = 'applications';
-        
-        // 4. Trigger the Success Pop-up
-        setTimeout(() => {
-            window.showSuccessToast("Application Created Successfully!");
-        }, 500);
+        // 3. SUCCESS UI
+        if (window.showSuccessToast) window.showSuccessToast("ID Generated. Opening Editor...");
+
+        // 4. FORCE RENDER EDITOR
+        // We call this directly. We do NOT change window.location.hash yet
+        // to prevent the router from jumping to the List view.
+        await window.renderApplicationForm(appId, appName);
         
     } catch (error) {
         console.error("Database Error:", error);
-        alert("Creation failed. Check your connection.");
-        window.location.hash = 'applications';
+        alert("Critical Error: " + error.message);
     }
 };
 window.showSuccessToast = function(message) {
@@ -2989,7 +2990,13 @@ window.showSuccessToast = function(message) {
 
 // --- 3. INPUT FORM: THE WHITE PAPER INPUT INTERFACE ---
 window.renderApplicationForm = async function(appId, appName) {
-    const container = document.getElementById('dashboardContainer');
+ const container = document.getElementById('dashboardContainer');
+    if (!container) return;
+
+    // Force Visibility
+    container.style.display = 'block';
+    document.querySelector('.vest-container').style.display = 'none';
+    document.body.style.background = "#f4f4f4";
     container.innerHTML = `
         <div class="app-form-overlay" style="background:#f4f4f4; min-height:100vh; padding: 50px 20px; color:#000;">
             <div class="white-paper-form" style="background:#fff; max-width:700px; margin:0 auto; padding:40px; border-radius:4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
