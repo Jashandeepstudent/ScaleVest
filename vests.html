@@ -2613,20 +2613,28 @@ function getShopHeaderHTML(tokenCount, activeTab) {
     </div>`;
 }
 
-// --- APPLICATIONS LIST PAGE ---
+
+
+// --- 1. LIST VIEW: SHOW ALL APPLICATIONS ---
 window.showApplicationsList = async function() {
     const container = document.getElementById('dashboardContainer');
     document.querySelector('.vest-container').style.display = 'none';
     container.style.display = 'block';
 
+    // Fetch existing applications
     const appRef = ref(db, `Applications/${currentUser.uid}`);
     const snapshot = await get(appRef);
     const apps = snapshot.val() || {};
 
     container.innerHTML = `
-                <div class="manage-vests-page">
+        ${createNavBar()}
+        <div class="manage-vests-page">
             <div class="header-row">
-                <a href="#founder_dashboard" class="back-to-dash"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Dashboard</a>
+                <a href="#founder_dashboard" class="back-to-dash">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg> Dashboard
+                </a>
                 <h1>My Funding Applications</h1>
             </div>
             
@@ -2634,76 +2642,81 @@ window.showApplicationsList = async function() {
                 ${Object.keys(apps).length > 0 ? 
                     Object.entries(apps).map(([id, app]) => `
                         <div class="vest-gig-card" onclick="window.location.hash='view_application_${id}'">
-                            <div class="vest-thumb-wrapper">
-                                <img src="${app.thumbnailUrl || 'https://via.placeholder.com/400x225?text=Application'}" class="chest-img">
+                            <div class="vest-thumb-wrapper" style="background:#fff; display:flex; align-items:center; justify-content:center;">
+                                <img src="logo.png" style="width:50px; filter:grayscale(1); opacity:0.2;">
+                                <div class="status-badge status-active">Ready to Review</div>
                             </div>
                             <div class="vest-card-content">
-                                <h3 class="vest-hook-text">${app.appHook}</h3>
+                                <h3 class="vest-hook-text">${app.appHook || 'Untitled Application'}</h3>
                                 <p class="vest-desc-text">Founder: ${app.founderName}</p>
                                 <div class="vest-card-footer">
-                                    <span class="startup-label">ID: ${id.substring(0,8)}</span>
-                                    <span class="status-badge status-active">Ready</span>
+                                    <span class="startup-label">ID: ${id.substring(0,8).toUpperCase()}</span>
+                                    <span class="status-badge status-active">Mega OP UI</span>
                                 </div>
                             </div>
                         </div>
                     `).join('') : `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <p>No applications found. Create one to send to investors.</p>
+                    <div class="empty-state" style="grid-column: 1/-1; padding:100px; text-align:center;">
+                        <p style="color:#666; font-size:1.1rem;">No applications found. Create one to pitch to investors.</p>
                     </div>
                 `}
             </div>
             <div style="text-align:center; margin-top:40px;">
-                <button class="buy-btn-premium" onclick="promptNewApplication()">+ Create Funding Application</button>
+                <button class="buy-btn-premium" style="width:auto; padding: 15px 40px;" onclick="window.promptNewApplication()">+ Create Funding Application</button>
             </div>
         </div>
     `;
 };
 
-// --- STEP 1: NAME THE APPLICATION ---
+// --- 2. INITIALIZATION: NAME THE APPLICATION ---
 window.promptNewApplication = async function() {
-    const appName = prompt("Enter a name for this funding application:");
+    const appName = prompt("Enter a name for this funding application (e.g. Seed Round Phase 1):");
     if (!appName) return;
 
+    // Increment count in founderProfile
     const profileRef = ref(db, `founderProfile/${currentUser.uid}`);
     const snap = await get(profileRef);
     const currentCount = (snap.val()?.applicationsCount || 0) + 1;
 
-    // Create Entry in Firebase
+    // Push new entry to get a unique App ID
     const newAppRef = push(ref(db, `Applications/${currentUser.uid}`));
     const appId = newAppRef.key;
 
     await update(profileRef, { applicationsCount: currentCount });
     
-    renderApplicationForm(appId, appName);
+    // Move to the form
+    window.renderApplicationForm(appId, appName);
 };
 
-// --- STEP 2: THE FORM (Clean White UI) ---
+// --- 3. INPUT FORM: THE WHITE PAPER INPUT INTERFACE ---
 window.renderApplicationForm = async function(appId, appName) {
     const container = document.getElementById('dashboardContainer');
     container.innerHTML = `
         <div class="app-form-overlay" style="background:#f4f4f4; min-height:100vh; padding: 50px 20px; color:#000;">
-            <div class="white-paper-form">
-                <h2 style="margin-bottom:10px;">${appName}</h2>
-                <p style="color:#666; margin-bottom:30px;">Application ID: ${appId}</p>
-
-                <div class="form-group-white">
-                    <label>Application Heading (The Hook Line)</label>
-                    <input type="text" id="appHook" placeholder="The first line that catches investor eyes..." oninput="limitWords(this, 50)">
+            <div class="white-paper-form" style="background:#fff; max-width:700px; margin:0 auto; padding:40px; border-radius:4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:30px;">
+                    <h2 style="margin:0;">${appName}</h2>
+                    <span style="color:#999; font-size:12px;">App ID: ${appId}</span>
                 </div>
 
                 <div class="form-group-white">
-                    <label>Starting Content</label>
-                    <textarea id="appStarting" placeholder="Introduce your intent..." oninput="limitWords(this, 50)"></textarea>
+                    <label>Application Hook Line (Catchy Header)</label>
+                    <input type="text" id="appHook" placeholder="First line that catches investor eyes..." oninput="window.limitWords(this, 50)">
                 </div>
 
                 <div class="form-group-white">
-                    <label>The Main Proportion (Core Details)</label>
-                    <textarea id="appMain" style="height:150px;" placeholder="Explain the main opportunity..." oninput="limitWords(this, 50)"></textarea>
+                    <label>Starting Content (The Hook)</label>
+                    <textarea id="appStarting" placeholder="Brief intro..." oninput="window.limitWords(this, 50)"></textarea>
+                </div>
+
+                <div class="form-group-white">
+                    <label>Main Proportion (The Core Details)</label>
+                    <textarea id="appMain" style="height:150px;" placeholder="The main proposal content..." oninput="window.limitWords(this, 50)"></textarea>
                 </div>
 
                 <div class="form-group-white">
                     <label>Ending Hooks (Call to Action)</label>
-                    <textarea id="appEnding" placeholder="How should the investor respond?" oninput="limitWords(this, 50)"></textarea>
+                    <textarea id="appEnding" placeholder="How should they reach back?..." oninput="window.limitWords(this, 50)"></textarea>
                 </div>
 
                 <div class="form-group-white">
@@ -2712,34 +2725,43 @@ window.renderApplicationForm = async function(appId, appName) {
                 </div>
 
                 <div class="form-group-white">
-                    <label>Attach Vest</label>
-                    <button class="attach-btn" onclick="openVestPicker()">Choose a Vest to Attach</button>
+                    <label>Link Startup Vest</label>
+                    <button class="attach-btn" onclick="window.openVestPicker()" style="width:100%; border-style:dashed;">+ Choose a Vest to Attach</button>
                     <div id="attachedVestName" style="margin-top:10px; font-weight:bold; color:#10b981;"></div>
                     <input type="hidden" id="selectedVestId">
                 </div>
 
-                <button class="buy-btn-premium" style="background:#000; color:#fff; width:100%;" onclick="submitApplication('${appId}')">Complete Application</button>
+                <button class="buy-btn-premium" style="background:#000; color:#fff; width:100%; border:none; margin-top:20px;" onclick="window.submitApplication('${appId}')">Complete & Process Application</button>
                 
-                <div class="app-footer">
-                    <img src="logo.png" style="width:30px; filter: grayscale(1);">
-                    <p><strong>ScaleVest</strong> | UnioraX Private Limited</p>
+                <div class="app-footer" style="text-align:center; margin-top:50px; border-top:1px solid #eee; padding-top:20px; opacity:0.6;">
+                    <p style="font-size:12px; color:#000;"><strong>ScaleVest</strong> | UnioraX Private Limited</p>
                 </div>
             </div>
         </div>
     `;
 };
 
-// --- ATTACH VEST PICKER ---
+// --- 4. ATTACHMENT: PICKER POPUP ---
 window.openVestPicker = async function() {
     const snap = await get(ref(db, `Vests/${currentUser.uid}`));
     const vests = snap.val();
     if(!vests) return alert("No vests found. Create a vest first!");
 
-    let pickerHtml = '<div class="picker-modal"><div class="picker-content"><h3>Select a Vest</h3>';
-    Object.entries(vests).forEach(([id, v]) => {
-        pickerHtml += `<div class="picker-item" onclick="selectVestForApp('${id}', '${v.MainVest.hook}')">${v.MainVest.hook}</div>`;
-    });
-    pickerHtml += '<button onclick="this.parentElement.parentElement.remove()">Cancel</button></div></div>';
+    let pickerHtml = `
+        <div class="picker-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:100000; display:flex; align-items:center; justify-content:center;">
+            <div class="picker-content" style="background:#111; padding:40px; border-radius:15px; width:90%; max-width:450px; border:1px solid #333;">
+                <h3 style="color:#fff; margin-bottom:20px;">Attach a Startup Vest</h3>
+                <div style="max-height:300px; overflow-y:auto; margin-bottom:20px;">
+                    ${Object.entries(vests).map(([id, v]) => `
+                        <div class="picker-item" style="padding:15px; border-bottom:1px solid #222; cursor:pointer; color:#fff;" 
+                             onclick="window.selectVestForApp('${id}', '${v.MainVest.hook}')">
+                             ${v.MainVest.hook}
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="card-btn" onclick="this.parentElement.parentElement.remove()">Cancel</button>
+            </div>
+        </div>`;
     
     const div = document.createElement('div');
     div.id = "tempPicker";
@@ -2749,26 +2771,31 @@ window.openVestPicker = async function() {
 
 window.selectVestForApp = function(id, hook) {
     document.getElementById('selectedVestId').value = id;
-    document.getElementById('attachedVestName').innerText = "Attached: " + hook;
+    document.getElementById('attachedVestName').innerText = "✓ Attached: " + hook;
     document.getElementById('tempPicker').remove();
 };
 
-// --- SUBMIT & SAVE ---
+// --- 5. SUBMISSION: SAVE DATA TO FIREBASE ---
 window.submitApplication = async function(appId) {
+    const vestId = document.getElementById('selectedVestId').value;
+    if(!vestId) return alert("Please attach a vest!");
+
     const data = {
         appHook: document.getElementById('appHook').value,
         startingContent: document.getElementById('appStarting').value,
         mainContent: document.getElementById('appMain').value,
         endingContent: document.getElementById('appEnding').value,
         founderName: document.getElementById('appFounderName').value,
-        vestId: document.getElementById('selectedVestId').value,
+        vestId: vestId,
         timestamp: Date.now()
     };
 
-    if(!data.vestId) return alert("Please attach a vest!");
-
-    // Processing...
-    document.getElementById('dashboardContainer').innerHTML = `<div class="loading-screen"><div class="spinner"></div><p>Processing OP UI...</p></div>`;
+    // Processing UI
+    document.getElementById('dashboardContainer').innerHTML = `
+        <div class="loading-screen" style="flex-direction:column;">
+            <div class="spinner"></div>
+            <h2 style="margin-top:20px;">Generating Professional UI...</h2>
+        </div>`;
 
     await set(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
     
@@ -2777,57 +2804,62 @@ window.submitApplication = async function(appId) {
     }, 1500);
 };
 
-// --- FULL VIEW PAGE (The White Sheet) ---
+// --- 6. REVIEW: THE "MEGA OP" FINAL DOCUMENT PAGE ---
 window.renderFullApplicationPage = async function(appId) {
     const snap = await get(ref(db, `Applications/${currentUser.uid}/${appId}`));
     const app = snap.val();
+    if(!app) return alert("Application not found.");
     
-    // Fetch attached vest details
     const vestSnap = await get(ref(db, `Vests/${currentUser.uid}/${app.vestId}`));
     const vest = vestSnap.val();
 
     document.getElementById('dashboardContainer').innerHTML = `
-        <div class="full-app-page" style="background:#fff; color:#000; min-height:100vh; padding:60px 20px; font-family:serif;">
-             <div style="max-width:800px; margin:0 auto; border:1px solid #eee; padding:50px; box-shadow:0 0 20px rgba(0,0,0,0.05);">
-                <p style="text-align:right; font-size:12px; color:#999;">ScaleVest Application Review #${appId.substring(0,6)}</p>
+        <div class="full-app-page" style="background:#f0f2f5; min-height:100vh; padding:60px 20px; color:#000;">
+             <div class="white-paper-card" style="max-width:850px; margin:0 auto; font-family:'Times New Roman', Times, serif; padding:80px; background:#fff; box-shadow:0 10px 50px rgba(0,0,0,0.1); border-radius:2px;">
+                <p style="text-align:right; font-size:11px; color:#999; font-family:sans-serif; letter-spacing:1px;">DOCUMENT REVIEW ID: ${appId.toUpperCase()}</p>
                 
-                <h1 style="font-size:32px; border-bottom:2px solid #000; padding-bottom:10px; margin-top:30px;">${app.appHook}</h1>
+                <h1 style="font-size:42px; border-left:5px solid #000; padding-left:25px; margin-top:40px; line-height:1.2; font-weight:bold;">${app.appHook}</h1>
                 
-                <div style="margin-top:40px; line-height:1.8; font-size:18px;">
-                    <p style="margin-bottom:20px;">${app.startingContent}</p>
-                    <p style="margin-bottom:20px;">${app.mainContent}</p>
-                    <p style="margin-bottom:40px;">${app.endingContent}</p>
+                <div style="margin-top:60px; line-height:1.8; font-size:20px; text-align:justify; color:#333;">
+                    <p style="margin-bottom:30px;">${app.startingContent}</p>
+                    <p style="margin-bottom:30px;">${app.mainContent}</p>
+                    <p style="margin-bottom:50px;">${app.endingContent}</p>
                 </div>
 
-                <div style="margin-top:50px; border-top:1px solid #eee; padding-top:20px;">
-                    <p>Respectfully,</p>
-                    <h2 style="font-size:24px;">${app.founderName}</h2>
+                <div style="margin-top:80px;">
+                    <p style="font-size:14px; color:#888; margin:0;">Respectfully Submitted,</p>
+                    <h2 style="font-size:28px; margin:5px 0 0 0; font-family:sans-serif; font-weight:700;">${app.founderName}</h2>
                 </div>
 
-                <div class="attached-vest-card" style="margin-top:60px; background:#fafafa; border:1px solid #ddd; padding:20px; border-radius:10px;">
-                    <p style="font-size:12px; text-transform:uppercase; color:#888;">Attached Startup Vest</p>
-                    <h3>${vest.MainVest.hook}</h3>
-                    <p>${vest.MainVest.description.substring(0,100)}...</p>
-                    <div style="display:flex; justify-content:space-between; margin-top:10px; font-weight:bold;">
-                        <span>Ask: $${vest.MainVest.fundAsk}</span>
-                        <span>Equity: ${vest.MainVest.equityOffered}%</span>
+                <div style="margin-top:80px; background:#000; color:#fff; padding:40px; border-radius:4px;">
+                    <p style="font-family:sans-serif; font-size:10px; letter-spacing:2px; color:#888; margin-bottom:15px; text-transform:uppercase;">Linked Startup Authority</p>
+                    <h3 style="font-size:24px; margin-bottom:10px; color:#fff;">${vest?.MainVest?.hook || 'Startup Vest'}</h3>
+                    <p style="font-size:15px; color:#aaa; margin-bottom:25px;">${vest?.MainVest?.description?.substring(0, 150)}...</p>
+                    <div style="display:flex; justify-content:space-between; margin-top:20px; font-family:sans-serif; font-weight:bold; border-top:1px solid #333; padding-top:20px;">
+                        <span>INVESTMENT ASK: $${vest?.MainVest?.fundAsk || '0'}</span>
+                        <span>EQUITY OFFER: ${vest?.MainVest?.equityOffered || '0'}%</span>
                     </div>
                 </div>
 
-                <div style="text-align:center; margin-top:80px; opacity:0.6;">
-                    <p style="font-family:sans-serif; font-size:14px;"><strong>ScaleVest</strong> | UnioraX Private Limited</p>
+                <div style="text-align:center; margin-top:100px; opacity:0.5; border-top:1px solid #f0f0f0; padding-top:20px;">
+                    <p style="font-family:sans-serif; font-size:13px; color:#000;">
+                        <strong>ScaleVest</strong> | UnioraX Private Limited
+                    </p>
                 </div>
+             </div>
+             <div style="text-align:center; margin-top:30px;">
+                <button class="buy-btn-premium" style="width:200px;" onclick="window.location.hash='applications'">Back to Applications</button>
              </div>
         </div>
     `;
-}
+};
 
-// Word Limiter Helper
+// --- 7. HELPER: WORD LIMITER ---
 window.limitWords = function(element, limit) {
-    const words = element.value.split(/\s+/);
+    const words = element.value.trim().split(/\s+/).filter(w => w.length > 0);
     if (words.length > limit) {
         element.value = words.slice(0, limit).join(" ");
-        alert("Maximum 50 words allowed per section.");
+        alert(`Professional Guard: Maximum ${limit} words allowed per section.`);
     }
 };
    onAuthStateChanged(auth, async (user) => {
@@ -2936,19 +2968,13 @@ function handleHashChange() {
     const firebaseUid = currentUser.uid;
 
     // 2. CHECK: Is ID missing OR is it just the default Firebase UID?
-    // We want to FORCE a custom ID (e.g. "elon_musk"), not "A1b2C3d4..."
     if (!currentId || currentId === firebaseUid) {
-        console.log("⚠️ ID is missing or generic. Triggering Custom Input...");
-        
-        // Hide Loader & Dashboard
         document.getElementById('loadingScreen').classList.add('hidden'); 
         document.querySelector('.vest-container').style.display = 'none';
         const dash = document.getElementById('dashboardContainer');
         if (dash) dash.style.display = 'none';
-
-        // Show the Manual Input Modal
         showUserIdSetupModal(); 
-        return; // STOP EXECUTION
+        return; 
     }
 
     // 3. If we have a custom ID, proceed as normal
@@ -2959,22 +2985,20 @@ function handleHashChange() {
     const dashContainer = document.getElementById('dashboardContainer');
     if (dashContainer) dashContainer.style.display = 'none';
 
-    // Show the section
+    // Show the section based on Hash
     if (hash === 'founder_dashboard') {
         showDashboard();
     } else if (hash === 'edit_founderprofile') {
         showEditProfile();
- } else if (hash === 'founder_emergence') {
+    } else if (hash === 'founder_emergence') {
         showFounderEmergence();
- } else if (hash === 'manage_vests') {
+    } else if (hash === 'manage_vests') {
         showManageVests();
- } else if (hash === 'applications') {
-       showApplicationsList();
-
-} else if (hash.startsWith('view_application_')) {
-    const appId = hash.replace('view_application_', '');
-    renderFullApplicationPage(appId);
-
+    } else if (hash === 'applications') {
+        window.showApplicationsList(); // GLOBAL CALL
+    } else if (hash.startsWith('view_application_')) {
+        const appId = hash.replace('view_application_', '');
+        window.renderFullApplicationPage(appId); // GLOBAL CALL
     } else if (hash === 'edit_startup') {
         showEditStartup();
     } else if (hash.startsWith('vest_step')) {
