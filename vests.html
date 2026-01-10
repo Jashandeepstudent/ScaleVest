@@ -3065,19 +3065,18 @@ function getShopHeaderHTML(tokenCount, activeTab) {
 
 window.showApplicationsList = async function() {
     const container = document.getElementById('dashboardContainer');
-    if (!container) return;
-
-    // UI Preparation
     document.querySelector('.vest-container').style.display = 'none';
     container.style.display = 'block';
+    
+    // Force black background for dashboard list
     document.body.style.background = "linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)";
 
-    // Data Fetching
     const appRef = ref(db, `Applications/${currentUser.uid}`);
     const snapshot = await get(appRef);
     const apps = snapshot.val() || {};
 
     container.innerHTML = `
+        ${createNavBar()}
         <div class="manage-vests-page">
             <div class="header-row">
                 <a href="#founder_dashboard" class="back-to-dash">
@@ -3088,58 +3087,37 @@ window.showApplicationsList = async function() {
                 <h1>My Funding Applications</h1>
             </div>
             
-            <div class="vest-cards-grid">
-                ${Object.entries(apps).length > 0 ? 
-                    Object.entries(apps).map(([id, app]) => {
-                        
-                        // 1. Logic for Draft vs Completed
-                        const isDraft = app.status === 'incomplete';
-                        
-                        // 2. Action based on status
-                        const clickAction = isDraft 
-                            ? `window.renderApplicationForm('${id}', '${app.appName || "Draft"}')` 
-                            : `window.location.hash='view_application_${id}'`;
-
-                        // 3. Visual Status Pill
-                        const statusBadge = isDraft
-                            ? `<div class="status-pill-overlay pill-draft">DRAFT</div>`
-                            : `<div class="status-pill-overlay pill-completed">COMPLETED</div>`;
-
-                        return `
-                        <div class="vest-gig-card application-doc-card" onclick="${clickAction}">
-                            <div class="app-screenshot-preview">
-                                <div class="mini-white-sheet">
-                                    <div class="mini-title-box">
-                                        ${app.appHook ? app.appHook.substring(0, 22).toUpperCase() : 'UNTITLED DOCUMENT'}
-                                    </div>
-                                    <div class="mini-body-content">
-                                        <div class="mini-line" style="width: 100%"></div>
-                                        <div class="mini-line" style="width: 80%"></div>
-                                        <div class="mini-line" style="width: 90%"></div>
-                                    </div>
-                                    ${!isDraft ? `<div class="mini-black-card"></div>` : ''}
-                                </div>
-                                ${statusBadge}
+            <div class="vest-cards-grid" id="appsGrid">
+                ${Object.keys(apps).length > 0 ? 
+                    Object.entries(apps).map(([id, app]) => `
+                        <div class="vest-gig-card" onclick="window.location.hash='view_application_${id}'">
+                            <div class="doc-card-header">
+                                <div class="doc-badge">OFFICIAL</div>
+                                <div class="doc-sv-logo">SV</div>
+                                <div class="doc-id-tag">#${id.substring(0,6).toUpperCase()}</div>
                             </div>
+
                             <div class="vest-card-content">
-                                <h3 class="vest-hook-text">${app.appHook || 'New Funding Proposal'}</h3>
-                                <div class="vest-card-footer">
+                                <h3 class="vest-hook-text">${app.appHook || 'Funding Application'}</h3>
+                                <div style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+                                     <div style="width:6px; height:6px; border-radius:50%; background:#10b981;"></div>
+                                     <p class="vest-desc-text" style="margin:0; font-weight:600; color:#fff;">Status: Review Ready</p>
+                                </div>
+                                
+                                <div class="vest-card-footer" style="margin-top:20px; border-top:1px solid #222; padding-top:15px;">
                                     <span class="startup-label">${app.founderName || 'Founder'}</span>
-                                    <span class="doc-id-tag">#${id.substring(0,6).toUpperCase()}</span>
+                                    <span class="equity-tag" style="color:#888; font-family:monospace;">DOC_PROCESSED</span>
                                 </div>
                             </div>
-                        </div>`;
-                    }).join('') : `
-                    <div class="empty-state" style="grid-column: 1/-1; padding: 100px; text-align: center;">
-                        <p style="color: #666; font-size: 1.1rem;">No documents found. Start your first application.</p>
+                        </div>
+                    `).join('') : `
+                    <div class="empty-state" style="grid-column: 1/-1; padding:100px; text-align:center;">
+                        <p style="color:#666; font-size:1.1rem;">No applications created. Click below to start.</p>
                     </div>
                 `}
             </div>
-            
             <div style="text-align:center; margin-top:40px;">
-                <button class="buy-btn-premium" style="width:auto; padding: 12px 40px;" onclick="window.promptNewApplication()">
-                    + Create New Application
-                </button>
+                <button class="buy-btn-premium" style="width:auto; padding: 12px 40px;" onclick="window.promptNewApplication()">+ Create New Application</button>
             </div>
         </div>
     `;
