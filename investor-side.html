@@ -42,7 +42,57 @@
             object-fit: cover;
             filter: saturate(0.6) brightness(0.2) blur(5px);
         }
+.investor-select-wrapper {
+    position: relative;
+    width: 100%;
+}
 
+.investor-select-wrapper::after {
+    content: "▾";
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #aaa;
+    font-size: 16px;
+}
+
+#invType {
+    width: 100%;
+    padding: 16px 50px 16px 18px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    background: linear-gradient(145deg, #0d0d0d, #141414);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    appearance: none;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+/* Hover */
+#invType:hover {
+    border-color: rgba(0,255,255,0.4);
+}
+
+/* Focus */
+#invType:focus {
+    border-color: #00f0ff;
+    box-shadow: 0 0 0 3px rgba(0,240,255,0.15);
+}
+
+/* Options */
+#invType option {
+    background: #0f0f0f;
+    color: #fff;
+}
+
+/* Disabled option */
+#invType option[disabled] {
+    color: #777;
+}
         .video-overlay-filter {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -641,16 +691,18 @@
         
         <input type="number" id="invAge" placeholder="Age" style="width:100%; padding:15px; margin-bottom:15px; border-radius:10px; border:1px solid var(--border); background:#111; color:white;">
         
-<select id="invType" style="width:100%; padding:15px; margin-bottom:25px; border-radius:10px; border:1px solid var(--border); background:#111; color:white;">
-    <option value="" disabled selected>Select Investor Type</option>
-    <option value="Individual Investor">Individual Investor (Personal Funds)</option>
-    <option value="Angel Investor">Angel Investor (Early Stage Startups)</option>
-    <option value="Venture Capital">Venture Capital (High Growth Focus & Funds)</option>
-    <option value="Peer-to-Peer Investor">Peer-to-Peer Investor (Direct Lending)</option>
-    <option value="Private Equity">Private Equity (Strategic Guidance)</option>
-    <option value="Institutional Investor">Institutional Investor (Large Scale Fund)</option>
-    <option value="Activist Investor">Activist Investor (Strategic Board Influence)</option>
-</select>
+<div class="investor-select-wrapper">
+    <select id="invType">
+        <option value="" disabled selected>Select Investor Type</option>
+        <option value="Individual Investor">Individual Investor (Personal Funds)</option>
+        <option value="Angel Investor">Angel Investor (Early Stage Startups)</option>
+        <option value="Venture Capital">Venture Capital (High Growth Focus & Funds)</option>
+        <option value="Peer-to-Peer Investor">Peer-to-Peer Investor (Direct Lending)</option>
+        <option value="Private Equity">Private Equity (Strategic Guidance)</option>
+        <option value="Institutional Investor">Institutional Investor (Large Scale Fund)</option>
+        <option value="Activist Investor">Activist Investor (Strategic Board Influence)</option>
+    </select>
+</div>
         <button class="btn-hero-start" style="width:100%; margin-top:0;" onclick="saveInvestorProfile()">CREATE PROFILE</button>
         <p onclick="document.getElementById('investorModal').style.display='none'" style="margin-top:20px; color:var(--text-dim); cursor:pointer; font-size:0.8rem;">CANCEL</p>
     </div>
@@ -726,7 +778,7 @@
         const type = document.getElementById('invType').value;
 
         if (!name || !age || !type) {
-            alert("All fields are required to initialize your command center.");
+            alert("Please fill all Details to Continue.");
             return;
         }
 
