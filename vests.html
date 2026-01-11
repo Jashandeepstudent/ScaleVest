@@ -1124,90 +1124,133 @@
     margin-bottom: 40px;
     min-height: 100px;
 }
-/* --- VEST CARD ACTIONS --- */
+/* ===============================
+   VEST CARD ACTIONS
+================================ */
 .card-actions {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #222;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
 }
 
+/* ===============================
+   BASE ACTION BUTTON
+================================ */
 .action-btn {
     flex: 1;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 12px 14px;
+
+    background: #ffffff;
+    color: #000000;
+
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+
     font-size: 0.8rem;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s ease;
+    font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
+
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.08),
+        inset 0 0 0 rgba(255,255,255,0);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    white-space: nowrap;
 }
 
-/* Shutdown / Re-Activate Styles */
-.btn-shutdown {
-    background: #222;
-    color: #aaa;
-    border: 1px solid #444;
-}
-.btn-shutdown:hover {
-    background: #333;
-    color: #fff;
-    border-color: #fff;
-}
-
-.btn-reactivate {
-    background: #10b981; /* Green */
-    color: #fff;
-    border: none;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-}
-.btn-reactivate:hover {
-    background: #059669;
+/* Premium hover */
+.action-btn:hover {
     transform: translateY(-2px);
+    box-shadow:
+        0 8px 20px rgba(0,0,0,0.15),
+        inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
-/* Delete Button Styles */
+/* Pressed */
+.action-btn:active {
+    transform: translateY(0);
+    box-shadow:
+        0 3px 8px rgba(0,0,0,0.12);
+}
+
+/* ===============================
+   SHUTDOWN / REACTIVATE
+================================ */
+.btn-shutdown,
+.btn-reactivate {
+    background: #ffffff;
+    color: #000000;
+    border-color: rgba(0,0,0,0.12);
+}
+
+/* ===============================
+   DELETE (ELEGANT DANGER)
+================================ */
 .btn-delete {
-    background: rgba(255, 0, 0, 0.05);
-    color: #ff4d4d;
-    border: 1px solid #ff4d4d;
-    max-width: 80px; /* Keep delete button smaller */
-}
-.btn-delete:hover {
-    background: #ff4d4d;
-    color: #fff;
+    flex: 0 0 auto;
+    min-width: 90px;
+
+    background: #ffffff;
+    color: #000000;
+
+    border: 1px solid rgba(0,0,0,0.2);
+
+    box-shadow:
+        0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* Status Badge Styles */
+/* Delete hover = subtle warning */
+.btn-delete:hover {
+    border-color: #000;
+    box-shadow:
+        0 10px 25px rgba(0,0,0,0.25);
+}
+
+/* ===============================
+   STATUS BADGES (LUXURY)
+================================ */
 .status-badge {
     position: absolute;
     top: 12px;
     left: 12px;
-    padding: 4px 10px;
-    border-radius: 6px;
+
+    padding: 5px 12px;
+    border-radius: 8px;
+
     font-size: 0.7rem;
-    font-weight: 800;
+    font-weight: 900;
+    letter-spacing: 0.6px;
     text-transform: uppercase;
-    color: #fff;
+
+    background: #ffffff;
+    color: #000000;
+
+    border: 1px solid rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
     z-index: 10;
 }
 
-.status-active { 
-    background: #10b981; 
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); 
+/* Subtle status meaning via border */
+.status-active {
+    border-color: rgba(0,0,0,0.35);
 }
 
-.status-inactive { 
-    background: #ff0000; /* Pure Red */
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); 
+.status-inactive {
+    border-style: dashed;
 }
 
-.status-draft { 
-    background: #ffb703; 
-    color: #000;
+.status-draft {
+    opacity: 0.85;
 }
 /* Pricing */
 .price-section {
