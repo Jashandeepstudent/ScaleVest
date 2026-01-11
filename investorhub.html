@@ -1187,76 +1187,94 @@ document.getElementById("navProfileName").innerText = fullName;
     }
 }
 
+// --- 1. THE TRIGGER FUNCTION ---
+window.enterEditMode = async () => {
+    // Show Loading state
+    updateProgress(50, "Opening Edit Terminal...");
+    const rightSection = document.querySelector('.right-section');
+    
+    // Fetch current data to pre-fill the edit cards
+    const snapshot = await get(ref(database, `investorProfiles/${currentUserUID}`));
+    const data = snapshot.exists() ? snapshot.val() : {};
+
+    // Hide dashboard elements
+    document.querySelector('.welcome-section').style.display = 'none';
+    document.querySelectorAll('.banner').forEach(b => b.style.display = 'none');
+
+    // Render the 3-Card Edit Terminal
+    rightSection.innerHTML = `
+        <h1 class="welcome-text">Profile Terminal</h1>
+        <p class="welcome-subtext">Update your investment identity and financial parameters</p>
+        
+        <div class="edit-profile-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-top: 30px;">
+            
+            <div class="card">
+                <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    Identity Setup
+                    <svg class="edit-pencil" onclick="openEditIdentity()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px; cursor:pointer;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </div>
+                <div style="text-align:center; margin: 15px 0;">
+                    <div class="profile-avatar" style="width:70px; height:70px; margin: 0 auto;">
+                        <img src="${data.photoURL || ''}" id="miniPreview" style="width:100%; height:100%; object-fit:cover; border-radius:50%; ${data.photoURL ? '' : 'display:none'}">
+                    </div>
+                </div>
+                <div class="stat-row"><span class="stat-label">Name</span><span class="stat-val">${data.fullName || '---'}</span></div>
+                <div class="stat-row"><span class="stat-label">Handle</span><span class="stat-val">${data.userID || '---'}</span></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    Financial Profile
+                    <svg class="edit-pencil" onclick="openEditInvestment()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px; cursor:pointer;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </div>
+                <div class="stat-row"><span class="stat-label">Net Worth</span><span class="stat-val">$${data.netWorth || '0'}</span></div>
+                <div class="stat-row"><span class="stat-label">Min/Max</span><span class="stat-val">$${data.minInvestment || '0'} - $${data.maxInvestment || '0'}</span></div>
+                <div class="stat-row"><span class="stat-label">Sector</span><span class="stat-val">${data.preferredStartups || 'None'}</span></div>
+            </div>
+
+            <div class="card" style="display:flex; flex-direction:column; justify-content:center; align-items:center; border: 1px solid #38bdf8;">
+                <div class="card-title">Terminal Exit</div>
+                <p class="progress-text" style="margin-bottom:20px;">All changes sync to Angel Profile instantly.</p>
+                <button class="card-btn" onclick="location.reload()" style="border-color:#38bdf8; color:#38bdf8;">EXIT TERMINAL</button>
+            </div>
+        </div>
+    `;
+
+    // Pre-fill hidden modal inputs
+    document.getElementById('editFullName').value = data.fullName || "";
+    document.getElementById('editUserID').value = data.userID || "";
+    document.getElementById('editNetWorth').value = data.netWorth || "";
+    document.getElementById('editMinInv').value = data.minInvestment || "";
+    document.getElementById('editMaxInv').value = data.maxInvestment || "";
+    document.getElementById('editPreferred').value = data.preferredStartups || "";
+};
+
+// --- 2. MODAL CONTROLS ---
+window.openEditIdentity = () => document.getElementById('editIdentityModal').style.display = 'flex';
+window.openEditInvestment = () => document.getElementById('editInvestmentModal').style.display = 'flex';
+window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+
+// --- 3. PHOTO UPLOAD LOGIC ---
 document.getElementById('photoUploadInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    const status = document.getElementById('uploadStatus');
-    const saveBtn = document.getElementById('saveIdentityBtn');
     
-    status.innerText = "⏳ Uploading to Secure Server...";
-    saveBtn.disabled = true;
-
+    const status = document.getElementById('uploadStatus');
+    status.innerText = "⏳ Uploading...";
+    
     try {
-        // Create a unique path for the user's avatar
-        const storageRef = sRef(storage, `investor-Profile/${currentUserUID}`);
-        
-        // Upload file
+        const storageRef = sRef(storage, `investor-Photos/${currentUserUID}`);
         await uploadBytes(storageRef, file);
-        
-        // Get the public URL
         uploadedPhotoURL = await getDownloadURL(storageRef);
         
-        status.innerText = "✅ Upload Complete!";
+        // Update Preview in Modal
+        document.getElementById('editPreviewAvatar').innerHTML = `<img src="${uploadedPhotoURL}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        status.innerText = "✅ Upload Successful";
         status.style.color = "#10b981";
     } catch (err) {
-        console.error(err);
-        status.innerText = "❌ Upload Failed.";
-        status.style.color = "#ef4444";
-    } finally {
-        saveBtn.disabled = false;
+        status.innerText = "❌ Upload Failed";
     }
 });
-
-// Modify your updateProfileSection function to include the new URL
-window.updateProfileSection = async (type) => {
-    if (!currentUserUID) return;
-    
-    let updates = {};
-    if (type === 'identity') {
-        updates = {
-            fullName: document.getElementById('editFullName').value,
-            userID: document.getElementById('editUserID').value.toUpperCase()
-        };
-        // Only update photoURL if a new one was uploaded
-        if (uploadedPhotoURL) updates.photoURL = uploadedPhotoURL;
-        
-    } else {
-        updates = {
-            netWorth: document.getElementById('editNetWorth').value,
-            minInvestment: document.getElementById('editMinInv').value,
-            maxInvestment: document.getElementById('editMaxInv').value,
-            preferredStartups: document.getElementById('editPreferred').value
-        };
-    }
-
-    try {
-        const paths = [`investorProfiles/${currentUserUID}`, `angelProfiles/${currentUserUID}`];
-        
-        for (const path of paths) {
-            const snap = await get(ref(database, path));
-            if (snap.exists() || path.includes('investorProfiles')) {
-                await update(ref(database, path), updates);
-            }
-        }
-
-        alert("Terminal Synced Successfully.");
-        location.reload();
-    } catch (err) {
-        console.error(err);
-        alert("Sync Error.");
-    }
-};
 window.launchAngelProfile = async function() {
     if (!currentUserUID) return alert("Session expired.");
     
