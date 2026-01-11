@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a4d3c 0%, #1a5f7a 50%, #2e8b9e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: linear-gradient(90deg, #0a2f23, #134e4a, #0f766e);
+            padding: 1.2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #10b981;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #a7f3d0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #10b981;
+            transition: width 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #10b981;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #134e4a;
+            min-width: 220px;
+            border-radius: 12px;
+            margin-top: 1rem;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .dropdown-content.show {
+            display: block !important;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-item {
+            padding: 1rem 1.5rem;
+            color: #a7f3d0;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-left-color: #10b981;
+            padding-left: 2rem;
+            color: #10b981;
+        }
+
+        .top-nav-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .icon-btn:hover {
+            background: #10b981;
+            border-color: #10b981;
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .icon-btn:hover svg {
+            stroke: #fff;
+        }
+
+        .profile-dropdown {
+            position: relative;
+        }
+
+        .profile-dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #134e4a;
+            min-width: 300px;
+            border-radius: 12px;
+            margin-top: 1rem;
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 1rem;
+            animation: fadeIn 0.3s;
+        }
+
+        .profile-dropdown-content.show {
+            display: block;
+        }
+
+        .profile-info {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+            margin-bottom: 1rem;
+        }
+
+        .profile-username {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #10b981;
+        }
+
+        .profile-userid {
+            color: #6ee7b7;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .switch-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            padding: 0.9rem;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .switch-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .profile-section {
+            padding: 0.5rem 0;
+        }
+
+        .profile-link {
+            padding: 0.9rem 1rem;
+            display: block;
+            color: #a7f3d0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .profile-link:hover {
+            background: rgba(16, 185, 129, 0.2);
+            padding-left: 1.5rem;
+            color: #10b981;
+        }
+
+        /* Main Container */
+        .container {
+            padding: 3rem 3rem;
+            display: flex;
+            gap: 3rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .left-section {
+            width: 380px;
+            flex-shrink: 0;
+        }
+
+        .right-section {
+            flex: 1;
+            max-width: 1100px;
+        }
+
+        .welcome-section {
+            margin-bottom: 3rem;
+        }
+
+        .welcome-text {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-subtext {
+            color: #6ee7b7;
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(16, 185, 129, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+/* --- MODAL STYLES --- */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Dark dimming */
+    backdrop-filter: blur(15px); /* Strong blur */
+    z-index: 9999;
+    display: none; /* Hidden unless JS activates it */
+    align-items: center; justify-content: center;
+}
+
+.modal-box {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid #10b981;
+    box-shadow: 0 0 50px rgba(16, 185, 129, 0.2);
+    padding: 3rem;
+    border-radius: 30px;
+    text-align: center;
+    max-width: 450px;
+    width: 90%;
+    animation: zoomIn 0.4s ease;
+}
+
+.modal-box h2 { font-size: 1.8rem; margin-bottom: 10px; color: #fff; }
+.modal-box p { color: #94a3b8; margin-bottom: 25px; }
+
+.modal-box input {
+    width: 100%; padding: 15px; border-radius: 12px;
+    background: rgba(255,255,255,0.05); border: 1px solid #334155;
+    color: #fff; font-size: 1.1rem; text-align: center; letter-spacing: 1px;
+    margin-bottom: 20px; outline: none;
+}
+
+.modal-box input:focus { border-color: #10b981; }
+
+.modal-btn {
+    width: 100%; padding: 15px; border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+    color: #fff; font-weight: 800; border: none; cursor: pointer;
+    font-size: 1rem; letter-spacing: 1px;
+}
+
+@keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2);
+        }
+
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .card-title {
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #10b981;
+        }
+
+        .card-subtitle {
+            text-align: center;
+            color: #6ee7b7;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-btn {
+            background: transparent;
+            color: #10b981;
+            border: 2px solid #10b981;
+            padding: 0.9rem 1.5rem;
+            width: 100%;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .card-btn:hover {
+            background: #10b981;
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Profile Progress */
+        .progress-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #a7f3d0;
+        }
+
+        .progress-bar {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #10b981, #3b82f6);
+            height: 100%;
+            width: 75%;
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6ee7b7;
+        }
+
+        /* Quick Links */
+        .quick-links {
+            list-style: none;
+        }
+
+        .quick-links li {
+            margin-bottom: 0.8rem;
+        }
+
+        .quick-links a {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem;
+            color: #a7f3d0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .quick-links a:hover {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border-color: #10b981;
+            transform: translateX(5px);
+        }
+
+        .quick-links a::before {
+            content: "→";
+            margin-right: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* Banners */
+        .banner {
+            background: rgba(16, 185, 129, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 3rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #10b981, #3b82f6);
+            transform: scaleY(0);
+            transition: transform 0.4s;
+        }
+
+        .banner:hover::before {
+            transform: scaleY(1);
+        }
+
+        .banner:hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateX(10px);
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2);
+        }
+
+        .banner-content h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .banner-content p {
+            color: #a7f3d0;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .banner-icon {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 20px;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            flex-shrink: 0;
+            margin-left: 2rem;
+        }
+
+        .banner-icon svg {
+            width: 60px;
+            height: 60px;
+            stroke: #10b981;
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(16, 185, 129, 0.05);
+            border-top: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 3rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-logo {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .footer-logo-text {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #10b981;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .footer-company {
+            color: #6ee7b7;
+            font-size: 0.9rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .footer-link {
+            color: #a7f3d0;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            color: #10b981;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 2rem 1.5rem;
+                gap: 2rem;
+            }
+
+            .left-section {
+                width: 100%;
+            }
+
+            .top-nav {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .banner {
+                padding: 2rem;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .banner-icon {
+                margin-left: 0;
+                margin-top: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .welcome-text {
+                font-size: 1.8rem;
+            }
+
+            .banner-content h3 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="userIdModal" class="modal-overlay">
+    <div class="modal-box">
+        <h2>Identity Verification</h2>
+        <p>Please establish your unique Investor ID to access the terminal.</p>
+        
+        <input type="text" id="newUserIdInput" placeholder="e.g. VEST_007" maxlength="15">
+        <button class="modal-btn" onclick="saveUserID()">INITIALIZE ID</button>
+    </div>
+</div>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="logo">Platform</div>
+
+        <div class="nav-links">
+            <a href="#dashboard" class="nav-link">Dashboard</a>
+            <a href="#projects" class="nav-link">Projects</a>
+            <a href="#analytics" class="nav-link">Analytics</a>
+
+            <div class="dropdown">
+                <span class="nav-link" onclick="toggleDropdown('mainDropdown'); event.stopPropagation();">
+                    More ▾
+                </span>
+                <div class="dropdown-content" id="mainDropdown">
+                    <a href="#settings" class="dropdown-item">Settings</a>
+                    <a href="#help" class="dropdown-item">Help Center</a>
+                    <a href="#support" class="dropdown-item">Support</a>
+                    <a href="#billing" class="dropdown-item">Billing</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-nav-right">
+            <div class="icon-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </div>
+
+            <div class="icon-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+            </div>
+
+            <div class="profile-dropdown">
+                <div class="icon-btn" onclick="toggleProfileDropdown()">
+                    <div style="font-size:1.2rem;font-weight:600;color:#10b981;">U</div>
+                </div>
+
+                <div class="profile-dropdown-content" id="profileDropdown">
+                    <div class="profile-info">
+                        <div class="profile-username">John Doe</div>
+                        <div class="profile-userid">USER_12345</div>
+                    </div>
+
+                    <button class="switch-btn">Switch Account</button>
+
+                    <div class="profile-section">
+                        <a href="#profile" class="profile-link">My Profile</a>
+                        <a href="#settings" class="profile-link">Settings</a>
+                        <a href="#logout" class="profile-link">Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Left Sidebar -->
+        <div class="left-section">
+            <!-- Profile Card -->
+<div class="card profile-card">
+    <div class="profile-avatar" id="profileAvatar">
+        <span></span> 
+    </div>
+    
+    <div class="card-title" id="profileName">Loading...</div>
+    <div class="user-id-badge" id="profileId">Checking ID...</div>
+
+    <div class="stat-row">
+        <span class="stat-label">Net Worth</span>
+        <span class="stat-val" id="profileNetWorth">...</span>
+    </div>
+    
+    <button class="card-btn">Edit Profile</button>
+</div>
+                
+                <!-- Profile Progress -->
+                <div class="progress-section">
+                    <div class="progress-label">Profile Completion</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">75% Complete</div>
+                </div>
+                
+                <button class="card-btn">View Profile</button>
+            </div>
+
+            <!-- Quick Links Card -->
+            <div class="card">
+                <div class="card-title" style="text-align: left; margin-bottom: 1.5rem;">Quick Links</div>
+                <ul class="quick-links">
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#projects">My Projects</a></li>
+                    <li><a href="#analytics">Analytics</a></li>
+                    <li><a href="#settings">Settings</a></li>
+                    <li><a href="#notifications">Notifications</a></li>
+                    <li><a href="#help">Help Center</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h1 class="welcome-text">Welcome, John!</h1>
+                <p class="welcome-subtext">Let's make today productive and achieve your goals</p>
+            </div>
+
+            <!-- Banners -->
+            <div class="banner">
+                <div class="banner-content">
+                    <h3>Start Your First Project</h3>
+                    <p>Create a new project and collaborate with your team to bring your ideas to life.</p>
+                </div>
+                <div class="banner-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"></path>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="banner">
+                <div class="banner-content">
+                    <h3>Track Your Progress</h3>
+                    <p>Monitor your performance with real-time analytics and detailed insights.</p>
+                </div>
+                <div class="banner-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="banner">
+                <div class="banner-content">
+                    <h3>Connect With Team</h3>
+                    <p>Collaborate seamlessly with your team members and stay in sync with updates.</p>
+                </div>
+                <div class="banner-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="footer-logo-text">Platform</div>
+                <div class="footer-company">Your Company Name</div>
+            </div>
+            <div class="footer-links">
+                <a href="#about" class="footer-link">About</a>
+                <a href="#contact" class="footer-link">Contact</a>
+                <a href="#privacy" class="footer-link">Privacy</a>
+                <a href="#terms" class="footer-link">Terms</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-content').forEach(dd => {
+                    dd.classList.remove('show');
+                });
+            }
+            if (!e.target.closest('.profile-dropdown')) {
+                const dropdown = document.getElementById('profileDropdown');
+                if (dropdown) dropdown.classList.remove('show');
+            }
+        });
+ <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+  authDomain: "scalevest-163a0.firebaseapp.com",
+  databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+  projectId: "scalevest-163a0",
+  storageBucket: "scalevest-163a0.firebasestorage.app",
+  messagingSenderId: "938358950124",
+  appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
+  measurementId: "G-QD3TWBZHR0"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+    
+    let currentUserUID = null;
+
+    // 1. MONITOR LOGIN STATUS
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUserUID = user.uid;
+            loadUserProfile(user.uid);
+        } else {
+            // No user? Kick them out
+            window.location.href = "login3.html";
+        }
+    });
+
+    // 2. LOAD DATA & CHECK FOR USER ID
+    async function loadUserProfile(uid) {
+        const userRef = ref(database, 'investorProfiles/' + uid);
+        const snapshot = await get(userRef);
+
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+
+            // A. Update Sidebar UI
+            document.getElementById('profileName').innerText = data.fullName || "Investor";
+            document.getElementById('profileNetWorth').innerText = data.netWorth ? `$${data.netWorth}` : "-";
+            
+            // Handle Photo
+            const avatarDiv = document.getElementById('profileAvatar');
+            if (data.photoURL) {
+                avatarDiv.innerHTML = `<img src="${data.photoURL}" alt="Profile">`;
+            } else {
+                // Initials fallback
+                const initials = (data.fullName || "U").charAt(0).toUpperCase();
+                avatarDiv.innerHTML = `<span>${initials}</span>`;
+            }
+
+            // B. CHECK: Does UserID exist?
+            if (data.userID) {
+                // Yes: Show it
+                document.getElementById('profileId').innerText = data.userID;
+            } else {
+                // No: Show the Modal forcing them to create one
+                document.getElementById('userIdModal').style.display = "flex";
+            }
+        }
+    }
+
+    // 3. SAVE THE NEW USER ID (Triggered by Modal Button)
+    window.saveUserID = async function() {
+        const newId = document.getElementById('newUserIdInput').value.trim().toUpperCase();
+
+        if (newId.length < 3) {
+            alert("ID must be at least 3 characters.");
+            return;
+        }
+
+        try {
+            // Update Database
+            await update(ref(database, 'investorProfiles/' + currentUserUID), {
+                userID: newId
+            });
+
+            // Update UI & Close Modal
+            document.getElementById('profileId').innerText = newId;
+            document.getElementById('userIdModal').style.display = "none";
+            alert("Identity Verified. Welcome.");
+
+        } catch (error) {
+            console.error(error);
+            alert("Error saving ID.");
+        }
+    };
+</script>
+</body>
+</html>
