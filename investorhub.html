@@ -967,49 +967,48 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 async function loadUserProfile(uid) {
+    const avatarDiv = document.getElementById("profileAvatar");
+    
     try {
         const snapshot = await get(ref(database, "investorProfiles/" + uid));
-        if (!snapshot.exists()) return;
+        
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            const fullName = data.fullName || "Investor";
+            const initials = fullName.charAt(0).toUpperCase();
 
-        const data = snapshot.val();
-        const avatar = document.getElementById("profileAvatar");
-        const initials = (data.fullName || "U")[0].toUpperCase();
+            // 1. Update Text
+            document.getElementById("profileName").innerText = fullName;
+            document.getElementById("profileNetWorth").innerText = data.netWorth ? `$${data.netWorth}` : "$0.00";
+            if (data.userID) document.getElementById("profileId").innerText = data.userID;
 
-        // Update Text Info
-        document.getElementById("profileName").innerText = data.fullName || "Investor";
-        document.getElementById("profileNetWorth").innerText = data.netWorth ? `$${data.netWorth}` : "-";
+            // 2. Avatar Logic: Priority to photoURL
+            if (data.photoURL && data.photoURL.trim() !== "") {
+                const tempImg = new Image();
+                tempImg.src = data.photoURL;
 
-        // --- AVATAR LOGIC ---
-        if (data.photoURL && data.photoURL.length > 10) {
-            // Create the image element
-            const img = document.createElement('img');
-            img.src = data.photoURL;
-            img.alt = "Investor Profile";
-            
-            // If the image loads successfully, clear the div and add it
-            img.onload = function() {
-                avatar.innerHTML = ""; 
-                avatar.appendChild(img);
-            };
+                // Only switch to image if it actually loads
+                tempImg.onload = () => {
+                    avatarDiv.innerHTML = `<img src="${data.photoURL}" style="width:100%; height:100%; object-fit:cover;">`;
+                };
 
-            // If the image fails (404 or bad URL), show initials instead
-            img.onerror = function() {
-                avatar.innerHTML = `<span>${initials}</span>`;
-            };
-        } else {
-            // No URL found in database? Show initials
-            avatar.innerHTML = `<span>${initials}</span>`;
+                // Fallback if URL is broken (404)
+                tempImg.onerror = () => {
+                    avatarDiv.innerHTML = `<span>${initials}</span>`;
+                };
+            } else {
+                // No URL in DB? Show Initials
+                avatarDiv.innerHTML = `<span>${initials}</span>`;
+            }
+
+            // 3. Forced ID Check
+            if (!data.userID) {
+                document.getElementById("userIdModal").style.display = "flex";
+            }
         }
-
-        // --- USER ID LOGIC ---
-        if (data.userID) {
-            document.getElementById("profileId").innerText = data.userID;
-        } else {
-            document.getElementById("userIdModal").style.display = "flex";
-        }
-
     } catch (err) {
-        console.error("Profile load failed:", err);
+        console.error("Firebase Load Error:", err);
+        avatarDiv.innerHTML = `<span>!</span>`;
     }
 }
 /* ✅ SAVE USER ID */
