@@ -118,28 +118,55 @@
    APP CARD DELETE (LUXURY FIX)
 ================================ */
 .delete-app-wrapper {
-    opacity: 1 !important;
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-
+    opacity: 1 !important; /* Force visible */
+    display: flex !important;
     background: #ffffff !important;
-    color: #000000 !important;
-
-    border: 1px solid rgba(0,0,0,0.15) !important;
-    border-radius: 10px;
-
-    padding: 6px 10px;
-
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    transition: all 0.25s ease;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
 }
 
 .delete-app-wrapper:hover {
     transform: translateY(-2px) scale(1.05);
     box-shadow: 0 10px 25px rgba(0,0,0,0.25);
 }
+.app-editor-nav {
+    max-width: 800px;
+    margin: 0 auto 20px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
+.btn-back-external {
+    background: #fff;
+    color: #000;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.btn-back-external:hover {
+    transform: translateX(-5px);
+    border-color: #000;
+}
+
+.draft-badge {
+    background: #ffb703;
+    color: #000;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 /* ===============================
    FORM HEADER BUTTON ROW
 ================================ */
@@ -3647,53 +3674,62 @@ window.showSuccessToast = function(message) {
 window.renderApplicationForm = async function(appId, appName) {
     const container = document.getElementById('dashboardContainer');
     
-    // Show loader while fetching draft data
-    container.innerHTML = '<div class="loading-box"><div class="spinner"></div><p>Loading Draft...</p></div>';
+    // Show loader
+    container.innerHTML = '<div class="loading-box"><div class="spinner"></div><p>Loading Editor...</p></div>';
 
-    // Fetch existing data for this app ID (so we can pre-fill)
+    // 1. Fetch existing data (if any) to pre-fill
     const appRef = ref(db, `Applications/${currentUser.uid}/${appId}`);
     const snapshot = await get(appRef);
     const appData = snapshot.val() || {};
     
-    // Check if vest is attached for display text
+    // Use the passed appName if available, otherwise fall back to DB
+    const currentAppName = appName || appData.appName || "Untitled Application";
+
+    // Check vest status
     let attachedVestText = "";
     if (appData.vestId) {
         attachedVestText = "✓ Vest Attached"; 
     }
 
+    // 2. Render HTML
     container.innerHTML = `
-        <div class="app-form-overlay" style="background:#f4f4f4; min-height:100vh; padding: 50px 20px; color:#000;">
-            <div class="white-paper-form" style="background:#fff; max-width:700px; margin:0 auto; padding:40px; border-radius:4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <div class="app-form-overlay" style="background:#f4f4f4; min-height:100vh; padding: 40px 20px; color:#000;">
+            
+            <div class="app-editor-nav">
+                <button class="btn-back-external" onclick="window.saveApplicationDraft('${appId}', true)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back & Save
+                </button>
+                <div class="draft-badge">Draft Mode</div>
+            </div>
+
+            <div class="white-paper-form" style="background:#fff; max-width:800px; margin:0 auto; padding:60px; border-radius:4px; box-shadow: 0 20px 60px rgba(0,0,0,0.1);">
                 
-                <div class="form-header-row">
-                    <button class="btn-back-save" onclick="window.saveApplicationDraft('${appId}', true)">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                        Back (Save)
-                    </button>
-                    <div style="text-align:right;">
-                        <h2 style="margin:0; font-size:1.2rem;">${appName}</h2>
-                        <span style="color:#999; font-size:11px; text-transform:uppercase; letter-spacing:1px;">Draft Mode</span>
-                    </div>
+                <div style="border-bottom:2px solid #000; padding-bottom:20px; margin-bottom:40px;">
+                    <h1 id="displayAppName" style="margin:0; font-size:2rem; font-weight:800; letter-spacing:-1px;">${currentAppName}</h1>
+                    <p style="color:#666; margin-top:5px; font-size:0.9rem;">Official Funding Application</p>
                 </div>
 
                 <div class="form-group-white">
-                    <label>Application Hook Line (Catchy Header)</label>
-                    <input type="text" id="appHook" value="${appData.appHook || ''}" placeholder="First line that catches investor eyes..." oninput="window.limitWords(this, 50)">
+                    <label>Application Hook Line</label>
+                    <input type="text" id="appHook" value="${appData.appHook || ''}" placeholder="The one-liner that grabs attention..." oninput="window.limitWords(this, 50)">
                 </div>
 
                 <div class="form-group-white">
-                    <label>Starting Content (The Hook)</label>
-                    <textarea id="appStarting" placeholder="Brief intro..." oninput="window.limitWords(this, 50)">${appData.startingContent || ''}</textarea>
+                    <label>Starting Content (The Intro)</label>
+                    <textarea id="appStarting" placeholder="Introduce the opportunity..." style="height:120px;" oninput="window.limitWords(this, 100)">${appData.startingContent || ''}</textarea>
                 </div>
 
                 <div class="form-group-white">
                     <label>Main Proportion (The Core Details)</label>
-                    <textarea id="appMain" style="height:150px;" placeholder="The main proposal content..." oninput="window.limitWords(this, 50)">${appData.mainContent || ''}</textarea>
+                    <textarea id="appMain" style="height:200px;" placeholder="The main proposal content..." oninput="window.limitWords(this, 300)">${appData.mainContent || ''}</textarea>
                 </div>
 
                 <div class="form-group-white">
                     <label>Ending Hooks (Call to Action)</label>
-                    <textarea id="appEnding" placeholder="How should they reach back?..." oninput="window.limitWords(this, 50)">${appData.endingContent || ''}</textarea>
+                    <textarea id="appEnding" placeholder="How should they reach back?..." style="height:100px;" oninput="window.limitWords(this, 50)">${appData.endingContent || ''}</textarea>
                 </div>
 
                 <div class="form-group-white">
@@ -3703,8 +3739,10 @@ window.renderApplicationForm = async function(appId, appName) {
 
                 <div class="form-group-white">
                     <label>Link Startup Vest</label>
-                    <button class="attach-btn" onclick="window.openVestPicker()" style="width:100%; border-style:dashed;">+ Choose a Vest to Attach</button>
-                    <div id="attachedVestName" style="margin-top:10px; font-weight:bold; color:#10b981;">
+                    <button class="attach-btn" onclick="window.openVestPicker()" style="width:100%; border:2px dashed #ccc; background:#fafafa; padding:15px;">
+                        ${attachedVestText || '+ Click to Attach Your Vest'}
+                    </button>
+                    <div id="attachedVestName" style="margin-top:10px; font-weight:bold; color:#10b981; text-align:center;">
                         ${attachedVestText}
                     </div>
                     <input type="hidden" id="selectedVestId" value="${appData.vestId || ''}">
@@ -3712,7 +3750,7 @@ window.renderApplicationForm = async function(appId, appName) {
 
                 <div class="form-actions-footer">
                     <button class="btn-save-draft" onclick="window.saveApplicationDraft('${appId}', false)">
-                        Save as Draft
+                        Save Progress
                     </button>
                     <button class="btn-submit-app" onclick="window.submitApplication('${appId}')">
                         Submit Application
@@ -3720,81 +3758,8 @@ window.renderApplicationForm = async function(appId, appName) {
                 </div>
                 
                 <div class="app-footer" style="text-align:center; margin-top:50px; border-top:1px solid #eee; padding-top:20px; opacity:0.6;">
-                    <p style="font-size:12px; color:#000;"><strong>ScaleVest</strong> | UnioraX Private Limited</p>
+                    <p style="font-size:12px; color:#000;"><strong>ScaleVest</strong> | Confidential Document</p>
                 </div>
-            </div>
-        </div>
-    `;
-};
-window.showApplicationsList = async function() {
-    const container = document.getElementById('dashboardContainer');
-    document.querySelector('.vest-container').style.display = 'none';
-    container.style.display = 'block';
-    
-    // Show a centered loader while fetching
-    container.innerHTML = `<div class="loading-box"><div class="spinner"></div><p>Fetching Applications...</p></div>`;
-
-    const appRef = ref(db, `Applications/${currentUser.uid}`);
-    const snapshot = await get(appRef);
-    const apps = snapshot.val() || {};
-
-    container.innerHTML = `
-        <div class="manage-vests-page">
-            <div class="header-row">
-                <a href="#founder_dashboard" class="back-to-dash">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                    Dashboard
-                </a>
-                <h1>My Funding Applications</h1>
-            </div>
-            
-            <div class="vest-cards-grid">
-                ${Object.entries(apps).length > 0 ? 
-                    Object.entries(apps).map(([id, app]) => {
-                        // Check if status is incomplete (Draft)
-                        const isDraft = app.status === 'incomplete';
-                        
-                        // Logic: Drafts open the Editor, Completed opens the Viewer
-                        const clickAction = isDraft 
-                            ? `window.renderApplicationForm('${id}', '${app.appName || "Draft"}')` 
-                            : `window.location.hash='view_application_${id}'`;
-
-                        return `
-                        <div class="vest-gig-card application-doc-card">
-                            <div class="delete-app-wrapper" onclick="event.stopPropagation(); window.deleteApplication('${id}')" style="position:absolute; top:10px; right:10px; z-index:100; cursor:pointer;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="2">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                            </div>
-                            
-                            <div onclick="${clickAction}" style="cursor:pointer;">
-                                <div class="app-screenshot-preview">
-                                    <div class="mini-white-sheet">
-                                        <div class="mini-title-box">${app.appName || 'Document'}</div>
-                                        <div class="mini-line header"></div>
-                                        <div class="mini-line"></div>
-                                        <div class="mini-line"></div>
-                                    </div>
-                                    <div class="status-pill-overlay ${isDraft ? 'pill-draft' : 'pill-completed'}">
-                                        ${isDraft ? 'DRAFT' : 'COMPLETED'}
-                                    </div>
-                                </div>
-
-                                <div class="vest-card-content">
-                                    <h3 class="vest-hook-text">${app.appHook || 'New Funding Proposal'}</h3>
-                                    <div class="vest-card-footer">
-                                        <span class="startup-label">${app.founderName || 'Founder'}</span>
-                                        <span class="doc-date">${new Date(app.updatedAt).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        `;
-                    }).join('') : `<p style="color:#666; text-align:center; width:100%;">No applications found.</p>`}
-            </div>
-            <div style="text-align:center; margin-top:40px;">
-                <button class="buy-btn-premium" onclick="window.promptNewApplication()">+ Create New Application</button>
             </div>
         </div>
     `;
@@ -3804,48 +3769,49 @@ window.saveApplicationDraft = async function(appId, isBackAction) {
     let submitBtn = null;
     let originalText = "";
     
-    // Only change button text if explicitly clicking "Save Draft"
-    if(!isBackAction && event) {
+    // UX: Change button text if clicked explicitly
+    if (!isBackAction && event) {
         submitBtn = event.currentTarget;
         originalText = submitBtn.innerText;
         submitBtn.innerText = "Saving...";
     }
 
-    // 1. Collect Data (Allows empty fields in draft mode)
+    // 1. Get Name Safely
+    const nameEl = document.getElementById('displayAppName');
+    const safeName = nameEl ? nameEl.innerText : "Untitled Application";
+
+    // 2. Collect Data
     const data = {
-        // appName is usually static from creation, but we ensure it exists
-        appName: document.querySelector('h2').innerText, 
+        appName: safeName, 
         appHook: document.getElementById('appHook').value,
         startingContent: document.getElementById('appStarting').value,
         mainContent: document.getElementById('appMain').value,
         endingContent: document.getElementById('appEnding').value,
         founderName: document.getElementById('appFounderName').value,
         vestId: document.getElementById('selectedVestId').value,
-        status: 'incomplete', // Explicitly mark as Draft
+        status: 'incomplete', // Keeps it as Draft
         updatedAt: Date.now()
     };
 
     try {
-        // 2. Update Firebase
+        // 3. Update Firebase
         await update(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
 
-        // 3. Handle Navigation
+        // 4. Handle Navigation
         if (isBackAction) {
-            // If Back button was clicked, go to list
-            if (window.showSuccessToast) window.showSuccessToast("Draft Saved Automatically");
+            if (window.showSuccessToast) window.showSuccessToast("Draft Saved");
             window.location.hash = 'applications';
-            window.showApplicationsList(); // Force refresh
+            // Force reload list to show updates
+            if(window.showApplicationsList) window.showApplicationsList();
         } else {
-            // If Save Draft button was clicked, just notify
-            if (window.showSuccessToast) window.showSuccessToast("Draft Saved Successfully");
+            if (window.showSuccessToast) window.showSuccessToast("Progress Saved");
             if(submitBtn) {
-                submitBtn.innerText = "Draft Saved ✓";
-                setTimeout(() => { submitBtn.innerText = originalText; }, 2000);
+                submitBtn.innerText = "Saved ✓";
+                setTimeout(() => { submitBtn.innerText = originalText; }, 1500);
             }
         }
-
     } catch (error) {
-        console.error("Draft Save Error:", error);
+        console.error("Draft Error:", error);
         alert("Error saving draft.");
         if(submitBtn) submitBtn.innerText = originalText;
     }
@@ -3888,15 +3854,17 @@ window.submitApplication = async function(appId) {
     const vestId = document.getElementById('selectedVestId').value;
     const submitBtn = event.currentTarget; 
 
-    // Basic Validation for Submission (Must be complete)
     if(!vestId) return alert("Please attach a vest before completing!");
     if(!document.getElementById('appHook').value) return alert("Please add a Hook Line.");
 
     submitBtn.disabled = true;
     submitBtn.innerText = "Processing...";
 
-    // 1. Collect Data
+    const nameEl = document.getElementById('displayAppName');
+    const safeName = nameEl ? nameEl.innerText : "Untitled Application";
+
     const data = {
+        appName: safeName,
         appHook: document.getElementById('appHook').value,
         startingContent: document.getElementById('appStarting').value,
         mainContent: document.getElementById('appMain').value,
@@ -3908,31 +3876,21 @@ window.submitApplication = async function(appId) {
     };
 
     try {
-        // 2. Save to Firebase
         await update(ref(db, `Applications/${currentUser.uid}/${appId}`), data);
         
-        // 3. Clear the screen immediately to avoid double clicks
+        // Show success
         const container = document.getElementById('dashboardContainer');
-        container.innerHTML = '<div style="text-align:center; padding:50px;"><div class="spinner"></div><p>Application Submitted!</p></div>';
+        container.innerHTML = '<div style="text-align:center; padding:100px;"><div class="spinner"></div><p>Application Submitted!</p></div>';
 
-        // 4. Redirect
         window.location.hash = 'applications';
-
-        // 5. Force UI Refresh
-        if (window.showApplicationsList) {
-            await window.showApplicationsList();
-        }
-        
-        // 6. Success Toast
-        if (window.showSuccessToast) {
-            window.showSuccessToast("Application Completed & Processed!");
-        }
+        if (window.showApplicationsList) await window.showApplicationsList();
+        if (window.showSuccessToast) window.showSuccessToast("Application Completed!");
         
     } catch (error) {
-        console.error("Save Error:", error);
+        console.error("Submit Error:", error);
         submitBtn.disabled = false;
         submitBtn.innerText = "Submit Application";
-        alert("Failed to save. Check connection.");
+        alert("Failed to save.");
     }
 };
 // --- 6. REVIEW: THE "MEGA OP" FINAL DOCUMENT PAGE ---
