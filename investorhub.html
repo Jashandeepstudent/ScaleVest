@@ -1,4 +1,4 @@
-a<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -533,12 +533,14 @@ a<!DOCTYPE html>
 }
 
 .nav-logo-img {
-    height: 40px;          /* Adjust this height to match your text size */
-    width: auto;           /* Keeps the logo proportions correct */
-    object-fit: contain;
-    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3)); /* Optional: gives logo a glow */
+    height: 40px;
+    width: 40px;            /* Set width equal to height for a perfect circle */
+    aspect-ratio: 1 / 1;    /* Forces the square shape before rounding */
+    border-radius: 50%;     /* This makes it round */
+    object-fit: cover;      /* Changed from 'contain' to 'cover' so the image fills the circle without gaps */
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
+    border: 1px solid rgba(16, 185, 129, 0.3); /* Optional: adds a slight border to define the circle */
 }
-
 /* Ensure the logo doesn't shrink on small screens */
 @media (max-width: 480px) {
     .nav-logo-img {
