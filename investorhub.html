@@ -242,23 +242,27 @@
         }
 
         /* Main Container */
-        .container {
-            padding: 3rem 3rem;
-            display: flex;
-            gap: 3rem;
-            max-width: 1800px;
-            margin: 0 auto;
-        }
+.container {
+    display: flex;
+    align-items: flex-start;
+    gap: 3rem;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 3rem;
+}
 
-        .left-section {
-            width: 380px;
-            flex-shrink: 0;
-        }
 
-        .right-section {
-            flex: 1;
-            max-width: 1100px;
-        }
+.left-section {
+    width: 380px;
+    flex-shrink: 0;
+}
+
+
+.right-section {
+    flex: 1;
+    min-width: 0;
+}
+
 
         .welcome-section {
             margin-bottom: 3rem;
