@@ -2822,66 +2822,113 @@ window.showTokenShop = async function() {
 async function showManageVests() {
     document.title = "Manage Your Vests | ScaleVest";
     const container = document.getElementById('dashboardContainer');
+    
+    // 1. Reset View: Show Dashboard Container, Hide Wizard initially
     container.style.display = 'block';
-    document.querySelector('.vest-container').style.display = 'none';
+    const vestContainer = document.querySelector('.vest-container');
+    if (vestContainer) vestContainer.style.display = 'none';
 
-    // 1. Fetch real data from Firebase
-    const vestsRef = ref(db, `Vests/${currentUser.uid}`);
-    const snapshot = await get(vestsRef);
-    const vestsData = snapshot.val() || {};
-
-    // 2. Calculate Counts
-    const activeVests = Object.values(vestsData).filter(v => v.status === 'active');
-    const draftVests = Object.values(vestsData).filter(v => v.status === 'draft');
-
+    // --- LOADING STATE (CENTERED) ---
+    // We inject this immediately so the user sees it while waiting for Firebase
     container.innerHTML = `
-        
-        <div class="manage-vests-page">
-            <div class="header-row">
-                <a href="#founder_dashboard" class="back-to-dash">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                    Back to Dashboard
-                </a>
-                <h1>Manage Your Vests</h1>
-            </div>
-
-            <div class="vest-stats-grid">
-                <div class="stat-card">
-                    <span class="stat-label">Active Vests</span>
-                    <span class="stat-count active-text">${activeVests.length}</span>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Drafts / Inactive</span>
-                    <span class="stat-count draft-text">${draftVests.length}</span>
-                </div>
-            </div>
-
-            <div class="vest-cards-grid">
-                ${Object.keys(vestsData).length > 0 ? 
-                    Object.entries(vestsData).map(([id, vest]) => `
-                    <div class="vest-gig-card" onclick="alert('Manage Vest: ${vest.StartupDetails?.name || 'Vest'}')">
-                        <div class="vest-thumb-wrapper">
-                            <img src="${vest.MainVest?.thumbnailUrl || 'https://via.placeholder.com/400x225?text=No+Thumbnail'}" alt="Thumbnail">
-                            <div class="status-badge ${vest.status === 'active' ? 'status-active' : 'status-draft'}">
-                                ${vest.status === 'active' ? 'Active' : 'Draft'}
-                            </div>
-                        </div>
-                        <div class="vest-card-content">
-                            <h3 class="vest-hook-text">${vest.MainVest?.hook || 'No Hook Line'}</h3>
-                            <p class="vest-desc-text">${vest.MainVest?.description?.substring(0, 80) || 'No description provided...'}...</p>
-                            <div class="vest-card-footer">
-                                <span class="startup-label">${vest.StartupDetails?.name || 'Startup'}</span>
-                                <span class="equity-tag">${vest.MainVest?.equityOffered || '0'}% Equity</span>
-                            </div>
-                        </div>
-                    </div>
-                `).join('') 
-                : `<div class="empty-state">No vests found. Start by creating your first vest!</div>`}
-            </div>
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 60vh; width: 100%;">
+            <div class="loader" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+            <h3 style="color: #666; margin-top: 20px; font-family: sans-serif;">Loading your Vests...</h3>
         </div>
+        <style>
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
     `;
+
+    try {
+        // 2. Fetch real data from Firebase
+        const vestsRef = ref(db, `Vests/${currentUser.uid}`);
+        const snapshot = await get(vestsRef);
+        const vestsData = snapshot.val() || {};
+
+        // 3. Calculate Counts
+        const activeVests = Object.values(vestsData).filter(v => v.status === 'active');
+        const draftVests = Object.values(vestsData).filter(v => v.status === 'draft');
+
+        // 4. Render Final UI
+        container.innerHTML = `
+            <div class="manage-vests-page">
+                
+                <div class="header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <a href="#founder_dashboard" class="back-to-dash" style="display: flex; align-items: center; gap: 5px; text-decoration: none; color: inherit;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Back
+                        </a>
+                        <h1 style="margin: 0;">Manage Your Vests</h1>
+                    </div>
+
+                    <button onclick="launchCreateVestWizard()" style="background-color: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Create a Vest
+                    </button>
+                </div>
+
+                <div class="vest-stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">Active Vests</span>
+                        <span class="stat-count active-text">${activeVests.length}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Drafts / Inactive</span>
+                        <span class="stat-count draft-text">${draftVests.length}</span>
+                    </div>
+                </div>
+
+                <div class="vest-cards-grid">
+                    ${Object.keys(vestsData).length > 0 ? 
+                        Object.entries(vestsData).map(([id, vest]) => `
+                        <div class="vest-gig-card" onclick="alert('Manage Vest: ${vest.StartupDetails?.name || 'Vest'}')">
+                            <div class="vest-thumb-wrapper">
+                                <img src="${vest.MainVest?.thumbnailUrl || 'https://via.placeholder.com/400x225?text=No+Thumbnail'}" alt="Thumbnail">
+                                <div class="status-badge ${vest.status === 'active' ? 'status-active' : 'status-draft'}">
+                                    ${vest.status === 'active' ? 'Active' : 'Draft'}
+                                </div>
+                            </div>
+                            <div class="vest-card-content">
+                                <h3 class="vest-hook-text">${vest.MainVest?.hook || 'No Hook Line'}</h3>
+                                <p class="vest-desc-text">${vest.MainVest?.description?.substring(0, 80) || 'No description provided...'}...</p>
+                                <div class="vest-card-footer">
+                                    <span class="startup-label">${vest.StartupDetails?.name || 'Startup'}</span>
+                                    <span class="equity-tag">${vest.MainVest?.equityOffered || '0'}% Equity</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') 
+                    : `<div class="empty-state">No vests found. Start by creating your first vest!</div>`}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Error loading vests:", error);
+        container.innerHTML = `<div style="text-align:center; padding: 2rem; color: red;">Error loading your vests. Please check your connection.</div>`;
+    }
 }
 
+// --- Helper Function to Launch the Wizard ---
+function launchCreateVestWizard() {
+    // 1. Hide the Dashboard
+    document.getElementById('dashboardContainer').style.display = 'none';
+    
+    // 2. Show the Vest Wizard Container
+    const vestContainer = document.querySelector('.vest-container');
+    if (vestContainer) {
+        vestContainer.style.display = 'block';
+    }
+
+    // 3. Go to Step 1
+    // (Assuming you have a function named showStep from your previous code)
+    if (typeof showStep === 'function') {
+        showStep(1); 
+    } else {
+        console.warn("showStep() function not found. Please ensure the wizard logic is loaded.");
+    }
+}
 
 // Buy Tokens Logic
 window.addTokensToDB = async function(amount) {
