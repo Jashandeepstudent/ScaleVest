@@ -404,23 +404,30 @@
                 scheduledTime = new Date(`${dateVal}T${timeVal}`).getTime();
             }
 
-            await push(ref(db, `Chats/${chatRoomID}`), {
-                sender: currentUser.uid,
-                type: 'meeting',
-                title: title,
-                meetingId: meetingId,
-                scheduledTime: scheduledTime,
-                timestamp: Date.now(),
-                recipient: recipientUID
-            });
+await push(ref(db, `Chats/${chatRoomID}`), {
+    sender: currentUser.uid,
+    type: 'meeting',
+    title: title,
+    meetingId: meetingId,
+    scheduledTime: scheduledTime,
+    createdBy: currentUser.uid, // ✅ REQUIRED
+    timestamp: Date.now(),
+    recipient: recipientUID
+});
+
 
             closeMeetingModal();
         };
 
         window.tryJoinMeeting = async (meetingId, scheduledTime, createdBy) => {
+    // 🛟 Fallback for old meetings
+    if (!createdBy) {
+        console.warn("createdBy missing, allowing join");
+        createdBy = currentUser.uid;
+    }
+
     const now = Date.now();
 
-    // ⏳ Too early → waiting room
     if (scheduledTime !== 'now' && now < scheduledTime) {
         const dateObj = new Date(scheduledTime);
         document.getElementById('waitDisplayTime').textContent =
@@ -431,13 +438,12 @@
         return;
     }
 
-    // 🚨 HOST MUST JOIN FIRST
+    // ✅ HOST CHECK (NOW SAFE)
     if (currentUser.uid !== createdBy) {
         alert("Waiting for host to start the meeting.");
         return;
     }
 
-    // Show video UI
     document.getElementById('videoConferenceContainer').style.display = 'flex';
     document.getElementById('meetingLoader').style.display = 'flex';
 
@@ -445,11 +451,12 @@
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
         stream.getTracks().forEach(t => t.stop());
         loadJitsi(meetingId);
-    } catch (err) {
+    } catch {
         alert("Camera/Microphone permission required.");
         document.getElementById('videoConferenceContainer').style.display = 'none';
     }
 };
+
 
 
         function loadJitsi(roomName) {
@@ -626,15 +633,17 @@ jitsiAPI.addEventListener('videoConferenceJoined', () => {
                         if (file.type.startsWith('image/')) type = 'image';
                         else if (file.type.startsWith('video/')) type = 'video';
 
-                        await push(ref(db, `Chats/${chatRoomID}`), {
-                            sender: currentUser.uid,
-                            text: "", 
-                            fileUrl: downloadURL,
-                            fileType: type,
-                            fileName: file.name,
-                            timestamp: Date.now(),
-                            recipient: recipientUID
-                        });
+await push(ref(db, `Chats/${chatRoomID}`), {
+    sender: currentUser.uid,
+    type: 'meeting',
+    title: title,
+    meetingId: meetingId,
+    scheduledTime: scheduledTime,
+    createdBy: currentUser.uid, // ✅ REQUIRED
+    timestamp: Date.now(),
+    recipient: recipientUID
+});
+
 
                         progressBar.style.width = '0%';
                         fileInput.value = '';
@@ -660,14 +669,12 @@ jitsiAPI.addEventListener('videoConferenceJoined', () => {
 
 await push(ref(db, `Chats/${chatRoomID}`), {
     sender: currentUser.uid,
-    type: 'meeting',
-    title: title,
-    meetingId: meetingId,
-    scheduledTime: scheduledTime,
-    createdBy: currentUser.uid, // ✅ THIS WAS MISSING
+    text: cleanText,
     timestamp: Date.now(),
     recipient: recipientUID
 });
+
+
 
             input.value = "";
             set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
