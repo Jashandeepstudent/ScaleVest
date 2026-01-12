@@ -32,16 +32,17 @@
         .header-title { font-weight: 800; font-size: 1.2rem; color: #1a1a1a; }
         .header-sub { font-size: 0.85rem; color: #10b981; font-weight: 600; }
         
+        /* Header Buttons Area */
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
 
         .action-btn {
             background: #f3f4f6;
-            border: none;
-            padding: 8px 12px;
+            border: 1px solid #e5e7eb;
+            padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
@@ -52,14 +53,19 @@
             gap: 6px;
             transition: 0.2s;
             text-decoration: none;
+            height: 38px; /* Fixed height for alignment */
         }
         
-        .action-btn.meeting-btn {
+        /* Meeting Button Specifics */
+        .meeting-btn {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
+            border: none;
+            display: none; /* HIDDEN BY DEFAULT - Only for Investors */
         }
 
         .action-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .meeting-btn:hover { box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
 
         /* CHAT AREA */
         #chatContainer {
@@ -177,7 +183,13 @@
                 Arrange Meeting
             </button>
             
-            <a href="#" onclick="history.back()" class="back-btn">← Back</a>
+            <button class="action-btn" onclick="history.back()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back
+            </button>
         </div>
     </div>
 
@@ -236,7 +248,7 @@
         const storage = getStorage(app);
         const auth = getAuth(app);
 
-        // ABUSIVE WORDS LIST (Simple Bot Filter)
+        // BOT FILTER LIST
         const badWords = ["abuse", "scam", "fraud", "kill", "idiot", "stupid", "badword", "fake"];
 
         // GET PARAMS
@@ -256,11 +268,30 @@
                     window.location.href = "dashboard.html";
                     return;
                 }
+                
+                // CHECK ROLE (Show Meeting Button ONLY if Investor)
+                checkInvestorRole();
+
                 initializeChat();
             } else {
                 window.location.href = "login3.html";
             }
         });
+
+        // --- NEW: CHECK IF USER IS INVESTOR ---
+        async function checkInvestorRole() {
+            try {
+                // If currentUser exists in investorProfiles, they are an investor
+                const invRef = ref(db, `investorProfiles/${currentUser.uid}`);
+                const snapshot = await get(invRef);
+                
+                if (snapshot.exists()) {
+                    document.getElementById('meetingBtn').style.display = 'flex';
+                }
+            } catch (e) {
+                console.error("Role Check Error:", e);
+            }
+        }
 
         async function initializeChat() {
             const participantIDs = [currentUser.uid, recipientUID].sort();
@@ -346,7 +377,7 @@
             });
         }
 
-        // --- FILTER FUNCTION (BOT) ---
+        // --- FILTER FUNCTION ---
         function sanitizeMessage(text) {
             let cleanText = text;
             badWords.forEach(word => {
@@ -356,17 +387,16 @@
             return cleanText;
         }
 
-        // --- NEW: SEND MEETING REQUEST ---
+        // --- SEND MEETING REQUEST ---
         window.sendMeetingRequest = async function() {
-            if(!confirm("Send a meeting invitation to this user?")) return;
+            if(!confirm("Send a formal meeting invitation?")) return;
 
-            const text = "📅 I'd like to arrange a meeting to discuss this opportunity further.";
+            const text = "📅 Meeting Invitation: I'd like to arrange a call to discuss this further.";
             
-            // Send special message
             await push(ref(db, `Chats/${chatRoomID}`), {
                 sender: currentUser.uid,
                 text: text,
-                isMeetingRequest: true, // Special flag
+                isMeetingRequest: true,
                 timestamp: Date.now(),
                 recipient: recipientUID
             });
@@ -390,7 +420,6 @@
             
             const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
-            // Handle Content Type
             let contentHtml = "";
 
             if (msg.fileType === 'image') {
@@ -410,7 +439,6 @@
                 contentHtml += `<div>${msg.text}</div>`;
             }
 
-            // Special Meeting Style
             if (msg.isMeetingRequest) {
                 contentHtml += `
                     <div class="meeting-card">
@@ -428,7 +456,6 @@
                 <span class="timestamp">${time}</span>
             `;
             
-            // Insert Logic
             if (bubble && container.contains(bubble)) {
                 container.insertBefore(div, bubble);
             } else {
@@ -463,7 +490,6 @@
                     }, 
                     (error) => {
                         console.error("Upload failed", error);
-                        alert("File upload failed.");
                         progressBar.style.width = '0%';
                     }, 
                     async () => {
