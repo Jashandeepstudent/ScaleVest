@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Session | ScaleVest</title>
+    <style>
+        /* Reusing your ScaleVest Theme */
+        body { font-family: 'SF Pro Display', -apple-system, sans-serif; background: #f8f9fa; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        
+        /* HEADER */
+        .chat-header {
+            background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-between; z-index: 10;
+        }
+        .header-title { font-weight: 800; font-size: 1.2rem; color: #1a1a1a; }
+        .header-sub { font-size: 0.9rem; color: #10b981; font-weight: 600; }
+        .back-btn { text-decoration: none; color: #6b7280; font-weight: 600; font-size: 0.9rem; }
+
+        /* CHAT AREA */
+        #chatContainer {
+            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+        }
+
+        /* MESSAGES */
+        .message-bubble {
+            max-width: 70%; padding: 12px 18px; border-radius: 18px; font-size: 15px; line-height: 1.5; position: relative; animation: popIn 0.3s ease;
+        }
+        .msg-mine {
+            background: #10b981; color: white; align-self: flex-end; border-bottom-right-radius: 4px;
+        }
+        .msg-theirs {
+            background: white; color: #374151; align-self: flex-start; border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .timestamp { font-size: 10px; opacity: 0.7; margin-top: 5px; display: block; text-align: right; }
+
+        /* INPUT AREA */
+        .input-area {
+            background: white; padding: 20px; display: flex; gap: 10px; border-top: 1px solid #e5e7eb;
+        }
+        #msgInput {
+            flex: 1; padding: 15px; border: 2px solid #e5e7eb; border-radius: 12px; outline: none; font-size: 16px; transition: 0.3s;
+        }
+        #msgInput:focus { border-color: #10b981; }
+        #sendBtn {
+            background: #10b981; color: white; border: none; padding: 0 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        #sendBtn:hover { transform: scale(1.05); }
+
+        @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="chat-header">
+        <div>
+            <div class="header-title" id="chatTitle">Connecting...</div>
+            <div class="header-sub">ScaleVest Secure Line</div>
+        </div>
+        <a href="#" onclick="history.back()" class="back-btn">← Go Back</a>
+    </div>
+
+    <div id="chatContainer">
+        <div style="text-align: center; color: #9ca3af; margin-top: 20px; font-size: 0.9rem;" id="loadingMsg">
+            Initializing Encrypted Connection...
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="msgInput" placeholder="Type a message..." autocomplete="off">
+        <button id="sendBtn">SEND</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // CONFIG (Same as your vests.html)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+            authDomain: "scalevest-163a0.firebaseapp.com",
+            databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+            projectId: "scalevest-163a0",
+            storageBucket: "scalevest-163a0.firebasestorage.app",
+            messagingSenderId: "938358950124",
+            appId: "1:938358950124:web:043506aeaacea2a96bfdc9"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        // GET PARAMS
+        const params = new URLSearchParams(window.location.search);
+        const recipientUID = params.get('recipient'); // The Founder
+        let currentUser = null;
+        let chatRoomID = null;
+
+        // AUTH GUARD
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                if(!recipientUID) {
+                    alert("No recipient specified.");
+                    window.location.href = "dashboard.html"; // Fallback
+                    return;
+                }
+                initializeChat();
+            } else {
+                window.location.href = "login3.html";
+            }
+        });
+
+        async function initializeChat() {
+            // 1. Get Founder Name for Header
+            const founderRef = ref(db, `users/${recipientUID}`); // Assuming you keep user names here
+            // Fallback if users node isn't set up yet, use "Founder"
+            document.getElementById('chatTitle').textContent = "Chat with Founder"; 
+
+            // 2. Create Unique Room ID (Alphabetical Sort ensures UserA+UserB always = same Room)
+            // This means conversations are persistent.
+            const participantIDs = [currentUser.uid, recipientUID].sort();
+            chatRoomID = `chat_${participantIDs[0]}_${participantIDs[1]}`;
+
+            document.getElementById('loadingMsg').style.display = 'none';
+
+            // 3. Listen for Messages
+            const messagesRef = ref(db, `Chats/${chatRoomID}`);
+            
+            onChildAdded(messagesRef, (snapshot) => {
+                const msg = snapshot.val();
+                renderMessage(msg);
+            });
+        }
+
+        // RENDER UI
+        function renderMessage(msg) {
+            const container = document.getElementById('chatContainer');
+            const isMine = msg.sender === currentUser.uid;
+            
+            const div = document.createElement('div');
+            div.className = `message-bubble ${isMine ? 'msg-mine' : 'msg-theirs'}`;
+            
+            const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            div.innerHTML = `
+                ${msg.text}
+                <span class="timestamp">${time}</span>
+            `;
+            
+            container.appendChild(div);
+            // Auto scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // SEND LOGIC
+        const input = document.getElementById('msgInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        async function sendMessage() {
+            const text = input.value.trim();
+            if (!text || !chatRoomID) return;
+
+            // Push to Firebase
+            const messagesRef = ref(db, `Chats/${chatRoomID}`);
+            await push(messagesRef, {
+                sender: currentUser.uid,
+                text: text,
+                timestamp: Date.now(),
+                recipient: recipientUID 
+            });
+
+            input.value = ""; // Clear input
+            input.focus();
+        }
+
+        // Event Listeners
+        sendBtn.addEventListener('click', sendMessage);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+    </script>
+</body>
+</html>
