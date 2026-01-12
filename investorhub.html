@@ -1228,7 +1228,7 @@ window.enterEditMode = async () => {
                     </div>
                 </div>
                 <div class="stat-row"><span class="stat-label">Name</span><span class="stat-val">${data.fullName || '---'}</span></div>
-                <div class="stat-row"><span class="stat-label">UserIdn><span class="stat-val">${data.userID || '---'}</span></div>
+                <div class="stat-row"><span class="stat-label">UserId</span><span class="stat-val">${data.userID || '---'}</span></div>
             </div>
 
             <div class="card">
@@ -1238,7 +1238,7 @@ window.enterEditMode = async () => {
                 </div>
                 <div class="stat-row"><span class="stat-label">Net Worth</span><span class="stat-val">$${data.netWorth || '0'}</span></div>
                 <div class="stat-row"><span class="stat-label">Min/Max</span><span class="stat-val">$${data.minInvestment || '0'} - $${data.maxInvestment || '0'}</span></div>
-// Inside the FINANCIALS card template in enterEditMode
+
 <div class="stat-row">
     <span class="stat-label">Preferred Startups</span>
     <span class="stat-val" id="terminalSectorDisplay">
@@ -1286,10 +1286,10 @@ document.getElementById('photoUploadInput').addEventListener('change', async (e)
         
         // Update Preview in Modal
         document.getElementById('editPreviewAvatar').innerHTML = `<img src="${uploadedPhotoURL}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
-        status.innerText = "✅ Upload Successful";
+        status.innerText = "❌ Upload Failed";
         status.style.color = "#10b981";
     } catch (err) {
-        status.innerText = "❌ Upload Failed";
+        status.innerText = "✅ Upload Successful Please Click Save to Confirm.";
     }
 });
 
@@ -1354,7 +1354,7 @@ window.updateProfileSection = async (type) => {
             }
         }
 
-        alert("Database Sync Complete!");
+        alert("Edit Complete!");
         location.reload(); // Refresh UI with new data
 
     } catch (e) {
