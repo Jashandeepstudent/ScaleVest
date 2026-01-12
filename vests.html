@@ -1402,8 +1402,9 @@
         0 10px 25px rgba(0,0,0,0.25);
 }
 /* --- CHAT INBOX STYLES --- */
+/* --- IMPROVED INBOX STYLES --- */
 .chat-list-container {
-    max-width: 900px;
+    max-width: 850px;
     margin: 0 auto;
     padding: 2rem 1rem;
     color: #fff;
@@ -1413,47 +1414,50 @@
 .chat-header-row {
     display: flex; 
     justify-content: space-between; 
-    align-items: center; 
+    align-items: flex-end; 
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
 .chat-item {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    background: #0f0f0f;
+    gap: 1.2rem;
+    background: #111;
     border: 1px solid #222;
-    padding: 1.5rem;
-    border-radius: 16px;
-    margin-bottom: 1rem;
+    padding: 1.2rem;
+    border-radius: 14px;
+    margin-bottom: 0.8rem;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    overflow: hidden;
 }
 
 .chat-item:hover {
-    background: #161616;
-    border-color: #444;
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    background: #1a1a1a;
+    border-color: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
 }
 
+/* Avatar Styling */
 .chat-avatar {
-    width: 55px;
-    height: 55px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #333, #555);
+    background: linear-gradient(135deg, #333, #444);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: #fff;
-    border: 2px solid #000;
+    border: 2px solid #222;
     flex-shrink: 0;
     overflow: hidden;
+    position: relative;
 }
 
 .chat-avatar img {
@@ -1462,63 +1466,71 @@
     object-fit: cover;
 }
 
+/* Text Info */
 .chat-info {
     flex: 1;
-    min-width: 0; /* Prevents text overflow issues */
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .chat-name {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    margin-bottom: 0.4rem;
     color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    letter-spacing: 0.3px;
 }
 
 .chat-preview {
     color: #888;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 90%;
+    max-width: 95%;
+    line-height: 1.4;
 }
 
+.unread-text {
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Metadata (Time & Badge) */
 .chat-meta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 5px;
-    min-width: 80px;
+    gap: 6px;
+    min-width: 70px;
 }
 
 .time-text {
     color: #555;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
 .unread-pill {
-    background: #ff006e; /* ScaleVest Pink */
-    color: #fff;
-    font-size: 0.7rem;
-    padding: 4px 8px;
-    border-radius: 20px;
+    background: #10b981; /* ScaleVest Green */
+    color: #000;
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 12px;
     font-weight: 800;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    box-shadow: 0 2px 5px rgba(255, 0, 110, 0.4);
 }
 
+/* Empty State */
 .empty-state-box {
     text-align: center;
-    padding: 4rem 2rem;
-    border: 2px dashed #222;
-    border-radius: 20px;
+    padding: 5rem 2rem;
+    border: 1px dashed #333;
+    border-radius: 16px;
     color: #666;
-    margin-top: 2rem;
+    background: #0a0a0a;
 }
 /* ===============================
    STATUS BADGES (LUXURY)
@@ -4256,7 +4268,7 @@ window.limitWords = function(element, limit) {
 window.showInvestorChatList = async function() {
     const container = document.getElementById('dashboardContainer');
     
-    // Ensure container is visible
+    // Toggle containers
     if(document.querySelector('.vest-container')) {
         document.querySelector('.vest-container').style.display = 'none';
     }
@@ -4270,7 +4282,6 @@ window.showInvestorChatList = async function() {
         </div>`;
 
     try {
-        // 1. Get All Chats
         const chatsRef = ref(db, 'Chats');
         const snapshot = await get(chatsRef);
         const allChats = snapshot.val() || {};
@@ -4278,41 +4289,50 @@ window.showInvestorChatList = async function() {
         let myChats = [];
         let uniqueUserIds = new Set();
 
-        // 2. Filter Chats & Identify Users
+        // --- 1. FILTER & PROCESS CHATS ---
         Object.keys(allChats).forEach(roomKey => {
+            // Check if I am a participant
             if (roomKey.includes(currentUser.uid)) {
                 const messages = Object.values(allChats[roomKey]);
-                // Sort messages to find the true last one
+                
+                // SAFETY CHECK: Skip if no messages found
+                if (messages.length === 0) return;
+
+                // Sort messages to find the last one
                 messages.sort((a, b) => a.timestamp - b.timestamp);
                 const lastMsg = messages[messages.length - 1]; 
                 
-                // Extract the "Other" ID (The Investor)
+                // Identify the Investor (The other ID)
                 const otherUid = roomKey.replace(currentUser.uid, '').replace('_', '');
                 
+                // SAFETY CHECK: Ensure lastMsg exists
+                const msgText = lastMsg.text || "Sent an attachment";
+                const msgTime = lastMsg.timestamp || Date.now();
+
                 if(otherUid) {
                     uniqueUserIds.add(otherUid);
                     
                     myChats.push({
                         roomKey: roomKey,
                         otherUid: otherUid,
-                        lastMessage: lastMsg.text,
-                        timestamp: lastMsg.timestamp,
+                        lastMessage: msgText,
+                        timestamp: msgTime,
                         isUnread: (lastMsg.sender !== currentUser.uid)
                     });
                 }
             }
         });
 
-        // 3. Fetch Investor Profiles (Names/Photos)
+        // --- 2. FETCH INVESTOR PROFILES ---
         const profileMap = {};
         const fetchPromises = Array.from(uniqueUserIds).map(async (uid) => {
             try {
-                // Try fetching from investorProfiles
+                // Fetch from investorProfiles
                 const snap = await get(ref(db, `investorProfiles/${uid}`));
                 if (snap.exists()) {
                     profileMap[uid] = snap.val();
                 } else {
-                    // Fallback to basic info if profile missing
+                    // Fallback to basic info
                     profileMap[uid] = { fullName: "Investor", photoURL: null };
                 }
             } catch (err) {
@@ -4323,46 +4343,53 @@ window.showInvestorChatList = async function() {
 
         await Promise.all(fetchPromises);
 
-        // 4. Sort by Newest Message
+        // --- 3. SORT & RENDER ---
         myChats.sort((a, b) => b.timestamp - a.timestamp);
 
-        // 5. Generate HTML
         let listHtml = `
-            ${typeof createNavBar === 'function' ? createNavBar() : ''} 
+        
             <div class="chat-list-container">
                 <div class="chat-header-row">
-                    <h1 style="font-size:2rem; font-weight:800; margin:0;">Investor Inbox</h1>
-                    <span style="color:#666; font-weight:600;">${myChats.length} Active Conversations</span>
+                    <div>
+                        <h1 style="font-size:2rem; font-weight:800; margin:0; letter-spacing:-1px;">Investor Inbox</h1>
+                        <p style="color:#666; margin:5px 0 0 0; font-size:0.9rem;">Manage your funding conversations</p>
+                    </div>
+                    <div style="background:#111; padding:5px 12px; border-radius:20px; border:1px solid #333; font-size:0.8rem; color:#888;">
+                        ${myChats.length} Active
+                    </div>
                 </div>
         `;
 
         if (myChats.length === 0) {
             listHtml += `
                 <div class="empty-state-box">
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" style="margin-bottom:1rem;">
+                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" style="margin-bottom:1rem;">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    <p>No messages yet.</p>
-                    <small>Investors will appear here when they contact you.</small>
+                    <p style="margin:0; font-weight:600;">No messages yet</p>
+                    <small>Investors will appear here once they contact you.</small>
                 </div>
             `;
         } else {
             listHtml += myChats.map(chat => {
                 const profile = profileMap[chat.otherUid] || { fullName: 'Unknown Investor' };
-                const displayName = profile.fullName || profile.founderUsername || "Investor";
-                const displayPhoto = profile.photoURL || profile.logo; // Handle different image fields
                 
-                // Format Date
+                // Get Name (Prioritize fullName, fallback to generic)
+                const displayName = profile.fullName || profile.name || "Investor";
+                const displayPhoto = profile.photoURL || profile.logo; 
+                
+                // Time Formatting
                 const msgDate = new Date(chat.timestamp);
-                const dateStr = msgDate.toLocaleDateString();
-                const timeStr = msgDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const timeDisplay = (Date.now() - chat.timestamp < 86400000) ? timeStr : dateStr; // Show time if today, else date
+                const isToday = new Date().toDateString() === msgDate.toDateString();
+                const timeDisplay = isToday 
+                    ? msgDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+                    : msgDate.toLocaleDateString();
 
                 return `
                 <div class="chat-item" onclick="window.location.href='chat.html?recipient=${chat.otherUid}'">
                     <div class="chat-avatar">
                         ${displayPhoto 
-                            ? `<img src="${displayPhoto}" alt="${displayName}">` 
+                            ? `<img src="${displayPhoto}" alt="${displayName}" onerror="this.style.display='none'">` 
                             : displayName.charAt(0).toUpperCase()}
                     </div>
                     
@@ -4370,8 +4397,9 @@ window.showInvestorChatList = async function() {
                         <div class="chat-name">
                             ${displayName}
                         </div>
-                        <div class="chat-preview" style="${chat.isUnread ? 'color:#fff; font-weight:600;' : ''}">
-                            ${chat.isUnread ? '• ' : ''}${chat.lastMessage}
+                        <div class="chat-preview ${chat.isUnread ? 'unread-text' : ''}">
+                            ${chat.isUnread ? '<span style="color:#10b981; margin-right:4px;">●</span>' : ''}
+                            ${chat.lastMessage}
                         </div>
                     </div>
                     
@@ -4384,19 +4412,18 @@ window.showInvestorChatList = async function() {
             }).join('');
         }
 
-        listHtml += `</div>`; // Close container
+        listHtml += `</div>`; 
         container.innerHTML = listHtml;
 
-        // Clear Badge since we are viewing the list
         if(typeof updateNotificationBadge === 'function') updateNotificationBadge(0);
 
     } catch (e) {
-        console.error("Inbox Load Error:", e);
+        console.error("Inbox Error:", e);
         container.innerHTML = `
             ${typeof createNavBar === 'function' ? createNavBar() : ''}
             <div style="text-align:center; padding:4rem; color:#ff4d4d;">
                 <h3>Unable to load messages</h3>
-                <p>Please check your internet connection or permissions.</p>
+                <p>Please check your connection.</p>
             </div>`;
     }
 };
