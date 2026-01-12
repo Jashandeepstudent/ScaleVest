@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse Vests | ScaleVest Terminal</title>
     <style>
-        /* --- GLOBAL STYLES --- */
+        /* --- RESET & BASE --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -18,178 +18,153 @@
 
         .container { max-width: 1400px; margin: 0 auto; }
 
+        /* --- HEADER --- */
         .header-area { 
             margin-bottom: 50px; 
             text-align: center; 
-            animation: fadeInDown 0.8s ease;
         }
         
         .header-area h1 { 
-            font-size: 3rem; 
+            font-size: 3.5rem; 
             font-weight: 800;
             background: linear-gradient(90deg, #10b981, #3b82f6); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
+            letter-spacing: -2px;
         }
 
+        .header-area p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        /* --- GRID --- */
         .cards-wrapper {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-            gap: 45px;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 35px;
         }
 
-        /* --- MODERN TECH VEST CARD (CARD 2 DESIGN) --- */
+        /* --- THE 70/20/10 VEST CARD --- */
         .card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
+            background: #111;
+            border-radius: 30px;
             overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             width: 100%;
-            height: 540px;
+            height: 680px; /* Fixed height to force exact ratios */
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
         }
 
         .card:hover {
-            transform: translateY(-12px) scale(1.02);
-            box-shadow: 0 30px 80px rgba(102, 126, 234, 0.5);
+            transform: translateY(-15px);
+            border-color: #10b981;
         }
 
-        /* Ambient background circles */
-        .card::before {
-            content: ''; position: absolute; top: -20%; right: -20%;
-            width: 200px; height: 200px; background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%; z-index: 0; transition: 0.6s ease;
-        }
-        .card:hover::before { transform: scale(1.2); }
-
-        /* 1. THUMBNAIL SECTION */
+        /* 1. THUMBNAIL AREA (70%) */
         .thumbnail-area {
-            height: 220px;
+            height: 70%; 
             width: 100%;
             position: relative;
-            background: #1a1a1a;
-            z-index: 1;
+            background: #000;
+            overflow: hidden;
         }
 
         .thumbnail-area img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.6s ease;
         }
 
-        /* 2. WHITE HOOK BANNER */
+        .card:hover .thumbnail-area img {
+            transform: scale(1.1);
+        }
+
+        /* 2. HOOK BANNER (20%) */
         .hook-banner {
-            position: absolute;
-            bottom: 0;
-            left: 0;
+            height: 20%;
             width: 100%;
-            background: white;
-            padding: 15px 25px;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            padding: 20px 30px;
+            border-left: 10px solid #10b981;
+            z-index: 2;
         }
 
-        .hook-banner h2 {
+        .hook-text {
             color: #000000; /* BIG BLACK TEXT */
-            font-size: 1.15rem;
+            font-size: 1.6rem;
             font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: -0.5px;
-            line-height: 1.2;
+            line-height: 1.1;
+            letter-spacing: -1px;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        /* 3. CONTENT SECTION */
-        .content-section {
-            padding: 25px;
-            flex-grow: 1;
+        /* 3. FOOTER SECTION (10%) */
+        .footer-section {
+            height: 10%;
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
-            flex-direction: column;
-            z-index: 1;
-            position: relative;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .footer-section:hover {
+            filter: brightness(1.2);
         }
 
         .startup-name {
-            font-size: 26px;
+            font-size: 1.2rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 4px;
-            letter-spacing: -0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
         }
 
-        .category-tag {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.9);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: block;
-        }
-
-        /* 4. FINANCIALS (BOTTOM SECTION) */
-        .bottom-section {
-            margin-top: auto;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.25);
-        }
-
-        .data-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 5px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .value {
-            font-size: 16px;
-            color: white;
-            font-weight: 600;
-        }
-
-        .view-btn {
-            margin-top: 20px;
-            background: white;
-            color: #764ba2;
-            border: none;
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
+        .analyze-cta {
+            font-size: 0.85rem;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .view-btn:hover {
-            background: #f8fafc;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            letter-spacing: 1.5px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0.9;
         }
 
         /* --- UTILS --- */
-        #noVests { text-align: center; width: 100%; padding: 100px; color: #a7f3d0; font-size: 1.2rem; display: none; }
+        #noVests { 
+            text-align: center; 
+            width: 100%; 
+            padding: 100px; 
+            color: #10b981; 
+            font-weight: 700; 
+            font-size: 1.2rem; 
+            display: none; 
+        }
 
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @media (max-width: 480px) {
+            .card { height: 550px; }
+            .hook-text { font-size: 1.2rem; }
+            .header-area h1 { font-size: 2.2rem; }
         }
     </style>
 </head>
@@ -198,10 +173,10 @@
 <div class="container">
     <div class="header-area">
         <h1>Investment Terminal</h1>
-        <p style="color: #94a3b8; margin-top: 10px;">Explore and acquire equity in verified high-growth startups.</p>
+        <p>Verified Startup Equity Acquisitions</p>
     </div>
 
-    <div id="noVests">Searching for active opportunities...</div>
+    <div id="noVests">INITIALIZING TERMINAL...</div>
     
     <div class="cards-wrapper" id="vestsContainer">
         </div>
@@ -227,7 +202,7 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // Ensure user is authenticated before loading
+    // Auth Check before loading data
     onAuthStateChanged(auth, (user) => {
         if (user) {
             loadVests();
@@ -245,7 +220,7 @@
             const snapshot = await get(vestRef);
 
             if (!snapshot.exists()) {
-                noVestsMsg.innerText = "Terminal Empty: No active vests found.";
+                noVestsMsg.innerText = "NO ACTIVE OPPORTUNITIES FOUND.";
                 noVestsMsg.style.display = "block";
                 return;
             }
@@ -253,58 +228,37 @@
             container.innerHTML = "";
             let activeCount = 0;
 
-            // Iterate through UserIDs
+            // Loop through User IDs
             snapshot.forEach((userNode) => {
                 const ownerUID = userNode.key;
                 
-                // Iterate through VestIDs under that user
+                // Loop through individual Vest IDs
                 userNode.forEach((vest) => {
-                    const data = vest.val();
+                    const vestData = vest.val();
                     const vestID = vest.key;
 
-                    // Filter: Only show "active" status
-                    if (data.status === "active") {
+                    // LOAD ONLY ACTIVE VESTS
+                    if (vestData.status === "active") {
                         activeCount++;
                         
-                        // Data Mapping based on your structure
-                        const main = data.MainVest || {};
-                        const details = data.StartupDetails || {};
+                        // Path mapping based on your data structure
+                        const main = vestData.MainVest || {};
+                        const details = vestData.StartupDetails || {};
 
                         const cardHtml = `
                             <div class="card">
                                 <div class="thumbnail-area">
-                                    <img src="${main.thumbnailUrl || 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800'}" alt="Startup Preview">
-                                    <div class="hook-banner">
-                                        <h2>${main.hook || 'Next-Gen Startup Opportunity'}</h2>
-                                    </div>
+                                    <img src="${main.thumbnailUrl || 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800'}" alt="Startup">
                                 </div>
 
-                                <div class="content-section">
-                                    <h1 class="startup-name">${details.name || 'Unnamed Startup'}</h1>
-                                    <span class="category-tag">${details.category || 'Technology'} • ${details.stage || 'Seed'}</span>
-                                    
-                                    <div class="data-grid" style="margin-bottom: 10px;">
-                                        <div class="data-item">
-                                            <p class="label">Current Stage</p>
-                                            <p class="value">${details.stage || 'N/A'}</p>
-                                        </div>
-                                    </div>
+                                <div class="hook-banner">
+                                    <h2 class="hook-text">${main.hook || 'High-Growth Startup Opportunity Available'}</h2>
+                                </div>
 
-                                    <div class="bottom-section">
-                                        <div class="data-grid">
-                                            <div class="data-item">
-                                                <p class="label">Equity Offered</p>
-                                                <p class="value">${main.equityOffered || '0'}%</p>
-                                            </div>
-                                            <div class="data-item">
-                                                <p class="label">Fund Ask</p>
-                                                <p class="value">$${Number(main.fundAsk).toLocaleString() || '0'}</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <button class="view-btn" onclick="window.location.href='vest-details.html?id=${vestID}&owner=${ownerUID}'">
-                                            Analyze Opportunity
-                                        </button>
+                                <div class="footer-section" onclick="window.location.href='vest-details.html?id=${vestID}&owner=${ownerUID}'">
+                                    <h1 class="startup-name">${details.name || 'Premium Startup'}</h1>
+                                    <div class="analyze-cta">
+                                        Analyze <span>→</span>
                                     </div>
                                 </div>
                             </div>
@@ -315,13 +269,16 @@
             });
 
             if (activeCount === 0) {
-                noVestsMsg.innerText = "No active opportunities available right now.";
+                noVestsMsg.innerText = "NO ACTIVE OPPORTUNITIES FOUND.";
                 noVestsMsg.style.display = "block";
+            } else {
+                noVestsMsg.style.display = "none";
             }
 
         } catch (err) {
             console.error("Load Error:", err);
-            container.innerHTML = `<p style="color:#ef4444; text-align:center; grid-column: 1/-1;">Database Error: Please check security rules.</p>`;
+            noVestsMsg.innerText = "TERMINAL CONNECTION ERROR.";
+            noVestsMsg.style.display = "block";
         }
     }
 </script>
