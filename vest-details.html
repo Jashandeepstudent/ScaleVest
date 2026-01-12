@@ -385,9 +385,6 @@
 <body>
 <div id="globalLoader">
     <div class="loader-spinner"></div>
-    <div class="loader-terminal">
-        <div>> INITIALIZING SCALEVEST...</div>
-        <div id="loadStatus">> CONNECTING TO TERMINAL...</div>
     </div>
 </div>
 <div class="container">
@@ -574,7 +571,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
+import { push, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     /* 🔐 Firebase config */
     const firebaseConfig = {
         apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
@@ -610,7 +607,64 @@
         }
         updateProgressUI();
     }
+let activeChatId = null;
+window.openChat = async () => {
+    const investorUID = auth.currentUser.uid;
+    const founderUID = ownerUID; // From URL params
+    const startupName = document.getElementById('startupName').textContent;
 
+    // Create a unique Chat ID based on both users
+    activeChatId = investorUID < founderUID ? `${investorUID}_${founderUID}` : `${founderUID}_${investorUID}`;
+
+    document.getElementById('chatTargetName').textContent = startupName.toUpperCase();
+    document.getElementById('chatTerminal').classList.add('active');
+    
+    // Initialize real-time listener for messages
+    const chatRef = ref(db, `Chats/${activeChatId}/messages`);
+    onValue(chatRef, (snapshot) => {
+        const display = document.getElementById('messageDisplay');
+        display.innerHTML = ""; // Clear
+        
+        if (snapshot.exists()) {
+            const msgs = snapshot.val();
+            Object.values(msgs).forEach(m => {
+                const isMine = m.senderId === investorUID;
+                const msgEl = document.createElement('div');
+                msgEl.style = `
+                    max-width: 80%;
+                    padding: 10px 15px;
+                    border-radius: 12px;
+                    font-size: 14px;
+                    ${isMine ? 'align-self: flex-end; background: #10b981; color: white;' : 'align-self: flex-start; background: #e5e7eb; color: #1a1a1a;'}
+                `;
+                msgEl.textContent = m.text;
+                display.appendChild(msgEl);
+            });
+            display.scrollTop = display.scrollHeight; // Auto-scroll to bottom
+        }
+    });
+};
+
+window.sendMessage = async () => {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text || !activeChatId) return;
+
+    const chatRef = ref(db, `Chats/${activeChatId}/messages`);
+    const newMsgRef = push(chatRef);
+    
+    await set(newMsgRef, {
+        senderId: auth.currentUser.uid,
+        text: text,
+        timestamp: serverTimestamp()
+    });
+
+    input.value = "";
+};
+
+window.closeChat = () => {
+    document.getElementById('chatTerminal').classList.remove('active');
+};
     function updateProgressUI() {
         const progress = (viewedSections.size / 5) * 100;
         const bar = document.getElementById('progressBar');
@@ -824,10 +878,13 @@ async function loadVestData() {
         document.getElementById('fundModal').classList.remove('active');
     };
 
-    window.scheduleCall = function() {
-        alert('Call scheduling feature coming soon!');
-        closeModal();
-    };
+// Bind Buttons
+document.getElementById('sendMsgBtn').onclick = sendMessage;
+document.getElementById('chatInput').onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
+
+// Update existing Modal Buttons
+window.scheduleCall = () => { closeModal(); openChat(); };
+window.inviteMeeting = () => { closeModal(); openChat(); };
 
     window.inviteMeeting = function() {
         alert('Meeting invitation feature coming soon!');
