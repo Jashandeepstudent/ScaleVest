@@ -4344,7 +4344,7 @@ window.showInvestorChatList = async function() {
         const snapshot = await get(chatsRef);
         const allChats = snapshot.val() || {};
         
-        // Map to store unique chats by User ID (avoids duplicates)
+        // Use a Map to prevent duplicates (Key: InvestorID, Value: ChatData)
         const chatMap = new Map();
 
         // --- 1. FILTER & PROCESS CHATS ---
@@ -4352,9 +4352,9 @@ window.showInvestorChatList = async function() {
             // Check if I am a participant
             if (roomKey.includes(currentUser.uid)) {
                 
-                // Get messages and filter out 'typing' or empty nodes
+                // Get messages and filter out 'typing' or invalid nodes
                 const rawData = Object.values(allChats[roomKey]);
-                const messages = rawData.filter(msg => msg.sender && msg.timestamp);
+                const messages = rawData.filter(msg => msg && msg.sender && msg.timestamp);
                 
                 // Skip empty rooms
                 if (messages.length === 0) return;
@@ -4363,13 +4363,17 @@ window.showInvestorChatList = async function() {
                 messages.sort((a, b) => a.timestamp - b.timestamp);
                 const lastMsg = messages[messages.length - 1]; 
                 
-                // Identify the Other User (Investor)
-                const otherUid = roomKey.replace(currentUser.uid, '').replace('_', '');
+                // ROBUST ID EXTRACTION: Split by '_' and find the ID that isn't mine and isn't 'chat'
+                const parts = roomKey.split('_');
+                const otherUid = parts.find(part => part !== 'chat' && part !== currentUser.uid);
+
+                if (!otherUid) return; // Skip if we can't find the other user
                 
-                // FIX: Better Text Detection
+                // DETERMINE MESSAGE CONTENT
                 let displayMsg = "Sent an attachment";
                 let isAttachment = true;
-
+                
+                // Check if text exists and is not just whitespace
                 if (lastMsg.text && String(lastMsg.text).trim().length > 0) {
                     displayMsg = lastMsg.text;
                     isAttachment = false;
@@ -4384,8 +4388,7 @@ window.showInvestorChatList = async function() {
                     isUnread: (lastMsg.sender !== currentUser.uid)
                 };
 
-                // DEDUPLICATION LOGIC:
-                // If we already found a chat with this user, only keep the NEWER one.
+                // DEDUPLICATION: Only keep the chat with the most recent message for this user
                 if (chatMap.has(otherUid)) {
                     const existing = chatMap.get(otherUid);
                     if (chatData.timestamp > existing.timestamp) {
@@ -4410,7 +4413,13 @@ window.showInvestorChatList = async function() {
                 if (snap.exists()) {
                     profileMap[uid] = snap.val();
                 } else {
-                    profileMap[uid] = { fullName: "Investor", photoURL: null, status: "offline" };
+                    // Check founderProfile just in case
+                    const founderSnap = await get(ref(db, `founderProfile/${uid}`));
+                    if(founderSnap.exists()){
+                         profileMap[uid] = founderSnap.val();
+                    } else {
+                        profileMap[uid] = { fullName: "Investor", photoURL: null, status: "offline" };
+                    }
                 }
             } catch (err) {
                 console.warn(`Could not fetch profile for ${uid}`, err);
@@ -4421,10 +4430,10 @@ window.showInvestorChatList = async function() {
         await Promise.all(fetchPromises);
 
         // --- 3. SORT & RENDER ---
-        myChats.sort((a, b) => b.timestamp - a.timestamp);
+        myChats.sort((a, b) => b.timestamp - a.timestamp); // Newest first
 
         let listHtml = `
-                       <div class="chat-list-container">
+                        <div class="chat-list-container">
                 <div class="chat-header-row">
                     <div>
                         <h1 style="font-size:2rem; font-weight:800; margin:0; letter-spacing:-1px;">Investor Inbox</h1>
@@ -4451,14 +4460,14 @@ window.showInvestorChatList = async function() {
                 const profile = profileMap[chat.otherUid] || { fullName: 'Unknown' };
                 
                 // Name & Photo
-                const displayName = profile.fullName || profile.name || "Investor";
+                const displayName = profile.fullName || profile.founderUsername || profile.name || "Investor";
                 const displayPhoto = profile.photoURL || profile.logo; 
                 
-                // Status Logic
+                // Status Logic (Check for 'online' string OR boolean true)
                 const isOnline = profile.status === 'online' || profile.isOnline === true;
                 const statusClass = isOnline ? 'status-online' : 'status-offline';
 
-                // Time
+                // Time Formatting
                 const msgDate = new Date(chat.timestamp);
                 const isToday = new Date().toDateString() === msgDate.toDateString();
                 const timeDisplay = isToday 
