@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Session | ScaleVest</title>
-    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.19.0.js"></script>
+    <script src="https://unpkg.com/@daily-co/daily-js"></script>
     <style>
         /* Reusing your ScaleVest Theme */
         body { font-family: 'SF Pro Display', -apple-system, sans-serif; background: #f8f9fa; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
@@ -76,27 +76,9 @@
 
         /* VIDEO CONFERENCE INTERFACE */
         #videoConferenceContainer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111; z-index: 3000; display: none; flex-direction: column;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; flex-direction: column;
         }
-        
-        #videoGrid {
-            flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 10px; padding: 20px; overflow-y: auto;
-        }
-        
-        .video-player {
-            position: relative; background: #1a1a1a; border-radius: 12px; overflow: hidden;
-            min-height: 250px; display: flex; align-items: center; justify-content: center;
-        }
-        
-        .video-player video {
-            width: 100%; height: 100%; object-fit: cover;
-        }
-        
-        .video-label {
-            position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7);
-            color: white; padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
-        }
+        #dailyFrame { flex: 1; width: 100%; border: none; position: relative; }
         
         /* MEETING LOADER */
         #meetingLoader {
@@ -112,16 +94,14 @@
         
         .video-controls {
             height: 80px; background: #111; display: flex; align-items: center; justify-content: center; gap: 20px;
-            border-top: 1px solid #222;
         }
         .control-btn {
             width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            background: #333; color: white; transition: 0.2s; font-size: 1.2rem;
+            background: #333; color: white; transition: 0.2s;
         }
         .control-btn.active { background: #ef4444; color: white; }
-        .control-btn:hover { transform: scale(1.1); background: #444; }
+        .control-btn:hover { transform: scale(1.1); }
         .btn-leave { background: #ef4444 !important; }
-        .btn-leave:hover { background: #dc2626 !important; }
         .btn-end { background: #b91c1c !important; width: auto; padding: 0 20px; border-radius: 25px; }
 
         /* WAITING ROOM */
@@ -226,15 +206,15 @@
     </div>
 
     <div id="videoConferenceContainer">
-        <div id="meetingLoader">
-            <div class="loader-spinner"></div>
-            <div class="loader-text">Connecting to meeting...</div>
+        <div id="dailyFrame">
+            <div id="meetingLoader">
+                <div class="loader-spinner"></div>
+                <div class="loader-text">Connecting to meeting...</div>
+            </div>
         </div>
-        <div id="videoGrid"></div>
         <div class="video-controls">
             <button class="control-btn" onclick="toggleAudio()" id="btnMic">🎤</button>
             <button class="control-btn" onclick="toggleVideo()" id="btnCam">📷</button>
-            <button class="control-btn" onclick="toggleScreenShare()" id="btnScreen">🖥️</button>
             <button class="control-btn btn-leave" onclick="leaveMeeting()">Leave</button>
             <button class="control-btn btn-end" id="btnEndAll" style="display:none;" onclick="endMeetingForAll()">End Meeting</button>
         </div>
@@ -262,26 +242,21 @@
         const storage = getStorage(app);
         const auth = getAuth(app);
 
-        // Agora Configuration
-        const AGORA_APP_ID = "774a470e9200494fa67912b74957e589";
-        let agoraClient = null;
-        let localAudioTrack = null;
-        let localVideoTrack = null;
-        let screenTrack = null;
-        let isScreenSharing = false;
+        // Daily.co API Key
+        const DAILY_API_KEY = "41c6bd698967b9c40aa06a2ae07a661891df5d6657ca4166d82fd5ca77e94134";
 
         // GLOBAL VARS
         const params = new URLSearchParams(window.location.search);
         const recipientUID = params.get('recipient');
         let currentUser = null;
         let chatRoomID = null;
+        let dailyCall = null;
         let isInvestor = false;
         let userDisplayName = "User";
         let userAvatar = "";
         let typingTimeout = null;
         let audioMuted = false;
         let videoMuted = false;
-        let currentChannelName = null;
 
         // AUTH
         onAuthStateChanged(auth, async (user) => {
@@ -386,12 +361,12 @@
                 const displayTime = isScheduled ? dateObj.toLocaleString() : "Happening Now";
 
                 contentHtml = `
-                    <div class="meeting-card" onclick="event.stopPropagation(); window.tryJoinMeeting('${msg.channelName}', ${msg.scheduledTime === 'now' ? "'now'" : msg.scheduledTime})">
+                    <div class="meeting-card" onclick="event.stopPropagation(); window.tryJoinMeeting('${msg.meetingId}', '${msg.roomUrl}', ${msg.scheduledTime === 'now' ? "'now'" : msg.scheduledTime})">
                         <span style="font-size:2rem">📹</span>
                         <div style="flex:1">
                             <div style="font-weight:700; font-size:1rem;">${msg.title}</div>
                             <div style="font-size:0.85rem; opacity:0.8;">${displayTime}</div>
-                            <button class="join-btn" onclick="event.stopPropagation(); window.tryJoinMeeting('${msg.channelName}', ${msg.scheduledTime === 'now' ? "'now'" : msg.scheduledTime})">JOIN MEETING</button>
+                            <button class="join-btn" onclick="event.stopPropagation(); window.tryJoinMeeting('${msg.meetingId}', '${msg.roomUrl}', ${msg.scheduledTime === 'now' ? "'now'" : msg.scheduledTime})">JOIN MEETING</button>
                         </div>
                     </div>
                 `;
@@ -403,7 +378,48 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        // --- AGORA MEETING LOGIC ---
+        // --- DAILY.CO ROOM CREATION ---
+       async function createDailyRoom(roomName) {
+    try {
+        const response = await fetch('https://api.daily.co/v1/rooms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${DAILY_API_KEY}`
+            },
+            body: JSON.stringify({
+                name: roomName,
+                privacy: 'public',
+                properties: {
+                    enable_chat: true,
+                    enable_screenshare: true,
+                    // enable_recording: 'cloud', <-- REMOVED this line to fix 400 error
+                    start_video_off: false,
+                    start_audio_off: false,
+                    owner_only_broadcast: false,
+                    enable_knocking: false,
+                    enable_prejoin_ui: false,
+                    max_participants: 10,
+                    exp: Math.round(Date.now() / 1000) + 3600 // Room auto-deletes in 1 hour
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Daily API error details:', errorData);
+            throw new Error(`Daily API error: ${response.status}`);
+        }
+
+        const room = await response.json();
+        return room.url;
+    } catch (error) {
+        console.error('Error creating Daily room:', error);
+        return null;
+    }
+}
+
+        // --- MEETING LOGIC ---
         window.openMeetingModal = () => {
             document.getElementById('meetingSetupModal').style.display = 'flex';
         };
@@ -417,17 +433,26 @@
             const timeVal = document.getElementById('meetingTime').value;
             
             let scheduledTime = 'now';
-            const channelName = `scalevest_${Date.now()}_${Math.floor(Math.random()*10000)}`;
+            let meetingId = `meet_${Date.now()}_${Math.floor(Math.random()*1000)}`;
 
             if (dateVal && timeVal) {
                 scheduledTime = new Date(`${dateVal}T${timeVal}`).getTime();
+            }
+
+            // Create Daily.co room
+            const roomUrl = await createDailyRoom(`scalevest-${meetingId}`);
+            
+            if (!roomUrl) {
+                alert('Failed to create meeting room. Please try again.');
+                return;
             }
 
             await push(ref(db, `Chats/${chatRoomID}`), {
                 sender: currentUser.uid,
                 type: 'meeting',
                 title: title,
-                channelName: channelName,
+                meetingId: meetingId,
+                roomUrl: roomUrl,
                 scheduledTime: scheduledTime,
                 timestamp: Date.now(),
                 recipient: recipientUID
@@ -436,8 +461,8 @@
             closeMeetingModal();
         };
 
-        window.tryJoinMeeting = async (channelName, scheduledTime) => {
-            console.log("Trying to join meeting:", channelName, scheduledTime);
+        window.tryJoinMeeting = async (meetingId, roomUrl, scheduledTime) => {
+            console.log("Trying to join meeting:", meetingId, roomUrl, scheduledTime);
             const now = Date.now();
 
             if (scheduledTime !== 'now' && now < (scheduledTime - 5 * 60 * 1000)) {
@@ -448,195 +473,106 @@
                 return;
             }
 
-            currentChannelName = channelName;
             document.getElementById('videoConferenceContainer').style.display = 'flex';
             document.getElementById('meetingLoader').style.display = 'flex';
 
             try {
-                await joinAgoraChannel(channelName);
+                await loadDaily(roomUrl);
             } catch (err) {
-                console.error("Agora error:", err);
+                console.error("Daily.co error:", err);
                 document.getElementById('videoConferenceContainer').style.display = 'none';
                 alert("Failed to join meeting. Please try again.");
             }
         };
 
-        async function joinAgoraChannel(channelName) {
+        async function loadDaily(roomUrl) {
+            console.log("Loading Daily.co for room:", roomUrl);
+
             try {
-                // Initialize Agora client
-                agoraClient = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-
-                // Handle remote users
-                agoraClient.on("user-published", async (user, mediaType) => {
-                    await agoraClient.subscribe(user, mediaType);
-                    console.log("Subscribe success");
-
-                    if (mediaType === "video") {
-                        const remoteVideoTrack = user.videoTrack;
-                        const playerContainer = createVideoPlayer(user.uid, false);
-                        remoteVideoTrack.play(playerContainer.querySelector('.video-content'));
-                    }
-
-                    if (mediaType === "audio") {
-                        const remoteAudioTrack = user.audioTrack;
-                        remoteAudioTrack.play();
+                dailyCall = window.DailyIframe.createFrame(document.getElementById('dailyFrame'), {
+                    showLeaveButton: false,
+                    showFullscreenButton: true,
+                    iframeStyle: {
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        border: 0
                     }
                 });
 
-                agoraClient.on("user-unpublished", (user, mediaType) => {
-                    if (mediaType === "video") {
-                        const playerContainer = document.getElementById(`player-${user.uid}`);
-                        if (playerContainer) playerContainer.remove();
-                    }
+                await dailyCall.join({
+                    url: roomUrl,
+                    userName: userDisplayName
                 });
 
-                agoraClient.on("user-left", (user) => {
-                    const playerContainer = document.getElementById(`player-${user.uid}`);
-                    if (playerContainer) playerContainer.remove();
-                });
-
-                // Join channel (using null token for testing - in production, generate tokens server-side)
-                const uid = await agoraClient.join(AGORA_APP_ID, channelName, null, null);
-                console.log("Joined channel successfully with UID:", uid);
-
-                // Create local tracks
-                localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-                localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-
-                // Create local video player
-                const localPlayer = createVideoPlayer(uid, true);
-                localVideoTrack.play(localPlayer.querySelector('.video-content'));
-
-                // Publish local tracks
-                await agoraClient.publish([localAudioTrack, localVideoTrack]);
-                console.log("Published local tracks");
-
+                console.log("Daily call joined successfully");
                 document.getElementById('meetingLoader').style.display = 'none';
 
+                // Event listeners
+                dailyCall.on('left-meeting', () => {
+                    console.log("Left meeting");
+                    closeVideoInterface();
+                });
+
+                dailyCall.on('error', (error) => {
+                    console.error("Daily error:", error);
+                    alert("Meeting error occurred");
+                    closeVideoInterface();
+                });
+
             } catch (err) {
-                console.error("Agora initialization error:", err);
+                console.error("Daily initialization error:", err);
                 throw err;
             }
         }
 
-        function createVideoPlayer(uid, isLocal) {
-            const videoGrid = document.getElementById('videoGrid');
-            const playerDiv = document.createElement('div');
-            playerDiv.id = `player-${uid}`;
-            playerDiv.className = 'video-player';
-            
-            playerDiv.innerHTML = `
-                <div class="video-content" style="width:100%; height:100%;"></div>
-                <div class="video-label">${isLocal ? 'You' : 'Participant ' + uid}</div>
-            `;
-            
-            videoGrid.appendChild(playerDiv);
-            return playerDiv;
-        }
-
         // --- VIDEO CONTROLS ---
         window.toggleAudio = async () => {
-            if(localAudioTrack) {
+            if(dailyCall) {
                 audioMuted = !audioMuted;
-                await localAudioTrack.setEnabled(!audioMuted);
+                await dailyCall.setLocalAudio(!audioMuted);
                 document.getElementById('btnMic').classList.toggle('active', audioMuted);
             }
         };
 
         window.toggleVideo = async () => {
-            if(localVideoTrack) {
+            if(dailyCall) {
                 videoMuted = !videoMuted;
-                await localVideoTrack.setEnabled(!videoMuted);
+                await dailyCall.setLocalVideo(!videoMuted);
                 document.getElementById('btnCam').classList.toggle('active', videoMuted);
             }
         };
 
-        window.toggleScreenShare = async () => {
-            if (!isScreenSharing) {
-                try {
-                    screenTrack = await AgoraRTC.createScreenVideoTrack();
-                    
-                    // Replace camera track with screen track
-                    await agoraClient.unpublish([localVideoTrack]);
-                    await agoraClient.publish([screenTrack]);
-                    
-                    // Update local video display
-                    const localPlayer = document.querySelector('.video-player .video-content');
-                    localVideoTrack.stop();
-                    screenTrack.play(localPlayer);
-                    
-                    isScreenSharing = true;
-                    document.getElementById('btnScreen').classList.add('active');
-
-                    // Handle screen share stop
-                    screenTrack.on("track-ended", async () => {
-                        await stopScreenShare();
-                    });
-                } catch (err) {
-                    console.error("Screen share error:", err);
-                    alert("Failed to share screen");
-                }
-            } else {
-                await stopScreenShare();
-            }
-        };
-
-        async function stopScreenShare() {
-            if (screenTrack) {
-                screenTrack.close();
-                await agoraClient.unpublish([screenTrack]);
-                await agoraClient.publish([localVideoTrack]);
-                
-                const localPlayer = document.querySelector('.video-player .video-content');
-                localVideoTrack.play(localPlayer);
-                
-                screenTrack = null;
-                isScreenSharing = false;
-                document.getElementById('btnScreen').classList.remove('active');
-            }
-        }
-
         window.leaveMeeting = async () => {
-            await cleanupAgoraTracks();
+            if(dailyCall) {
+                await dailyCall.leave();
+                dailyCall.destroy();
+            }
             closeVideoInterface();
         };
 
         window.endMeetingForAll = async () => {
             if(!confirm("End meeting for everyone?")) return;
-            await cleanupAgoraTracks();
+            if(dailyCall) {
+                await dailyCall.leave();
+                dailyCall.destroy();
+            }
             closeVideoInterface();
         };
 
-        async function cleanupAgoraTracks() {
-            if (localAudioTrack) {
-                localAudioTrack.close();
-                localAudioTrack = null;
-            }
-            if (localVideoTrack) {
-                localVideoTrack.close();
-                localVideoTrack = null;
-            }
-            if (screenTrack) {
-                screenTrack.close();
-                screenTrack = null;
-            }
-            if (agoraClient) {
-                await agoraClient.leave();
-                agoraClient = null;
-            }
-        }
-
         function closeVideoInterface() {
             document.getElementById('videoConferenceContainer').style.display = 'none';
-            document.getElementById('videoGrid').innerHTML = '';
-            document.getElementById('meetingLoader').style.display = 'flex';
+            document.getElementById('dailyFrame').innerHTML = `
+                <div id="meetingLoader">
+                    <div class="loader-spinner"></div>
+                    <div class="loader-text">Connecting to meeting...</div>
+                </div>
+            `;
+            dailyCall = null;
             audioMuted = false;
             videoMuted = false;
-            isScreenSharing = false;
-            currentChannelName = null;
             document.getElementById('btnMic').classList.remove('active');
             document.getElementById('btnCam').classList.remove('active');
-            document.getElementById('btnScreen').classList.remove('active');
         }
 
         // --- FILE UPLOAD ---
