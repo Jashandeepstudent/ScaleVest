@@ -16,7 +16,7 @@
         }
         
         .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-logo { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb; }
+        .header-logo { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb; background: #f3f4f6; }
         .header-title { font-weight: 800; font-size: 1.2rem; color: #1a1a1a; }
         .header-sub { font-size: 0.85rem; color: #10b981; font-weight: 600; }
         .header-actions { display: flex; align-items: center; gap: 10px; }
@@ -43,15 +43,11 @@
         
         /* MEETING CARD */
         .meeting-card {
-            background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.1); border-radius: 12px; padding: 16px; margin-top: 5px;
-            display: flex; align-items: center; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; padding: 15px; margin-top: 5px; cursor: pointer; transition: 0.2s;
         }
-        .msg-theirs .meeting-card { background: #f0fdf4; border-color: #10b981; }
-        .join-btn { 
-            background: #10b981; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; margin-top: 8px; cursor: pointer; width: 100%; transition: 0.2s;
-        }
-        .join-btn:hover { background: #059669; transform: scale(1.02); }
-        .join-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .meeting-card:hover { background: rgba(255,255,255,0.25); }
+        .msg-theirs .meeting-card { background: #f0fdf4; border-color: #10b981; color: #064e3b; }
+        .join-btn { background: #fff; color: #10b981; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; margin-top: 10px; cursor: pointer; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         /* INPUT AREA */
         .input-area { background: white; padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid #e5e7eb; align-items: center; }
@@ -76,25 +72,40 @@
         .modal-btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; transition: 0.2s; width: 100%; }
         .btn-primary { background: #10b981; color: white; }
         .btn-secondary { background: #f3f4f6; color: #333; }
-        .btn-danger { background: #ef4444; color: white; }
+        
+        /* LOADING MEETING OVERLAY */
+        #meetingLoader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3500;
+            display: none; flex-direction: column; align-items: center; justify-content: center; color: white;
+        }
+        .loader-spinner { width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #10b981; animation: spin 1s ease-in-out infinite; margin-bottom: 20px;}
 
         /* VIDEO CONFERENCE INTERFACE */
         #videoConferenceContainer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; display: none; flex-direction: column;
         }
-        #jitsiFrame { flex: 1; width: 100%; border: none; }
+        #jitsiFrame { flex: 1; width: 100%; border: none; background: #000; }
+        
+        /* Hiding Jitsi Watermark via CSS (Hack) */
+        #jitsiFrame iframe {
+            /* This attempts to hide the watermark but Jitsi iframe contents are cross-origin protected usually */
+        }
         
         .video-controls {
-            height: 80px; background: #111; display: flex; align-items: center; justify-content: center; gap: 20px;
+            height: 80px; background: #111; display: flex; align-items: center; justify-content: center; gap: 20px; border-top: 1px solid #333;
         }
         .control-btn {
             width: 50px; height: 50px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            background: #333; color: white; transition: 0.2s;
+            background: #333; color: white; transition: 0.2s; font-size: 1.2rem;
         }
-        .control-btn.active { background: #ef4444; color: white; } /* Red for muted/off */
-        .control-btn:hover { transform: scale(1.1); }
+        .control-btn.active { background: #ef4444; color: white; }
+        .control-btn:hover { transform: scale(1.1); background: #444; }
         .btn-leave { background: #ef4444 !important; }
-        .btn-end { background: #b91c1c !important; width: auto; padding: 0 20px; border-radius: 25px; }
+        .btn-end { background: #b91c1c !important; width: auto; padding: 0 20px; border-radius: 25px; font-size: 1rem; font-weight: 600; }
+
+        /* WAITING ROOM */
+        .waiting-room { text-align: center; color: #333; }
+        .waiting-time { font-size: 2rem; font-weight: 800; color: #10b981; margin: 20px 0; }
 
         /* UTILS */
         #uploadProgress { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: #10b981; z-index: 200; transition: width 0.3s; }
@@ -104,12 +115,7 @@
         .dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
         @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Media Styles */
-        .chat-image { max-width: 100%; border-radius: 10px; margin-bottom: 5px; cursor: pointer; }
-        .chat-video { max-width: 100%; border-radius: 10px; margin-bottom: 5px; }
-        .file-attachment { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.1); padding: 10px; border-radius: 8px; text-decoration: none; color: inherit; font-weight: 600; margin-bottom: 5px; }
-        .msg-mine .file-attachment { color: white; background: rgba(255,255,255,0.2); }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -118,7 +124,7 @@
 
     <div class="chat-header">
         <div class="header-left">
-            <img src="ScaleVestLogo.png" alt="SV" class="header-logo" onerror="this.src='https://via.placeholder.com/45?text=SV'"> 
+            <img src="https://via.placeholder.com/45?text=SV" alt="User" class="header-logo" id="headerLogo"> 
             <div>
                 <div class="header-title" id="chatTitle">Connecting...</div>
                 <div class="header-sub">ScaleVest Secure Line</div>
@@ -139,18 +145,7 @@
     <div id="chatContainer">
         <div id="initialLoader" style="position: absolute; top:0; left:0; width:100%; height:100%; background:#f8f9fa; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center;">
             <div style="width: 40px; height: 40px; border: 4px solid #ddd; border-top: 4px solid #10b981; border-radius: 50%; animation: spin 1s infinite linear;"></div>
-            <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
             <div style="margin-top:10px; color:#888; font-size:0.9rem;">Syncing...</div>
-        </div>
-
-        <div id="safetyWarning" class="safety-warning" style="display:none;">
-            <span class="safety-icon">🛡️</span>
-            <div class="safety-text">
-                <strong>ScaleVest has your back.</strong><br>
-                Please do not open any suspicious links or share sensitive passwords.
-                <br><br>
-              
-            </div>
         </div>
 
         <div class="typing-indicator" id="typingBubble">
@@ -165,7 +160,6 @@
             </svg>
         </button>
         <input type="file" id="fileInput" style="display: none;">
-
         <input type="text" id="msgInput" placeholder="Type a message..." autocomplete="off">
         <button id="sendBtn">SEND</button>
     </div>
@@ -189,14 +183,20 @@
     </div>
 
     <div id="waitingRoomModal" class="modal-overlay">
-        <div class="modal-box" style="text-align:center;">
+        <div class="modal-box waiting-room">
             <div style="font-size:3rem;">⏳</div>
             <div class="modal-title">Meeting Scheduled</div>
             <p>This meeting is scheduled for:</p>
-            <div style="font-size:2rem; font-weight:800; color:#10b981; margin:20px 0;" id="waitDisplayTime">--:--</div>
+            <div class="waiting-time" id="waitDisplayTime">--:--</div>
             <p id="waitDisplayDate" style="color:#666; margin-bottom:20px;">--/--/----</p>
             <button class="modal-btn btn-secondary" onclick="document.getElementById('waitingRoomModal').style.display='none'">Okay, I'll wait</button>
         </div>
+    </div>
+
+    <div id="meetingLoader">
+        <div class="loader-spinner"></div>
+        <h2>Joining Meeting...</h2>
+        <p style="opacity: 0.7; margin-top: 10px;">Securing connection</p>
     </div>
 
     <div id="videoConferenceContainer">
@@ -204,8 +204,8 @@
         <div class="video-controls">
             <button class="control-btn" onclick="toggleAudio()" id="btnMic">🎤</button>
             <button class="control-btn" onclick="toggleVideo()" id="btnCam">📷</button>
-            <button class="control-btn btn-leave" onclick="leaveMeeting()">Leave</button>
-            <button class="control-btn btn-end" id="btnEndAll" style="display:none;" onclick="endMeetingForAll()">End Meeting</button>
+            <button class="control-btn btn-leave" onclick="leaveMeeting()">👋</button>
+            <button class="control-btn btn-end" id="btnEndAll" style="display:none;" onclick="endMeetingForAll()">End Session</button>
         </div>
     </div>
 
@@ -241,8 +241,6 @@
         let userDisplayName = "User";
         let userAvatar = "";
         let typingTimeout = null;
-        let lastLoadedTimestamp = 0;
-        const badWords = ["abuse", "scam", "fraud", "kill", "idiot", "stupid", "badword", "fake"];
 
         // AUTH
         onAuthStateChanged(auth, async (user) => {
@@ -257,15 +255,15 @@
             }
         });
 
-        // 1. IDENTIFY ROLE & GET MY DETAILS (For Video Card)
+        // 1. IDENTIFY ROLE & GET MY DETAILS
         async function identifyUserRole() {
-            // Check Investor
+            // Check if I am an Investor
             try {
                 const invSnap = await get(ref(db, `investorProfiles/${currentUser.uid}`));
                 if (invSnap.exists()) {
                     isInvestor = true;
                     document.getElementById('meetingBtn').style.display = 'flex';
-                    document.getElementById('btnEndAll').style.display = 'flex'; // Enable End Meeting btn
+                    document.getElementById('btnEndAll').style.display = 'flex';
                     const data = invSnap.val();
                     userDisplayName = data.fullName || "Investor";
                     userAvatar = data.photoURL || data.logo || "";
@@ -273,84 +271,62 @@
                 }
             } catch(e) {}
 
-            // Check Founder
+            // Check if I am a Founder
             try {
                 const fndSnap = await get(ref(db, `founderProfile/${currentUser.uid}`));
                 if (fndSnap.exists()) {
                     const data = fndSnap.val();
-                    userDisplayName = data.fullName || data.founderUsername || "Founder"; // FIX: Prioritize Full Name
+                    userDisplayName = data.founderUsername || "Founder";
                     userAvatar = data.photoURL || "";
                 }
             } catch(e) {}
         }
 
+        // 2. INITIALIZE CHAT (Improved Name Fetching)
         async function initializeChat() {
             const participantIDs = [currentUser.uid, recipientUID].sort();
             chatRoomID = `chat_${participantIDs[0]}_${participantIDs[1]}`;
 
-            // Header Name Logic
             let chatTitle = "Chat";
+            let chatImage = "https://via.placeholder.com/45?text=U";
+
             try {
-                // Fetch Founder Profile First (Specifically looking for Full Name)
-                const fSnap = await get(ref(db, `founderProfile/${recipientUID}`));
-                if (fSnap.exists()) {
-                    const d = fSnap.val();
-                    chatTitle = d.fullName || d.founderUsername || "Founder";
+                // Determine who the recipient is
+                // If I am Investor, I am looking for a FOUNDER
+                if (isInvestor) {
+                    const fSnap = await get(ref(db, `founderProfile/${recipientUID}`));
+                    if (fSnap.exists()) {
+                        const data = fSnap.val();
+                        // FETCHING FULL NAME and PHOTO URL AS REQUESTED
+                        chatTitle = data.fullName || data.founderUsername || "Founder";
+                        chatImage = data.photoURL || "https://via.placeholder.com/45?text=F";
+                    }
                 } else {
+                    // I am a Founder looking for an Investor
                     const iSnap = await get(ref(db, `investorProfiles/${recipientUID}`));
                     if (iSnap.exists()) {
-                        const d = iSnap.val();
-                        chatTitle = d.fullName || "Investor";
+                        const data = iSnap.val();
+                        chatTitle = data.fullName || "Investor";
+                        chatImage = data.photoURL || data.logo || "https://via.placeholder.com/45?text=I";
                     }
                 }
-            } catch (e) {}
-            document.getElementById('chatTitle').textContent = chatTitle;
-            
-            // 2. BULK LOAD HISTORY (Instant)
-            const messagesRef = ref(db, `Chats/${chatRoomID}`);
-            try {
-                const snapshot = await get(messagesRef);
-                const loader = document.getElementById('initialLoader');
-                const warning = document.getElementById('safetyWarning');
-
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    const messages = [];
-
-                    Object.values(data).forEach(msg => {
-                        if (msg.sender && msg.timestamp) messages.push(msg);
-                    });
-
-                    messages.sort((a, b) => a.timestamp - b.timestamp);
-
-                    messages.forEach(msg => {
-                        renderMessage(msg, false); 
-                        lastLoadedTimestamp = msg.timestamp;
-                    });
-
-                    const container = document.getElementById('chatContainer');
-                    container.scrollTop = container.scrollHeight;
-                    if(messages.length > 0) warning.style.display = 'none';
-                } else {
-                    warning.style.display = 'block';
-                }
-                loader.style.display = 'none';
             } catch (e) {
-                console.error("Chat Load Error", e);
-                document.getElementById('initialLoader').style.display = 'none';
+                console.error("Error fetching profile", e);
             }
 
-            // 3. LISTEN FOR *NEW* MESSAGES
-            const newMsgQuery = query(messagesRef, orderByChild('timestamp'), startAfter(lastLoadedTimestamp));
-            onChildAdded(newMsgQuery, (snapshot) => {
-                const msg = snapshot.val();
-                if(msg && msg.timestamp > lastLoadedTimestamp) { 
-                    renderMessage(msg, true); 
-                    lastLoadedTimestamp = msg.timestamp; 
-                }
-            });
+            // Update Header UI
+            document.getElementById('chatTitle').textContent = chatTitle;
+            document.getElementById('headerLogo').src = chatImage;
+            document.getElementById('initialLoader').style.display = 'none';
 
-            // 4. LISTEN FOR TYPING
+            // Listen for Messages
+            const messagesRef = ref(db, `Chats/${chatRoomID}`);
+            onChildAdded(messagesRef, (snapshot) => {
+                const msg = snapshot.val();
+                if(msg.sender) renderMessage(msg);
+            });
+            
+             // Listen for Typing
             const typingRef = ref(db, `Chats/${chatRoomID}/typing/${recipientUID}`);
             onValue(typingRef, (snapshot) => {
                 const isTyping = snapshot.val();
@@ -368,30 +344,26 @@
         }
 
         // --- RENDER MESSAGES ---
-        function renderMessage(msg, autoScroll) {
+        function renderMessage(msg) {
             const container = document.getElementById('chatContainer');
-            const warning = document.getElementById('safetyWarning');
-            if (warning) warning.style.display = 'none';
-
             const isMine = msg.sender === currentUser.uid;
             const div = document.createElement('div');
             div.className = `message-bubble ${isMine ? 'msg-mine' : 'msg-theirs'}`;
             
             const time = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
-            // File Handling
             let contentHtml = "";
-            if (msg.fileType === 'image') {
-                contentHtml = `<img src="${msg.fileUrl}" class="chat-image" onclick="window.open('${msg.fileUrl}')">`;
+             if (msg.fileType === 'image') {
+                contentHtml = `<img src="${msg.fileUrl}" style="max-width:100%; border-radius:10px; cursor:pointer;" onclick="window.open('${msg.fileUrl}')">`;
             } else if (msg.fileType === 'video') {
-                contentHtml = `<video src="${msg.fileUrl}" class="chat-video" controls></video>`;
+                contentHtml = `<video src="${msg.fileUrl}" style="max-width:100%; border-radius:10px;" controls></video>`;
             } else if (msg.fileType === 'document') {
-                contentHtml = `<a href="${msg.fileUrl}" target="_blank" class="file-attachment">📄 ${msg.fileName || 'Document'}</a>`;
+                contentHtml = `<a href="${msg.fileUrl}" target="_blank" style="color:inherit; text-decoration:underline;">📄 ${msg.fileName || 'Document'}</a>`;
             }
 
-            // Text Message
-            if (msg.text) contentHtml += `<div>${msg.text}</div>`;
-            
+            if (msg.text) {
+                contentHtml += `<div>${msg.text}</div>`;
+            }
             // Meeting Invite Card
             else if (msg.type === 'meeting') {
                 const isScheduled = msg.scheduledTime && msg.scheduledTime !== 'now';
@@ -400,32 +372,26 @@
 
                 contentHtml = `
                     <div class="meeting-card" onclick="window.tryJoinMeeting('${msg.meetingId}', ${msg.scheduledTime === 'now' ? "'now'" : msg.scheduledTime})">
-                        <span style="font-size:2rem">📹</span>
-                        <div style="flex:1">
-                            <div style="font-weight:700; font-size:1rem;">${msg.title}</div>
-                            <div style="font-size:0.85rem; opacity:0.8;">${displayTime}</div>
-                            <button class="join-btn" onclick="this.innerHTML='Joining...'">JOIN MEETING</button>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span style="font-size:1.8rem">📹</span>
+                            <div style="flex:1">
+                                <div style="font-weight:700; font-size:1rem;">${msg.title}</div>
+                                <div style="font-size:0.8rem; opacity:0.8;">${displayTime}</div>
+                            </div>
                         </div>
+                        <button class="join-btn">JOIN MEETING</button>
                     </div>
                 `;
             }
             
             div.innerHTML = `${contentHtml}<span class="timestamp">${time}</span>`;
-            
-            // Safe Insert Logic
-            const bubble = document.getElementById('typingBubble');
-            if (bubble && container.contains(bubble)) {
-                container.insertBefore(div, bubble);
-            } else {
-                container.appendChild(div);
-            }
-            
-            if(autoScroll) container.scrollTop = container.scrollHeight;
+
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
         }
 
         // --- MEETING LOGIC ---
 
-        // 1. Open Setup Modal
         window.openMeetingModal = () => {
             document.getElementById('meetingSetupModal').style.display = 'flex';
         };
@@ -433,7 +399,6 @@
             document.getElementById('meetingSetupModal').style.display = 'none';
         };
 
-        // 2. Create Meeting (Send Invite)
         window.createMeeting = async () => {
             const title = document.getElementById('meetingTitle').value || "Quick Sync";
             const dateVal = document.getElementById('meetingDate').value;
@@ -442,12 +407,10 @@
             let scheduledTime = 'now';
             let meetingId = `meet_${Date.now()}_${Math.floor(Math.random()*1000)}`;
 
-            // Parse Schedule if set
             if (dateVal && timeVal) {
                 scheduledTime = new Date(`${dateVal}T${timeVal}`).getTime();
             }
 
-            // Send Invite Message
             await push(ref(db, `Chats/${chatRoomID}`), {
                 sender: currentUser.uid,
                 type: 'meeting',
@@ -461,13 +424,9 @@
             closeMeetingModal();
         };
 
-        // 3. Try Join (Check Time)
         window.tryJoinMeeting = (meetingId, scheduledTime) => {
             const now = Date.now();
-
-            // If scheduled in future (giving 5 min grace period)
             if (scheduledTime !== 'now' && now < (scheduledTime - 5 * 60 * 1000)) {
-                // Show Wait Screen
                 const dateObj = new Date(scheduledTime);
                 document.getElementById('waitDisplayTime').textContent = dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                 document.getElementById('waitDisplayDate').textContent = dateObj.toLocaleDateString();
@@ -475,44 +434,63 @@
                 return;
             }
 
-            // Start Jitsi
-            loadJitsi(meetingId);
+            // Show Loading Screen
+            const loader = document.getElementById('meetingLoader');
+            loader.style.display = 'flex';
+
+            // Simulate slight delay for UI smoothness before heavy Jitsi load
+            setTimeout(() => {
+                loadJitsi(meetingId);
+            }, 800);
         };
 
-        // 4. Load Jitsi Interface
         function loadJitsi(roomName) {
             document.getElementById('videoConferenceContainer').style.display = 'flex';
 
             const domain = "meet.jit.si";
             const options = {
-                roomName: "ScaleVest_" + roomName, // Unique room prefix
+                roomName: "ScaleVest_" + roomName,
                 width: "100%",
                 height: "100%",
                 parentNode: document.querySelector('#jitsiFrame'),
                 userInfo: {
-                    displayName: userDisplayName, // Uses cached real name
-                    avatarURL: userAvatar // Uses cached photo
+                    displayName: userDisplayName,
+                    avatarURL: userAvatar 
                 },
+                // OPTIMIZED CONFIG TO REDUCE LAG
                 configOverwrite: {
                     startWithAudioMuted: false,
                     startWithVideoMuted: false,
-                    prejoinPageEnabled: false, 
+                    prejoinPageEnabled: false,
                     disableDeepLinking: true,
-                    // Optimized settings to reduce lag
-                    resolution: 360, 
-                    constraints: { video: { height: { ideal: 360, max: 720 } } },
-                    toolbarButtons: [] // HIDE DEFAULT BUTTONS
+                    resolution: 480, // Lower resolution for better performance
+                    constraints: {
+                        video: {
+                            height: {
+                                ideal: 480,
+                                max: 480,
+                                min: 240
+                            }
+                        }
+                    },
+                    toolbarButtons: ['tileview'] // Minimal buttons since we use custom controls
                 },
                 interfaceConfigOverwrite: {
                     SHOW_JITSI_WATERMARK: false,
                     SHOW_WATERMARK_FOR_GUESTS: false,
-                    TOOLBAR_ALWAYS_VISIBLE: false
+                    TOOLBAR_ALWAYS_VISIBLE: false,
+                    VIDEO_LAYOUT_FIT: 'both',
+                    topToolbarButtons: [] // Hides top bar
                 }
             };
 
             jitsiAPI = new JitsiMeetExternalAPI(domain, options);
             
-            // Handle Hangup Event from inside Jitsi
+            // Hide Loader when conference joined
+            jitsiAPI.addEventListener('videoConferenceJoined', () => {
+                document.getElementById('meetingLoader').style.display = 'none';
+            });
+            
             jitsiAPI.addEventListener('videoConferenceLeft', () => {
                 closeVideoInterface();
             });
@@ -534,7 +512,6 @@
             closeVideoInterface();
         };
 
-        // Investor Only: Kick everyone
         window.endMeetingForAll = () => {
             if(!confirm("End meeting for everyone?")) return;
             if(jitsiAPI) jitsiAPI.dispose();
@@ -543,11 +520,16 @@
 
         function closeVideoInterface() {
             document.getElementById('videoConferenceContainer').style.display = 'none';
-            document.querySelector('#jitsiFrame').innerHTML = ""; // Clear iframe
+            document.getElementById('meetingLoader').style.display = 'none';
+            document.querySelector('#jitsiFrame').innerHTML = ""; 
             jitsiAPI = null;
         }
 
-        // --- FILE UPLOAD LOGIC ---
+        // --- SEND MSG LOGIC ---
+        const input = document.getElementById('msgInput');
+        const sendBtn = document.getElementById('sendBtn');
+        
+        // File Upload
         const fileInput = document.getElementById('fileInput');
         const attachBtn = document.getElementById('attachBtn');
 
@@ -571,7 +553,6 @@
                         progressBar.style.width = progress + '%';
                     }, 
                     (error) => {
-                        console.error("Upload failed", error);
                         alert("File upload failed.");
                         progressBar.style.width = '0%';
                     }, 
@@ -600,39 +581,23 @@
             }
         });
 
-        // --- TEXT SEND LOGIC ---
-        const input = document.getElementById('msgInput');
-        const sendBtn = document.getElementById('sendBtn');
-
-        function sanitizeMessage(text) {
-            let cleanText = text;
-            badWords.forEach(word => {
-                const regex = new RegExp(`\\b${word}\\b`, 'gi');
-                cleanText = cleanText.replace(regex, '####');
-            });
-            return cleanText;
-        }
-
         async function sendMessage() {
-            const rawText = input.value.trim();
-            if (!rawText || !chatRoomID) return;
+            const text = input.value.trim();
+            if (!text || !chatRoomID) return;
+            const badWords = ["abuse", "scam", "fraud", "kill", "idiot"];
+            let cleanText = text;
+            badWords.forEach(w => { cleanText = cleanText.replace(new RegExp(`\\b${w}\\b`,'gi'), '####'); });
 
-            const cleanText = sanitizeMessage(rawText);
-
-            const messagesRef = ref(db, `Chats/${chatRoomID}`);
-            await push(messagesRef, {
+            await push(ref(db, `Chats/${chatRoomID}`), {
                 sender: currentUser.uid,
                 text: cleanText,
                 timestamp: Date.now(),
-                recipient: recipientUID 
+                recipient: recipientUID
             });
-
-            input.value = ""; 
-            input.focus();
+            input.value = "";
             set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
         }
-
-        // TYPING LOGIC
+        
         input.addEventListener('input', () => {
             if (!chatRoomID) return;
             set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), true);
@@ -643,9 +608,7 @@
         });
 
         sendBtn.addEventListener('click', sendMessage);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
     </script>
 </body>
