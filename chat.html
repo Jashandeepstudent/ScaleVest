@@ -10,17 +10,50 @@
         
         /* HEADER */
         .chat-header {
-            background: white; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: white; padding: 15px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex; align-items: center; justify-content: space-between; z-index: 10;
         }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Circular Logo */
+        .header-logo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e5e7eb;
+        }
+
         .header-title { font-weight: 800; font-size: 1.2rem; color: #1a1a1a; }
-        .header-sub { font-size: 0.9rem; color: #10b981; font-weight: 600; }
+        .header-sub { font-size: 0.85rem; color: #10b981; font-weight: 600; }
         .back-btn { text-decoration: none; color: #6b7280; font-weight: 600; font-size: 0.9rem; }
 
         /* CHAT AREA */
         #chatContainer {
             flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+            position: relative;
         }
+
+        /* SAFETY WARNING (EMPTY STATE) */
+        .safety-warning {
+            text-align: center;
+            padding: 40px 20px;
+            background: #fff;
+            border-radius: 12px;
+            margin: 20px auto;
+            max-width: 80%;
+            border: 1px dashed #ccc;
+            color: #555;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .safety-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+        .safety-text { font-size: 0.95rem; line-height: 1.5; }
+        .safety-text strong { color: #10b981; }
 
         /* MESSAGES */
         .message-bubble {
@@ -34,6 +67,30 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .timestamp { font-size: 10px; opacity: 0.7; margin-top: 5px; display: block; text-align: right; }
+
+        /* TYPING INDICATOR */
+        .typing-indicator {
+            align-self: flex-start;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: none; /* Hidden by default */
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .dot {
+            width: 6px; height: 6px; background: #bbb; border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
         /* INPUT AREA */
         .input-area {
@@ -54,17 +111,30 @@
 <body>
 
     <div class="chat-header">
-        <div>
-            <div class="header-title" id="chatTitle">Connecting...</div>
-            <div class="header-sub">ScaleVest Secure Line</div>
+        <div class="header-left">
+            <img src="ScaleVestLogo.png" alt="SV" class="header-logo" onerror="this.style.display='none'"> 
+            <div>
+                <div class="header-title" id="chatTitle">Connecting...</div>
+                <div class="header-sub">ScaleVest Secure Line</div>
+            </div>
         </div>
         <a href="#" onclick="history.back()" class="back-btn">← Go Back</a>
     </div>
 
     <div id="chatContainer">
-        <div style="text-align: center; color: #9ca3af; margin-top: 20px; font-size: 0.9rem;" id="loadingMsg">
-            Initializing Encrypted Connection...
+        <div id="safetyWarning" class="safety-warning">
+            <span class="safety-icon">🛡️</span>
+            <div class="safety-text">
+                <strong>ScaleVest has your back.</strong><br>
+                Please do not open any suspicious links or share sensitive passwords.
+                <br><br>
+                <small style="color:#999">Messages are end-to-end encrypted.</small>
+            </div>
         </div>
+    </div>
+
+    <div class="typing-indicator" id="typingBubble">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
     </div>
 
     <div class="input-area">
@@ -74,10 +144,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, get, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // CONFIG (Same as your vests.html)
+        // CONFIG
         const firebaseConfig = {
             apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
             authDomain: "scalevest-163a0.firebaseapp.com",
@@ -94,9 +164,10 @@
 
         // GET PARAMS
         const params = new URLSearchParams(window.location.search);
-        const recipientUID = params.get('recipient'); // The Founder
+        const recipientUID = params.get('recipient');
         let currentUser = null;
         let chatRoomID = null;
+        let typingTimeout = null;
 
         // AUTH GUARD
         onAuthStateChanged(auth, async (user) => {
@@ -104,7 +175,7 @@
                 currentUser = user;
                 if(!recipientUID) {
                     alert("No recipient specified.");
-                    window.location.href = "dashboard.html"; // Fallback
+                    window.location.href = "dashboard.html";
                     return;
                 }
                 initializeChat();
@@ -113,17 +184,12 @@
             }
         });
 
-async function initializeChat() {
-            // 1. Create Unique Room ID (Alphabetical Sort ensures UserA+UserB always = same Room)
+        async function initializeChat() {
             const participantIDs = [currentUser.uid, recipientUID].sort();
             chatRoomID = `chat_${participantIDs[0]}_${participantIDs[1]}`;
 
-            document.getElementById('loadingMsg').style.display = 'none';
-
-            // 2. FETCH REAL NAME OF RECIPIENT
-            // We check both profile tables because we don't know if the recipient is a Founder or Investor
+            // 1. FETCH REAL NAME OF RECIPIENT
             let chatTitle = "Chat";
-            
             try {
                 // Try fetching as Founder first
                 const founderSnap = await get(ref(db, `founderProfile/${recipientUID}`));
@@ -135,31 +201,49 @@ async function initializeChat() {
                     const investorSnap = await get(ref(db, `investorProfiles/${recipientUID}`));
                     if (investorSnap.exists()) {
                         const data = investorSnap.val();
-                        // Adjust these fields based on your actual investor profile structure
                         chatTitle = data.fullName || data.name || "Investor"; 
                     }
                 }
             } catch (e) {
                 console.error("Error fetching name:", e);
-                chatTitle = "User"; // Fallback
             }
-
-            // Update Header UI
             document.getElementById('chatTitle').textContent = chatTitle;
 
-
-            // 3. Listen for Messages
+            // 2. LISTEN FOR MESSAGES
             const messagesRef = ref(db, `Chats/${chatRoomID}`);
-            
             onChildAdded(messagesRef, (snapshot) => {
                 const msg = snapshot.val();
-                renderMessage(msg);
+                if(msg && msg.text) { // Ensure it's a real message
+                    renderMessage(msg);
+                }
+            });
+
+            // 3. LISTEN FOR TYPING INDICATOR (From the *other* user)
+            // We listen to: Chats/{roomID}/typing/{recipientUID}
+            const typingRef = ref(db, `Chats/${chatRoomID}/typing/${recipientUID}`);
+            onValue(typingRef, (snapshot) => {
+                const isTyping = snapshot.val();
+                const bubble = document.getElementById('typingBubble');
+                const container = document.getElementById('chatContainer');
+                
+                if (isTyping) {
+                    bubble.style.display = 'flex';
+                    container.appendChild(bubble); // Move to bottom
+                    container.scrollTop = container.scrollHeight;
+                } else {
+                    bubble.style.display = 'none';
+                }
             });
         }
 
         // RENDER UI
         function renderMessage(msg) {
             const container = document.getElementById('chatContainer');
+            const warning = document.getElementById('safetyWarning');
+            
+            // Hide the safety warning once a message appears
+            if (warning) warning.style.display = 'none';
+
             const isMine = msg.sender === currentUser.uid;
             
             const div = document.createElement('div');
@@ -172,7 +256,10 @@ async function initializeChat() {
                 <span class="timestamp">${time}</span>
             `;
             
-            container.appendChild(div);
+            // Insert before the typing bubble if it exists
+            const bubble = document.getElementById('typingBubble');
+            container.insertBefore(div, bubble); 
+            
             // Auto scroll to bottom
             container.scrollTop = container.scrollHeight;
         }
@@ -194,9 +281,28 @@ async function initializeChat() {
                 recipient: recipientUID 
             });
 
-            input.value = ""; // Clear input
+            input.value = ""; 
             input.focus();
+            
+            // Stop typing status immediately
+            set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
         }
+
+        // TYPING LOGIC (Set my status)
+        input.addEventListener('input', () => {
+            if (!chatRoomID) return;
+
+            // Set my status to true
+            set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), true);
+
+            // Clear previous timeout
+            if (typingTimeout) clearTimeout(typingTimeout);
+
+            // Set back to false after 2 seconds of inactivity
+            typingTimeout = setTimeout(() => {
+                set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
+            }, 2000);
+        });
 
         // Event Listeners
         sendBtn.addEventListener('click', sendMessage);
