@@ -5,400 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vest Analysis | ScaleVest</title>
     <style>
+        /* --- GLOBAL STYLES --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f8f9fa;
-            color: #1a1a1a;
-            min-height: 100vh;
-        }
-
+        body { font-family: 'SF Pro Display', -apple-system, sans-serif; background: #f8f9fa; color: #1a1a1a; min-height: 100vh; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-        /* HEADER SECTION */
-        .header {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
+        /* GLOBAL LOADER */
+        #globalLoader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.6s ease, visibility 0.6s; }
+        .loader-terminal { width: 300px; background: #1a1a1a; border-radius: 12px; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); color: #10b981; font-family: monospace; font-size: 14px; }
+        .loader-spinner { width: 50px; height: 50px; border: 4px solid rgba(16, 185, 129, 0.1); border-top: 4px solid #10b981; border-radius: 50%; margin-bottom: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #globalLoader.hidden { opacity: 0; visibility: hidden; }
 
-        .hook-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #1a1a1a;
-            margin-bottom: 16px;
-            line-height: 1.2;
-        }
-
-        .description {
-            font-size: 1.1rem;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        /* PROGRESS BAR */
-        .progress-container {
-            background: #e5e7eb;
-            height: 8px;
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #10b981, #059669);
-            width: 20%;
-            transition: width 0.5s ease;
-            border-radius: 20px;
-        }
-
-        .progress-text {
-            font-size: 14px;
-            color: #6b7280;
-            font-weight: 600;
-        }
-
-        /* CATEGORY PILLS */
-        .categories {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .category-pill {
-            padding: 12px 24px;
-            border-radius: 25px;
-            background: white;
-            border: 2px solid #e5e7eb;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-
-        .category-pill:hover {
-            border-color: #10b981;
-            transform: translateY(-2px);
-        }
-
-        .category-pill.active {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
-        }
-
-        /* CONTENT SECTIONS */
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* INFO CARDS */
-        .info-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-        }
-
-        .info-card:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-            transform: translateY(-4px);
-        }
-
-        .card-label {
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .label-red { color: #ef4444; }
-        .label-blue { color: #3b82f6; }
-        .label-green { color: #10b981; }
-
-        .card-content {
-            font-size: 16px;
-            color: #374151;
-            line-height: 1.8;
-        }
-/* GLOBAL LOADER OVERLAY */
-#globalLoader {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #f8f9fa; /* Matches your body background */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    transition: opacity 0.6s ease, visibility 0.6s;
-}
-
-.loader-terminal {
-    width: 300px;
-    background: #1a1a1a;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-    color: #10b981;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 14px;
-}
-
-.loader-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(16, 185, 129, 0.1);
-    border-top: 4px solid #10b981;
-    border-radius: 50%;
-    margin-bottom: 20px;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-#globalLoader.hidden {
-    opacity: 0;
-    visibility: hidden;
-}
-        /* TWO COLUMN LAYOUT */
-        .two-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        /* STARTUP DETAILS CARD */
-        .details-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .startup-logo-big {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .details-info {
-            flex: 1;
-        }
-
-        .startup-name-big {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .detail-item {
-            padding: 16px;
-            background: #f9fafb;
-            border-radius: 12px;
-        }
-
-        .detail-title {
-            font-size: 12px;
-            color: #9ca3af;
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .detail-value {
-            font-size: 16px;
-            color: #1a1a1a;
-            font-weight: 600;
-        }
-
-        /* AUDIT CARDS */
-        .audit-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .audit-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        .audit-question {
-            font-size: 16px;
-            font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 12px;
-        }
-
-        .audit-answer {
-            font-size: 14px;
-            color: #6b7280;
-            line-height: 1.7;
-        }
-
-        /* FOUNDER CARDS */
-        .founder-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        /* CTA BUTTON */
-        .cta-button {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 18px 40px;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 30px;
-            transition: all 0.3s ease;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.4);
-        }
-
-        /* MODAL */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal-title {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 16px;
-        }
-
-        .modal-text {
-            font-size: 16px;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 2px solid #e5e7eb;
-            background: white;
-            transition: all 0.3s ease;
-        }
-
-        .modal-btn.primary {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
-        }
-
-        .modal-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        @media (max-width: 768px) {
-            .two-column {
-                grid-template-columns: 1fr;
-            }
-            .hook-title {
-                font-size: 1.8rem;
-            }
-        }
+        /* UI ELEMENTS */
+        .header { background: white; border-radius: 16px; padding: 40px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .hook-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 16px; }
+        .progress-container { background: #e5e7eb; height: 8px; border-radius: 20px; overflow: hidden; margin-bottom: 12px; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #10b981, #059669); width: 20%; transition: width 0.5s ease; }
+        .categories { display: flex; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+        .category-pill { padding: 12px 24px; border-radius: 25px; background: white; border: 2px solid #e5e7eb; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .category-pill.active { background: #10b981; color: white; border-color: #10b981; }
+        .section { display: none; }
+        .section.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .info-card { background: white; border-radius: 16px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .label-red { color: #ef4444; } .label-blue { color: #3b82f6; } .label-green { color: #10b981; }
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .startup-logo-big { width: 80px; height: 80px; border-radius: 50%; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 32px; color: white; overflow: hidden; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; padding: 40px; max-width: 500px; width: 90%; }
+        .modal-btn { padding: 14px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; border: 1px solid #ddd; }
+        .modal-btn.primary { background: #10b981; color: white; border: none; }
+        .cta-button { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 18px; border-radius: 12px; font-size: 18px; font-weight: 700; border: none; cursor: pointer; width: 100%; margin-top: 20px; }
     </style>
 </head>
 <body>
+
 <div id="globalLoader">
     <div class="loader-spinner"></div>
-    </div>
+    <div class="loader-terminal"><div id="loadStatus">> CONNECTING TO TERMINAL...</div></div>
 </div>
+
 <div class="container">
-    <!-- HEADER -->
     <div class="header">
         <div class="hook-title" id="hookTitle">Loading...</div>
-        <div class="description" id="description">Loading description...</div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
+        <div class="description" id="description">Analysis Terminal Active</div>
+        <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
         <div class="progress-text">Vest Explored: <span id="progressText">20%</span></div>
     </div>
 
-    <!-- CATEGORY PILLS -->
     <div class="categories">
         <div class="category-pill active" data-section="main">Main Details</div>
         <div class="category-pill" data-section="startup">Startup Details</div>
@@ -407,172 +64,93 @@
         <div class="category-pill" data-section="founder">Founder Presence</div>
     </div>
 
-    <!-- MAIN DETAILS SECTION -->
     <div class="section active" id="main">
-        <div class="info-card">
-            <div class="card-label label-red">PROBLEM</div>
-            <div class="card-content" id="problem">Loading...</div>
-        </div>
-
-        <div class="info-card">
-            <div class="card-label label-blue">SOLUTION</div>
-            <div class="card-content" id="solution">Loading...</div>
-        </div>
-
-        <div class="info-card">
-            <div class="card-label label-blue">OUR ADVANTAGE</div>
-            <div class="card-content" id="advantage">Loading...</div>
-        </div>
-
+        <div class="info-card"><div class="card-label label-red">PROBLEM</div><div id="problem">...</div></div>
+        <div class="info-card"><div class="card-label label-blue">SOLUTION</div><div id="solution">...</div></div>
+        <div class="info-card"><div class="card-label label-blue">OUR ADVANTAGE</div><div id="advantage">...</div></div>
         <div class="two-column">
-            <div class="info-card">
-                <div class="card-label label-green">FUNDING ASK</div>
-                <div class="card-content" id="fundAsk">Loading...</div>
-            </div>
-            <div class="info-card">
-                <div class="card-label label-green">EQUITY OFFERED</div>
-                <div class="card-content" id="equityOffered">Loading...</div>
-            </div>
+            <div class="info-card"><div class="card-label label-green">FUNDING ASK</div><div id="fundAsk">...</div></div>
+            <div class="info-card"><div class="card-label label-green">EQUITY OFFERED</div><div id="equityOffered">...</div></div>
         </div>
     </div>
 
-    <!-- STARTUP DETAILS SECTION -->
     <div class="section" id="startup">
         <div class="info-card">
             <div class="details-header">
                 <div class="startup-logo-big" id="logoInitials">ST</div>
-                <div class="details-info">
-                    <div class="startup-name-big" id="startupName">Startup Name</div>
-                    <div class="card-content" id="startupDescription">Loading...</div>
-                </div>
+                <div><h1 id="startupName">...</h1><p id="startupDescription">...</p></div>
             </div>
-
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <div class="detail-title">Stage</div>
-                    <div class="detail-value" id="stage">Loading...</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-title">Category</div>
-                    <div class="detail-value" id="category">Loading...</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-title">Revenue</div>
-                    <div class="detail-value" id="revenue">Loading...</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-title">Valuation</div>
-                    <div class="detail-value" id="valuation">Loading...</div>
-                </div>
+            <div class="two-column">
+                <div class="info-card"><strong>Stage:</strong> <span id="stage">...</span></div>
+                <div class="info-card"><strong>Category:</strong> <span id="category">...</span></div>
             </div>
+            <div class="info-card"><strong>Valuation:</strong> <span id="valuation">...</span></div>
         </div>
-
         <div class="info-card">
             <div class="card-label label-blue">PITCH DECK</div>
-            <div class="card-content">
-                <a href="#" id="pitchDeckLink" target="_blank" style="color: #3b82f6; font-weight: 600;">View Pitch Deck →</a>
-            </div>
+            <a href="#" id="pitchDeckLink" style="color: #3b82f6; font-weight: 700;">View Pitch Deck →</a>
         </div>
     </div>
 
-    <!-- AUDIT SECTION -->
     <div class="section" id="audit">
-        <div class="audit-cards">
-            <div class="audit-card">
-                <div class="audit-question">Can you scale? Explain your scalability.</div>
-                <div class="audit-answer" id="scalability">Loading...</div>
-            </div>
-            <div class="audit-card">
-                <div class="audit-question">What is your market share?</div>
-                <div class="audit-answer" id="marketShare">Loading...</div>
-            </div>
-            <div class="audit-card">
-                <div class="audit-question">Who are your competitors?</div>
-                <div class="audit-answer" id="competitors">Loading...</div>
-            </div>
-            <div class="audit-card">
-                <div class="audit-question">What is your monetization model? How will you earn?</div>
-                <div class="audit-answer" id="monetization">Loading...</div>
-            </div>
-            <div class="audit-card">
-                <div class="audit-question">How are you different from them?</div>
-                <div class="audit-answer" id="differentiation">Loading...</div>
-            </div>
-        </div>
+        <div class="info-card"><strong>Scalability:</strong> <p id="scalability">...</p></div>
+        <div class="info-card"><strong>Market Share:</strong> <p id="marketShare">...</p></div>
+        <div class="info-card"><strong>Competitors:</strong> <p id="competitors">...</p></div>
+        <div class="info-card"><strong>Monetization:</strong> <p id="monetization">...</p></div>
     </div>
 
-    <!-- ROADMAP SECTION -->
     <div class="section" id="roadmap">
-        <div class="audit-cards">
-            <div class="audit-card">
-                <div class="audit-question">If you get funded, what will you do?</div>
-                <div class="audit-answer" id="fundedPlan">Loading...</div>
-            </div>
-            <div class="audit-card">
-                <div class="audit-question">How will you utilize the funds?</div>
-                <div class="audit-answer" id="fundUtilization">Loading...</div>
-            </div>
-            <div class="audit-card">
-                <div class="audit-question">What is your goal for this year?</div>
-                <div class="audit-answer" id="yearGoal">Loading...</div>
-            </div>
-            <div class="audit-card">
-                <div class="audit-question">Where do you see your startup in the next 3 years?</div>
-                <div class="audit-answer" id="threeYearVision">Loading...</div>
-            </div>
-        </div>
+        <div class="info-card"><strong>Goal This Year:</strong> <p id="yearGoal">...</p></div>
+        <div class="info-card"><strong>Fund Usage:</strong> <p id="fundUtilization">...</p></div>
     </div>
 
-    <!-- FOUNDER PRESENCE SECTION -->
     <div class="section" id="founder">
-        <div class="founder-cards">
-            <div class="info-card">
-                <div class="card-label label-green">FOUNDER</div>
-                <div class="card-content" id="founderName">Loading...</div>
-            </div>
-            <div class="info-card">
-                <div class="card-label label-green">CO-FOUNDERS</div>
-                <div class="card-content" id="coFounders">Loading...</div>
-            </div>
-            <div class="info-card">
-                <div class="card-label label-green">RESPONSIBILITIES</div>
-                <div class="card-content" id="responsibilities">Loading...</div>
-            </div>
-        </div>
-
-        <div class="info-card" style="margin-top: 20px;">
-            <div class="card-label label-blue">DEMO VIDEO</div>
-            <div class="card-content">
-                <a href="#" id="demoVideoLink" target="_blank" style="color: #3b82f6; font-weight: 600;">Watch Demo Video →</a>
-            </div>
-        </div>
-
+        <div class="info-card"><strong>Founder:</strong> <p id="founderName">...</p></div>
+        <div class="info-card"><strong>Demo:</strong> <a href="#" id="demoVideoLink" style="color: #3b82f6;">Watch Video →</a></div>
         <button class="cta-button" id="fundButton">Interested to Fund</button>
     </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal" id="fundModal">
     <div class="modal-content">
-        <div class="modal-title">Interested in Funding</div>
-        <div class="modal-text" id="modalText">
-            You are interested in funding <strong id="modalStartupName"></strong>. 
-            Would you like to call them for a short chat session first, or invite them directly for a meeting?
-        </div>
-        <div class="modal-buttons">
+        <h2>Interested in Funding</h2>
+        <p>Would you like to start a secure chat with the founder?</p><br>
+        <div class="two-column">
             <button class="modal-btn" onclick="closeModal()">Cancel</button>
-            <button class="modal-btn primary" onclick="scheduleCall()">Schedule Call</button>
-            <button class="modal-btn primary" onclick="inviteMeeting()">Invite Meeting</button>
+            <button class="modal-btn primary" onclick="scheduleCall()">Start Chat</button>
+        </div>
+    </div>
+</div>
+
+<div id="mediaTerminal" class="modal" style="background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);">
+    <div style="width: 90%; height: 85%; display: flex; flex-direction: column; align-items: center;">
+        <div id="mediaViewport" style="width: 100%; height: 100%; background: #000; border-radius: 12px; overflow: hidden;"></div>
+        <div style="margin-top: 20px; display: flex; gap: 20px;">
+            <button class="modal-btn" style="background:#ef4444; color:white; border:none;" onclick="closeMediaTerminal()">CLOSE</button>
+            <a id="externalOpenBtn" href="#" target="_blank" class="modal-btn" style="background:#fff; text-decoration:none; display:flex; align-items:center; padding: 0 20px;">OPEN IN NEW TAB</a>
+        </div>
+    </div>
+</div>
+
+<div id="chatTerminal" class="modal" style="background: rgba(0,0,0,0.8);">
+    <div style="width: 400px; height: 550px; background: white; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden;">
+        <div style="padding: 20px; background: #1a1a1a; color: #10b981; font-weight: 800; display: flex; justify-content: space-between;">
+            CHANNEL: <span id="chatTargetName">STARTUP</span>
+            <button onclick="closeChat()" style="color:white; background:none; border:none; cursor:pointer;">×</button>
+        </div>
+        <div id="messageDisplay" style="flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f3f4f6;"></div>
+        <div style="padding: 15px; border-top: 1px solid #eee; display: flex; gap: 10px;">
+            <input type="text" id="chatInput" placeholder="Message..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+            <button id="sendMsgBtn" style="background:#10b981; color:white; border:none; padding: 10px 15px; border-radius: 8px; font-weight: 700;">SEND</button>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get, push, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { push, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    /* 🔐 Firebase config */
+
     const firebaseConfig = {
         apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
         authDomain: "scalevest-163a0.firebaseapp.com",
@@ -587,321 +165,142 @@ import { push, set, onValue, serverTimestamp } from "https://www.gstatic.com/fir
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     const vestID = params.get('id');
     const ownerUID = params.get('owner');
-
-    /* --- 1. LOCAL PROGRESS PERSISTENCE --- */
+    const storageKey = `progress_${vestID}`;
     let viewedSections = new Set(['main']);
-    const storageKey = vestID ? `progress_${vestID}` : 'progress_default';
+    let activeChatId = null;
 
-    function initProgress() {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-            try {
-                viewedSections = new Set(JSON.parse(saved));
-            } catch (e) {
-                console.error("Error parsing progress storage", e);
-            }
-        }
-        updateProgressUI();
-    }
-let activeChatId = null;
-window.openChat = async () => {
-    const investorUID = auth.currentUser.uid;
-    const founderUID = ownerUID; // From URL params
-    const startupName = document.getElementById('startupName').textContent;
-
-    // Create a unique Chat ID based on both users
-    activeChatId = investorUID < founderUID ? `${investorUID}_${founderUID}` : `${founderUID}_${investorUID}`;
-
-    document.getElementById('chatTargetName').textContent = startupName.toUpperCase();
-    document.getElementById('chatTerminal').classList.add('active');
-    
-    // Initialize real-time listener for messages
-    const chatRef = ref(db, `Chats/${activeChatId}/messages`);
-    onValue(chatRef, (snapshot) => {
-        const display = document.getElementById('messageDisplay');
-        display.innerHTML = ""; // Clear
-        
-        if (snapshot.exists()) {
-            const msgs = snapshot.val();
-            Object.values(msgs).forEach(m => {
-                const isMine = m.senderId === investorUID;
-                const msgEl = document.createElement('div');
-                msgEl.style = `
-                    max-width: 80%;
-                    padding: 10px 15px;
-                    border-radius: 12px;
-                    font-size: 14px;
-                    ${isMine ? 'align-self: flex-end; background: #10b981; color: white;' : 'align-self: flex-start; background: #e5e7eb; color: #1a1a1a;'}
-                `;
-                msgEl.textContent = m.text;
-                display.appendChild(msgEl);
-            });
-            display.scrollTop = display.scrollHeight; // Auto-scroll to bottom
-        }
-    });
-};
-
-window.sendMessage = async () => {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text || !activeChatId) return;
-
-    const chatRef = ref(db, `Chats/${activeChatId}/messages`);
-    const newMsgRef = push(chatRef);
-    
-    await set(newMsgRef, {
-        senderId: auth.currentUser.uid,
-        text: text,
-        timestamp: serverTimestamp()
-    });
-
-    input.value = "";
-};
-
-window.closeChat = () => {
-    document.getElementById('chatTerminal').classList.remove('active');
-};
-    function updateProgressUI() {
-        const progress = (viewedSections.size / 5) * 100;
-        const bar = document.getElementById('progressBar');
-        const text = document.getElementById('progressText');
-        if (bar) bar.style.width = progress + '%';
-        if (text) text.textContent = Math.round(progress) + '%';
-        
-        // Save state locally
-        localStorage.setItem(storageKey, JSON.stringify(Array.from(viewedSections)));
-    }
-
-    /* --- 2. AUTH GUARD & INITIALIZATION --- */
+    /* --- AUTH & DATA --- */
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            initProgress();
-            loadVestData(); 
-        } else {
-            window.location.href = "login3.html";
-        }
-    });
-
-    /* --- 3. DATA LOADING --- */
-async function loadVestData() {
-    const statusText = document.getElementById('loadStatus');
-    const loader = document.getElementById('globalLoader');
-
-    if (!vestID || !ownerUID) {
-        alert('Invalid access parameters');
-        if (loader) loader.classList.add('hidden');
-        return;
-    }
-
-    try {
-        // Update Terminal Status
-        if (statusText) statusText.textContent = "> INITIALIZING DATA FETCH...";
-
-        // 1. Fetch main Vest data from Vests/{ownerUID}/{vestID}
-        const vestRef = ref(db, `Vests/${ownerUID}/${vestID}`);
-        const snapshot = await get(vestRef);
-
-        if (!snapshot.exists()) {
-            alert('Vest not found');
-            if (loader) loader.classList.add('hidden');
-            return;
-        }
-
-        if (statusText) statusText.textContent = "> PARSING VEST PARAMETERS...";
-
-        const vestData = snapshot.val();
-        const main = vestData.MainVest || {};
-        const details = vestData.StartupDetails || {};
-        const audit = vestData.Audit || {};
-        const roadmap = vestData.Roadmap || {};
-        const founder = vestData.FounderPresence || {};
-
-        // --- Render UI Sections ---
-
-        // Header Section
-        document.getElementById('hookTitle').textContent = main.hook || 'Investment Opportunity';
-        document.getElementById('description').textContent = main.description || 'Verified High-Growth Opportunity';
-
-        // Main Details Tab
-        document.getElementById('problem').textContent = main.problem || 'Not specified';
-        document.getElementById('solution').textContent = main.solution || 'Not specified';
-        document.getElementById('advantage').textContent = main.advantage || 'Not specified';
-        document.getElementById('fundAsk').textContent = '$' + (main.fundAsk ? Number(main.fundAsk).toLocaleString() : '0');
-        document.getElementById('equityOffered').textContent = main.equityOffered || '0%';
-
-        // Startup Details Tab
-        const startupName = details.startupName || details.name || 'Startup';
-        document.getElementById('startupName').textContent = startupName;
-        document.getElementById('modalStartupName').textContent = startupName;
-        document.getElementById('startupDescription').textContent = details.description || 'Analysis Terminal Active';
-        document.getElementById('stage').textContent = details.stage || 'N/A';
-        document.getElementById('category').textContent = details.category || 'N/A';
-        document.getElementById('revenue').textContent = main.annualRevenue || '---';
-        document.getElementById('valuation').textContent = main.valuation || 'TBD';
-        
-        // Set up Pitch Deck link
-        const pitchLink = document.getElementById('pitchDeckLink');
-        pitchLink.onclick = (e) => {
-            e.preventDefault();
-            window.openPitchDeck(details.pitchDeckUrl);
-        };
-
-        // Audit Tab
-        document.getElementById('scalability').textContent = audit.scalability || 'Not specified';
-        document.getElementById('marketShare').textContent = audit.marketShare || 'Not specified';
-        document.getElementById('competitors').textContent = audit.competitors || 'Not specified';
-        document.getElementById('monetization').textContent = audit.monetization || 'Not specified';
-        document.getElementById('differentiation').textContent = audit.differentiation || 'Not specified';
-
-        // Roadmap Tab
-        document.getElementById('fundedPlan').textContent = roadmap.fundedPlan || 'Not specified';
-        document.getElementById('fundUtilization').textContent = roadmap.fundUsage || 'Not specified';
-        document.getElementById('yearGoal').textContent = roadmap.yearGoal || 'Not specified';
-        document.getElementById('threeYearVision').textContent = roadmap.threeYearVision || 'Not specified';
-
-        // Founder Presence Tab
-        document.getElementById('founderName').textContent = founder.founderName || 'Founder';
-        document.getElementById('coFounders').textContent = founder.coFounders || 'Solo Founder';
-        document.getElementById('responsibilities').textContent = founder.responsibilities || 'Not specified';
-        
-        // Set up Demo Video link
-        const videoLink = document.getElementById('demoVideoLink');
-        videoLink.onclick = (e) => {
-            e.preventDefault();
-            window.openDemoVideo(founder.demoVideoUrl);
-        };
-
-        // 2. Fetch Logo from startupProfile/{ownerUID}
-        if (statusText) statusText.textContent = "> SYNCING STARTUP ASSETS...";
-        
-        const logoRef = ref(db, `startupProfile/${ownerUID}`);
-        const logoSnap = await get(logoRef);
-        const logoContainer = document.getElementById('logoInitials');
-        
-        if (logoSnap.exists() && logoSnap.val().logo) {
-            logoContainer.innerHTML = `<img src="${logoSnap.val().logo}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-        } else {
-            const initials = startupName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-            logoContainer.textContent = initials;
-        }
-
-        // --- SUCCESS: FINALIZE & HIDE LOADER ---
-        if (statusText) statusText.textContent = "> TERMINAL READY.";
-        setTimeout(() => {
-            if (loader) loader.classList.add('hidden');
-        }, 600); // Brief delay so the user sees the "Ready" state
-
-    } catch (error) {
-        console.error('Error loading vest:', error);
-        if (statusText) {
-            statusText.style.color = "#ef4444";
-            statusText.textContent = "> ERROR: CONNECTION FAILED.";
-        }
-        alert('Security Error: Verify Database Rules or connection.');
-    }
-}
-
-    /* --- 4. CATEGORY / TAB SWITCHING --- */
-    const pills = document.querySelectorAll('.category-pill');
-    const sections = document.querySelectorAll('.section');
-
-    pills.forEach(pill => {
-        pill.addEventListener('click', () => {
-            const sectionName = pill.dataset.section;
-            
-            // Mark section as explored
-            viewedSections.add(sectionName);
+            const saved = localStorage.getItem(storageKey);
+            if (saved) viewedSections = new Set(JSON.parse(saved));
             updateProgressUI();
-
-            // Toggle UI classes
-            pills.forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-
-            sections.forEach(s => s.classList.remove('active'));
-            const targetSection = document.getElementById(sectionName);
-            if (targetSection) targetSection.classList.add('active');
-        });
+            loadVestData();
+        } else { window.location.href = "login3.html"; }
     });
 
-    /* --- 5. MEDIA TERMINAL LOGIC --- */
+    async function loadVestData() {
+        const status = document.getElementById('loadStatus');
+        if (!vestID || !ownerUID) return;
+        try {
+            status.textContent = "> SYNCING STARTUP DATA...";
+            const snapshot = await get(ref(db, `Vests/${ownerUID}/${vestID}`));
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const main = data.MainVest || {};
+                const details = data.StartupDetails || {};
+                const founder = data.FounderPresence || {};
+
+                document.getElementById('hookTitle').textContent = main.hook || 'Opportunity';
+                document.getElementById('problem').textContent = main.problem || '---';
+                document.getElementById('solution').textContent = main.solution || '---';
+                document.getElementById('advantage').textContent = main.advantage || '---';
+                document.getElementById('fundAsk').textContent = '$' + (main.fundAsk || '0');
+                document.getElementById('equityOffered').textContent = main.equityOffered || '0%';
+                document.getElementById('startupName').textContent = details.startupName || details.name || 'Startup';
+                document.getElementById('startupDescription').textContent = details.description || '';
+                document.getElementById('stage').textContent = details.stage || 'N/A';
+                document.getElementById('category').textContent = details.category || 'N/A';
+                document.getElementById('valuation').textContent = main.valuation || 'TBD';
+                document.getElementById('scalability').textContent = (data.Audit || {}).scalability || '---';
+                document.getElementById('marketShare').textContent = (data.Audit || {}).marketShare || '---';
+                document.getElementById('monetization').textContent = (data.Audit || {}).monetization || '---';
+                document.getElementById('yearGoal').textContent = (data.Roadmap || {}).yearGoal || '---';
+                document.getElementById('fundUtilization').textContent = (data.Roadmap || {}).fundUsage || '---';
+                document.getElementById('founderName').textContent = founder.founderName || 'Founder';
+
+                document.getElementById('pitchDeckLink').onclick = (e) => { e.preventDefault(); window.openPitchDeck(details.pitchDeckUrl); };
+                document.getElementById('demoVideoLink').onclick = (e) => { e.preventDefault(); window.openDemoVideo(founder.demoVideoUrl); };
+
+                const logoSnap = await get(ref(db, `startupProfile/${ownerUID}`));
+                if (logoSnap.exists() && logoSnap.val().logo) {
+                    document.getElementById('logoInitials').innerHTML = `<img src="${logoSnap.val().logo}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                }
+                
+                status.textContent = "> TERMINAL READY.";
+                setTimeout(() => document.getElementById('globalLoader').classList.add('hidden'), 500);
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    /* --- GLOBALS --- */
+    window.closeModal = () => document.getElementById('fundModal').classList.remove('active');
+    
+    window.scheduleCall = () => { window.closeModal(); window.openChat(); };
+
+    window.openChat = () => {
+        const investorUID = auth.currentUser.uid;
+        activeChatId = investorUID < ownerUID ? `${investorUID}_${ownerUID}` : `${ownerUID}_${investorUID}`;
+        document.getElementById('chatTargetName').textContent = document.getElementById('startupName').textContent.toUpperCase();
+        document.getElementById('chatTerminal').classList.add('active');
+        onValue(ref(db, `Chats/${activeChatId}/messages`), (snap) => {
+            const display = document.getElementById('messageDisplay');
+            display.innerHTML = "";
+            if (snap.exists()) {
+                Object.values(snap.val()).forEach(m => {
+                    const isMine = m.senderId === investorUID;
+                    display.innerHTML += `<div style="max-width:80%; padding:10px; border-radius:10px; font-size:14px; align-self:${isMine ? 'flex-end' : 'flex-start'}; background:${isMine ? '#10b981' : '#ddd'}; color:${isMine ? '#fff' : '#1a1a1a'}">${m.text}</div>`;
+                });
+                display.scrollTop = display.scrollHeight;
+            }
+        });
+    };
+
+    window.sendMessage = async () => {
+        const input = document.getElementById('chatInput');
+        if (!input.value.trim() || !activeChatId) return;
+        await push(ref(db, `Chats/${activeChatId}/messages`), { senderId: auth.currentUser.uid, text: input.value, timestamp: serverTimestamp() });
+        input.value = "";
+    };
+
+    window.closeChat = () => document.getElementById('chatTerminal').classList.remove('active');
+
     window.openPitchDeck = (url) => {
-        if (!url || url === "" || url === "#") return alert("No Pitch Deck available for this vest.");
-        const viewport = document.getElementById('mediaViewport');
-        const terminal = document.getElementById('mediaTerminal');
-        const externalBtn = document.getElementById('externalOpenBtn');
-
-        // Render PDF inside viewer
-        const viewerUrl = url.endsWith('.pdf') 
-            ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true` 
-            : url;
-
-        viewport.innerHTML = `<iframe src="${viewerUrl}" style="width:100%; height:100%; border:none;"></iframe>`;
-        externalBtn.href = url;
-        terminal.classList.add('active');
+        if (!url || url === "#") return alert("Deck not available.");
+        const viewerUrl = url.endsWith('.pdf') ? `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true` : url;
+        document.getElementById('mediaViewport').innerHTML = `<iframe src="${viewerUrl}" style="width:100%; height:100%; border:none;"></iframe>`;
+        document.getElementById('externalOpenBtn').href = url;
+        document.getElementById('mediaTerminal').classList.add('active');
     };
 
     window.openDemoVideo = (url) => {
-        if (!url || url === "" || url === "#") return alert("No Demo Video available.");
-        const viewport = document.getElementById('mediaViewport');
-        const terminal = document.getElementById('mediaTerminal');
-        const externalBtn = document.getElementById('externalOpenBtn');
-
-        let videoHtml = "";
-        if (url.includes('youtube.com') || url.includes('youtu.be')) {
-            const videoId = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
-            videoHtml = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" style="width:100%; height:100%; border:none;" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-        } else {
-            videoHtml = `<video src="${url}" controls autoplay style="width:100%; height:100%; background:black;"></video>`;
-        }
-
-        viewport.innerHTML = videoHtml;
-        externalBtn.href = url;
-        terminal.classList.add('active');
+        if (!url || url === "#") return alert("Video not available.");
+        let videoHtml = (url.includes('youtube.com') || url.includes('youtu.be')) 
+            ? `<iframe src="https://www.youtube.com/embed/${url.split('v=')[1] || url.split('/').pop()}" style="width:100%; height:100%; border:none;" allowfullscreen></iframe>`
+            : `<video src="${url}" controls autoplay style="width:100%; height:100%;"></video>`;
+        document.getElementById('mediaViewport').innerHTML = videoHtml;
+        document.getElementById('mediaTerminal').classList.add('active');
     };
 
-    window.closeMediaTerminal = () => {
-        const viewport = document.getElementById('mediaViewport');
-        viewport.innerHTML = ""; // Kill playback immediately
-        document.getElementById('mediaTerminal').classList.remove('active');
-    };
+    window.closeMediaTerminal = () => { document.getElementById('mediaViewport').innerHTML = ""; document.getElementById('mediaTerminal').classList.remove('active'); };
 
-    /* --- 6. FUNDING MODAL CONTROLS --- */
-    document.getElementById('fundButton').addEventListener('click', () => {
-        document.getElementById('fundModal').classList.add('active');
+    function updateProgressUI() {
+        const progress = (viewedSections.size / 5) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('progressText').textContent = Math.round(progress) + '%';
+        localStorage.setItem(storageKey, JSON.stringify(Array.from(viewedSections)));
+    }
+
+    document.querySelectorAll('.category-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const section = pill.dataset.section;
+            viewedSections.add(section);
+            updateProgressUI();
+            document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+        });
     });
 
-    window.closeModal = function() {
-        document.getElementById('fundModal').classList.remove('active');
-    };
+    // Final Bindings
+    document.getElementById('sendMsgBtn').onclick = window.sendMessage;
+    document.getElementById('chatInput').onkeypress = (e) => { if(e.key === 'Enter') window.sendMessage(); };
+    document.getElementById('fundButton').onclick = () => document.getElementById('fundModal').classList.add('active');
 
-// Bind Buttons
-document.getElementById('sendMsgBtn').onclick = sendMessage;
-document.getElementById('chatInput').onkeypress = (e) => { if(e.key === 'Enter') sendMessage(); };
-
-// Update existing Modal Buttons
-window.scheduleCall = () => { closeModal(); openChat(); };
-window.inviteMeeting = () => { closeModal(); openChat(); };
-
-    window.inviteMeeting = function() {
-        alert('Meeting invitation feature coming soon!');
-        closeModal();
-    };
 </script>
-<div id="mediaTerminal" class="modal" style="background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);">
-    <div style="width: 90%; height: 85%; position: relative; display: flex; flex-direction: column; align-items: center;">
-        
-        <div id="mediaViewport" style="width: 100%; height: 100%; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,1);">
-            </div>
-
-        <div style="margin-top: 20px; display: flex; gap: 20px; width: 100%; justify-content: center;">
-            <button class="modal-btn" style="max-width: 200px; background: #ef4444; color: white; border: none;" onclick="closeMediaTerminal()">CLOSE VIEWER</button>
-            <a id="externalOpenBtn" href="#" target="_blank" class="modal-btn" style="max-width: 200px; text-decoration: none; text-align: center; line-height: 1.5;">OPEN IN NEW TAB</a>
-        </div>
-    </div>
-</div>
 </body>
 </html>
