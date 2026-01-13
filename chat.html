@@ -137,15 +137,7 @@
             <div class="loader-spinner"></div>
             <div class="loader-text">Connecting to meeting...</div>
         </div>
-        <div id="videoGrid"></div>
-        <div class="video-controls">
-            <button class="control-btn" onclick="toggleAudio()" id="btnMic">🎤</button>
-            <button class="control-btn" onclick="toggleVideo()" id="btnCam">📷</button>
-            <button class="control-btn btn-leave" onclick="leaveMeeting()">Leave</button>
-            <button class="control-btn btn-end" id="btnEndAll" style="display:none;" onclick="endMeetingForAll()">End Meeting</button>
-        </div>
-    </div>
-
+       
     <script src="https://sdk.videosdk.live/rtc-js-prebuilt/0.3.30/rtc-js-prebuilt.js"></script>
 
     <script type="module">
@@ -392,14 +384,27 @@ async function getVideoSDKToken(roomId) {
             closeVideoInterface();
         };
 
-        function closeVideoInterface() {
-            document.getElementById('videoConferenceContainer').style.display = 'none';
-            meeting = null;
-            audioMuted = false;
-            videoMuted = false;
-            document.getElementById('btnMic').classList.remove('active');
-            document.getElementById('btnCam').classList.remove('active');
-        }
+function closeVideoInterface() {
+    // Hide the video UI
+    document.getElementById('videoConferenceContainer').style.display = 'none';
+    
+    // Reset internal state
+    meeting = null;
+    audioMuted = false;
+    videoMuted = false;
+    
+    // Reset UI buttons
+    document.getElementById('btnMic')?.classList.remove('active');
+    document.getElementById('btnCam')?.classList.remove('active');
+
+    // REDIRECT EVERYONE BACK TO CHAT
+    // We use the current URL parameters to ensure we stay in the same chat session
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipient = urlParams.get('recipient');
+    
+    // This reloads the current page (chat.html) effectively "returning" them
+    window.location.href = `chat.html?recipient=${recipient}`;
+}
 
         const fileInput = document.getElementById('fileInput');
         const attachBtn = document.getElementById('attachBtn');
