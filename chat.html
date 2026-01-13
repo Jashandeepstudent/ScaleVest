@@ -325,59 +325,63 @@ async function getVideoSDKToken(roomId) {
         };
 
         async function initializeVideoSDK(roomId, token) {
-            const config = {
-                name: userDisplayName,
-                meetingId: roomId,
-                apiKey: VIDEOSDK_API_KEY,
-                containerId: "videoGrid",
-                micEnabled: true,
-                webcamEnabled: true,
-                participantCanToggleSelfWebcam: true,
-                participantCanToggleSelfMic: true,
-                raiseHandEnabled: true,
-                screenShareEnabled: true,
-                chatEnabled: true,
-                whiteboardEnabled: false,
-                redirectOnLeave: returnUrl,
-                recordingEnabled: false,
-                brandingEnabled: false,
-                participantCanLeave: true,
-                poweredBy: false,
-                permissions: { askToJoin: false, toggleParticipantMic: true, toggleParticipantWebcam: true, removeParticipant: true, endMeeting: true, drawOnWhiteboard: false, toggleWhiteboard: false, toggleRecording: false },
-                joinScreen: { visible: false },
-               leftScreen: { 
-            visible: true, 
-            actionButton: { 
-                label: "Return to Chat", 
-                href: returnUrl 
-            } 
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipient = urlParams.get('recipient');
+    // This creates the link to bring them back to the chat
+    const returnUrl = window.location.origin + window.location.pathname + `?recipient=${recipient}`;
+
+    const config = {
+        name: userDisplayName,
+        meetingId: roomId,
+        apiKey: VIDEOSDK_API_KEY,
+        containerId: "videoGrid",
+        micEnabled: true,
+        webcamEnabled: true,
+        participantCanToggleSelfWebcam: true,
+        participantCanToggleSelfMic: true,
+        raiseHandEnabled: true,
+        screenShareEnabled: true,
+        chatEnabled: true,
+        whiteboardEnabled: false,
+        recordingEnabled: false,
+        brandingEnabled: false,
+        participantCanLeave: true,
+        poweredBy: false,
+        // REDIRECT LOGIC ADDED HERE
+        redirectOnLeave: returnUrl, 
+        permissions: { 
+            askToJoin: false, 
+            toggleParticipantMic: true, 
+            toggleParticipantWebcam: true, 
+            removeParticipant: true, 
+            endMeeting: true, 
+            drawOnWhiteboard: false, 
+            toggleWhiteboard: false, 
+            toggleRecording: false 
+        }, // <--- Check this closing brace
+        joinScreen: { visible: false },
+        leftScreen: { 
+            visible: true,
+            actionButton: { label: "Return to Chat", href: returnUrl } 
         },
+        notificationSoundEnabled: true,
+        debug: false,
+        maxResolution: "hd",
+        defaultCameraIndex: 0,
+        layout: { type: "GRID", priority: "PIN", gridSize: 3 }
     };
-                notificationSoundEnabled: true,
-                debug: false,
-                maxResolution: "hd",
-                defaultCameraIndex: 0,
-                layout: { type: "GRID", priority: "PIN", gridSize: 3 }
-            };
 
-             meeting.on("meeting-left", () => {
-    document.getElementById('videoConferenceContainer').style.display = 'none';
-    // The redirectOnLeave handled above will now take over
-});
+    meeting = new VideoSDKMeeting();
+    meeting.init(config);
 
-// Global listener for messages from the VideoSDK Iframe
-window.addEventListener("message", (event) => {
-    // VideoSDK sends various events via postMessage
-    if (event.data && event.data.type === "meeting-left") {
-        const urlParams = new URLSearchParams(window.location.search);
-        const recipient = urlParams.get('recipient');
-        window.location.href = `chat.html?recipient=${recipient}`;
-    }
-});
-            meeting = new VideoSDKMeeting();
-            meeting.init(config);
-            document.getElementById('meetingLoader').style.display = 'none';
-        }
+    // Fail-safe: if the built-in redirect doesn't fire, 
+    // this listens for the 'meeting-left' event from the SDK
+    meeting.on("meeting-left", () => {
+        window.location.href = returnUrl;
+    });
+
+    document.getElementById('meetingLoader').style.display = 'none';
+}
 
         window.toggleAudio = () => {
             if(meeting) {
@@ -456,7 +460,7 @@ sender: currentUser.uid, text: "", fileUrl: downloadURL, fileType: type, fileNam
             const text = input.value.trim();
             if (!text || !chatRoomID) return;
 
-            const badWords = ["abuse", "sex", "fraud", "kill", "idiot"];
+            const badWords = ["abuse", "scam", "fraud", "kill", "idiot"];
             let cleanText = text;
             badWords.forEach(w => { cleanText = cleanText.replace(new RegExp(`\\b${w}\\b`,'gi'), '####'); });
 
