@@ -5504,6 +5504,36 @@ async function saveStartupProfile(vestData) {
     
   async function createDashboard() {
     if (!currentUser) return;
+const chatsRef = ref(db, 'Chats');
+    const chatSnap = await get(chatsRef);
+    
+    // Set default values first
+    let latestPreview = { 
+        text: "Start connecting with investors today.", 
+        title: "Welcome to ScaleVest!" 
+    };
+
+    if (chatSnap.exists()) {
+        const allChats = chatSnap.val();
+        let latestMsg = null;
+
+        Object.keys(allChats).forEach(roomKey => {
+            if (roomKey.includes(currentUser.uid)) {
+                const msgs = Object.values(allChats[roomKey]);
+                const last = msgs[msgs.length - 1];
+                if (!latestMsg || last.timestamp > latestMsg.timestamp) {
+                    latestMsg = last;
+                }
+            }
+        });
+
+        if (latestMsg) {
+            latestPreview.title = latestMsg.sender === currentUser.uid ? "You: " : "Investor: ";
+            latestPreview.text = latestMsg.text.length > 50 
+                ? latestMsg.text.substring(0, 47) + "..." 
+                : latestMsg.text;
+        }
+    }
     
     // Use cached data if available, otherwise fetch
     let founderData = cachedFounderData;
@@ -6603,51 +6633,25 @@ max-width: 1100px;
     </p>
 </div>
 
-const chatsRef = ref(db, 'Chats');
-const chatSnap = await get(chatsRef);
-let latestPreview = { text: "Start connecting with investors today.", title: "Welcome to ScaleVest!" };
 
-if (chatSnap.exists()) {
-    const allChats = chatSnap.val();
-    let latestMsg = null;
 
-    Object.keys(allChats).forEach(roomKey => {
-        if (roomKey.includes(currentUser.uid)) {
-            const msgs = Object.values(allChats[roomKey]);
-            const last = msgs[msgs.length - 1];
-            // Update latestMsg if this one is newer
-            if (!latestMsg || last.timestamp > latestMsg.timestamp) {
-                latestMsg = last;
-            }
-        }
-    });
+const dashboardHTML = `
+        <div class="card inbox-card" onclick="window.location.hash='investor_chatlist'" style="cursor:pointer;">
+            <div class="card-title">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:.5rem;">
+                    <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+                    <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16 a2 2 0 0 0 2-2v-6l-3.45-6.89"></path>
+                </svg>
+                Inbox
+            </div>
 
-    if (latestMsg) {
-        latestPreview.title = latestMsg.sender === currentUser.uid ? "You: " : "Investor: ";
-        // Trim message if it's too long
-        latestPreview.text = latestMsg.text.length > 50 
-            ? latestMsg.text.substring(0, 47) + "..." 
-            : latestMsg.text;
-    }
-}
+            <div class="inbox-message">
+                <strong>${latestPreview.title}</strong><br>
+                <small>${latestPreview.text}</small>
+            </div>
+        </div>
 
-<div class="card inbox-card" onclick="window.location.hash='investor_chatlist'" style="cursor:pointer;">
-    <div class="card-title">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2"
-             style="vertical-align:middle;margin-right:.5rem;">
-            <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
-            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16
-                     a2 2 0 0 0 2-2v-6l-3.45-6.89"></path>
-        </svg>
-        Inbox
-    </div>
-
-    <div class="inbox-message">
-        <strong>${latestPreview.title}</strong><br>
-        <small>${latestPreview.text}</small>
-    </div>
-</div>
+        `;
         </div>
     </div>
 
