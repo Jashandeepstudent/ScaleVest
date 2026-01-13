@@ -130,7 +130,13 @@
         <button id="modalCloseBtn" class="modal-btn btn-secondary" style="margin-top:10px;" onclick="closeMeetingModal()">Cancel</button>
     </div>
 </div>
-
+<div id="videoConferenceContainer">
+    <div id="meetingLoader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Connecting to meeting...</div>
+    </div>
+    <div id="videoGrid" style="height: 100vh;"></div> 
+</div>
     <div id="waitingRoomModal" class="modal-overlay">
         <div class="modal-box waiting-room">
             <div style="font-size:3rem;">⏳</div>
@@ -386,11 +392,13 @@ window.closeMeetingModal = () => {
             }
         };
 
-        async function initializeVideoSDK(roomId, token) {
+       async function initializeVideoSDK(roomId, token) {
     const urlParams = new URLSearchParams(window.location.search);
     const recipient = urlParams.get('recipient');
-    // This creates the link to bring them back to the chat
     const returnUrl = window.location.origin + window.location.pathname + `?recipient=${recipient}`;
+
+    // Ensure the container is visible before initializing
+    document.getElementById('videoConferenceContainer').style.display = 'flex';
 
     const config = {
         name: userDisplayName,
@@ -409,7 +417,7 @@ window.closeMeetingModal = () => {
         brandingEnabled: false,
         participantCanLeave: true,
         poweredBy: false,
-        // REDIRECT LOGIC ADDED HERE
+        // This handles the redirect automatically when the user leaves
         redirectOnLeave: returnUrl, 
         permissions: { 
             askToJoin: false, 
@@ -420,7 +428,7 @@ window.closeMeetingModal = () => {
             drawOnWhiteboard: false, 
             toggleWhiteboard: false, 
             toggleRecording: false 
-        }, // <--- Check this closing brace
+        },
         joinScreen: { visible: false },
         leftScreen: { 
             visible: true,
@@ -433,14 +441,9 @@ window.closeMeetingModal = () => {
         layout: { type: "GRID", priority: "PIN", gridSize: 3 }
     };
 
-    meeting = new VideoSDKMeeting();
+    // Initialize the meeting
+    const meeting = new VideoSDKMeeting();
     meeting.init(config);
-
-    // Fail-safe: if the built-in redirect doesn't fire, 
-    // this listens for the 'meeting-left' event from the SDK
-    meeting.on("meeting-left", () => {
-        window.location.href = returnUrl;
-    });
 
     document.getElementById('meetingLoader').style.display = 'none';
 }
