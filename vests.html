@@ -5644,10 +5644,10 @@ async function saveStartupProfile(vestData) {
     // SECTION 4: UPDATE createDashboard FUNCTION
     // ========================================
     
- async function createDashboard() {
+async function createDashboard() {
     if (!currentUser) return;
 
-    // --- 1. FETCH LATEST MESSAGE FOR INBOX PREVIEW (Safely) ---
+    // --- 1. FETCH LATEST INVESTOR MESSAGE FOR INBOX PREVIEW ---
     let latestPreview = { 
         text: "Start connecting with investors today.", 
         title: "Welcome to ScaleVest!" 
@@ -5659,42 +5659,39 @@ async function saveStartupProfile(vestData) {
         
         if (chatSnap.exists()) {
             const allChats = chatSnap.val();
-            let newestMsg = null;
+            let newestInvestorMsg = null;
 
             Object.keys(allChats).forEach(roomKey => {
-                // Only process rooms involving the current user
                 if (roomKey.includes(currentUser.uid)) {
                     const roomData = allChats[roomKey];
+                    const msgs = Object.values(roomData).filter(m => m && typeof m === 'object' && m.timestamp);
                     
-                    if (roomData && typeof roomData === 'object') {
-                        // Filter out metadata like 'typing' or empty values
-                        const msgs = Object.values(roomData).filter(m => m && typeof m === 'object' && m.timestamp);
+                    if (msgs.length > 0) {
+                        // Find the latest message in THIS room sent by an INVESTOR
+                        const investorMsgs = msgs.filter(m => m.sender !== currentUser.uid);
                         
-                        if (msgs.length > 0) {
-                            // Sort locally to ensure we truly get the latest by time, not just position
-                            const last = msgs.reduce((prev, current) => (prev.timestamp > current.timestamp) ? prev : current);
+                        if (investorMsgs.length > 0) {
+                            const lastInRoom = investorMsgs.reduce((prev, curr) => (prev.timestamp > curr.timestamp) ? prev : curr);
                             
-                            if (!newestMsg || last.timestamp > newestMsg.timestamp) {
-                                newestMsg = last;
+                            // Compare across all rooms to find the absolute latest
+                            if (!newestInvestorMsg || lastInRoom.timestamp > newestInvestorMsg.timestamp) {
+                                newestInvestorMsg = lastInRoom;
                             }
                         }
                     }
                 }
             });
 
-            if (newestMsg && newestMsg.text) {
-                latestPreview.title = newestMsg.sender === currentUser.uid ? "You sent:" : "Investor sent:";
-                
-                // CRITICAL FIX: Ensure newestMsg.text exists before checking length
-                latestPreview.text = newestMsg.text.length > 45 
-                    ? newestMsg.text.substring(0, 42) + "..." 
-                    : newestMsg.text;
+            if (newestInvestorMsg) {
+                latestPreview.title = "New Message from Investor:";
+                latestPreview.text = newestInvestorMsg.text.length > 45 
+                    ? newestInvestorMsg.text.substring(0, 42) + "..." 
+                    : newestInvestorMsg.text;
             }
         }
     } catch (e) {
-        console.error("Error fetching inbox preview:", e);
-    }
-    
+        console.error("Error fetching investor preview:", e);
+    }    
     // Use cached data if available, otherwise fetch
     let founderData = cachedFounderData;
     let startupData = cachedStartupData;
@@ -6807,11 +6804,13 @@ max-width: 1100px;
         Inbox
     </div>
 
-    <div class="inbox-message">
-        <strong>${latestPreview.title}</strong><br>
-        <small>${latestPreview.text}</small>
+    <div class="inbox-message" style="border-left: 3px solid #ff006e;">
+        <strong style="color: #fff;">${latestPreview.title}</strong><br>
+        <small style="color: #888; display: block; margin-top: 5px; line-height: 1.4;">
+            "${latestPreview.text}"
+        </small>
     </div>
-</div>               
+</div>              
  </div>
             </div>
 
