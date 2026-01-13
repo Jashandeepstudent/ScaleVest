@@ -189,6 +189,28 @@ const firebaseConfig = {
                 if(!recipientUID) { window.location.href = "dashboard.html"; return; }
                 await identifyUserRole();
                 initializeChat();
+
+const triggerMeeting = params.get('triggerMeeting');
+const meetingType = params.get('meetingType');
+
+if (triggerMeeting === 'true') {
+    // Wait a brief moment for the chat to sync
+    setTimeout(async () => {
+        if (meetingType === 'now') {
+            // Logic to auto-create 'Now' meeting
+            if (window.createMeetingNow) {
+                await window.createMeetingNow();
+            }
+        } else if (meetingType === 'schedule') {
+            // Open the schedule modal automatically
+            if (window.openMeetingModal) {
+                window.openMeetingModal();
+                // Optionally reveal the schedule section specifically
+                if (window.showScheduleOptions) window.showScheduleOptions();
+            }
+        }
+    }, 1500);
+}
             } else {
                 window.location.href = "login3.html";
             }
