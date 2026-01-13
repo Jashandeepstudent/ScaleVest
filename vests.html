@@ -6603,8 +6603,6 @@ max-width: 1100px;
     </p>
 </div>
 
-// Add this inside createDashboard where the inbox-card is defined
-// First, let's fetch the most recent message for the preview
 const chatsRef = ref(db, 'Chats');
 const chatSnap = await get(chatsRef);
 let latestPreview = { text: "Start connecting with investors today.", title: "Welcome to ScaleVest!" };
@@ -6617,6 +6615,7 @@ if (chatSnap.exists()) {
         if (roomKey.includes(currentUser.uid)) {
             const msgs = Object.values(allChats[roomKey]);
             const last = msgs[msgs.length - 1];
+            // Update latestMsg if this one is newer
             if (!latestMsg || last.timestamp > latestMsg.timestamp) {
                 latestMsg = last;
             }
@@ -6624,13 +6623,14 @@ if (chatSnap.exists()) {
     });
 
     if (latestMsg) {
-        latestPreview.title = latestMsg.sender === currentUser.uid ? "You sent:" : "Investor sent:";
-        latestPreview.text = latestMsg.text.substring(0, 50) + (latestMsg.text.length > 50 ? "..." : "");
+        latestPreview.title = latestMsg.sender === currentUser.uid ? "You: " : "Investor: ";
+        // Trim message if it's too long
+        latestPreview.text = latestMsg.text.length > 50 
+            ? latestMsg.text.substring(0, 47) + "..." 
+            : latestMsg.text;
     }
 }
 
-// Then update the HTML string for the card:
-const inboxCardHTML = `
 <div class="card inbox-card" onclick="window.location.hash='investor_chatlist'" style="cursor:pointer;">
     <div class="card-title">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -6648,9 +6648,6 @@ const inboxCardHTML = `
         <small>${latestPreview.text}</small>
     </div>
 </div>
-`;
-
-
         </div>
     </div>
 
