@@ -5507,7 +5507,8 @@ async function saveStartupProfile(vestData) {
 const chatsRef = ref(db, 'Chats');
     const chatSnap = await get(chatsRef);
     
-  let latestPreview = { 
+// --- 1. FETCH LATEST MESSAGE FOR INBOX PREVIEW (Safely) ---
+    let latestPreview = { 
         text: "Start connecting with investors today.", 
         title: "Welcome to ScaleVest!" 
     };
@@ -5520,29 +5521,32 @@ const chatsRef = ref(db, 'Chats');
             const allChats = chatSnap.val();
             let newestMsg = null;
 
-            // Loop through all rooms to find the most recent message for this user
             Object.keys(allChats).forEach(roomKey => {
+                // Check if user is part of this specific chat room
                 if (roomKey.includes(currentUser.uid)) {
                     const roomData = allChats[roomKey];
                     
-                    // Ensure roomData is an object and has messages
+                    // CRITICAL FIX: Check if roomData exists and is an object before getting values
                     if (roomData && typeof roomData === 'object') {
                         const msgs = Object.values(roomData);
-                        const last = msgs[msgs.length - 1];
                         
-                        // Compare timestamps to find the absolute latest message across all conversations
-                        if (last && (!newestMsg || last.timestamp > newestMsg.timestamp)) {
-                            newestMsg = last;
+                        // CRITICAL FIX: Ensure there is at least one message in the array
+                        if (msgs.length > 0) {
+                            const last = msgs[msgs.length - 1];
+                            
+                            // Check if 'last' exists and has a timestamp
+                            if (last && last.timestamp) {
+                                if (!newestMsg || last.timestamp > newestMsg.timestamp) {
+                                    newestMsg = last;
+                                }
+                            }
                         }
                     }
                 }
             });
 
-            if (newestMsg) {
-                // Determine if the last message was sent by you or the investor
+            if (newestMsg && newestMsg.text) {
                 latestPreview.title = newestMsg.sender === currentUser.uid ? "You sent:" : "Investor sent:";
-                
-                // Trim message for the card preview (max 45 chars)
                 latestPreview.text = newestMsg.text.length > 45 
                     ? newestMsg.text.substring(0, 42) + "..." 
                     : newestMsg.text;
