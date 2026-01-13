@@ -5507,44 +5507,46 @@ async function saveStartupProfile(vestData) {
 const chatsRef = ref(db, 'Chats');
     const chatSnap = await get(chatsRef);
     
-    // Set default values first
-    let latestPreview = { 
+   let latestPreview = { 
         text: "Start connecting with investors today.", 
         title: "Welcome to ScaleVest!" 
     };
 
-    if (chatSnap.exists()) {
-        const allChats = chatSnap.val();
-        let latestMsg = null;
+    try {
+        const chatsRef = ref(db, 'Chats');
+        const chatSnap = await get(chatsRef);
+        
+        if (chatSnap.exists()) {
+            const allChats = chatSnap.val();
+            let newestMsg = null;
 
-        Object.keys(allChats).forEach(roomKey => {
-            // Check if user is part of this chat room
-            if (roomKey.includes(currentUser.uid)) {
-                const roomData = allChats[roomKey];
-                
-                // Ensure roomData exists and is an object
-                if (roomData && typeof roomData === 'object') {
-                    const msgs = Object.values(roomData);
-                    
-                    // Check if there are actually messages in this room
-                    if (msgs.length > 0) {
+            // Loop through all rooms to find the most recent message for this user
+            Object.keys(allChats).forEach(roomKey => {
+                if (roomKey.includes(currentUser.uid)) {
+                    const roomData = allChats[roomKey];
+                    // Ensure roomData is an object of messages
+                    if (roomData && typeof roomData === 'object') {
+                        const msgs = Object.values(roomData);
                         const last = msgs[msgs.length - 1];
                         
-                        // Compare timestamps to find the absolute latest message
-                        if (last && (!latestMsg || (last.timestamp > latestMsg.timestamp))) {
-                            latestMsg = last;
+                        // Compare timestamps to find the absolute latest message across all chats
+                        if (last && (!newestMsg || last.timestamp > newestMsg.timestamp)) {
+                            newestMsg = last;
                         }
                     }
                 }
-            }
-        });
+            });
 
-        if (latestMsg && latestMsg.text) {
-            latestPreview.title = latestMsg.sender === currentUser.uid ? "You: " : "Investor: ";
-            latestPreview.text = latestMsg.text.length > 50 
-                ? latestMsg.text.substring(0, 47) + "..." 
-                : latestMsg.text;
+            if (newestMsg) {
+                latestPreview.title = newestMsg.sender === currentUser.uid ? "You sent:" : "Investor sent:";
+                // Trim message for the card preview
+                latestPreview.text = newestMsg.text.length > 45 
+                    ? newestMsg.text.substring(0, 42) + "..." 
+                    : newestMsg.text;
+            }
         }
+    } catch (e) {
+        console.error("Error fetching inbox preview:", e);
     }
     
     // Use cached data if available, otherwise fetch
@@ -6647,19 +6649,23 @@ max-width: 1100px;
 
 
 
-<div class="card inbox-card" onclick="window.location.hash='investor_chatlist'">
-                        <div class="card-title">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:.5rem;">
-                                <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
-                                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16 a2 2 0 0 0 2-2v-6l-3.45-6.89"></path>
-                            </svg>
-                            Inbox
-                        </div>
-                        <div class="inbox-message">
-                            <strong>${latestPreview.title}</strong><br>
-                            <small>${latestPreview.text}</small>
-                        </div>
-                    </div>
+<div class="card inbox-card" onclick="window.location.hash='investor_chatlist'" style="cursor:pointer;">
+    <div class="card-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             style="vertical-align:middle;margin-right:.5rem;">
+            <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16
+                     a2 2 0 0 0 2-2v-6l-3.45-6.89"></path>
+        </svg>
+        Inbox
+    </div>
+
+    <div class="inbox-message">
+        <strong>${latestPreview.title}</strong><br>
+        <small>${latestPreview.text}</small>
+    </div>
+</div>
                 </div>
             </div>
 
