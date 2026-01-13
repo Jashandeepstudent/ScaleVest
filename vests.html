@@ -5507,7 +5507,7 @@ async function saveStartupProfile(vestData) {
 const chatsRef = ref(db, 'Chats');
     const chatSnap = await get(chatsRef);
     
-   let latestPreview = { 
+  let latestPreview = { 
         text: "Start connecting with investors today.", 
         title: "Welcome to ScaleVest!" 
     };
@@ -5524,12 +5524,13 @@ const chatsRef = ref(db, 'Chats');
             Object.keys(allChats).forEach(roomKey => {
                 if (roomKey.includes(currentUser.uid)) {
                     const roomData = allChats[roomKey];
-                    // Ensure roomData is an object of messages
+                    
+                    // Ensure roomData is an object and has messages
                     if (roomData && typeof roomData === 'object') {
                         const msgs = Object.values(roomData);
                         const last = msgs[msgs.length - 1];
                         
-                        // Compare timestamps to find the absolute latest message across all chats
+                        // Compare timestamps to find the absolute latest message across all conversations
                         if (last && (!newestMsg || last.timestamp > newestMsg.timestamp)) {
                             newestMsg = last;
                         }
@@ -5538,8 +5539,10 @@ const chatsRef = ref(db, 'Chats');
             });
 
             if (newestMsg) {
+                // Determine if the last message was sent by you or the investor
                 latestPreview.title = newestMsg.sender === currentUser.uid ? "You sent:" : "Investor sent:";
-                // Trim message for the card preview
+                
+                // Trim message for the card preview (max 45 chars)
                 latestPreview.text = newestMsg.text.length > 45 
                     ? newestMsg.text.substring(0, 42) + "..." 
                     : newestMsg.text;
@@ -6665,8 +6668,8 @@ max-width: 1100px;
         <strong>${latestPreview.title}</strong><br>
         <small>${latestPreview.text}</small>
     </div>
-</div>
-                </div>
+</div>               
+ </div>
             </div>
 
 <!-- RIGHT -->
