@@ -222,9 +222,7 @@ const firebaseConfig = {
                 await identifyUserRole();
                 initializeChat();
 
-  document.getElementById("chatTitle").textContent = name;
-  document.querySelector(".header-logo").src = photo;
-}
+
 
 const triggerMeeting = params.get('triggerMeeting');
 const meetingType = params.get('meetingType');
