@@ -105,21 +105,31 @@
         <button id="sendBtn">SEND</button>
     </div>
 
-    <div id="meetingSetupModal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">Arrange Meeting</div>
+<div id="meetingSetupModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">Arrange Meeting</div>
+        
+        <div id="meetingChoices" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+            <button class="modal-btn btn-primary" onclick="createMeetingNow()" style="background: #059669;">⚡ Meet Now</button>
+            <button class="modal-btn btn-secondary" onclick="showScheduleOptions()">📅 Schedule</button>
+        </div>
+
+        <div id="scheduleDetails" style="display: none; border-top: 1px solid #eee; pt: 15px;">
             <input type="text" id="meetingTitle" class="modal-input" placeholder="Meeting Title (e.g. Funding Discussion)">
-            <div style="margin-bottom:10px; font-weight:600; font-size:0.9rem;">Schedule (Optional)</div>
+            <div style="margin-bottom:10px; font-weight:600; font-size:0.9rem;">Select Date & Time</div>
             <div class="modal-grid">
                 <input type="date" id="meetingDate" class="modal-input" style="margin:0;">
                 <input type="time" id="meetingTime" class="modal-input" style="margin:0;">
             </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
-                <button class="modal-btn btn-secondary" onclick="closeMeetingModal()">Cancel</button>
-                <button class="modal-btn btn-primary" onclick="createMeeting()">Generate Link</button>
+                <button class="modal-btn btn-secondary" onclick="resetMeetingModal()">Back</button>
+                <button class="modal-btn btn-primary" onclick="createMeeting()">Generate Schedule</button>
             </div>
         </div>
+
+        <button id="modalCloseBtn" class="modal-btn btn-secondary" style="margin-top:10px;" onclick="closeMeetingModal()">Cancel</button>
     </div>
+</div>
 
     <div id="waitingRoomModal" class="modal-overlay">
         <div class="modal-box waiting-room">
@@ -284,7 +294,37 @@ async function getVideoSDKToken(roomId) {
 }
         window.openMeetingModal = () => { document.getElementById('meetingSetupModal').style.display = 'flex'; };
         window.closeMeetingModal = () => { document.getElementById('meetingSetupModal').style.display = 'none'; };
+// Function to show the scheduling inputs
+window.showScheduleOptions = () => {
+    document.getElementById('meetingChoices').style.display = 'none';
+    document.getElementById('modalCloseBtn').style.display = 'none';
+    document.getElementById('scheduleDetails').style.display = 'block';
+};
 
+// Function to go back to the first step
+window.resetMeetingModal = () => {
+    document.getElementById('meetingChoices').style.display = 'grid';
+    document.getElementById('modalCloseBtn').style.display = 'block';
+    document.getElementById('scheduleDetails').style.display = 'none';
+};
+
+// Shortcut for "Meet Now"
+window.createMeetingNow = async () => {
+    // Set values to 'now' logic
+    document.getElementById('meetingTitle').value = "Quick Sync";
+    document.getElementById('meetingDate').value = "";
+    document.getElementById('meetingTime').value = "";
+    
+    // Call your existing createMeeting function
+    await window.createMeeting();
+};
+
+// Extend your existing closeMeetingModal to reset UI for next time
+const originalCloseModal = window.closeMeetingModal;
+window.closeMeetingModal = () => {
+    originalCloseModal();
+    resetMeetingModal(); // Reset the view so it starts at Step 1 next time
+};
         window.createMeeting = async () => {
             const title = document.getElementById('meetingTitle').value || "Quick Sync";
             const dateVal = document.getElementById('meetingDate').value;
