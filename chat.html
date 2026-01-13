@@ -442,7 +442,7 @@ const firebaseConfig = {
                         if (file.type.startsWith('image/')) type = 'image';
                         else if (file.type.startsWith('video/')) type = 'video';
                         await push(ref(db, `Chats/${chatRoomID}`), {
-                            sender: currentUser.uid, text:sender: currentUser.uid, text: "", fileUrl: downloadURL, fileType: type, fileName: file.name, timestamp: Date.now(), recipient: recipientUID
+sender: currentUser.uid, text: "", fileUrl: downloadURL, fileType: type, fileName: file.name, timestamp: Date.now(), recipient: recipientUID
                         });
                         progressBar.style.width = '0%';
                         fileInput.value = '';
