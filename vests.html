@@ -4684,32 +4684,37 @@ window.showInvestorChatList = async function () {
 // --- HELPER FUNCTIONS ---
 
 window.openChat = async function(uid, roomKey, element) {
-    // UI cleanup (instant feedback)
+    // 1. UI cleanup (instant visual feedback)
     element.querySelector('.unread-pill')?.remove();
-    element.querySelector('.unread-dot')?.remove();
+    element.querySelector('.status-indicator')?.classList.remove('status-online'); // Optional UI cleanup
     element.querySelector('.chat-preview')?.classList.remove('unread-text');
 
-    // 🔥 MARK MESSAGES AS READ IN FIREBASE
+    // 2. 🔥 MARK MESSAGES AS READ IN FIREBASE
     const roomRef = ref(db, `Chats/${roomKey}`);
     const snap = await get(roomRef);
 
     if (snap.exists()) {
         const updates = {};
-        Object.entries(snap.val()).forEach(([msgId, msg]) => {
-            if (msg.sender !== currentUser.uid) {
-                updates[`${msgId}/readBy/${currentUser.uid}`] = true;
+        const messages = snap.val();
+
+        Object.keys(messages).forEach((msgId) => {
+            const msg = messages[msgId];
+            
+            // Only mark messages sent TO me that are currently unread
+            if (msg.recipient === currentUser.uid && msg.read === false) {
+                updates[`${msgId}/read`] = true;
             }
         });
 
-        if (Object.keys(updates).length) {
+        // 3. specific update to DB
+        if (Object.keys(updates).length > 0) {
             await update(roomRef, updates);
         }
     }
 
-    // Navigate
+    // 4. Navigate to chat page
     window.location.href = `chat.html?recipient=${uid}`;
 };
-
 
 window.deleteConversation = async function(roomKey, event) {
     event.stopPropagation(); 
@@ -4723,34 +4728,40 @@ window.deleteConversation = async function(roomKey, event) {
         console.error("Error deleting chat:", err);
     }
 }
-// --- 2. GLOBAL NOTIFICATION LISTENER ---
-// Call this function inside your onAuthStateChanged, right after 'isInitialLoad = false;'
 function startNotificationListener() {
     const chatsRef = ref(db, 'Chats');
     
     // Listen for changes in real-time
     onValue(chatsRef, (snapshot) => {
-        if (!snapshot.exists()) return;
+        if (!snapshot.exists()) {
+            updateNotificationBadge(0);
+            return;
+        }
+
         const allChats = snapshot.val();
         let unreadCount = 0;
 
         Object.keys(allChats).forEach(roomKey => {
+            // 1. Check if this chat room belongs to the current user
             if (roomKey.includes(currentUser.uid)) {
-                const messages = Object.values(allChats[roomKey]);
-                const lastMsg = messages[messages.length - 1];
                 
-                // If last message was NOT sent by me, count it as potential unread
-                // (In a real app, you'd check a 'read' status flag in DB)
-                if (lastMsg.sender !== currentUser.uid) {
-                    unreadCount++;
-                }
+                const messages = allChats[roomKey];
+                
+                // 2. Iterate through ALL messages in this room
+                Object.values(messages).forEach(msg => {
+                    // 3. Strict Check: 
+                    // Is the message sent TO me? AND is read equal to false?
+                    if (msg.recipient === currentUser.uid && msg.read === false) {
+                        unreadCount++;
+                    }
+                });
             }
         });
 
+        // Update the UI
         updateNotificationBadge(unreadCount);
     });
 }
-
 function updateNotificationBadge(count) {
     const bell = document.getElementById('navBellBadge');
     const msg = document.getElementById('navMsgBadge');
