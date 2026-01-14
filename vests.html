@@ -10054,18 +10054,19 @@ async function removeInvestorChat(otherUid) {
   await set(ref(db, `Chats/${currentUser.uid}/${otherUid}`), true);
   window.showInvestorChatList();
 }
-let presenceInterval = null;
+let presenceInterval = null; // ✅ MUST be first
 
 function setupPresence() {
   const statusRef = ref(db, `status/${currentUser.uid}`);
 
-  // Mark online
+  // Prevent duplicate intervals
+  if (presenceInterval) return;
+
   set(statusRef, {
     state: "online",
     lastChanged: Date.now()
   });
 
-  // Heartbeat every 30s
   presenceInterval = setInterval(() => {
     update(statusRef, {
       state: "online",
@@ -10073,14 +10074,14 @@ function setupPresence() {
     });
   }, 30000);
 
-window.addEventListener("beforeunload", () => {
-  set(ref(db, `status/${currentUser.uid}`), {
-    state: "offline",
-    lastChanged: Date.now()
+  window.addEventListener("beforeunload", () => {
+    set(ref(db, `status/${currentUser.uid}`), {
+      state: "offline",
+      lastChanged: Date.now()
+    });
   });
-});
-
 }
+
 
 
 
