@@ -2874,11 +2874,17 @@ import { getDatabase, ref, set, push, get } from 'https://www.gstatic.com/fireba
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 // Locate your existing import and add 'update' to the list
-import { 
-    update, 
-    onValue,
-       serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  update,
+  onValue,
+  onDisconnect,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/9.x.x/firebase-database.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
         authDomain: "scalevest-163a0.firebaseapp.com",
