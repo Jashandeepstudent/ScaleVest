@@ -1067,6 +1067,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import {
+  set,
+  onDisconnect,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* 🔐 Firebase config */
 const firebaseConfig = {
@@ -1083,7 +1088,19 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
+function setUserPresence(user) {
+    const presenceRef = ref(db, `presence/${user.uid}`);
 
+    set(presenceRef, {
+        online: true,
+        lastSeen: serverTimestamp()
+    });
+
+    onDisconnect(presenceRef).set({
+        online: false,
+        lastSeen: serverTimestamp()
+    });
+}
 let uploadedPhotoURL = "";
 let currentUserUID = null;
 
@@ -1099,6 +1116,7 @@ function updateProgress(percent, status) {
 onAuthStateChanged(auth, async (user) => {
     updateProgress(20, "Authenticating User...");
     if (!user) {
+        setUserPresence(user);
         window.location.href = "login3.html";
         return;
     }
