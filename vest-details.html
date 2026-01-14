@@ -587,6 +587,11 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  set,
+  onDisconnect,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     /* 🔐 Firebase config */
     const firebaseConfig = {
@@ -602,7 +607,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
+function setUserPresence(user) {
+    const presenceRef = ref(db, `presence/${user.uid}`);
 
+    set(presenceRef, {
+        online: true,
+        lastSeen: serverTimestamp()
+    });
+
+    onDisconnect(presenceRef).set({
+        online: false,
+        lastSeen: serverTimestamp()
+    });
+}
     // Get URL parameters
     const params = new URLSearchParams(window.location.search);
     const vestID = params.get('id');
@@ -664,6 +681,7 @@ window.closeModal = function() {
     /* --- 2. AUTH GUARD & INITIALIZATION --- */
     onAuthStateChanged(auth, (user) => {
         if (user) {
+             setUserPresence(user);
             initProgress();
             loadVestData(); 
         } else {
