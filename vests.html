@@ -81,17 +81,6 @@
 .header-row .left-content {
     flex: 0 1 auto;
 }
-.status-online { background: #10b981; }
-.status-offline { background: #ef4444; }
-
-.remove-chat-btn {
-  background: none;
-  border: none;
-  color: #ef4444;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-}
 
 /* ===============================
    CREATE VEST BUTTON
@@ -2874,14 +2863,10 @@ import { getDatabase, ref, set, push, get } from 'https://www.gstatic.com/fireba
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
     import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 // Locate your existing import and add 'update' to the list
-import {
-
-  update,
-  onValue,
-  onDisconnect,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
+import { 
+    update, 
+    onValue 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     const firebaseConfig = {
         apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
         authDomain: "scalevest-163a0.firebaseapp.com",
@@ -3028,8 +3013,6 @@ function loadFromLocalStorage() {
         updateStepDisplay();
     }
 }
-let presenceInterval = null;
-
     let isInitialLoad = true;
     let currentStep = 1;
     let keywords = [];
@@ -4463,7 +4446,6 @@ window.limitWords = function(element, limit) {
     }
 };
 window.showInvestorChatList = async function() {
-updateNotificationBadge(0);
     const container = document.getElementById('dashboardContainer');
     
     // Toggle containers
@@ -4486,8 +4468,6 @@ updateNotificationBadge(0);
         
         // Use a Map to prevent duplicates (Key: InvestorID, Value: ChatData)
         const chatMap = new Map();
-        const hiddenSnap = await get(ref(db, `HiddenChats/${currentUser.uid}`));
-const hiddenChats = hiddenSnap.val() || {};
 
         // --- 1. FILTER & PROCESS CHATS ---
         Object.keys(allChats).forEach(roomKey => {
@@ -4510,8 +4490,7 @@ const hiddenChats = hiddenSnap.val() || {};
                 const otherUid = parts.find(part => part !== 'chat' && part !== currentUser.uid);
 
                 if (!otherUid) return; // Skip if we can't find the other user
-                if (hiddenChats[otherUid]) return;
-
+                
                 // DETERMINE MESSAGE CONTENT
                 let displayMsg = "Sent an attachment";
                 let isAttachment = true;
@@ -4528,8 +4507,7 @@ const hiddenChats = hiddenSnap.val() || {};
                     lastMessage: displayMsg,
                     isAttachment: isAttachment,
                     timestamp: lastMsg.timestamp,
-                    isUnread: (lastMsg.sender !== currentUser.uid && !lastMsg.read)
-
+                    isUnread: (lastMsg.sender !== currentUser.uid)
                 };
 
                 // DEDUPLICATION: Only keep the chat with the most recent message for this user
@@ -4548,45 +4526,28 @@ const hiddenChats = hiddenSnap.val() || {};
         const myChats = Array.from(chatMap.values());
 
         // --- 2. FETCH INVESTOR PROFILES ---
-        // --- 2. FETCH INVESTOR PROFILES + PRESENCE ---
-const profileMap = {};
-const fetchPromises = myChats.map(async (chat) => {
-  const uid = chat.otherUid;
-
-  try {
-    // 1️⃣ Fetch profile
-    let profileData = null;
-
-    const snap = await get(ref(db, `investorProfiles/${uid}`));
-    if (snap.exists()) {
-      profileData = snap.val();
-    } else {
-      const founderSnap = await get(ref(db, `founderProfile/${uid}`));
-      if (founderSnap.exists()) {
-        profileData = founderSnap.val();
-      }
-    }
-
-    if (!profileData) {
-      profileData = { fullName: "Investor", photoURL: null };
-    }
-
-    // 2️⃣ FETCH ONLINE / OFFLINE STATUS  ← ✅ THIS IS WHERE
-    const statusSnap = await get(ref(db, `status/${uid}`));
-    profileData.presence = statusSnap.val() || { state: "offline" };
-
-    // 3️⃣ Save final profile
-    profileMap[uid] = profileData;
-
-  } catch (err) {
-    profileMap[uid] = {
-      fullName: "Investor",
-      photoURL: null,
-      presence: { state: "offline" }
-    };
-  }
-});
-
+        const profileMap = {};
+        const fetchPromises = myChats.map(async (chat) => {
+            const uid = chat.otherUid;
+            try {
+                // Fetch from investorProfiles
+                const snap = await get(ref(db, `investorProfiles/${uid}`));
+                if (snap.exists()) {
+                    profileMap[uid] = snap.val();
+                } else {
+                    // Check founderProfile just in case
+                    const founderSnap = await get(ref(db, `founderProfile/${uid}`));
+                    if(founderSnap.exists()){
+                         profileMap[uid] = founderSnap.val();
+                    } else {
+                        profileMap[uid] = { fullName: "Investor", photoURL: null, status: "offline" };
+                    }
+                }
+            } catch (err) {
+                console.warn(`Could not fetch profile for ${uid}`, err);
+                profileMap[uid] = { fullName: "Investor", photoURL: null, status: "offline" };
+            }
+        });
 
         await Promise.all(fetchPromises);
 
@@ -4631,8 +4592,6 @@ const fetchPromises = myChats.map(async (chat) => {
                 <div class="empty-state-box">
                     <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5" style="margin-bottom:1rem;">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-
-
                     </svg>
                     <p style="margin:0; font-weight:600;">No messages yet</p>
                     <small>Investors will appear here once they contact you.</small>
@@ -4647,9 +4606,7 @@ const fetchPromises = myChats.map(async (chat) => {
                 const displayPhoto = profile.photoURL || profile.logo; 
                 
                 // Status Logic (Check for 'online' string OR boolean true)
-                const presence = profile.presence || {};
-const isOnline = presence.state === 'online';
-
+                const isOnline = profile.status === 'online' || profile.isOnline === true;
                 const statusClass = isOnline ? 'status-online' : 'status-offline';
 
                 // Time Formatting
@@ -4660,8 +4617,7 @@ const isOnline = presence.state === 'online';
                     : msgDate.toLocaleDateString();
 
                 return `
-<div class="chat-item" onclick="openChat('${chat.otherUid}', '${chat.roomKey}')">
-
+                <div class="chat-item" onclick="window.location.href='chat.html?recipient=${chat.otherUid}'">
                     <div class="chat-avatar">
                         ${displayPhoto 
                             ? `<img src="${displayPhoto}" alt="${displayName}" onerror="this.style.display='none'">` 
@@ -4680,18 +4636,10 @@ const isOnline = presence.state === 'online';
                         </div>
                     </div>
                     
-<div class="chat-meta">
-  <div class="time-text">${timeDisplay}</div>
-
-  ${chat.isUnread ? '<div class="unread-pill">NEW</div>' : ''}
-
-  <button 
-    class="remove-chat-btn"
-    onclick="event.stopPropagation(); removeInvestorChat('${chat.otherUid}')">
-    Remove
-  </button>
-</div>
-
+                    <div class="chat-meta">
+                        <div class="time-text">${timeDisplay}</div>
+                        ${chat.isUnread ? '<div class="unread-pill">NEW</div>' : ''}
+                    </div>
                 </div>
                 `;
             }).join('');
@@ -4712,57 +4660,47 @@ const isOnline = presence.state === 'online';
             </div>`;
     }
 };
+// --- 2. GLOBAL NOTIFICATION LISTENER ---
+// Call this function inside your onAuthStateChanged, right after 'isInitialLoad = false;'
 function startNotificationListener() {
     const chatsRef = ref(db, 'Chats');
     
+    // Listen for changes in real-time
     onValue(chatsRef, (snapshot) => {
-        if (!snapshot.exists()) {
-            updateNotificationBadge(0);
-            return;
-        }
-        
+        if (!snapshot.exists()) return;
         const allChats = snapshot.val();
-        let unreadRoomsCount = 0;
+        let unreadCount = 0;
 
         Object.keys(allChats).forEach(roomKey => {
-            // 1. Only look at rooms I am part of
             if (roomKey.includes(currentUser.uid)) {
-                const messagesObj = allChats[roomKey];
+                const messages = Object.values(allChats[roomKey]);
+                const lastMsg = messages[messages.length - 1];
                 
-                // 2. Convert room messages to an array and filter out metadata/typing
-                const messages = Object.values(messagesObj).filter(m => m && m.sender && m.timestamp);
-                
-                if (messages.length > 0) {
-                    // 3. Sort to get the absolute latest message
-                    messages.sort((a, b) => a.timestamp - b.timestamp);
-                    const lastMsg = messages[messages.length - 1];
-                    
-                    // 4. CRITICAL FIX: 
-                    // Only count this room if the last message came from the INVESTOR.
-                    // If the last message is from YOU, it means you have replied, so it's not "unread".
-                    if (lastMsg.sender !== currentUser.uid) {
-                        unreadRoomsCount++;
-                    }
+                // If last message was NOT sent by me, count it as potential unread
+                // (In a real app, you'd check a 'read' status flag in DB)
+                if (lastMsg.sender !== currentUser.uid) {
+                    unreadCount++;
                 }
             }
         });
 
-        updateNotificationBadge(unreadRoomsCount);
+        updateNotificationBadge(unreadCount);
     });
 }
+
 function updateNotificationBadge(count) {
-    const msgBadge = document.getElementById('navMsgBadge');
+    const bell = document.getElementById('navBellBadge');
+    const msg = document.getElementById('navMsgBadge');
     
-    if (msgBadge) {
-        if (count > 0) {
-            msgBadge.style.display = 'flex'; 
-            msgBadge.innerText = count;      
-        } else {
-            msgBadge.style.display = 'none'; 
-            msgBadge.innerText = '';
-        }
+    if (count > 0) {
+        if(bell) { bell.classList.add('active'); bell.innerText = ''; } // Just a dot
+        if(msg) { msg.classList.add('active'); msg.innerText = ''; }
+    } else {
+        if(bell) bell.classList.remove('active');
+        if(msg) msg.classList.remove('active');
     }
 }
+
 // Ensure this variable exists globally
 let currentEditAction = null;
 
@@ -5419,16 +5357,11 @@ function timeSince(date) {
     if (interval > 1) return Math.floor(interval) + "m ago";
     return "Just now";
 }
-
-
-
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
         isInitialLoad = false;
         startNotificationListener();
-        setupPresence();
-
         document.getElementById('loadingScreen').classList.remove('hidden');
         
         try {
@@ -6801,41 +6734,15 @@ max-width: 1100px;
 </div>
     </div>
 <div class="top-nav-right">
-<div class="nav-icon-wrapper" onclick="window.location.hash='investor_chatlist'">
-    <div class="icon-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
+    <div class="nav-icon-wrapper" onclick="window.location.hash='investor_chatlist'">
+        <div class="icon-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+        </div>
+        <div class="notif-badge" id="navBellBadge"></div>
     </div>
-    <div class="notif-badge" id="navMsgBadge"></div>
-</div>
-
-<style>
-/* Add/Update this CSS to handle numbers */
-.notif-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #ff006e; /* ScaleVest Pink */
-    color: white;
-    border-radius: 50%;
-    padding: 2px 5px;
-    font-size: 10px;
-    font-weight: 800;
-    min-width: 18px;
-    height: 18px;
-    display: none; /* Hidden by default */
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #0a0a0a;
-    z-index: 10;
-    line-height: 1;
-}
-.notif-badge.active {
-    display: flex;
-}
-</style>
 
 
 
@@ -10019,72 +9926,6 @@ window.closeFullScreenPDF = function() {
         setTimeout(() => viewer.remove(), 300);
     }
 };
-// -----------------------------
-// CHAT READ / OPEN HANDLER
-// -----------------------------
-function openChat(otherUid, roomKey) {
-  markChatAsRead(roomKey);
-  window.location.href = `chat.html?recipient=${otherUid}`;
-}
-
-// -----------------------------
-// MARK CHAT AS READ
-// -----------------------------
-async function markChatAsRead(roomKey) {
-  const roomRef = ref(db, `Chats/${roomKey}`);
-  const snap = await get(roomRef);
-  if (!snap.exists()) return;
-
-  const updates = {};
-  Object.entries(snap.val()).forEach(([key, msg]) => {
-    if (msg.sender !== currentUser.uid && !msg.read) {
-      updates[`${key}/read`] = true;
-    }
-  });
-
-  if (Object.keys(updates).length > 0) {
-    await update(roomRef, updates);
-  }
-}
-
-// -----------------------------
-// REMOVE INVESTOR CHAT
-// -----------------------------
-async function removeInvestorChat(otherUid) {
-  if (!confirm("Remove this investor chat?")) return;
-
-  await set(ref(db, `HiddenChats/${currentUser.uid}/${otherUid}`), true);
-  window.showInvestorChatList();
-}
-
-function setupPresence() {
-  const statusRef = ref(db, `status/${currentUser.uid}`);
-
-  if (presenceInterval) return; // prevent duplicates
-
-  set(statusRef, {
-    state: "online",
-    lastChanged: Date.now()
-  });
-
-  presenceInterval = setInterval(() => {
-    update(statusRef, {
-      state: "online",
-      lastChanged: Date.now()
-    });
-  }, 30000);
-
-  window.addEventListener("beforeunload", () => {
-    set(ref(db, `status/${currentUser.uid}`), {
-      state: "offline",
-      lastChanged: Date.now()
-    });
-  });
-}
-
-
-
-
 
 
 </script>
