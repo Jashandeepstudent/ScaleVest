@@ -2937,31 +2937,70 @@ import {
     const db = getDatabase(app);
     const storage = getStorage(app);
     const auth = getAuth(app);
-// Variable to store the current notification state
+// --- 1. GLOBAL STATE ---
 let globalHasNotifications = false;
 
-// Function to handle clicking the bell
+// --- 2. THE CLICK HANDLER ---
 window.handleBellClick = function() {
+    // Mark as checked
     localStorage.setItem('scaleVest_lastNotificationCheck', Date.now());
     globalHasNotifications = false;
-    updateNotificationUI();
+    
+    // Immediate UI update
+    const badge = document.getElementById('navBellBadge');
+    if (badge) badge.classList.remove('visible-dot');
+    
+    // Route to inbox
     window.location.hash = 'investor_chatlist';
 };
 
-// Force the UI to update based on the global variable
-function updateNotificationUI() {
+// --- 3. THE PERSISTENT UI UPDATER ---
+// Because your dashboard re-renders HTML constantly, we must check for the element existence
+function syncNotificationUI() {
     const badge = document.getElementById('navBellBadge');
     if (badge) {
         if (globalHasNotifications) {
-            badge.classList.add('active');
+            badge.classList.add('visible-dot');
         } else {
-            badge.classList.remove('active');
+            badge.classList.remove('visible-dot');
         }
     }
 }
 
-// Run this every 1 second to catch any dynamic HTML changes (Navbar re-renders)
-setInterval(updateNotificationUI, 1000);
+// Run sync every 500ms to catch "innerHTML" resets
+setInterval(syncNotificationUI, 500);
+
+// --- 4. THE REAL-TIME LISTENER ---
+function startNotificationListener() {
+    if (!currentUser) return;
+    const chatsRef = ref(db, 'Chats');
+    
+    onValue(chatsRef, (snapshot) => {
+        if (!snapshot.exists()) return;
+        
+        const allChats = snapshot.val();
+        let foundNew = false;
+        const lastChecked = parseInt(localStorage.getItem('scaleVest_lastNotificationCheck') || '0');
+
+        Object.keys(allChats).forEach(roomKey => {
+            if (roomKey.includes(currentUser.uid)) {
+                const messages = Object.values(allChats[roomKey]);
+                if (messages.length === 0) return;
+
+                // Find newest message timestamp
+                const newestMsg = messages.reduce((prev, curr) => (prev.timestamp > curr.timestamp) ? prev : curr);
+
+                // If sent by someone else AND newer than our last bell click
+                if (newestMsg.sender !== currentUser.uid && newestMsg.timestamp > lastChecked) {
+                    foundNew = true;
+                }
+            }
+        });
+
+        globalHasNotifications = foundNew;
+        syncNotificationUI();
+    });
+}
     let currentUser = null;
 const STORAGE_KEY = 'vestFormData';
 // Helper function to create reusable navbar
@@ -4753,38 +4792,6 @@ window.deleteConversation = async function(roomKey, event) {
 
 
 
-function startNotificationListener() {
-    if (!currentUser) return;
-    
-    const chatsRef = ref(db, 'Chats');
-    
-    onValue(chatsRef, (snapshot) => {
-        if (!snapshot.exists()) return;
-        
-        const allChats = snapshot.val();
-        let foundNew = false;
-        const lastChecked = parseInt(localStorage.getItem('scaleVest_lastNotificationCheck') || '0');
-
-        Object.keys(allChats).forEach(roomKey => {
-            if (roomKey.includes(currentUser.uid)) {
-                const messages = Object.values(allChats[roomKey]);
-                // Find the latest message timestamp
-                const latestMsg = messages.reduce((prev, current) => 
-                    (prev.timestamp > current.timestamp) ? prev : current
-                );
-
-                // If message is from someone else AND newer than our last click
-                if (latestMsg.sender !== currentUser.uid && latestMsg.timestamp > lastChecked) {
-                    foundNew = true;
-                }
-            }
-        });
-
-        globalHasNotifications = foundNew;
-        updateNotificationUI();
-    });
-}
-
         // Update the UI
 
 // Ensure this variable exists globally
@@ -6016,30 +6023,28 @@ async function createDashboard() {
         z-index: 10001; /* High Z-index */
     }
 }
-/* --- NOTIFICATION BADGE --- */
+/* --- NOTIFICATION BADGE FIXED --- */
 .nav-icon-wrapper {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
+    position: relative !important;
 }
 
-.notif-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 10px;
-    height: 10px;
-    background-color: #ff006e;
-    border-radius: 50%;
-    border: 2px solid #0a0a0a;
+#navBellBadge {
+    position: absolute !important;
+    top: 0px !important;
+    right: 0px !important;
+    width: 12px !important;
+    height: 12px !important;
+    background-color: #ff0000 !important; /* Pure Red */
+    border-radius: 50% !important;
+    border: 2px solid #0a0a0a !important;
+    z-index: 999999 !important;
     display: none; /* Hidden by default */
-    z-index: 10;
 }
 
-.notif-badge.active {
-    display: block;
+/* Force show when this class is present */
+#navBellBadge.visible-dot {
+    display: block !important;
 }
-
 /* --- INBOX / CHAT LIST SCREEN --- */
 .chat-list-container {
     max-width: 900px;
