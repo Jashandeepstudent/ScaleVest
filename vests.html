@@ -10051,29 +10051,36 @@ async function markChatAsRead(roomKey) {
 async function removeInvestorChat(otherUid) {
   if (!confirm("Remove this investor chat?")) return;
 
-  await set(ref(db, `HiddenChats/${currentUser.uid}/${otherUid}`), true);
+  await set(ref(db, `Chats/${currentUser.uid}/${otherUid}`), true);
   window.showInvestorChatList();
 }
+let presenceInterval = null;
+
 function setupPresence() {
-  const userStatusRef = ref(db, `status/${currentUser.uid}`);
-  const connectedRef = ref(db, ".info/connected");
+  const statusRef = ref(db, `status/${currentUser.uid}`);
 
-  onValue(connectedRef, (snap) => {
-    if (snap.val() === true) {
-      // Register disconnect handler ONLY after connected
-      onDisconnect(userStatusRef).set({
-        state: "offline",
-        lastChanged: Date.now()
-      });
-
-      // Mark user as online
-      set(userStatusRef, {
-        state: "online",
-        lastChanged: Date.now()
-      });
-    }
+  // Mark online
+  set(statusRef, {
+    state: "online",
+    lastChanged: Date.now()
   });
-}
+
+  // Heartbeat every 30s
+  presenceInterval = setInterval(() => {
+    update(statusRef, {
+      state: "online",
+      lastChanged: Date.now()
+    });
+  }, 30000);
+
+window.addEventListener("beforeunload", () => {
+  set(ref(db, `status/${currentUser.uid}`), {
+    state: "offline",
+    lastChanged: Date.now()
+  });
+});
+
+
 
 
 
