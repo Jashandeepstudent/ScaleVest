@@ -5357,6 +5357,42 @@ function timeSince(date) {
     if (interval > 1) return Math.floor(interval) + "m ago";
     return "Just now";
 }
+
+// Function to update the UI badge based on localStorage
+function updateBadgeUI() {
+    const badge = document.getElementById('navBellBadge');
+    const count = parseInt(localStorage.getItem('unreadCount')) || 0;
+
+    if (count > 0) {
+        badge.innerText = count > 99 ? '99+' : count; // Handle high numbers
+        badge.style.display = 'flex'; // Show badge
+    } else {
+        badge.style.display = 'none'; // Hide if 0
+    }
+}
+
+// SIMULATE: Call this function whenever a new notification/message arrives
+function incrementNotification() {
+    let count = parseInt(localStorage.getItem('unreadCount')) || 0;
+    count++;
+    localStorage.setItem('unreadCount', count);
+    updateBadgeUI();
+}
+
+// CLICK HANDLER: Clear notifications and navigate
+function handleNotificationClick() {
+    // 1. Clear the count in storage
+    localStorage.setItem('unreadCount', 0);
+    
+    // 2. Update the UI immediately
+    updateBadgeUI();
+    
+    // 3. Perform your original navigation
+    window.location.hash = 'investor_chatlist';
+}
+
+// INITIALIZE: Run this when the page loads/refreshes
+window.addEventListener('load', updateBadgeUI);
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -5865,13 +5901,18 @@ async function createDashboard() {
     position: absolute;
     top: -5px;
     right: -5px;
-    width: 10px;
-    height: 10px;
-    background-color: #ff006e;
+    background-color: red;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    height: 18px;
     border-radius: 50%;
-    border: 2px solid #0a0a0a;
-    display: none; /* Hidden by default */
-    z-index: 10;
+    display: flex; /* Centers the number */
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    border: 2px solid white; /* Makes it pop against the icon */
 }
 
 .notif-badge.active {
@@ -6734,15 +6775,16 @@ max-width: 1100px;
 </div>
     </div>
 <div class="top-nav-right">
-    <div class="nav-icon-wrapper" onclick="window.location.hash='investor_chatlist'">
+    <div class="nav-icon-wrapper" onclick="handleNotificationClick()">
         <div class="icon-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
         </div>
-        <div class="notif-badge" id="navBellBadge"></div>
+        <div class="notif-badge" id="navBellBadge" style="display: none;">0</div>
     </div>
+</div>
 
 
 
