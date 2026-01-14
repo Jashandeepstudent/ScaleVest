@@ -10055,20 +10055,26 @@ async function removeInvestorChat(otherUid) {
   window.showInvestorChatList();
 }
 function setupPresence() {
-  const statusRef = ref(db, `status/${currentUser.uid}`);
+  const userStatusRef = ref(db, `status/${currentUser.uid}`);
+  const connectedRef = ref(db, ".info/connected");
 
-  // When online
-  set(statusRef, {
-    state: "online",
-    lastChanged: Date.now()
-  });
+  onValue(connectedRef, (snap) => {
+    if (snap.val() === true) {
+      // Register disconnect handler ONLY after connected
+      onDisconnect(userStatusRef).set({
+        state: "offline",
+        lastChanged: Date.now()
+      });
 
-  // When disconnected (NO serverTimestamp here)
-  onDisconnect(statusRef).set({
-    state: "offline",
-    lastChanged: Date.now()
+      // Mark user as online
+      set(userStatusRef, {
+        state: "online",
+        lastChanged: Date.now()
+      });
+    }
   });
 }
+
 
 
 
