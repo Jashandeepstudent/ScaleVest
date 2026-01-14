@@ -4723,31 +4723,31 @@ window.deleteConversation = async function(roomKey, event) {
         console.error("Error deleting chat:", err);
     }
 }
-// --- 2. GLOBAL NOTIFICATION LISTENER ---
-// Call this function inside your onAuthStateChanged, right after 'isInitialLoad = false;'
 function startNotificationListener() {
-    const chatsRef = ref(db, 'Chats');
-    
-    // Listen for changes in real-time
-    onValue(chatsRef, (snapshot) => {
-        if (!snapshot.exists()) return;
-        const allChats = snapshot.val();
-        let unreadCount = 0;
+    const chatsRef = ref(db, "Chats");
 
-        Object.keys(allChats).forEach(roomKey => {
-            if (roomKey.includes(currentUser.uid)) {
-                const messages = Object.values(allChats[roomKey]);
-                const lastMsg = messages[messages.length - 1];
-                
-                // If last message was NOT sent by me, count it as potential unread
-                // (In a real app, you'd check a 'read' status flag in DB)
-                if (lastMsg.sender !== currentUser.uid) {
-                    unreadCount++;
+    onValue(chatsRef, (snapshot) => {
+        let hasUnread = false;
+
+        snapshot.forEach(chatSnap => {
+            chatSnap.forEach(messageSnap => {
+                const msg = messageSnap.val();
+
+                // only messages meant for me
+                if (msg.recipient === currentUser.uid) {
+                    const readBy = msg.readBy || {};
+
+                    if (!readBy[currentUser.uid]) {
+                        hasUnread = true;
+                    }
                 }
-            }
+            });
         });
 
-        updateNotificationBadge(unreadCount);
+        const badge = document.getElementById("navBellBadge");
+        if (badge) {
+            badge.style.display = hasUnread ? "block" : "none";
+        }
     });
 }
 
