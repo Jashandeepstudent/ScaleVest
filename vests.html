@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Founder Dashboard</title>
     <style>
         * {
@@ -66,14 +66,21 @@
             z-index: 0;
         }
 
-        /* Only apply this to screens smaller than 768px (Mobile) */
-@media screen and (max-width: 768px) {
-    html, body {
-        /* Try 0.85 or 0.9 instead of 0.6 */
-        zoom: 0.85; 
-
+        @media screen and (max-width: 768px) {
+    body {
+        /* 0.85 = 85% size. Adjust this number until it fits perfectly */
+        transform: scale(0.90);
+        
+        /* This anchors the zoom to the top-left corner so it doesn't center weirdly */
+        transform-origin: top left; 
+        
+        /* This tells the body to take up more space to compensate for the shrink */
+        width: 117.6%; /* (100 divided by 0.85 is roughly 117.6) */
+        
         overflow-x: hidden;
-        width: 100vw;
+        position: absolute; /* Sometimes needed to make the transform stick */
+        top: 0;
+        left: 0;
     }
 }
 /* ===============================
@@ -5889,6 +5896,59 @@ async function createDashboard() {
         .dropdown {
             position: relative;
         }
+
+/* --- MOBILE NAVBAR FIX --- */
+@media (max-width: 768px) {
+    .top-nav {
+        padding: 0.8rem 1rem;
+        flex-wrap: wrap; /* Allows items to wrap to the next line */
+        gap: 10px;
+    }
+    
+    .logo {
+        font-size: 1.4rem;
+        flex: 1; /* Logo takes available space */
+    }
+    
+    .top-nav-right {
+        gap: 0.8rem;
+    }
+
+    .nav-links {
+        display: flex !important;  /* Force show */
+        width: 100%;               /* Take full width of screen */
+        overflow-x: auto;          /* Allow horizontal scrolling */
+        order: 3;                  /* Push to bottom of header */
+        padding-top: 10px;         /* Add spacing from logo */
+        gap: 15px;
+        border-top: 1px solid #222;
+        margin-top: 5px;
+        white-space: nowrap;       /* Keep links on one line */
+        -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+    }
+
+    /* Optional: Hide scrollbar for cleaner look */
+    .nav-links::-webkit-scrollbar {
+        display: none; 
+    }
+
+    .nav-link {
+        font-size: 0.85rem;
+        padding: 5px 0;
+    }
+    
+    /* Fix for the dropdown on mobile */
+    .dropdown-content {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        border-radius: 16px 16px 0 0;
+        border: 1px solid #333;
+        z-index: 10001; /* High Z-index */
+    }
+}
 /* --- NOTIFICATION BADGE --- */
 .nav-icon-wrapper {
     position: relative;
@@ -6620,9 +6680,6 @@ max-width: 1100px;
                 font-size: 1.5rem;
             }
 
-            .nav-links {
-                display: none;
-            }
 
             .welcome-text {
                 font-size: 1.8rem;
