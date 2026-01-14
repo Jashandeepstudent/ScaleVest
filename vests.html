@@ -5395,7 +5395,57 @@ function setUserPresence(user) {
         lastSeen: serverTimestamp()
     });
 }
+window.handleBellClick = async function() {
+    // 1. Instant UI Feedback (Remove the dot immediately)
+    updateNotificationBadge(0);
+    
+    // 2. Navigate to the chat list immediately (for speed)
+    window.location.hash = 'investor_chatlist';
 
+    // 3. Perform Database Cleanup in the background
+    if (!currentUser) return;
+
+    try {
+        // Fetch all chats
+        const chatsRef = ref(db, 'Chats');
+        const snapshot = await get(chatsRef);
+
+        if (snapshot.exists()) {
+            const updates = {};
+            const allChats = snapshot.val();
+
+            // Loop through all rooms
+            Object.keys(allChats).forEach(roomKey => {
+                // Only look at rooms I am part of
+                if (roomKey.includes(currentUser.uid)) {
+                    const messages = allChats[roomKey];
+
+                    // Loop through messages in that room
+                    Object.keys(messages).forEach(msgId => {
+                        const msg = messages[msgId];
+                        
+                        // CONDITION: Message is for ME and is NOT Read
+                        if (msg && 
+                            msg.recipient === currentUser.uid && 
+                            msg.read !== true) {
+                            
+                            // Add to bulk update list
+                            updates[`Chats/${roomKey}/${msgId}/read`] = true;
+                        }
+                    });
+                }
+            });
+
+            // Execute Bulk Update if there are messages to mark
+            if (Object.keys(updates).length > 0) {
+                await update(ref(db), updates);
+                console.log(`✅ Marked ${Object.keys(updates).length} messages as read.`);
+            }
+        }
+    } catch (error) {
+        console.error("Error clearing notifications:", error);
+    }
+};
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -6774,7 +6824,7 @@ max-width: 1100px;
 </div>
     </div>
 <div class="top-nav-right">
-    <div class="nav-icon-wrapper" onclick="window.location.hash='investor_chatlist'">
+<div class="nav-icon-wrapper" onclick="window.handleBellClick()">
         <div class="icon-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
