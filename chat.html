@@ -187,6 +187,11 @@
         import { getDatabase, ref, push, onChildAdded, get, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  serverTimestamp,
+  update,
+  remove
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // ========== CONFIG - ADD YOUR KEYS HERE ==========
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
