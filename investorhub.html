@@ -1099,13 +1099,11 @@ const firebaseConfig = {
     appId: "1:938358950124:web:043506aeaacea2a96bfdc9"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app); // FIXED: Renamed 'database' to 'db' to match your function calls
+const db = getDatabase(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-// Global Variables
 let currentUser = null;
 let currentUserUID = null;
 let globalUnreadCount = 0;
@@ -1117,20 +1115,17 @@ let presenceListeners = [];
 
 // Handle clicking the Bell Icon
 window.handleBellClick = async function() {
-    // 1. Instant UI Feedback (Hide badge)
+    // 1. Instant UI Feedback (Hide badge immediately)
     const badge = document.getElementById('navBellBadge');
-    if(badge) badge.classList.remove('active');
+    if(badge) {
+        badge.style.display = 'none'; // Force hide
+        badge.classList.remove('active');
+    }
     
-    // 2. Navigate to the chat list hash
-    // This assumes you have logic to handle '#founder_chatlist' in your hashchange listener (added below)
+    // 2. Navigate to the chat list
     window.location.hash = 'founder_chatlist'; 
-
-    // 3. Optional: Mark visible notifications as read in background
-    if (!currentUser) return;
-    // (Logic to mark as read happens when you actually open a specific chat)
 };
 
-// Real-time listener for unread messages
 function startNotificationListener() {
     const chatsRef = ref(db, 'Chats');
     
@@ -1144,7 +1139,6 @@ function startNotificationListener() {
         let unreadCount = 0;
 
         Object.keys(allChats).forEach(roomKey => {
-            // Only check rooms I am part of
             if (roomKey.includes(currentUser.uid)) {
                 const messages = allChats[roomKey];
                 Object.values(messages).forEach(msg => {
@@ -1165,15 +1159,18 @@ function updateNotificationBadge(count) {
     const badge = document.getElementById('navBellBadge');
     if (!badge) return;
 
-    if (count > 0) {
+    // Only show if count > 0 AND we aren't currently viewing the chat list
+    if (count > 0 && window.location.hash !== '#founder_chatlist') {
+        badge.style.display = 'block';
         badge.classList.add('active');
     } else {
+        badge.style.display = 'none';
         badge.classList.remove('active');
     }
 }
 
 // =========================================================
-// 2. CHAT LIST LOGIC (Investor View)
+// 2. CHAT LIST LOGIC (With Online Count & Mark Read)
 // =========================================================
 
 window.showInvestorChatList = async function () {
@@ -1191,7 +1188,7 @@ window.showInvestorChatList = async function () {
 
     container.innerHTML = `
         <div style="text-align:center; padding: 50px;">
-            <p style="color:#10b981; font-weight:bold;">Loading Messages...</p>
+            <p style="color:#10b981; font-weight:bold;">Loading Conversations...</p>
         </div>`;
 
     try {
@@ -1219,7 +1216,7 @@ window.showInvestorChatList = async function () {
                 otherUid,
                 lastMessage: lastMsg.text?.trim() || "Sent an attachment",
                 timestamp: lastMsg.timestamp,
-                isUnread: !lastMsg.readBy || !lastMsg.readBy[currentUser.uid]
+                isUnread: !lastMsg.readBy || !lastMsg.readBy[currentUser.uid] // Logic for read status
             });
         });
 
@@ -1245,20 +1242,23 @@ window.showInvestorChatList = async function () {
             })
         );
 
-        // Render List
+        // ------------------------------------------
+        // RENDER HEADER (With Online Count)
+        // ------------------------------------------
         let html = `
-            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 2rem; position: relative;">
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 2rem;">
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="color:#fff; margin:0;">Messages</h2>
-                    <button onclick="window.location.hash='dashboard'" 
-                            style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; transition: 0.2s;"
-                            onmouseover="this.style.opacity='1'; this.style.color='#ef4444';"
-                            onmouseout="this.style.opacity='0.7'; this.style.color='#fff';">
-                        &times;
-                    </button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                    <div>
+                        <h2 style="color:#fff; margin:0; font-size:1.8rem;">Investor Inbox</h2>
+                        <p style="color:#a7f3d0; font-size:0.9rem; margin:5px 0 0 0;">Manage your conversations</p>
+                    </div>
+                    
+                    <div id="liveOnlineCounter" style="background:#064e3b; color:#10b981; padding:8px 16px; border-radius:20px; font-size:0.85rem; font-weight:700; border:1px solid #10b981;">
+                        <span style="color:#10b981;">●</span> 0 Online
+                    </div>
                 </div>
-
+                
                 <div style="display:flex; flex-direction:column; gap:10px;">
         `;
 
@@ -1274,23 +1274,22 @@ window.showInvestorChatList = async function () {
                 
                 const time = new Date(chat.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const unreadStyle = chat.isUnread ? 'border-left: 4px solid #ef4444; background: rgba(255,255,255,0.05);' : '';
-                const isOnlineId = `status-dot-${chat.otherUid}`; // Unique ID for presence dot
+                const isOnlineId = `status-dot-${chat.otherUid}`;
 
+                // --- THE CARD WITH ONCLICK EVENT ---
                 html += `
-                    <div class="chat-item-row"
-                         onclick="window.location.href='chat.html?recipient=${chat.otherUid}&room=${chat.roomKey}'" 
+                    <div onclick="window.openChatAndMarkRead('${chat.otherUid}', '${chat.roomKey}')" 
                          style="display:flex; align-items:center; gap:15px; padding:15px; border-radius:8px; cursor:pointer; transition:0.2s; position: relative; ${unreadStyle}"
                          onmouseover="this.style.backgroundColor='rgba(16, 185, 129, 0.1)'"
                          onmouseout="this.style.backgroundColor='transparent'">
                         
-                        <div style="position: relative; width:50px; height:50px;">
+                        <div style="position:relative; width:50px; height:50px;">
                             <div style="width:100%; height:100%; border-radius:50%; overflow:hidden; border:1px solid #333;">
                                 ${photoHtml}
                             </div>
-                            <div id="${isOnlineId}" style="
-                                position: absolute; bottom: 0; right: 0; 
-                                width: 12px; height: 12px; background: #666; 
-                                border: 2px solid #000; border-radius: 50%;
+                            <div id="${isOnlineId}" class="status-indicator" style="
+                                position:absolute; bottom:0; right:0; width:12px; height:12px; 
+                                border-radius:50%; border:2px solid #000; background:#666;
                             "></div>
                         </div>
 
@@ -1304,8 +1303,8 @@ window.showInvestorChatList = async function () {
                                 ${chat.lastMessage}
                             </div>
                         </div>
-
-                        <button onclick="deleteConversation('${chat.roomKey}', event)" 
+                        
+                         <button onclick="deleteConversation('${chat.roomKey}', event)" 
                                 style="background: transparent; border: none; padding: 5px; cursor: pointer; opacity: 0.6; transition: 0.2s;"
                                 onmouseover="this.style.opacity='1'; this.style.color='#ef4444';"
                                 onmouseout="this.style.opacity='0.6'; this.style.color='inherit';">
@@ -1322,7 +1321,16 @@ window.showInvestorChatList = async function () {
         html += `</div></div>`;
         container.innerHTML = html;
 
-        // 5. Setup Presence Listeners
+        // 6. SETUP PRESENCE & COUNTER
+        const updateOnlineCounter = () => {
+            // Count how many dots have the specific green background color
+            const onlineCount = document.querySelectorAll('.status-indicator[data-online="true"]').length;
+            const counterEl = document.getElementById('liveOnlineCounter');
+            if(counterEl) {
+                counterEl.innerHTML = `<span style="color:${onlineCount > 0 ? '#10b981' : '#6b7280'};">●</span> ${onlineCount} Online`;
+            }
+        };
+
         myChats.forEach(chat => {
             const uid = chat.otherUid;
             const refPres = ref(db, `presence/${uid}`);
@@ -1330,8 +1338,12 @@ window.showInvestorChatList = async function () {
                 const isOnline = snap.exists() && snap.val().online;
                 const dot = document.getElementById(`status-dot-${uid}`);
                 if (dot) {
-                    dot.style.background = isOnline ? '#10b981' : '#666'; // Green if online, Gray if offline
+                    dot.style.background = isOnline ? '#10b981' : '#666';
                     dot.style.boxShadow = isOnline ? '0 0 5px #10b981' : 'none';
+                    // Set a data attribute to help us count easily
+                    dot.setAttribute('data-online', isOnline ? 'true' : 'false');
+                    // Update global count
+                    updateOnlineCounter();
                 }
             });
             presenceListeners.push(unsub);
@@ -1343,20 +1355,57 @@ window.showInvestorChatList = async function () {
     }
 };
 
-// Required helper for delete
+// =========================================================
+// 3. MARK READ & OPEN CHAT
+// =========================================================
+
+window.openChatAndMarkRead = async function(uid, roomKey) {
+    if (!currentUser) return;
+
+    try {
+        const roomRef = ref(db, `Chats/${roomKey}`);
+        const snapshot = await get(roomRef);
+        
+        if (snapshot.exists()) {
+            const updates = {};
+            const messages = snapshot.val();
+            
+            // Find all unread messages for ME and set read: true
+            Object.keys(messages).forEach(msgId => {
+                const msg = messages[msgId];
+                if (msg.recipient === currentUser.uid && msg.read !== true) {
+                    updates[`${msgId}/read`] = true;
+                }
+            });
+
+            // If there are updates, send to Firebase
+            if (Object.keys(updates).length > 0) {
+                await update(roomRef, updates);
+            }
+        }
+    } catch (e) {
+        console.error("Error marking read:", e);
+    }
+
+    // Redirect to chat page
+    window.location.href = `chat.html?recipient=${uid}&room=${roomKey}`;
+};
+
+// Helper for delete
 window.deleteConversation = async function(roomKey, event) {
-    event.stopPropagation(); // Prevent opening chat
+    event.stopPropagation(); 
     if(!confirm("Delete this conversation?")) return;
     try {
         await remove(ref(db, `Chats/${roomKey}`));
-        window.showInvestorChatList(); // Refresh list
+        window.showInvestorChatList(); 
     } catch(e) {
         console.error(e);
         alert("Error deleting chat");
     }
 };
+
 // =========================================================
-// 3. CORE & PRESENCE
+// 4. CORE AUTH & ROUTING
 // =========================================================
 
 function setUserPresence(user) {
@@ -1372,10 +1421,6 @@ function updateProgress(percent, status) {
     if (text) text.innerText = status;
 }
 
-// =========================================================
-// 4. AUTH LISTENER (Main Entry Point)
-// =========================================================
-
 onAuthStateChanged(auth, async (user) => {
     updateProgress(20, "Authenticating...");
     
@@ -1383,24 +1428,21 @@ onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         currentUserUID = user.uid;
         setUserPresence(user);
-        startNotificationListener(); // START LISTENING FOR RED DOT
+        startNotificationListener(); 
 
-        // Router for Bell Click
         window.addEventListener('hashchange', () => {
             if (window.location.hash === '#founder_chatlist') {
                 window.showInvestorChatList();
             } else if (window.location.hash === '#dashboard' || window.location.hash === '') {
-                location.reload(); // Simple way to reset dashboard view
+                location.reload(); 
             }
         });
 
-        // Check if loaded on chatlist
         if (window.location.hash === '#founder_chatlist') {
             window.showInvestorChatList();
             const loader = document.getElementById("loadingScreen");
             if(loader) loader.style.display = 'none';
         } else {
-            // Normal Dashboard Load
             try {
                 updateProgress(50, "Fetching Profile...");
                 await loadUserProfile(user.uid);
@@ -1421,14 +1463,12 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-/* ✅ UI CONTROLS */
 window.toggleDropdown = (id) => document.getElementById(id)?.classList.toggle('show');
 window.toggleProfileDropdown = () => document.getElementById('profileDropdown')?.classList.toggle('show');
 window.openEditIdentity = () => document.getElementById('editIdentityModal').style.display = 'flex';
 window.openEditInvestment = () => document.getElementById('editInvestmentModal').style.display = 'flex';
 window.closeModal = (id) => document.getElementById(id).style.display = 'none';
 
-/* ✅ LOAD PROFILE */
 async function loadUserProfile(uid) {
     const avatarDiv = document.getElementById("profileAvatar");
     try {
@@ -1456,7 +1496,6 @@ async function loadUserProfile(uid) {
     } catch (err) { console.error("Load Error:", err); }
 }
 
-/* ✅ ENTER EDIT MODE */
 window.enterEditMode = async () => {
     updateProgress(50, "Opening Edit Terminal...");
     const rightSection = document.querySelector('.right-section');
@@ -1498,7 +1537,6 @@ window.enterEditMode = async () => {
     document.getElementById('editPreferred').value = data.preferredCategories || "";
 };
 
-/* ✅ PHOTO UPLOAD */
 document.getElementById('photoUploadInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1516,7 +1554,6 @@ document.getElementById('photoUploadInput').addEventListener('change', async (e)
     }
 });
 
-/* ✅ UPDATE PROFILE */
 window.updateProfileSection = async (type) => {
     if (!currentUserUID) return;
     const saveBtn = type === 'identity' ? document.getElementById('saveIdentityBtn') : event.target;
@@ -1552,7 +1589,6 @@ window.updateProfileSection = async (type) => {
     finally { saveBtn.disabled = false; }
 };
 
-/* ✅ LAUNCH ANGEL */
 window.launchAngelProfile = async () => {
     const launchBtn = document.getElementById('launchBtn');
     launchBtn.disabled = true;
@@ -1567,7 +1603,6 @@ window.launchAngelProfile = async () => {
     } catch (e) { console.error(e); launchBtn.disabled = false; }
 };
 
-/* ✅ INITIALIZE ID */
 window.saveUserID = async () => {
     const newId = document.getElementById("newUserIdInput").value.trim().toUpperCase();
     if (newId.length < 3) return alert("Min 3 characters");
