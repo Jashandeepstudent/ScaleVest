@@ -5751,14 +5751,14 @@ async function saveStartupProfile(vestData) {
 async function createDashboard() {
     if (!currentUser) return;
 
-    // --- REAL-TIME INBOX LISTENER (UPDATED LOGIC) ---
+    // --- REAL-TIME INBOX LISTENER ---
     const chatsRef = ref(db, 'Chats');
-
+    
     onValue(chatsRef, async (snapshot) => {
-        // 1. Define Default State (Shown if NO unread messages exist)
-        let displayData = {
-            title: "Welcome to ScaleVest!",
-            text: "Start connecting with investors today.",
+        // 1. Set Default State (Welcome Message)
+        let displayData = { 
+            title: "Welcome to ScaleVest!", 
+            text: "Start connecting with investors today.", 
             timeAgo: "",
             isUnread: false
         };
@@ -5767,20 +5767,18 @@ async function createDashboard() {
             const allChats = snapshot.val();
             let newestUnreadMsg = null;
 
-            // 2. Loop through all rooms
+            // 2. Loop through all chat rooms
             Object.keys(allChats).forEach(roomKey => {
                 if (roomKey.includes(currentUser.uid)) {
                     const roomData = allChats[roomKey];
-                    
-                    // Filter for valid message objects
+                    // Get all valid messages
                     const msgs = Object.values(roomData).filter(m => m && typeof m === 'object' && m.timestamp);
-
-                    // 3. Find UNREAD messages addressed to ME
+                    
+                    // 3. Filter for UNREAD messages addressed to ME
                     msgs.forEach(msg => {
-                        // Check if message is for me AND is explicitly unread
+                        // Check if message is for me AND explicitly unread
                         if (msg.recipient === currentUser.uid && msg.read === false) {
-                            
-                            // If we haven't found an unread msg yet, OR this one is newer than the last one found
+                            // If we haven't found an unread msg yet, OR this one is newer than the one we have
                             if (!newestUnreadMsg || msg.timestamp > newestUnreadMsg.timestamp) {
                                 newestUnreadMsg = msg;
                             }
@@ -5789,18 +5787,17 @@ async function createDashboard() {
                 }
             });
 
-            // 4. If an unread message was found, update the display data
+            // 4. If an UNREAD message was found, use it
             if (newestUnreadMsg) {
                 try {
-                    // Fetch Sender Name
+                    // Fetch sender name (Investor or Founder)
                     let senderName = "An Investor";
-                    
-                    // Try Investor Profile first
                     const investorSnap = await get(ref(db, `investorProfiles/${newestUnreadMsg.sender}`));
+                    
                     if (investorSnap.exists()) {
-                        senderName = investorSnap.val().fullName || "An Investor";
+                        senderName = investorSnap.val().fullName;
                     } else {
-                        // Fallback to Founder Profile (in case of founder-to-founder chat)
+                        // Fallback for founder-to-founder chats
                         const founderSnap = await get(ref(db, `founderProfile/${newestUnreadMsg.sender}`));
                         if(founderSnap.exists()) senderName = founderSnap.val().founderUsername || "User";
                     }
@@ -5820,17 +5817,17 @@ async function createDashboard() {
         // --- INSTANT UI UPDATE ---
         const inboxElement = document.getElementById('inbox-preview-content');
         if (inboxElement) {
-            // Apply styling based on whether it is unread or default
-            const borderItem = displayData.isUnread ? "3px solid #ff006e" : "3px solid #333";
-            const opacityItem = displayData.isUnread ? "1" : "0.5";
-            
-            inboxElement.style.borderLeft = borderItem;
+            // Visual tweaks: High opacity for unread, lower for default
+            const opacity = displayData.isUnread ? "1" : "0.5";
+            const border = displayData.isUnread ? "3px solid #ff006e" : "3px solid #333";
+
+            inboxElement.style.borderLeft = border;
             inboxElement.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
                     <strong style="color: #fff; font-size: 0.9rem; line-height:1.2;">${displayData.title}</strong>
                     <span style="color: #ff006e; font-size: 0.7rem; font-weight: 800; white-space:nowrap; margin-left:10px;">${displayData.timeAgo}</span>
                 </div>
-                <p style="color: #888; font-size: 0.85rem; line-height: 1.4; font-style: italic; opacity: ${opacityItem};">
+                <p style="color: #888; font-size: 0.85rem; line-height: 1.4; font-style: italic; opacity:${opacity};">
                     "${displayData.text}"
                 </p>
             `;
