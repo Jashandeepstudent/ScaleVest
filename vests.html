@@ -7051,28 +7051,44 @@ max-width: 1100px;
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-/* --- NEW WHITE BUTTON --- */
 .btn-browse-angels {
     background-color: #ffffff;
     color: #000000;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.9rem;
+    /* Reduced vertical padding for a slimmer profile */
+    padding: 6px 16px; 
+    /* Fully rounded or slightly more curved radius for modern feel */
+    border-radius: 20px; 
+    /* Slightly smaller font size */
+    font-size: 0.8rem; 
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
-    margin-left: 10px;
     white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    margin-left: 15px;
+    
+    /* Smooth transitions for modern interaction */
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Subtle border to keep it crisp on different backgrounds */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    
+    /* Modern shadow */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .btn-browse-angels:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.4);
+    background-color: #f8f9fa;
+    /* Slight lift effect */
+    transform: translateY(-1px);
+    /* Pronounced shadow on hover */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.btn-browse-angels:active {
+    /* Pressed effect */
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
 /* --- EXISTING NAV LINKS ALIGNMENT --- */
 .nav-links {
     display: flex;
