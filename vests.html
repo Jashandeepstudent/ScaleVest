@@ -5751,94 +5751,16 @@ async function saveStartupProfile(vestData) {
 async function createDashboard() {
     if (!currentUser) return;
 
-    // --- REAL-TIME INBOX LISTENER ---
-    const chatsRef = ref(db, 'Chats');
+    // =========================================================
+    // 1. FETCH ALL DATA FIRST (Blocking Operations)
+    // =========================================================
     
-    onValue(chatsRef, async (snapshot) => {
-        // 1. Set Default State (Welcome Message)
-        let displayData = { 
-            title: "Welcome to ScaleVest!", 
-            text: "Start connecting with investors today.", 
-            timeAgo: "",
-            isUnread: false
-        };
-
-        if (snapshot.exists()) {
-            const allChats = snapshot.val();
-            let newestUnreadMsg = null;
-
-            // 2. Loop through all chat rooms
-            Object.keys(allChats).forEach(roomKey => {
-                if (roomKey.includes(currentUser.uid)) {
-                    const roomData = allChats[roomKey];
-                    // Get all valid messages
-                    const msgs = Object.values(roomData).filter(m => m && typeof m === 'object' && m.timestamp);
-                    
-                    // 3. Filter for UNREAD messages addressed to ME
-                    msgs.forEach(msg => {
-                        // Check if message is for me AND explicitly unread
-                        if (msg.recipient === currentUser.uid && msg.read === false) {
-                            // If we haven't found an unread msg yet, OR this one is newer than the one we have
-                            if (!newestUnreadMsg || msg.timestamp > newestUnreadMsg.timestamp) {
-                                newestUnreadMsg = msg;
-                            }
-                        }
-                    });
-                }
-            });
-
-            // 4. If an UNREAD message was found, use it
-            if (newestUnreadMsg) {
-                try {
-                    // Fetch sender name (Investor or Founder)
-                    let senderName = "An Investor";
-                    const investorSnap = await get(ref(db, `investorProfiles/${newestUnreadMsg.sender}`));
-                    
-                    if (investorSnap.exists()) {
-                        senderName = investorSnap.val().fullName;
-                    } else {
-                        // Fallback for founder-to-founder chats
-                        const founderSnap = await get(ref(db, `founderProfile/${newestUnreadMsg.sender}`));
-                        if(founderSnap.exists()) senderName = founderSnap.val().founderUsername || "User";
-                    }
-
-                    displayData = {
-                        title: `${senderName} sent a message:`,
-                        text: newestUnreadMsg.text || "Sent an attachment",
-                        timeAgo: timeSince(newestUnreadMsg.timestamp),
-                        isUnread: true
-                    };
-                } catch (e) {
-                    console.error("Error fetching name:", e);
-                }
-            }
-        }
-
-        // --- INSTANT UI UPDATE ---
-        const inboxElement = document.getElementById('inbox-preview-content');
-        if (inboxElement) {
-            // Visual tweaks: High opacity for unread, lower for default
-            const opacity = displayData.isUnread ? "1" : "0.5";
-            const border = displayData.isUnread ? "3px solid #ff006e" : "3px solid #333";
-
-            inboxElement.style.borderLeft = border;
-            inboxElement.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                    <strong style="color: #fff; font-size: 0.9rem; line-height:1.2;">${displayData.title}</strong>
-                    <span style="color: #ff006e; font-size: 0.7rem; font-weight: 800; white-space:nowrap; margin-left:10px;">${displayData.timeAgo}</span>
-                </div>
-                <p style="color: #888; font-size: 0.85rem; line-height: 1.4; font-style: italic; opacity:${opacity};">
-                    "${displayData.text}"
-                </p>
-            `;
-        }
-    });
     // Use cached data if available, otherwise fetch
     let founderData = cachedFounderData;
     let startupData = cachedStartupData;
     let vestsData = {};
     
-    // If no cached data, fetch it
+    // Fetch Founder Profile
     if (!founderData) {
         const founderProfileRef = ref(db, `founderProfile/${currentUser.uid}`);
         const founderSnap = await get(founderProfileRef);
@@ -5846,7 +5768,7 @@ async function createDashboard() {
         cachedFounderData = founderData;
     }
     
-    // Handle old profile structure (firstName/lastName) vs new (founderUsername)
+    // Handle Profile Format
     if (founderData && !founderData.founderUsername) {
         founderData.founderUsername = founderData.firstName 
             ? `${founderData.firstName} ${founderData.lastName || ''}`.trim()
@@ -5855,32 +5777,24 @@ async function createDashboard() {
         founderData.founderImage = founderData.firstName 
             ? founderData.firstName.charAt(0).toUpperCase()
             : (founderData.email || 'U').charAt(0).toUpperCase();
-        
-        console.log('✅ Converted old profile to new format:', founderData);
     }
     
-    // FIX: Always fetch fresh startup data
+    // Fetch Startup Profile
     if (!startupData) {
         const startupProfileRef = ref(db, `startupProfile/${currentUser.uid}`);
         const startupSnap = await get(startupProfileRef);
         if (startupSnap.exists()) {
             startupData = startupSnap.val();
             cachedStartupData = startupData;
-            console.log('✅ Fetched startup data:', startupData);
-        } else {
-            console.log('⚠️ No startup profile found in database');
         }
-    } else {
-        console.log('✅ Using cached startup data:', startupData);
     }
     
-    // Always fetch fresh vests data
+    // Fetch Vests
     const vestsRef = ref(db, `Vests/${currentUser.uid}`);
     const vestsSnap = await get(vestsRef);
     if (vestsSnap.exists()) {
         vestsData = vestsSnap.val();
-    }
-    
+    }    
     console.log('Dashboard loaded with:', { founderData, startupData, vestsData });
     
     const draftCount = Object.values(vestsData).filter(v => v.status === 'draft').length;
@@ -7062,10 +6976,92 @@ max-width: 1100px;
 
     `;
     
+// Inject and Show
     const container = document.getElementById('dashboardContainer');
     container.innerHTML = dashboardHTML;
     container.style.display = 'block';
+    
+    // Initialize Notification Badge (Global Count)
     updateNotificationBadge(globalUnreadCount);
+
+    // =========================================================
+    // 3. START REAL-TIME LISTENERS (Now that DOM is Ready!)
+    // =========================================================
+    const chatsRef = ref(db, 'Chats');
+    
+    onValue(chatsRef, async (snapshot) => {
+        // Default Display
+        let displayData = { 
+            title: "Welcome to ScaleVest!", 
+            text: "Start connecting with investors today.", 
+            timeAgo: "",
+            isUnread: false
+        };
+
+        if (snapshot.exists()) {
+            const allChats = snapshot.val();
+            let newestUnreadMsg = null;
+
+            // Search for Unread Messages
+            Object.keys(allChats).forEach(roomKey => {
+                if (roomKey.includes(currentUser.uid)) {
+                    const roomData = allChats[roomKey];
+                    const msgs = Object.values(roomData).filter(m => m && typeof m === 'object' && m.timestamp);
+                    
+                    msgs.forEach(msg => {
+                        // Priority Check: Is it for me? Is it specifically unread?
+                        if (msg.recipient === currentUser.uid && msg.read === false) {
+                            if (!newestUnreadMsg || msg.timestamp > newestUnreadMsg.timestamp) {
+                                newestUnreadMsg = msg;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // If we found a priority unread message, display it
+            if (newestUnreadMsg) {
+                try {
+                    let senderName = "An Investor";
+                    const investorSnap = await get(ref(db, `investorProfiles/${newestUnreadMsg.sender}`));
+                    
+                    if (investorSnap.exists()) {
+                        senderName = investorSnap.val().fullName;
+                    } else {
+                        const founderSnap = await get(ref(db, `founderProfile/${newestUnreadMsg.sender}`));
+                        if(founderSnap.exists()) senderName = founderSnap.val().founderUsername || "User";
+                    }
+
+                    displayData = {
+                        title: `${senderName} sent a message:`,
+                        text: newestUnreadMsg.text || "Sent an attachment",
+                        timeAgo: timeSince(newestUnreadMsg.timestamp),
+                        isUnread: true
+                    };
+                } catch (e) {
+                    console.error("Error fetching name:", e);
+                }
+            }
+        }
+
+        // UPDATE UI ELEMENT
+        const inboxElement = document.getElementById('inbox-preview-content');
+        if (inboxElement) {
+            const opacity = displayData.isUnread ? "1" : "0.5";
+            const border = displayData.isUnread ? "3px solid #ff006e" : "3px solid #333";
+
+            inboxElement.style.borderLeft = border;
+            inboxElement.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                    <strong style="color: #fff; font-size: 0.9rem; line-height:1.2;">${displayData.title}</strong>
+                    <span style="color: #ff006e; font-size: 0.7rem; font-weight: 800; white-space:nowrap; margin-left:10px;">${displayData.timeAgo}</span>
+                </div>
+                <p style="color: #888; font-size: 0.85rem; line-height: 1.4; font-style: italic; opacity:${opacity};">
+                    "${displayData.text}"
+                </p>
+            `;
+        }
+    });
 // Function to show sub-sections
 window.showAvailabilityDetail = function(sectionId) {
     document.getElementById('modalMenu').style.display = 'none';
