@@ -1084,14 +1084,9 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, get, update, onValue, remove, set, onDisconnect, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-import {
-  set,
-  onDisconnect,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* 🔐 Firebase config */
 const firebaseConfig = {
@@ -1104,11 +1099,15 @@ const firebaseConfig = {
     appId: "1:938358950124:web:043506aeaacea2a96bfdc9"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const db = getDatabase(app); // FIXED: Renamed 'database' to 'db' to match your function calls
 const auth = getAuth(app);
 const storage = getStorage(app);
+
+// Global Variables
 let currentUser = null;
+let currentUserUID = null;
 let globalUnreadCount = 0;
 let presenceListeners = [];
 
@@ -1118,54 +1117,25 @@ let presenceListeners = [];
 
 // Handle clicking the Bell Icon
 window.handleBellClick = async function() {
-    // 1. Instant UI Feedback (Remove the dot immediately)
-    updateNotificationBadge(0);
+    // 1. Instant UI Feedback (Hide badge)
+    const badge = document.getElementById('navBellBadge');
+    if(badge) badge.classList.remove('active');
     
     // 2. Navigate to the chat list hash
-    window.location.hash = 'founder_chatlist'; // As requested
+    // This assumes you have logic to handle '#founder_chatlist' in your hashchange listener (added below)
+    window.location.hash = 'founder_chatlist'; 
 
-    // 3. Database Cleanup (Mark visible notifications as read)
+    // 3. Optional: Mark visible notifications as read in background
     if (!currentUser) return;
-
-    try {
-        const chatsRef = ref(db, 'Chats');
-        const snapshot = await get(chatsRef);
-
-        if (snapshot.exists()) {
-            const updates = {};
-            const allChats = snapshot.val();
-
-            // Loop through all rooms
-            Object.keys(allChats).forEach(roomKey => {
-                if (roomKey.includes(currentUser.uid)) {
-                    const messages = allChats[roomKey];
-                    // Loop through messages
-                    Object.keys(messages).forEach(msgId => {
-                        const msg = messages[msgId];
-                        // CONDITION: Message is for ME and is NOT Read
-                        if (msg && msg.recipient === currentUser.uid && msg.read !== true) {
-                            updates[`Chats/${roomKey}/${msgId}/read`] = true;
-                        }
-                    });
-                }
-            });
-
-            // Execute Bulk Update
-            if (Object.keys(updates).length > 0) {
-                await update(ref(db), updates);
-            }
-        }
-    } catch (error) {
-        console.error("Error clearing notifications:", error);
-    }
+    // (Logic to mark as read happens when you actually open a specific chat)
 };
 
+// Real-time listener for unread messages
 function startNotificationListener() {
     const chatsRef = ref(db, 'Chats');
     
     onValue(chatsRef, (snapshot) => {
-        if (!snapshot.exists()) {
-            globalUnreadCount = 0;
+        if (!snapshot.exists() || !currentUser) {
             updateNotificationBadge(0);
             return;
         }
@@ -1174,9 +1144,11 @@ function startNotificationListener() {
         let unreadCount = 0;
 
         Object.keys(allChats).forEach(roomKey => {
+            // Only check rooms I am part of
             if (roomKey.includes(currentUser.uid)) {
                 const messages = allChats[roomKey];
                 Object.values(messages).forEach(msg => {
+                    // Check if message is for ME and NOT read
                     if (msg && msg.recipient === currentUser.uid && msg.read !== true) {
                         unreadCount++;
                     }
@@ -1190,28 +1162,24 @@ function startNotificationListener() {
 }
 
 function updateNotificationBadge(count) {
-    // Assuming you might add an ID to the dot in the HTML later, 
-    // for now we can select the .notif-badge class inside top-nav-right
-    const badge = document.querySelector('.notif-badge');
-    
+    const badge = document.getElementById('navBellBadge');
+    if (!badge) return;
+
     if (count > 0) {
-        if(badge) { 
-            badge.style.display = 'block';
-            // Optional: Add number inside if needed: badge.innerText = count;
-        }
+        badge.classList.add('active');
     } else {
-        if(badge) badge.style.display = 'none';
+        badge.classList.remove('active');
     }
 }
 
 // =========================================================
-// 2. CHAT LIST LOGIC (Investor View -> Seeing Founders)
+// 2. CHAT LIST LOGIC (Investor View)
 // =========================================================
 
 window.showInvestorChatList = async function () {
-    const container = document.querySelector('.right-section'); // Render in the main area
+    const container = document.querySelector('.right-section');
     
-    // Hide other sections
+    // Hide Dashboard Elements
     document.querySelector('.welcome-section').style.display = 'none';
     document.querySelectorAll('.banner').forEach(el => el.style.display = 'none');
     
@@ -1221,32 +1189,28 @@ window.showInvestorChatList = async function () {
         presenceListeners = [];
     }
 
-    // Render Loader
     container.innerHTML = `
         <div style="text-align:center; padding: 50px;">
-            <div class="logo" style="animation: pulse 1s infinite; justify-content:center;">ScaleVest</div>
-            <p style="color:#a7f3d0; margin-top:15px;">Loading Conversations...</p>
+            <p style="color:#10b981; font-weight:bold;">Loading Messages...</p>
         </div>`;
 
     try {
-        // 1. Fetch Chats
         const chatsRef = ref(db, 'Chats');
         const snapshot = await get(chatsRef);
         const allChats = snapshot.val() || {};
         const chatMap = new Map();
 
-        // 2. Process Chats
+        // Process Chats
         Object.keys(allChats).forEach(roomKey => {
             if (!roomKey.includes(currentUser.uid)) return;
 
             const messages = Object.values(allChats[roomKey]).filter(m => m.timestamp);
             if (!messages.length) return;
 
-            // Sort to get last message
             messages.sort((a, b) => a.timestamp - b.timestamp);
             const lastMsg = messages[messages.length - 1];
 
-            // Identify the OTHER user (The Founder)
+            // Get Founder UID
             const parts = roomKey.split('_');
             const otherUid = parts.find(p => p !== 'chat' && p !== currentUser.uid);
             if (!otherUid) return;
@@ -1256,159 +1220,96 @@ window.showInvestorChatList = async function () {
                 otherUid,
                 lastMessage: lastMsg.text?.trim() || "Sent an attachment",
                 timestamp: lastMsg.timestamp,
-                isUnread: !lastMsg.readBy || !lastMsg.readBy[currentUser.uid]
+                isUnread: !lastMsg.readBy || !lastMsg.readBy[currentUser.uid] // Logic for read status
             });
         });
 
         const myChats = Array.from(chatMap.values()).sort((a, b) => b.timestamp - a.timestamp);
 
-        // 3. Fetch Profiles (Prioritize Founder Profile since user is Investor)
+        // Fetch Names/Photos
         const profileMap = {};
         await Promise.all(
             myChats.map(async chat => {
                 const uid = chat.otherUid;
-                // CHECK FOUNDER PROFILE FIRST
+                // Try Founder Profile first
                 let snap = await get(ref(db, `founderProfile/${uid}`));
-                if (!snap.exists()) {
-                    // Fallback to investor profile if it's an investor-investor chat
-                    snap = await get(ref(db, `investorProfiles/${uid}`));
-                }
+                if (!snap.exists()) snap = await get(ref(db, `investorProfiles/${uid}`));
 
                 if (snap.exists()) {
                     const data = snap.val();
-                    // Normalize data structure
                     profileMap[uid] = {
-                        name: data.founderUsername || data.fullName || "Unknown User",
-                        photo: data.photoURL || data.founderImage || null,
-                        role: data.founderUsername ? "Founder" : "Investor"
+                        name: data.founderUsername || data.fullName || "User",
+                        photo: data.photoURL || data.founderImage || null
                     };
                 } else {
-                    profileMap[uid] = { name: "Unknown User", photo: null, role: "" };
+                    profileMap[uid] = { name: "Unknown User", photo: null };
                 }
             })
         );
 
-        // 4. Render UI
-        let listHtml = `
-            <div style="background: rgba(16, 185, 129, 0.05); border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.2); padding: 2rem; min-height: 60vh;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                    <h2 style="margin:0; color:#fff; font-size:1.8rem;">Messages</h2>
-                    <span style="background:rgba(16, 185, 129, 0.2); color:#10b981; padding:5px 12px; border-radius:20px; font-size:0.85rem; font-weight:700;">
-                        ${myChats.length} Conversations
-                    </span>
-                </div>
+        // Render List
+        let html = `
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 2rem;">
+                <h2 style="color:#fff; margin-bottom: 20px;">Messages</h2>
+                <div style="display:flex; flex-direction:column; gap:10px;">
         `;
 
         if (myChats.length === 0) {
-            listHtml += `
-                <div style="text-align:center; padding: 3rem; color: #6ee7b7;">
-                    <p>No active conversations found.</p>
-                    <button class="card-btn" onclick="window.location.href='vestbrowse.html'" style="margin-top:15px; width:auto;">Browse Vests</button>
-                </div>
-            `;
+            html += `<p style="text-align:center; color:#6ee7b7; padding:20px;">No messages yet.</p>`;
         } else {
-            listHtml += `<div style="display:flex; flex-direction:column; gap:15px;">`;
-            
             myChats.forEach(chat => {
                 const profile = profileMap[chat.otherUid];
                 const displayName = profile.name;
-                const displayPhoto = profile.photo;
-                const isOnlineId = `status-${chat.otherUid}`;
+                const photoHtml = profile.photo 
+                    ? `<img src="${profile.photo}" style="width:100%; height:100%; object-fit:cover;">` 
+                    : `<div style="display:flex;align-items:center;justify-content:center;background:#10b981;width:100%;height:100%;color:white;font-weight:bold;">${displayName[0]}</div>`;
                 
-                const date = new Date(chat.timestamp);
-                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const time = new Date(chat.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const unreadStyle = chat.isUnread ? 'border-left: 4px solid #ef4444; background: rgba(255,255,255,0.05);' : '';
 
-                listHtml += `
-                    <div onclick="openChat('${chat.otherUid}', '${chat.roomKey}')" 
-                         style="
-                            display:flex; align-items:center; gap:15px; 
-                            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; 
-                            border: 1px solid ${chat.isUnread ? '#10b981' : 'rgba(255,255,255,0.1)'};
-                            cursor: pointer; transition: all 0.2s;
-                         "
-                         onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'"
-                         onmouseout="this.style.background='rgba(0,0,0,0.3)'"
-                    >
-                        <div style="position:relative; width:50px; height:50px; flex-shrink:0;">
-                            ${displayPhoto 
-                                ? `<img src="${displayPhoto}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
-                                : `<div style="width:100%; height:100%; border-radius:50%; background:#10b981; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff;">
-                                    ${displayName.charAt(0).toUpperCase()}
-                                   </div>`
-                            }
-                            <div id="${isOnlineId}" style="
-                                position:absolute; bottom:0; right:0; width:12px; height:12px; 
-                                border-radius:50%; border:2px solid #000; background:#666;
-                            "></div>
+                html += `
+                    <div onclick="window.location.href='chat.html?recipient=${chat.otherUid}&room=${chat.roomKey}'" 
+                         style="display:flex; align-items:center; gap:15px; padding:15px; border-radius:8px; cursor:pointer; transition:0.2s; ${unreadStyle}"
+                         onmouseover="this.style.backgroundColor='rgba(16, 185, 129, 0.1)'"
+                         onmouseout="this.style.backgroundColor='transparent'">
+                        
+                        <div style="width:50px; height:50px; border-radius:50%; overflow:hidden; border:1px solid #333;">
+                            ${photoHtml}
                         </div>
-
-                        <div style="flex:1; min-width:0;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                                <span style="font-weight:700; color:#fff; font-size:1rem;">${displayName}</span>
-                                <span style="color:#6ee7b7; font-size:0.75rem;">${timeStr}</span>
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <strong style="color:#fff; font-size:1rem;">${displayName}</strong>
+                                <span style="color:#666; font-size:0.8rem;">${time}</span>
                             </div>
-                            <div style="color:${chat.isUnread ? '#fff' : '#94a3b8'}; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:${chat.isUnread ? '700' : '400'};">
-                                ${chat.isUnread ? '<span style="color:#10b981; margin-right:5px;">●</span>' : ''} 
+                            <div style="color:#aaa; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px;">
+                                ${chat.isUnread ? '<span style="color:#ef4444;font-weight:bold;">New: </span>' : ''}
                                 ${chat.lastMessage}
                             </div>
                         </div>
                     </div>
                 `;
             });
-            listHtml += `</div>`;
         }
+        
+        html += `</div></div>`;
+        container.innerHTML = html;
 
-        listHtml += `</div>`;
-        container.innerHTML = listHtml;
-
-        // 5. Setup Presence Listeners
-        myChats.forEach(chat => {
-            const uid = chat.otherUid;
-            const refPres = ref(db, `presence/${uid}`);
-            const unsub = onValue(refPres, (snap) => {
-                const isOnline = snap.exists() && snap.val().online;
-                const dot = document.getElementById(`status-${uid}`);
-                if (dot) {
-                    dot.style.background = isOnline ? '#10b981' : '#666';
-                    dot.style.boxShadow = isOnline ? '0 0 5px #10b981' : 'none';
-                }
-            });
-            presenceListeners.push(unsub);
-        });
-
-    } catch (e) {
-        console.error(e);
-        container.innerHTML = `<p style="color:red; text-align:center;">Error loading chats.</p>`;
+    } catch (err) {
+        console.error("Chat list error:", err);
+        container.innerHTML = `<p style="color:red">Failed to load chats.</p>`;
     }
 };
 
-window.openChat = function(uid, roomKey) {
-    // Mark as read immediately in UI if needed, but logic handles it on open
-    window.location.href = `chat.html?recipient=${uid}&room=${roomKey}`;
-};
-
 // =========================================================
-// 3. PRESENCE SYSTEM
+// 3. CORE & PRESENCE
 // =========================================================
-
 
 function setUserPresence(user) {
     const presenceRef = ref(db, `presence/${user.uid}`);
-
-    set(presenceRef, {
-        online: true,
-        lastSeen: serverTimestamp()
-    });
-
-    onDisconnect(presenceRef).set({
-        online: false,
-        lastSeen: serverTimestamp()
-    });
+    set(presenceRef, { online: true, lastSeen: serverTimestamp() });
+    onDisconnect(presenceRef).set({ online: false, lastSeen: serverTimestamp() });
 }
-let uploadedPhotoURL = "";
-let currentUserUID = null;
 
-/* ✅ HELPER FOR PROGRESS */
 function updateProgress(percent, status) {
     const bar = document.getElementById("loadingProgress");
     const text = document.getElementById("loadingStatus");
@@ -1416,30 +1317,52 @@ function updateProgress(percent, status) {
     if (text) text.innerText = status;
 }
 
-/* ✅ AUTH LISTENER */
+// =========================================================
+// 4. AUTH LISTENER (Main Entry Point)
+// =========================================================
+
 onAuthStateChanged(auth, async (user) => {
-startNotificationListener();
-    updateProgress(20, "Authenticating User...");
-    if (!user) {
-        setUserPresence(user);
-        window.location.href = "login3.html";
-        return;
-    }
-    try {
+    updateProgress(20, "Authenticating...");
+    
+    if (user) {
+        currentUser = user;
         currentUserUID = user.uid;
-        updateProgress(50, "Fetching Investor Data...");
-        await loadUserProfile(user.uid);
-        updateProgress(100, "Terminal Ready");
-        setTimeout(() => {
-            const loader = document.getElementById("loadingScreen");
-            if(loader) {
-                loader.style.opacity = "0";
-                setTimeout(() => loader.style.display = "none", 800);
+        setUserPresence(user);
+        startNotificationListener(); // START LISTENING FOR RED DOT
+
+        // Router for Bell Click
+        window.addEventListener('hashchange', () => {
+            if (window.location.hash === '#founder_chatlist') {
+                window.showInvestorChatList();
+            } else if (window.location.hash === '#dashboard' || window.location.hash === '') {
+                location.reload(); // Simple way to reset dashboard view
             }
-        }, 500);
-    } catch (err) {
-        console.error("Boot Error:", err);
-        updateProgress(100, "Error: Connection Failed");
+        });
+
+        // Check if loaded on chatlist
+        if (window.location.hash === '#founder_chatlist') {
+            window.showInvestorChatList();
+            const loader = document.getElementById("loadingScreen");
+            if(loader) loader.style.display = 'none';
+        } else {
+            // Normal Dashboard Load
+            try {
+                updateProgress(50, "Fetching Profile...");
+                await loadUserProfile(user.uid);
+                updateProgress(100, "Ready");
+                setTimeout(() => {
+                    const loader = document.getElementById("loadingScreen");
+                    if(loader) {
+                        loader.style.opacity = "0";
+                        setTimeout(() => loader.style.display = "none", 800);
+                    }
+                }, 500);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    } else {
+        window.location.href = "login3.html";
     }
 });
 
@@ -1454,7 +1377,7 @@ window.closeModal = (id) => document.getElementById(id).style.display = 'none';
 async function loadUserProfile(uid) {
     const avatarDiv = document.getElementById("profileAvatar");
     try {
-        const snapshot = await get(ref(database, "investorProfiles/" + uid));
+        const snapshot = await get(ref(db, "investorProfiles/" + uid));
         if (snapshot.exists()) {
             const data = snapshot.val();
             const fullName = data.fullName || "Investor";
@@ -1482,13 +1405,12 @@ async function loadUserProfile(uid) {
 window.enterEditMode = async () => {
     updateProgress(50, "Opening Edit Terminal...");
     const rightSection = document.querySelector('.right-section');
-    const snapshot = await get(ref(database, `investorProfiles/${currentUserUID}`));
+    const snapshot = await get(ref(db, `investorProfiles/${currentUserUID}`));
     const data = snapshot.exists() ? snapshot.val() : {};
 
     document.querySelector('.welcome-section').style.display = 'none';
     document.querySelectorAll('.banner').forEach(b => b.style.display = 'none');
 
-    // 1. Render UI
     rightSection.innerHTML = `
         <h1 class="welcome-text">Profile Terminal</h1>
         <div class="edit-profile-grid">
@@ -1514,7 +1436,6 @@ window.enterEditMode = async () => {
         </div>
     `;
 
-    // 2. Pre-fill Inputs AFTER HTML exists
     document.getElementById('editFullName').value = data.fullName || "";
     document.getElementById('editNetWorth').value = data.netWorth || "";
     document.getElementById('editMinInv').value = data.minInvestment || "";
@@ -1565,9 +1486,9 @@ window.updateProfileSection = async (type) => {
     try {
         const paths = [`investorProfiles/${currentUserUID}`, `angelProfiles/${currentUserUID}`];
         for (const path of paths) {
-            const snap = await get(ref(database, path));
+            const snap = await get(ref(db, path));
             if (snap.exists() || path.includes('investorProfiles')) {
-                await update(ref(database, path), updates);
+                await update(ref(db, path), updates);
             }
         }
         alert("Sync Complete!");
@@ -1581,10 +1502,10 @@ window.launchAngelProfile = async () => {
     const launchBtn = document.getElementById('launchBtn');
     launchBtn.disabled = true;
     try {
-        const snap = await get(ref(database, `investorProfiles/${currentUserUID}`));
+        const snap = await get(ref(db, `investorProfiles/${currentUserUID}`));
         if (snap.exists()) {
             const angelData = { ...snap.val(), status: "Live", launchedAt: new Date().toISOString() };
-            await update(ref(database, `angelProfiles/${currentUserUID}`), angelData);
+            await update(ref(db, `angelProfiles/${currentUserUID}`), angelData);
             alert("Your Angel Profile is LIVE!");
             location.reload();
         }
@@ -1595,12 +1516,10 @@ window.launchAngelProfile = async () => {
 window.saveUserID = async () => {
     const newId = document.getElementById("newUserIdInput").value.trim().toUpperCase();
     if (newId.length < 3) return alert("Min 3 characters");
-    await update(ref(database, `investorProfiles/${currentUserUID}`), { userID: newId });
+    await update(ref(db, `investorProfiles/${currentUserUID}`), { userID: newId });
     location.reload();
 };
-
 </script>
-
 
 
 </body>
