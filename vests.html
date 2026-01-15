@@ -7256,8 +7256,12 @@ window.saveUserId = async function() {
 };
 async function showEditProfile() {
     document.title = "Edit Profile | ScaleVest";
-    document.querySelector('.vest-container').style.display = 'none';
     
+    // Hide other containers
+    if (document.querySelector('.vest-container')) {
+        document.querySelector('.vest-container').style.display = 'none';
+    }
+
     let container = document.getElementById('dashboardContainer');
     if (!container) {
         container = document.createElement('div');
@@ -7266,43 +7270,66 @@ async function showEditProfile() {
     }
     
     container.style.display = 'block';
-    
-    // FIX 1: Ensure founderData is loaded properly
+
+    // -----------------------------------------------------
+    // 🛡️ SAFETY FETCH: Ensure data exists on Refresh
+    // -----------------------------------------------------
+    if (!cachedFounderData || !cachedStartupData) {
+        // Show a temporary loading spinner while we fetch
+        container.innerHTML = `
+            <div style="height:100vh; display:flex; align-items:center; justify-content:center;">
+                <div class="spinner"></div>
+            </div>`;
+        
+        try {
+            const [founderSnap, startupSnap] = await Promise.all([
+                get(ref(db, `founderProfile/${currentUser.uid}`)),
+                get(ref(db, `startupProfile/${currentUser.uid}`))
+            ]);
+
+            if (founderSnap.exists()) cachedFounderData = founderSnap.val();
+            if (startupSnap.exists()) cachedStartupData = startupSnap.val();
+            
+        } catch (e) {
+            console.error("Profile Fetch Error:", e);
+        }
+    }
+
+    // Assign data variables after the safety fetch
     let founderData = cachedFounderData || {};
-    const startupData = cachedStartupData || {};
+    let startupData = cachedStartupData || {}; // Changed from const to let just in case
     
-// FIX 2: Convert old string format to new array format
-if (!founderData.languages) {
-    founderData.languages = [];
-} else if (typeof founderData.languages === 'string') {
-    // Old format: "HINDI" -> New format: [{name: "Hindi", level: "Fluent"}]
-    const oldLang = founderData.languages.trim();
-    founderData.languages = oldLang ? [{name: oldLang, level: 'Fluent'}] : [];
-    // Save updated format to Firebase
-    update(ref(db, `founderProfile/${currentUser.uid}`), { languages: founderData.languages });
-} else if (!Array.isArray(founderData.languages)) {
-    founderData.languages = [];
-}
+    // -----------------------------------------------------
+    // DATA NORMALIZATION (Fixing old data formats)
+    // -----------------------------------------------------
+    if (!founderData.languages) {
+        founderData.languages = [];
+    } else if (typeof founderData.languages === 'string') {
+        // Old format: "HINDI" -> New format: [{name: "Hindi", level: "Fluent"}]
+        const oldLang = founderData.languages.trim();
+        founderData.languages = oldLang ? [{name: oldLang, level: 'Fluent'}] : [];
+        // Save updated format to Firebase silently
+        update(ref(db, `founderProfile/${currentUser.uid}`), { languages: founderData.languages });
+    } else if (!Array.isArray(founderData.languages)) {
+        founderData.languages = [];
+    }
     
     // Fetch location data from startupProfile
     const locationData = startupData?.location || { country: '', state: '', city: '' };
     
-    console.log('PROFILE DATA:', founderData); // DEBUG
-    
     // Calculate profile completion
-const fields = [
-    founderData.founderUsername,
-    founderData.photoURL,
-    founderData.title,
-    founderData.about,
-    founderData.education?.length > 0,
-    founderData.workExperience?.length > 0,
-    founderData.coFounders && Object.keys(founderData.coFounders).length > 0,
-    founderData.languages?.length > 0
-];
-const filledFields = fields.filter(f => f && f !== '').length;
-const completionPercent = Math.round((filledFields / fields.length) * 100);  
-    container.innerHTML = `
+    const fields = [
+        founderData.founderUsername,
+        founderData.photoURL,
+        founderData.title,
+        founderData.about,
+        founderData.education?.length > 0,
+        founderData.workExperience?.length > 0,
+        founderData.coFounders && Object.keys(founderData.coFounders).length > 0,
+        founderData.languages?.length > 0
+    ];
+    const filledFields = fields.filter(f => f && f !== '').length;
+    const completionPercent = Math.round((filledFields / fields.length) * 100);    container.innerHTML = `
         <style>
         .top-nav {
             background: #0a0a0a;
