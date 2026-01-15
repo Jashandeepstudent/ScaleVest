@@ -1210,7 +1210,6 @@ window.showInvestorChatList = async function () {
             messages.sort((a, b) => a.timestamp - b.timestamp);
             const lastMsg = messages[messages.length - 1];
 
-            // Get Founder UID
             const parts = roomKey.split('_');
             const otherUid = parts.find(p => p !== 'chat' && p !== currentUser.uid);
             if (!otherUid) return;
@@ -1220,18 +1219,17 @@ window.showInvestorChatList = async function () {
                 otherUid,
                 lastMessage: lastMsg.text?.trim() || "Sent an attachment",
                 timestamp: lastMsg.timestamp,
-                isUnread: !lastMsg.readBy || !lastMsg.readBy[currentUser.uid] // Logic for read status
+                isUnread: !lastMsg.readBy || !lastMsg.readBy[currentUser.uid]
             });
         });
 
         const myChats = Array.from(chatMap.values()).sort((a, b) => b.timestamp - a.timestamp);
 
-        // Fetch Names/Photos
+        // Fetch Profiles
         const profileMap = {};
         await Promise.all(
             myChats.map(async chat => {
                 const uid = chat.otherUid;
-                // Try Founder Profile first
                 let snap = await get(ref(db, `founderProfile/${uid}`));
                 if (!snap.exists()) snap = await get(ref(db, `investorProfiles/${uid}`));
 
@@ -1249,8 +1247,18 @@ window.showInvestorChatList = async function () {
 
         // Render List
         let html = `
-            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 2rem;">
-                <h2 style="color:#fff; margin-bottom: 20px;">Messages</h2>
+            <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 2rem; position: relative;">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color:#fff; margin:0;">Messages</h2>
+                    <button onclick="window.location.hash='dashboard'" 
+                            style="background: transparent; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; transition: 0.2s;"
+                            onmouseover="this.style.opacity='1'; this.style.color='#ef4444';"
+                            onmouseout="this.style.opacity='0.7'; this.style.color='#fff';">
+                        &times;
+                    </button>
+                </div>
+
                 <div style="display:flex; flex-direction:column; gap:10px;">
         `;
 
@@ -1266,16 +1274,26 @@ window.showInvestorChatList = async function () {
                 
                 const time = new Date(chat.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const unreadStyle = chat.isUnread ? 'border-left: 4px solid #ef4444; background: rgba(255,255,255,0.05);' : '';
+                const isOnlineId = `status-dot-${chat.otherUid}`; // Unique ID for presence dot
 
                 html += `
-                    <div onclick="window.location.href='chat.html?recipient=${chat.otherUid}&room=${chat.roomKey}'" 
-                         style="display:flex; align-items:center; gap:15px; padding:15px; border-radius:8px; cursor:pointer; transition:0.2s; ${unreadStyle}"
+                    <div class="chat-item-row"
+                         onclick="window.location.href='chat.html?recipient=${chat.otherUid}&room=${chat.roomKey}'" 
+                         style="display:flex; align-items:center; gap:15px; padding:15px; border-radius:8px; cursor:pointer; transition:0.2s; position: relative; ${unreadStyle}"
                          onmouseover="this.style.backgroundColor='rgba(16, 185, 129, 0.1)'"
                          onmouseout="this.style.backgroundColor='transparent'">
                         
-                        <div style="width:50px; height:50px; border-radius:50%; overflow:hidden; border:1px solid #333;">
-                            ${photoHtml}
+                        <div style="position: relative; width:50px; height:50px;">
+                            <div style="width:100%; height:100%; border-radius:50%; overflow:hidden; border:1px solid #333;">
+                                ${photoHtml}
+                            </div>
+                            <div id="${isOnlineId}" style="
+                                position: absolute; bottom: 0; right: 0; 
+                                width: 12px; height: 12px; background: #666; 
+                                border: 2px solid #000; border-radius: 50%;
+                            "></div>
                         </div>
+
                         <div style="flex:1;">
                             <div style="display:flex; justify-content:space-between;">
                                 <strong style="color:#fff; font-size:1rem;">${displayName}</strong>
@@ -1286,6 +1304,16 @@ window.showInvestorChatList = async function () {
                                 ${chat.lastMessage}
                             </div>
                         </div>
+
+                        <button onclick="deleteConversation('${chat.roomKey}', event)" 
+                                style="background: transparent; border: none; padding: 5px; cursor: pointer; opacity: 0.6; transition: 0.2s;"
+                                onmouseover="this.style.opacity='1'; this.style.color='#ef4444';"
+                                onmouseout="this.style.opacity='0.6'; this.style.color='inherit';">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
                     </div>
                 `;
             });
@@ -1294,12 +1322,39 @@ window.showInvestorChatList = async function () {
         html += `</div></div>`;
         container.innerHTML = html;
 
+        // 5. Setup Presence Listeners
+        myChats.forEach(chat => {
+            const uid = chat.otherUid;
+            const refPres = ref(db, `presence/${uid}`);
+            const unsub = onValue(refPres, (snap) => {
+                const isOnline = snap.exists() && snap.val().online;
+                const dot = document.getElementById(`status-dot-${uid}`);
+                if (dot) {
+                    dot.style.background = isOnline ? '#10b981' : '#666'; // Green if online, Gray if offline
+                    dot.style.boxShadow = isOnline ? '0 0 5px #10b981' : 'none';
+                }
+            });
+            presenceListeners.push(unsub);
+        });
+
     } catch (err) {
         console.error("Chat list error:", err);
         container.innerHTML = `<p style="color:red">Failed to load chats.</p>`;
     }
 };
 
+// Required helper for delete
+window.deleteConversation = async function(roomKey, event) {
+    event.stopPropagation(); // Prevent opening chat
+    if(!confirm("Delete this conversation?")) return;
+    try {
+        await remove(ref(db, `Chats/${roomKey}`));
+        window.showInvestorChatList(); // Refresh list
+    } catch(e) {
+        console.error(e);
+        alert("Error deleting chat");
+    }
+};
 // =========================================================
 // 3. CORE & PRESENCE
 // =========================================================
