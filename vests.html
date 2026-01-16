@@ -5220,117 +5220,39 @@ window.saveNewUsername = async function() {
 // APPLICATION REPLIES INBOX
 // ==========================================
 
-window.showApplicationReplies = async function() {
-    const container = document.getElementById('dashboardContainer');
-    document.querySelector('.vest-container').style.display = 'none';
-    container.style.display = 'block';
-    document.title = "Application Replies | ScaleVest";
-    
-    container.innerHTML = `<div class="loading-box"><div class="spinner"></div><p>Loading Your Replies...</p></div>`;
-    
-    try {
-        // 1. Fetch all replies
-        const repliesRef = ref(db, `ApplicationReplies`);
-        const snapshot = await get(repliesRef);
-        
-        if (!snapshot.exists()) {
-            renderEmptyState(container);
-            return;
-        }
-
-        const allReplies = snapshot.val();
-        let repliesHTML = '';
-
-        // 2. Loop through replies and fetch Investor names from angelProfiles
-        for (const [replyId, reply] of Object.entries(allReplies)) {
-            
-            // Fetch Investor Profile to get the Name
-            let investorName = "An Investor";
-            try {
-                const investorRef = ref(db, `angelProfiles/${reply.investorId}`);
-                const investorSnap = await get(investorRef);
-                if (investorSnap.exists()) {
-                    investorName = investorSnap.val().fullName || "Private Investor";
-                }
-            } catch (e) { console.error("Name fetch error", e); }
-
-            // 3. Define Logic for Status Messaging
-            let statusClass = "";
-            let statusTitle = "";
-            let statusMessage = "";
-
-            if (reply.status === 'YES') {
-                statusClass = "status-success";
-                statusTitle = "Application Accepted!";
-                statusMessage = `Great news! Your application has been **accepted** by **${investorName}**. They have reviewed your vision and are interested in moving forward. Check the message below for next steps.`;
-            } else if (reply.status === 'LATER') {
-                statusClass = "status-later";
-                statusTitle = "Application Delayed";
-                statusMessage = `Your application is currently being **delayed** by **${investorName}**. They likely want to see you try again after gaining some more traction or hitting new milestones.`;
-            } else {
-                statusClass = "status-no";
-                statusTitle = "Application Declined";
-                statusMessage = `Unfortunately, your application has been **rejected** by **${investorName}**. This does not mean your startup is not good! Many big ideas failed many times before succeeding. Use this as a path to your next investor.`;
-            }
-
-            // 4. Build the Card HTML
-            repliesHTML += `
-                <div class="reply-card ${statusClass}">
-                    <div class="card-badge">${statusTitle}</div>
-                    <div class="card-body">
-                        <p class="main-status-text">${statusMessage}</p>
-                        
-                        ${reply.comment ? `
-                            <div class="investor-comment-box">
-                                <strong>Message from ${investorName}:</strong>
-                                <p>"${reply.comment}"</p>
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="card-footer">
-                        <span>Investor: <strong>${investorName}</strong></span>
-                        <span>${formatTimestamp(reply.timestamp)}</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        renderReplies(container, repliesHTML);
-        clearReplyBadge();
-        
-    } catch (error) {
-        console.error("Error:", error);
-        container.innerHTML = `<p style="color:red; text-align:center; padding:2rem;">Error loading your inbox.</p>`;
-    }
-};
-
-function renderReplies(container, html) {
-    container.innerHTML = `
-        <div class="manage-vests-page">
-            <div class="header-row">
-                <a href="#founder_dashboard" class="back-to-dash">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                    Back to Dashboard
-                </a>
-                <h1>Inbox</h1>
-            </div>
-            <div class="replies-grid">
-                ${html}
-            </div>
-        </div>
-        <style>
-            .replies-grid { max-width: 800px; margin: 2rem auto; display: flex; flex-direction: column; gap: 20px; }
-            .reply-card { background: white; border-radius: 12px; padding: 20px; border-left: 8px solid #ccc; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-            .status-success { border-left-color: #00b894; }
-            .status-later { border-left-color: #fdcb6e; }
-            .status-no { border-left-color: #ff7675; }
-            .card-badge { font-weight: bold; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 10px; color: #666; }
-            .main-status-text { font-size: 1.05rem; line-height: 1.5; color: #2d3436; margin-bottom: 15px; }
-            .investor-comment-box { background: #f9f9f9; padding: 15px; border-radius: 8px; font-style: italic; border: 1px dashed #ddd; }
-            .card-footer { margin-top: 15px; padding-top: 10px; border-top: 1px solid #eee; display: flex; justify-content: space-between; font-size: 0.85rem; color: #999; }
-        </style>
-    `;
+/* Popup Styles */
+.reply-popup-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;
 }
+.reply-popup-content {
+    background: white; padding: 30px; border-radius: 15px; max-width: 400px; text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-top: 10px solid #ccc;
+}
+.popup-header img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 3px solid #eee; }
+.popup-comment { font-style: italic; background: #f4f4f4; padding: 10px; margin: 15px 0; border-radius: 8px; }
+.status-yes { border-top-color: #00b894; }
+.status-later { border-top-color: #f1c40f; }
+.status-no { border-top-color: #e74c3c; }
+
+/* Simple Card Styles */
+.replies-list { display: grid; gap: 15px; max-width: 700px; margin: 0 auto; }
+.simple-status-card {
+    background: #fff; border-radius: 10px; padding: 15px; 
+    border-left: 5px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.border-yes { border-left-color: #00b894; }
+.border-later { border-left-color: #f1c40f; }
+.border-no { border-left-color: #e74c3c; }
+
+.card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.status-pill { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; color: white; }
+.pill-yes { background: #00b894; }
+.pill-later { background: #f1c40f; }
+.pill-no { background: #e74c3c; }
+
+.mini-avatar { width: 30px; height: 30px; border-radius: 50%; margin-right: 10px; }
+.investor-info { display: flex; align-items: center; font-size: 0.9rem; }
 // Updated Mark as Read for the new path
 window.markReplyAsRead = async function(replyId) {
     try {
