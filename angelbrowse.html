@@ -2274,43 +2274,57 @@ window.handleViewProfile = async function(userId) {
             }
         };
 
-        function displayApplications(apps) {
-            const container = document.getElementById('applicationsContainer');
-            container.innerHTML = '';
+       function displayApplications(apps) {
+    const container = document.getElementById('applicationsContainer');
+    container.innerHTML = '';
+    
+    apps.forEach(([appId, app]) => {
+        const appDiv = document.createElement('div');
+        appDiv.className = 'app-option';
+        appDiv.innerHTML = `
+            <strong>${app.startupName || 'Unnamed Startup'}</strong>
+            <p><small>Founder: ${app.founderName || 'ScaleVest Member'}</small></p>
+            <p style="font-size: 0.85rem; color: #666; margin-top: 5px;">${app.appHook || 'No hook provided'}</p>
+        `;
+        
+        appDiv.onclick = () => {
+            // 1. Remove "selected" class from all other options
+            document.querySelectorAll('.app-option').forEach(el => el.classList.remove('selected'));
             
-            apps.forEach(([appId, app]) => {
-                const appDiv = document.createElement('div');
-                appDiv.className = 'app-option';
-                appDiv.innerHTML = `
-                    <strong>${app.founderName || 'Application'}</strong>
-                    <p><small>Vest ID: ${app.vestId || 'N/A'}</small></p>
-                    <p>${app.appHook || 'No hook provided'}</p>
-                `;
-                
-                appDiv.onclick = () => {
-                    document.querySelectorAll('.app-option').forEach(el => el.classList.remove('selected'));
-                    appDiv.classList.add('selected');
-                    selectedApplication = appId;
-                    
-                    document.getElementById('submitPitchBtn').style.display = 'block';
-                };
-                
-                container.appendChild(appDiv);
-            });
-            // Add beautiful header
-const modalContent = document.querySelector('#pitchModal .modal-content');
-const existingHeader = modalContent.querySelector('.pitch-modal-header');
-if (!existingHeader) {
-    const header = document.createElement('div');
-    header.className = 'pitch-modal-header';
-    header.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px;">
-            <div style="font-size: 3rem; margin-bottom: 10px;">🎯</div>
-            <h2 style="font-size: 1.8rem; color: #1a1a1a; margin-bottom: 10px;">Select Your Application</h2>
-            <p style="color: #666; font-size: 1rem;">Choose which venture to pitch to this investor</p>
-        </div>
-    `;
-    modalContent.insertBefore(header, modalContent.firstChild.nextSibling);
+            // 2. Add "selected" class to this one
+            appDiv.classList.add('selected');
+            
+            // 3. Set the global variable
+            selectedApplication = appId;
+            
+            // 4. 🔥 THE FIX: Force the button to appear
+            const submitBtn = document.getElementById('submitPitchBtn');
+            submitBtn.style.display = 'block';
+            
+            // Optional: Scroll the button into view so the user sees it
+            submitBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
+        
+        container.appendChild(appDiv);
+    });
+
+    // Add beautiful header (Your existing logic)
+    const modalContent = document.querySelector('#pitchModal .modal-content');
+    const existingHeader = modalContent.querySelector('.pitch-modal-header');
+    if (!existingHeader) {
+        const header = document.createElement('div');
+        header.className = 'pitch-modal-header';
+        header.innerHTML = `
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🎯</div>
+                <h2 style="font-size: 1.8rem; color: #1a1a1a; margin-bottom: 10px;">Select Your Application</h2>
+                <p style="color: #666; font-size: 1rem;">Choose which venture to pitch to this investor</p>
+            </div>
+        `;
+        modalContent.insertBefore(header, modalContent.firstChild.nextSibling);
+    }
+
+    document.getElementById('pitchModal').style.display = 'block';
 }
 
 document.getElementById('pitchModal').style.display = 'block';
