@@ -245,9 +245,14 @@
                         <p style="margin:0; font-size: 1.2rem; color:#00CED1; font-weight:800; text-transform: uppercase;">${aData.founderName || pitch.founderName}</p>
                     </div>
                 </div>
-                <div style="margin-top: 30px; background: #f0f0f0; padding: 15px; border-radius: 8px;">
-                    <a href="https://upscalevest.site/vest-details.html?id=${aData.vestId}&owner=${pitch.founderId}" target="_blank" style="color: #000; font-weight: 700;">View Full Startup Vest Profile →</a>
-                </div>
+<div style="margin-top: 30px; background: #f0f0f0; padding: 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-family: 'Inter', sans-serif;">
+    <span style="font-size: 13px; font-weight: 900; color: #666; letter-spacing: 1px;">ATTACHED VEST:</span>
+    <a href="https://upscalevest.site/vest-details.html?id=${aData.vestId}&owner=${pitch.founderId}" 
+       target="_blank" 
+       style="color: #000; font-weight: 800; text-decoration: none; font-size: 1.1rem; border-bottom: 2px solid #00CED1; padding-bottom: 2px; transition: 0.3s;">
+       ${sData.startupName || 'Startup'} Startup Vest
+    </a>
+</div>
             </div>
         `;
     }
