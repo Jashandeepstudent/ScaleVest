@@ -2319,7 +2319,7 @@ document.getElementById('pitchModal').style.display = 'block';
             document.getElementById('pitchModal').style.display = 'block';
         }
 
-      document.getElementById('submitPitchBtn').onclick = async function() {
+document.getElementById('submitPitchBtn').onclick = async function() {
     if (!selectedApplication || !selectedInvestor) {
         alert('Please select an application and an investor first');
         return;
@@ -2328,47 +2328,67 @@ document.getElementById('pitchModal').style.display = 'block';
     const modal = document.getElementById('pitchModal');
     modal.querySelector('.modal-content').innerHTML = `
         <div class="sending-animation">
-          
+            <div class="spinner"></div>
             <h3>🚀 Sending in Progress...</h3>
             <p>Analyzing compatibility and preparing your pitch</p>
         </div>
     `;
 
     try {
+        // 1. GET THE APPLICATION DATA (To show in the Investor's Inbox)
+        const appRef = ref(database, `Applications/${currentUser.uid}/${selectedApplication}`);
+        const appSnapshot = await get(appRef);
+        
+        if (!appSnapshot.exists()) throw new Error("Application data not found");
+        const appData = appSnapshot.val();
+
+        // 2. SAVE TO INVESTOR'S INBOX NODE
+        // This creates the card data for the investor
+        const investorInboxRef = ref(database, `investorInbox/${selectedInvestor}/${selectedApplication}`);
+        await set(investorInboxRef, {
+            appId: selectedApplication,
+            founderId: currentUser.uid,
+            founderName: appData.founderName || "Unknown Founder",
+            startupName: appData.startupName || "Unnamed Startup",
+            vestHook: appData.appHook || "No hook provided",
+            timestamp: serverTimestamp() // Used for the "Time Ago" calculation
+        });
+
+        // 3. TRACK BEHAVIOR & UPDATE COUNTS
         const investorSnapshot = await get(ref(database, `angelProfiles/${selectedInvestor}`));
         if (investorSnapshot.exists()) {
             trackPitchAction(selectedInvestor, investorSnapshot.val());
         }
         
-        // Increment investor's PitchedCount
-        const investorRef = ref(database, `angelProfiles/${selectedInvestor}`);
-        await update(investorRef, {
+        // Update the investor's stats
+        const investorProfileRef = ref(database, `angelProfiles/${selectedInvestor}`);
+        await update(investorProfileRef, {
             PitchedCount: increment(1),
             lastUpdated: new Date().toISOString()
         });
 
-        // Success State with beautiful animation
+        // Success Animation
         setTimeout(() => {
             modal.querySelector('.modal-content').innerHTML = `
                 <div class="success-animation">
                     <div class="checkmark">✓</div>
                     <h2>🎉 Pitch Sent Successfully!</h2>
-                    <p>Your pitch has successfully been sent and the investor has been notified. They'll review your pitch soon!</p>
+                    <p>Your pitch has been sent to the investor's inbox. You will be notified if they respond!</p>
                     <button class="submit-pitch-btn" onclick="closePitchModal()">
-                        ← Back to Browse Investors
+                        ← Back to Browse
                     </button>
                 </div>
             `;
-        }, 2000); // 2 seconds loading animation
+        }, 2000);
 
     } catch (error) {
         console.error("Pitch Error:", error);
         modal.querySelector('.modal-content').innerHTML = `
             <div class="success-animation" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);">
-                <div class="checkmark" style="background: linear-gradient(135deg, #DC143C 0%, #8B0000 100%);">✗</div>
-                <h2 style="color: #DC143C;">Oops! Something Went Wrong</h2>
-                <p>We couldn't send your pitch. Please check your connection and try again.</p>
-                <button class="submit-pitch-btn" onclick="closePitchModal()" style="background: linear-gradient(135deg, #DC143C 0%, #8B0000 100%);">
+                <div class="checkmark" style="background: #DC143C;">✗</div>
+                <h2 style="color: #DC143C;">Oops! Pitch Failed</h2>
+                <p>${error.message}</p>
+                <button class="submit-pitch-btn" onclick="closePitchModal()" style="background: #DC143C;">
                     Try Again
                 </button>
             </div>
