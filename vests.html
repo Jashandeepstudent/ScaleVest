@@ -6232,12 +6232,33 @@ async function createDashboard() {
     
     const draftCount = Object.values(vestsData).filter(v => v.status === 'draft').length;
     const activeCount = Object.values(vestsData).filter(v => v.status === 'live').length;
-  const unreadCount = founderData.unreadReplies || 0;
+ const unreadCount = cachedFounderData.unreadReplies || 0;
 
-// Create the dynamic badge tag
-const newRepliesTag = (unreadCount > 0) 
-    ? `<span class="new-replies-tag" style="background:#ff006e; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; margin-left:10px; font-weight:900;">+${unreadCount} NEW</span>` 
-    : '';
+    // 2. Create the dynamic badge
+    const newRepliesTag = (unreadCount > 0) 
+        ? `<span class="new-replies-tag" style="background:#ff006e; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; margin-left:10px; font-weight:900;">+${unreadCount} NEW</span>` 
+        : '';
+
+    // 3. Define the banner string separately to avoid template literal nesting errors
+    const repliesBanner = `
+        <div class="banner" onclick="window.clearReplyNotifications(); window.location.hash='application_replies'" 
+             style="cursor: pointer; border-color: ${unreadCount > 0 ? '#ff006e' : '#222'};">
+            <div class="banner-content">
+                <h3>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Application Replies Inbox ${newRepliesTag}
+                </h3>
+                <p>View responses and feedback from investors on your funding applications.</p>
+            </div>
+            <div class="banner-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+            </div>
+        </div>`;
     
     const dashboardHTML = `
        <style>
@@ -7465,26 +7486,10 @@ max-width: 1100px;
         </svg>
     </div>
 </div>
-const repliesBanner = `
-<div class="banner" onclick="window.clearReplyNotifications(); window.location.hash='application_replies'" 
-     style="cursor: pointer; border-color: ${unreadCount > 0 ? '#ff006e' : '#222'};">
-    <div class="banner-content">
-        <h3>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            Application Replies Inbox ${newRepliesTag}
-        </h3>
-        <p>View responses and feedback from investors on your funding applications.</p>
-    </div>
-    <div class="banner-icon">
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-            <polyline points="9 11 12 14 22 4"></polyline>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-        </svg>
-    </div>
-</div>
-`;</div>
+<div class="banner">
+            ${repliesBanner}
+            </div>
+        `;</div>
 
 </div>
 
