@@ -5128,7 +5128,7 @@ window.showApplicationReplies = async function() {
     
     try {
         // Fetch all applications
-        const appRef = ref(db, `Applications/${currentUser.uid}`);
+        const appRef = ref(db, `ApplicationReplies/${currentUser.uid}`);
         const snapshot = await get(appRef);
         
         if (!snapshot.exists()) {
