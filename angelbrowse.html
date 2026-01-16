@@ -1498,24 +1498,23 @@ const presenceData = onlineStatusMap[userId] || {};
 // **🔥 PRIORITY 1: ONLINE NOW BOOST** (Highest boost)
 let isOnlineNow = false;
 
-// Check Firebase Presence first (most accurate)
-if (presenceData.online === true) {
-    isOnlineNow = true;
-    score += 1500; // 🔥 MEGA BOOST for being online RIGHT NOW
-    console.log(`🔥 ${profile.fullName || 'Investor'} is ONLINE NOW! +1500`);
-}
-// Fallback: Check lastUpdated if presence not available
-else if (profile.lastUpdated) {
-    const lastUpdate = new Date(profile.lastUpdated).getTime();
-    const minutesSinceUpdate = (now - lastUpdate) / (1000 * 60);
-    
-    if (minutesSinceUpdate < 10) {
-        isOnlineNow = true;
-        score += 1000; // MEGA BOOST (slightly less than presence)
-        console.log(`⚡ ${profile.fullName || 'Investor'} active in last 10 min! +1000`);
+// **🎯 UPDATED RECENT ACTIVITY BOOST SYSTEM**
+if (presenceData.online !== true) { // Only apply if NOT currently online
+    if (item.profile.lastUpdated) {
+        const lastUpdate = new Date(item.profile.lastUpdated).getTime();
+        const hoursSinceUpdate = (now - lastUpdate) / (1000 * 60 * 60);
+        
+        if (hoursSinceUpdate < 1) {
+            // 1 Hour Boost
+            score += 200; 
+            console.log(`⚡ ${profile.fullName} active in last hour! +200`);
+        } else if (hoursSinceUpdate < 24) {
+            // 24 Hour Boost
+            score += 50; 
+            console.log(`📊 ${profile.fullName} active today! +50`);
+        }
     }
 }
-
 // **📅 PRIORITY 2: DAILY LOGIN BOOST** (Logged in today)
 let hasDailyLogin = false;
 
