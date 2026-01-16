@@ -456,25 +456,92 @@
             font-size: 0.85rem;
         }
 
-        .app-option {
-            background: #f8f9fa;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: all 0.3s;
-        }
+.app-option {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 16px;
+    cursor: pointer;
+    border: 3px solid #e0e0e0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
 
-        .app-option:hover {
-            border-color: #00CED1;
-            background: #e8f9fa;
-        }
+.app-option::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,206,209,0.1), transparent);
+    transition: left 0.5s;
+}
 
-        .app-option.selected {
-            border-color: #00008B;
-            background: #e6f2ff;
-        }
+.app-option:hover::before {
+    left: 100%;
+}
+
+.app-option:hover {
+    border-color: #00CED1;
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,206,209,0.3);
+}
+
+.app-option.selected {
+    border-color: #00008B;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    box-shadow: 0 0 0 4px rgba(0,0,139,0.2), 0 8px 20px rgba(0,0,139,0.3);
+    transform: scale(1.02);
+}
+
+.app-option.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, #00008B, #0000CD);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    animation: checkPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkPop {
+    0% { transform: scale(0) rotate(-180deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+.app-option strong {
+    font-size: 1.2rem;
+    color: #1a1a1a;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.app-option p {
+    color: #666;
+    line-height: 1.6;
+}
+
+.app-option small {
+    background: #00CED1;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.75rem;
+}
 
         .file-upload {
             margin: 20px 0;
@@ -506,49 +573,236 @@
         }
 
         .success-animation {
-            text-align: center;
-            padding: 30px;
-        }
+    text-align: center;
+    padding: 50px 30px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
 
-        .success-animation .checkmark {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #32CD32;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 50px;
-            color: white;
-            animation: scaleIn 0.5s ease;
-        }
+.success-animation::before {
+    content: '🎉';
+    position: absolute;
+    font-size: 100px;
+    opacity: 0.1;
+    top: -20px;
+    left: -20px;
+    animation: float 3s ease-in-out infinite;
+}
 
-        @keyframes scaleIn {
-            0% { transform: scale(0); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
+.success-animation::after {
+    content: '🚀';
+    position: absolute;
+    font-size: 80px;
+    opacity: 0.1;
+    bottom: -10px;
+    right: -10px;
+    animation: float 3s ease-in-out infinite reverse;
+}
 
-        .sending-animation {
-            text-align: center;
-            padding: 40px;
-        }
+.success-animation .checkmark {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
+    margin: 0 auto 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 70px;
+    color: white;
+    animation: successPop 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow: 0 10px 40px rgba(50,205,50,0.4),
+                0 0 0 20px rgba(50,205,50,0.1),
+                0 0 0 40px rgba(50,205,50,0.05);
+    position: relative;
+    z-index: 1;
+}
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #00008B;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
+.success-animation .checkmark::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(50,205,50,0.3);
+    animation: ripple 1.5s ease-out infinite;
+}
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+@keyframes successPop {
+    0% { 
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    50% { 
+        transform: scale(1.3) rotate(20deg);
+    }
+    100% { 
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(1);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.success-animation h2 {
+    font-size: 2rem;
+    background: linear-gradient(135deg, #00008B, #0000CD, #4169E1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 15px;
+    animation: slideInUp 0.6s ease-out 0.3s both;
+}
+
+.success-animation p {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto 30px;
+    animation: slideInUp 0.6s ease-out 0.5s both;
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.success-animation .submit-pitch-btn {
+    animation: slideInUp 0.6s ease-out 0.7s both;
+    background: linear-gradient(135deg, #00008B 0%, #0000CD 100%);
+    box-shadow: 0 8px 20px rgba(0,0,139,0.3);
+    font-size: 1.1rem;
+    padding: 18px 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.success-animation .submit-pitch-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.success-animation .submit-pitch-btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.sending-animation {
+    text-align: center;
+    padding: 60px 40px;
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sending-animation::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, 
+        transparent 30%, 
+        rgba(255,255,255,0.3) 50%, 
+        transparent 70%);
+    top: -50%;
+    left: -50%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spinner {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 30px;
+    position: relative;
+    z-index: 1;
+}
+
+.spinner::before,
+.spinner::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+}
+
+.spinner::before {
+    width: 80px;
+    height: 80px;
+    border: 6px solid rgba(0,0,139,0.1);
+    border-top-color: #00008B;
+    animation: spin 1s linear infinite;
+}
+
+.spinner::after {
+    width: 60px;
+    height: 60px;
+    top: 10px;
+    left: 10px;
+    border: 6px solid rgba(0,206,209,0.1);
+    border-top-color: #00CED1;
+    animation: spin 0.7s linear infinite reverse;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.sending-animation h3 {
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #00008B, #00CED1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 15px;
+    animation: pulse 1.5s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+.sending-animation p {
+    color: #555;
+    font-size: 1rem;
+    animation: fadeInOut 2s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
 
         .aura-effect {
             position: absolute;
@@ -617,7 +871,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
         import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-import { getDatabase, ref, get, set, update, increment } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+import { getDatabase, ref, get, set, update, increment } from import { getDatabase, ref, get, set, update, increment, onValue } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
@@ -639,6 +893,7 @@ import { getDatabase, ref, get, set, update, increment } from 'https://www.gstat
         let selectedInvestor = null;
         let selectedApplication = null;
         let allProfiles = {};
+        let onlineStatusMap = {};
         let selectedCategory = 'All';
         let searchTerm = '';
 
@@ -758,6 +1013,31 @@ async function saveFounderBehavior() {
         console.error('Error saving behavior:', error);
     }
 }
+let browseTimeInterval = null;
+
+function startBrowseTimeTracking() {
+    // Update browse time every 10 seconds
+    browseTimeInterval = setInterval(() => {
+        const currentTime = Date.now();
+        const sessionDuration = Math.floor((currentTime - founderBehaviorData.sessionStartTime) / 1000);
+        
+        founderBehaviorData.totalBrowseTime = sessionDuration;
+        founderBehaviorData.lastActivityTime = currentTime;
+        
+        // Save every 30 seconds
+        if (sessionDuration % 30 === 0) {
+            saveFounderBehavior();
+        }
+    }, 10000); // Every 10 seconds
+}
+
+// Stop tracking when page unloads
+window.addEventListener('beforeunload', () => {
+    if (browseTimeInterval) {
+        clearInterval(browseTimeInterval);
+        saveFounderBehavior(); // Final save
+    }
+});
 
 // Load existing behavior data
 async function loadFounderBehavior() {
@@ -797,14 +1077,22 @@ function analyzeFounderPreferences() {
     const totalViews = Object.keys(founderBehaviorData.profileViews).length;
     const totalPitches = Object.keys(founderBehaviorData.pitchedTo).length;
     
-    if (totalViews < 10) {
-        analysis.learningConfidence = Math.min(totalViews * 10, 100);
-        return analysis;
-    } else if (totalViews >= 10 && totalViews < 30) {
-        analysis.learningConfidence = 50 + (totalViews - 10);
-    } else {
-        analysis.learningConfidence = Math.min(80 + (totalPitches * 2), 100);
-    }
+
+if (totalViews < 5) {
+    analysis.learningConfidence = totalViews * 15; // 0-75%
+    return analysis;
+} else if (totalViews < 15) {
+    // 5-15 views: 75-85%
+    analysis.learningConfidence = 75 + (totalViews - 5);
+} else if (totalViews < 30) {
+    // 15-30 views: 85-92%
+    analysis.learningConfidence = 85 + ((totalViews - 15) * 0.5);
+} else {
+    // 30+ views: 92-100% (boosted by pitches)
+    const baseLearning = 92;
+    const pitchBonus = Math.min(totalPitches * 1.5, 8);
+    analysis.learningConfidence = Math.min(baseLearning + pitchBonus, 100);
+}
     
     const investorTypeScores = {};
     Object.entries(founderBehaviorData.investorTypeViews).forEach(([type, count]) => {
@@ -1009,6 +1297,8 @@ searchBox.addEventListener('input', (e) => {
                 await loadUserCategory();
                  await loadFounderBehavior(); 
                 loadAngelProfiles();
+                 loadOnlineStatus();
+                 startBrowseTimeTracking();
             }
         });
 
@@ -1044,6 +1334,36 @@ searchBox.addEventListener('input', (e) => {
                 loadingMessage.textContent = 'Error loading profiles. Please try again.';
             }
         }
+
+
+async function loadOnlineStatus() {
+    try {
+        // Listen to ALL presence statuses in real-time
+        const presenceRef = ref(database, 'presence');
+        
+        onValue(presenceRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const presenceData = snapshot.val();
+                
+                // Update our online status map
+                Object.keys(presenceData).forEach(userId => {
+                    const userPresence = presenceData[userId];
+                    onlineStatusMap[userId] = userPresence.online === true;
+                });
+                
+                console.log('✅ Online status updated:', Object.keys(onlineStatusMap).filter(id => onlineStatusMap[id]).length, 'users online');
+                
+                // Refresh the display to show updated online status
+                displayRows();
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error loading online status:', error);
+    }
+}
+
+
+
 
       // ============================================
 // ULTIMATE COMBINED SCORING ALGORITHM
@@ -1243,18 +1563,15 @@ function displayRows() {
         const now = Date.now();
         
         // Check online status
-        let isOnlineNow = false;
-        let isDailyActive = false;
-        
-        if (item.profile.lastUpdated) {
-            const lastUpdate = new Date(item.profile.lastUpdated).getTime();
-            const minutesSince = (now - lastUpdate) / (1000 * 60);
-            const hoursSince = minutesSince / 60;
-            const daysSince = hoursSince / 24;
-            
-            isOnlineNow = minutesSince < 10;
-            isDailyActive = daysSince < 1;
-        }
+
+let isOnlineNow = onlineStatusMap[item.userId] === true; // Real Firebase presence
+let isDailyActive = false;
+
+if (item.profile.lastUpdated) {
+    const lastUpdate = new Date(item.profile.lastUpdated).getTime();
+    const daysSince = (now - lastUpdate) / (1000 * 60 * 60 * 24);
+    isDailyActive = daysSince < 1;
+}
         
         // **PRIORITY 1: ONLINE NOW** (Super active investors)
         if (isOnlineNow) {
@@ -1731,6 +2048,7 @@ function createRow(profiles, title, badge, badgeClass) {
 
 window.handleViewProfile = async function(userId) {
     profileViewStartTime = Date.now();
+    selectedInvestor = userId; // 🔥 TRACK WHO WE'RE VIEWING
     
     try {
         const profileRef = ref(database, `angelProfiles/${userId}`);
@@ -1745,7 +2063,6 @@ window.handleViewProfile = async function(userId) {
         console.error('Error loading profile:', error);
     }
 };
-
         function displayProfileModal(profile) {
             const categories = profile.preferredCategories || [];
             const categoriesHTML = categories.map(cat => `<span class="category-tag">${cat}</span>`).join('');
@@ -1852,7 +2169,23 @@ window.handleViewProfile = async function(userId) {
                 
                 container.appendChild(appDiv);
             });
-            
+            // Add beautiful header
+const modalContent = document.querySelector('#pitchModal .modal-content');
+const existingHeader = modalContent.querySelector('.pitch-modal-header');
+if (!existingHeader) {
+    const header = document.createElement('div');
+    header.className = 'pitch-modal-header';
+    header.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🎯</div>
+            <h2 style="font-size: 1.8rem; color: #1a1a1a; margin-bottom: 10px;">Select Your Application</h2>
+            <p style="color: #666; font-size: 1rem;">Choose which venture to pitch to this investor</p>
+        </div>
+    `;
+    modalContent.insertBefore(header, modalContent.firstChild.nextSibling);
+}
+
+document.getElementById('pitchModal').style.display = 'block';
             document.getElementById('pitchModal').style.display = 'block';
         }
 
@@ -1866,45 +2199,66 @@ window.handleViewProfile = async function(userId) {
     modal.querySelector('.modal-content').innerHTML = `
         <div class="sending-animation">
             <div class="spinner"></div>
-            <h3>SUI Making in progress...</h3>
+            <h3>🚀 Sending in Progress...</h3>
+            <p>Analyzing compatibility and preparing your pitch</p>
         </div>
     `;
 
     try {
-         const investorSnapshot = await get(ref(database, `angelProfiles/${selectedInvestor}`));
+        const investorSnapshot = await get(ref(database, `angelProfiles/${selectedInvestor}`));
         if (investorSnapshot.exists()) {
             trackPitchAction(selectedInvestor, investorSnapshot.val());
         }
-        // 🚀 THE POWER MOVE: Atomically increment the investor's PitchedCount
+        
+        // Increment investor's PitchedCount
         const investorRef = ref(database, `angelProfiles/${selectedInvestor}`);
         await update(investorRef, {
             PitchedCount: increment(1),
-            lastUpdated: new Date().toISOString() // Keeps them "Active Now"
+            lastUpdated: new Date().toISOString()
         });
 
-        // 🛡️ Logic: Save the actual pitch record here in your 'Pitches' node later
-
-        // Success State
+        // Success State with beautiful animation
         setTimeout(() => {
             modal.querySelector('.modal-content').innerHTML = `
                 <div class="success-animation">
                     <div class="checkmark">✓</div>
-                    <h2>Pitch Dispatched!</h2>
-                    <p>Your SUI Match has been recorded. ScaleVest is now alerting the investor.</p>
-                    <button class="submit-pitch-btn" onclick="closePitchModal()">Back to Dashboard</button>
+                    <h2>🎉 Pitch Sent Successfully!</h2>
+                    <p>Your pitch has successfully been sent and the investor has been notified. They'll review your pitch soon!</p>
+                    <button class="submit-pitch-btn" onclick="closePitchModal()">
+                        ← Back to Browse Investors
+                    </button>
                 </div>
             `;
-        }, 1500);
+        }, 2000); // 2 seconds loading animation
 
     } catch (error) {
         console.error("Pitch Error:", error);
-        alert("The Logic Floor encountered an error. Please try again.");
+        modal.querySelector('.modal-content').innerHTML = `
+            <div class="success-animation" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe0e0 100%);">
+                <div class="checkmark" style="background: linear-gradient(135deg, #DC143C 0%, #8B0000 100%);">✗</div>
+                <h2 style="color: #DC143C;">Oops! Something Went Wrong</h2>
+                <p>We couldn't send your pitch. Please check your connection and try again.</p>
+                <button class="submit-pitch-btn" onclick="closePitchModal()" style="background: linear-gradient(135deg, #DC143C 0%, #8B0000 100%);">
+                    Try Again
+                </button>
+            </div>
+        `;
     }
 };
 
 window.closeProfileModal = function() {
-    if (profileViewStartTime) {
+    if (profileViewStartTime && selectedInvestor) {
         const timeSpent = Math.floor((Date.now() - profileViewStartTime) / 1000);
+        
+        // ✅ FIXED: Actually save the time spent
+        if (!founderBehaviorData.timeSpentOnProfiles[selectedInvestor]) {
+            founderBehaviorData.timeSpentOnProfiles[selectedInvestor] = 0;
+        }
+        founderBehaviorData.timeSpentOnProfiles[selectedInvestor] += timeSpent;
+        
+        console.log(`⏱️ Spent ${timeSpent}s on investor ${selectedInvestor}`);
+        
+        saveFounderBehavior(); // Save immediately
         profileViewStartTime = null;
     }
     
