@@ -542,7 +542,35 @@
     font-weight: 600;
     font-size: 0.75rem;
 }
+.back-dashboard-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: #ffffff;
+    border: 2px solid #ddd;
+    border-radius: 30px;
+    color: #333;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 100;
+}
 
+.back-dashboard-btn:hover {
+    border-color: #00CED1;
+    color: #00CED1;
+    transform: translateX(-5px);
+    box-shadow: 0 4px 12px rgba(0,206,209,0.2);
+}
+
+/* Ensure the container has relative positioning so the button stays aligned */
+.container {
+    position: relative;
+    max-width: 100%;
+    margin: 0 auto;
+}
         .file-upload {
             margin: 20px 0;
         }
@@ -824,8 +852,10 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Browse Angel Investors</h1>
+   <div class="container">
+    <button class="back-dashboard-btn" onclick="window.location.href='vests.html'">← Back to Dashboard</button>
+    
+    <h1>Browse Angel Profiles</h1>
         
         <div class="category-filter-container">
             <div class="category-pills">
