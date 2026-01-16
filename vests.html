@@ -5112,6 +5112,58 @@ window.saveNewUsername = async function() {
         btn.disabled = false;
     }
 };
+// --- CLEAR NOTIFICATIONS ---
+window.clearReplyNotifications = async function() {
+    if(!currentUser) return;
+    await update(ref(db, `founderProfile/${currentUser.uid}`), { unreadReplies: 0 });
+};
+
+// --- RENDER REPLIES PAGE ---
+window.showApplicationReplies = async function() {
+    const container = document.getElementById('dashboardContainer');
+    container.innerHTML = `<div class="loading-box"><div class="spinner"></div><p>Fetching Investor Responses...</p></div>`;
+
+    // 1. Fetch Applications (to get the list of App IDs)
+    const appsSnap = await get(ref(db, `Applications/${currentUser.uid}`));
+    const apps = appsSnap.val() || {};
+
+    // 2. Fetch Replies for this user
+    const repliesSnap = await get(ref(db, `ApplicationReplies/${currentUser.uid}`));
+    const replies = repliesSnap.val() || {};
+
+    container.innerHTML = `
+        <div class="manage-vests-page">
+            <div class="header-row">
+                <a href="#founder_dashboard" class="back-to-dash">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Dashboard
+                </a>
+                <h1>Investor Feedbacks</h1>
+            </div>
+
+            <div class="vest-cards-grid">
+                ${Object.entries(replies).length > 0 ? 
+                    Object.entries(replies).map(([id, reply]) => `
+                    <div class="vest-gig-card" style="border-left: 4px solid #10b981;">
+                        <div class="vest-card-content">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                                <span class="status-pill-overlay" style="background:#111; color:#fff; border:none;">${reply.investorName || 'Anonymous Investor'}</span>
+                                <span style="color:#555; font-size:0.8rem;">${new Date(reply.timestamp).toLocaleDateString()}</span>
+                            </div>
+                            <h3 class="vest-hook-text">Re: ${reply.applicationName || 'Funding Request'}</h3>
+                            <p class="vest-desc-text" style="color:#eee; font-style:italic;">"${reply.message}"</p>
+                            
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="window.location.href='chat.html?recipient=${reply.investorUid}'">Reply to Investor</button>
+                            </div>
+                        </div>
+                    </div>
+                    `).join('') 
+                : `<p style="text-align:center; color:#666; width:100%; grid-column:1/-1;">No investor replies yet. Keep pitching!</p>`}
+            </div>
+        </div>
+    `;
+};
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -5977,6 +6029,10 @@ function handleHashChange() {
             document.body.style.background = "#000";
             window.showApplicationsList(); 
         } 
+else if (hash === 'application_replies') {
+    document.body.style.background = "#000";
+    window.showApplicationReplies();
+}
         else if (hash.startsWith('view_application_')) {
             const appId = hash.replace('view_application_', '');
             document.body.style.background = "#f4f4f4"; // Document feel
@@ -7404,7 +7460,30 @@ max-width: 1100px;
         </svg>
     </div>
 </div>
+/* --- APPLICATION REPLIES BANNER --- */
+const replyCount = Object.values(vestsData).reduce((acc, vest) => acc + (vest.repliesCount || 0), 0);
+const newRepliesTag = (founderData.unreadReplies > 0) ? `<span class="new-replies-tag" style="background:#ff006e; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.7rem; margin-left:10px; font-weight:900;">+${founderData.unreadReplies} NEW</span>` : '';
 
+// Add this into your dashboardHTML string
+`
+<div class="banner" onclick="window.clearReplyNotifications(); window.location.hash='application_replies'" style="cursor: pointer; border-color: ${founderData.unreadReplies > 0 ? '#ff006e' : '#222'};">
+    <div class="banner-content">
+        <h3>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            Application Replies Inbox ${newRepliesTag}
+        </h3>
+        <p>View responses and feedback from investors on your funding applications.</p>
+    </div>
+    <div class="banner-icon">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+    </div>
+</div>
+`
 </div>
 
 </div>
