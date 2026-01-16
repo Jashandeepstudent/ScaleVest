@@ -1410,7 +1410,7 @@ function displayRows() {
         categories.highReputation.sort((a, b) => b.score - a.score);
         createRow(
             categories.highReputation.slice(0, 10), 
-            '💎 Elite Investors (10k+ Reputation)', 
+            '💎 Elite Investors (500+ Reply Reputation)', 
             'Elite', 
             'badge-featured'
         );
@@ -1578,7 +1578,7 @@ function createRow(profiles, title, badge, badgeClass) {
         }
 
         function getTierInfo(metric) {
-            if (metric >= 100000) {
+            if (metric >= 500) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #FFA500 30%, #FF4500 60%, #DC143C 100%)',
                     cardBackground: 'linear-gradient(135deg, #FFD700 0%, #FFA500 30%, #FF4500 60%, #DC143C 100%)',
@@ -1592,7 +1592,7 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="aura-effect" style="background: radial-gradient(circle at center, rgba(255,215,0,0.3), transparent 60%);"></div>
                     `
                 };
-            } else if (metric >= 50000) {
+            } else if (metric >= 400) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #FF69B4 40%, #9370DB 80%, #4169E1 100%)',
                     cardBackground: 'linear-gradient(135deg, #FFD700 0%, #FF69B4 40%, #9370DB 80%, #4169E1 100%)',
@@ -1606,7 +1606,7 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="aura-effect" style="background: radial-gradient(circle at center, rgba(255,215,0,0.3), transparent 60%);"></div>
                     `
                 };
-            } else if (metric >= 25000) {
+            } else if (metric >= 300) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FF1493 0%, #9370DB 50%, #FFD700 100%)',
                     cardBackground: 'linear-gradient(135deg, #FF1493 0%, #9370DB 50%, #FFD700 100%)',
@@ -1619,7 +1619,7 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="aura-effect" style="background: radial-gradient(circle at center, rgba(255,20,147,0.25), transparent 60%);"></div>
                     `
                 };
-            } else if (metric >= 10000) {
+            } else if (metric >= 200) {
                 return {
                     headerColor: 'linear-gradient(135deg, #4169E1 0%, #FFD700 50%, #4169E1 100%)',
                     cardBackground: 'linear-gradient(135deg, #4169E1 0%, #FFD700 50%, #4169E1 100%)',
@@ -1631,7 +1631,7 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="aura-effect" style="background: radial-gradient(circle at center, rgba(65,105,225,0.25), transparent 60%);"></div>
                     `
                 };
-            } else if (metric >= 5000) {
+            } else if (metric >= 100) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
                     cardBackground: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
@@ -1642,7 +1642,7 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="scepter-icon">⭐</div>
                     `
                 };
-            } else if (metric >= 2500) {
+            } else if (metric >= 75) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #DAA520 100%)',
                     cardBackground: 'linear-gradient(135deg, #FFD700 0%, #DAA520 100%)',
@@ -1653,7 +1653,7 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="scepter-icon">✨</div>
                     `
                 };
-            } else if (metric >= 1000) {
+            } else if (metric >= 60) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #B8860B 100%)',
                     cardBackground: 'linear-gradient(135deg, #FFD700 0%, #B8860B 100%)',
@@ -1663,7 +1663,7 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="title-badge" style="background: #FFD700; color: #000;">GOLD DUKE</div>
                     `
                 };
-            } else if (metric >= 500) {
+            } else if (metric >= 50) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #8B4513 100%)',
                     cardBackground: 'linear-gradient(135deg, #FFD700 0%, #8B4513 100%)',
@@ -1673,42 +1673,42 @@ function createRow(profiles, title, badge, badgeClass) {
                         <div class="title-badge" style="background: #FFD700; color: #000;">REAL ANGEL</div>
                     `
                 };
-            } else if (metric >= 400) {
+            } else if (metric >= 40) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #DAA520 100%)',
                     decorations: `<div class="title-badge" style="background: #FFD700; color: #000;">Golden Elite</div>`
                 };
-            } else if (metric >= 350) {
+            } else if (metric >= 35) {
                 return {
                     headerColor: 'linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 100%)',
                     decorations: `<div class="title-badge" style="background: #C0C0C0; color: #000;">Silver Master</div>`
                 };
-            } else if (metric >= 300) {
+            } else if (metric >= 30) {
                 return {
                     headerColor: 'linear-gradient(135deg, #2C2C2C 0%, #1a1a1a 100%)',
                     decorations: `<div class="title-badge" style="background: #2C2C2C; color: #fff;">Black Diamond</div>`
                 };
-            } else if (metric >= 250) {
+            } else if (metric >= 25) {
                 return {
                     headerColor: 'linear-gradient(135deg, #8B4513 0%, #A0522D 100%)',
                     decorations: `<div class="title-badge" style="background: #8B4513; color: #fff;">Bronze Titan</div>`
                 };
-            } else if (metric >= 200) {
+            } else if (metric >= 20) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FF69B4 0%, #FFB6C1 100%)',
                     decorations: `<div class="title-badge" style="background: #FF69B4; color: #fff;">Pink Champion</div>`
                 };
-            } else if (metric >= 150) {
+            } else if (metric >= 15) {
                 return {
                     headerColor: 'linear-gradient(135deg, #FFD700 0%, #FFED4E 100%)',
                     decorations: `<div class="title-badge" style="background: #FFD700; color: #000;">Yellow Knight</div>`
                 };
-            } else if (metric >= 100) {
+            } else if (metric >= 10) {
                 return {
                     headerColor: 'linear-gradient(135deg, #DC143C 0%, #8B0000 100%)',
                     decorations: `<div class="title-badge" style="background: #DC143C; color: #fff;">Red Warrior</div>`
                 };
-            } else if (metric >= 50) {
+            } else if (metric >= 5) {
                 return {
                     headerColor: 'linear-gradient(135deg, #800080 0%, #9932CC 100%)',
                     decorations: `<div class="title-badge" style="background: #800080; color: #fff;">Purple Hero</div>`
