@@ -8,8 +8,8 @@
         :root {
             --primary: #00CED1;
             --danger: #ff4757;
-            --bg: #f4f7f6; /* Light Grey Background */
-            --card-bg: #ffffff; /* White Cards */
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
             --text-main: #1a1a1a;
             --text-muted: #666;
         }
@@ -23,126 +23,51 @@
         }
 
         .container { max-width: 900px; margin: 0 auto; }
-
         h1 { font-size: 2.2rem; margin-bottom: 30px; color: #000; font-weight: 800; letter-spacing: -1px; }
 
-        /* --- THE REAL APPLICATION CARD --- */
+        /* --- CARDS --- */
         .pitch-card {
-            background: var(--card-bg);
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-            margin-bottom: 16px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            background: var(--card-bg); border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px;
+            display: flex; align-items: center; gap: 24px; margin-bottom: 16px; transition: all 0.3s ease;
+            position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
         }
-
-        .pitch-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-        }
-
-        /* Square Logo Anchor */
-        .startup-identity-sq {
-            width: 90px;
-            height: 90px;
-            flex-shrink: 0;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #f9f9f9;
-            border: 1px solid #eee;
-            cursor: pointer;
-        }
-
-        .startup-identity-sq img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Right Content Column */
-        .card-body-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-        }
-
-        /* 1. Upper Side: Hook (Black Highlight Box) */
-        .card-header-hook {
-            background: #000000; /* Black highlight */
-            color: var(--primary); /* Teal text */
-            font-size: 11px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            padding: 4px 12px;
-            border-radius: 4px;
-            display: inline-block;
-            align-self: flex-start;
-            margin-bottom: 8px;
-        }
-
-        /* 2. Middle: Startup Name */
-        .card-startup-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            margin: 0;
-            color: #000;
-            line-height: 1.1;
-        }
-
-        /* 3. Down: Sent By */
-        .card-footer-meta {
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
+        .pitch-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.08); }
+        .startup-identity-sq { width: 90px; height: 90px; flex-shrink: 0; border-radius: 8px; overflow: hidden; background: #f9f9f9; border: 1px solid #eee; }
+        .startup-identity-sq img { width: 100%; height: 100%; object-fit: cover; }
+        .card-body-content { flex: 1; display: flex; flex-direction: column; }
+        .card-header-hook { background: #000; color: var(--primary); font-size: 11px; font-weight: 900; text-transform: uppercase; padding: 4px 12px; border-radius: 4px; display: inline-block; align-self: flex-start; margin-bottom: 8px; }
+        .card-startup-title { font-size: 1.6rem; font-weight: 800; margin: 0; color: #000; }
+        .card-footer-meta { margin-top: 10px; display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.9rem; }
         .meta-founder { font-weight: 700; color: #333; }
+        .delete-icon-btn { background: #fff5f5; border: 1px solid #ffebeb; color: var(--danger); cursor: pointer; padding: 10px; border-radius: 10px; }
 
-        /* Delete Button */
-        .delete-icon-btn {
-            background: #fff5f5;
-            border: 1px solid #ffebeb;
-            color: var(--danger);
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 10px;
-            transition: 0.2s;
-        }
-
-        .delete-icon-btn:hover {
-            background: var(--danger);
-            color: #fff;
-        }
-
-        /* --- FULL VIEW STYLES --- */
+        /* --- FULL VIEW --- */
         #applicationDetail { display: none; animation: fadeIn 0.4s ease; }
         .startup-view-header { display: flex; align-items: center; gap: 24px; padding: 30px; border-bottom: 2px solid #eee; margin-bottom: 30px; }
 
-        /* --- POPUP MODAL --- */
+        /* --- MODALS --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center;
-            z-index: 1000; backdrop-filter: blur(4px);
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center;
+            z-index: 1000; backdrop-filter: blur(8px);
         }
-        .modal-content { background: #fff; padding: 40px; border-radius: 20px; width: 90%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-        .reply-choices { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin: 25px 0; }
-        .choice-btn { padding: 18px; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; color: #fff; }
-        .YES { background: #2ecc71; } .NO { background: #e74c3c; } .LATER { background: #f1c40f; color: #000; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 24px; width: 90%; max-width: 480px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; }
+        
+        /* YES/NO/LATER UI IMPROVEMENT */
+        .reply-choices { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; }
+        .choice-btn { 
+            padding: 18px; border: 2px solid #eee; border-radius: 15px; font-weight: 900; cursor: pointer; 
+            font-size: 1rem; transition: 0.3s; background: #fff; color: #000; text-transform: uppercase;
+        }
+        .choice-btn.active.YES { background: #000; color: #2ecc71; border-color: #2ecc71; }
+        .choice-btn.active.NO { background: #000; color: #e74c3c; border-color: #e74c3c; }
+        .choice-btn.active.LATER { background: #000; color: #f1c40f; border-color: #f1c40f; }
 
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 50px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .chat-loading-overlay { display: none; flex-direction: column; align-items: center; gap: 15px; }
     </style>
 </head>
 <body>
@@ -155,34 +80,65 @@
 
     <div id="applicationDetail">
         <button onclick="window.location.hash=''" style="background:#fff; border:1px solid #ddd; color:#333; padding:10px 20px; border-radius:30px; cursor:pointer; margin-bottom:20px; font-weight:600;">← Back to List</button>
-        <div id="appContent" style="background:#fff; border-radius:16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); overflow:hidden; border:1px solid #eee;"></div>
+        <div id="appContent" style="background:#fff; border-radius:16px; border:1px solid #eee; overflow:hidden;"></div>
         <div style="text-align: center; margin-top: 40px;">
-            <button onclick="openReplyPopup()" style="background:#000; color:var(--primary); border:none; padding:20px 60px; border-radius:40px; font-weight:900; cursor:pointer; font-size: 1.1rem; letter-spacing:1px;">REPLY TO APPLICATION</button>
+            <button onclick="confirmReadStatus()" style="background:#000; color:var(--primary); border:none; padding:20px 60px; border-radius:40px; font-weight:900; cursor:pointer; font-size: 1.1rem; letter-spacing:1px;">REPLY TO APPLICATION</button>
+        </div>
+    </div>
+</div>
+
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="font-size: 3rem; margin-bottom: 15px;">🧐</div>
+        <h2>Wait a moment...</h2>
+        <p style="color:#666; line-height: 1.5;">Have you fully read this founder's application and reviewed their **Startup Vest** profile?</p>
+        <div style="display:flex; gap:12px; margin-top:30px;">
+            <button onclick="closeConfirmModal()" style="flex:1; background:#eee; border:none; padding:15px; border-radius:12px; font-weight:700; cursor:pointer;">Not yet</button>
+            <button onclick="proceedToReply()" style="flex:2; background:#000; color:var(--primary); border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer;">Yes, I have</button>
         </div>
     </div>
 </div>
 
 <div id="replyModal" class="modal-overlay">
     <div class="modal-content">
-        <h2 style="margin:0; color:#000;">Investor Decision</h2>
-        <p style="color:#666;">Choose how you want to respond to this founder.</p>
+        <h2 style="margin:0;">Investor Decision</h2>
         <div class="reply-choices">
-            <button class="choice-btn YES" onclick="handleChoice('YES')">YES</button>
-            <button class="choice-btn NO" onclick="handleChoice('NO')">NO</button>
-            <button class="choice-btn LATER" onclick="handleChoice('LATER')">LATER</button>
+            <button class="choice-btn YES" id="optYES" onclick="handleChoice('YES')">YES - Interested</button>
+            <button class="choice-btn NO" id="optNO" onclick="handleChoice('NO')">NO - Not for now</button>
+            <button class="choice-btn LATER" id="optLATER" onclick="handleChoice('LATER')">LATER - Discuss soon</button>
         </div>
-        <textarea id="replyText" placeholder="Write your professional feedback..." style="width:100%; background:#f9f9f9; color:#000; border:1px solid #ddd; padding:15px; border-radius:12px; height:120px; box-sizing:border-box; outline:none; font-family:inherit;"></textarea>
+        <textarea id="replyText" placeholder="Write feedback for the founder..." style="width:100%; background:#f9f9f9; border:1px solid #ddd; padding:15px; border-radius:12px; height:100px; box-sizing:border-box; font-family:inherit;"></textarea>
         <div style="display:flex; gap:12px; margin-top:25px;">
-            <button onclick="closeReplyPopup()" style="flex:1; background:none; border:none; color:#888; cursor:pointer; font-weight:600;">Dismiss</button>
+            <button onclick="closeReplyPopup()" style="flex:1; background:none; border:none; color:#888; cursor:pointer;">Cancel</button>
             <button onclick="submitDecision()" style="flex:2; background:#000; border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer; color:var(--primary);">SEND RESPONSE</button>
+        </div>
+    </div>
+</div>
+
+<div id="successModal" class="modal-overlay">
+    <div class="modal-content">
+        <div id="successContent">
+            <div style="font-size: 3rem; margin-bottom: 15px;">✅</div>
+            <h2>Response Sent!</h2>
+            <p id="successMsg" style="color:#666; margin-bottom:30px;"></p>
+            <div id="chatInviteActions" style="display:none; flex-direction:column; gap:10px;">
+                <button onclick="startChatQA()" style="background:#000; color:var(--primary); border:none; padding:15px; border-radius:12px; font-weight:900; cursor:pointer;">START CHAT Q&A</button>
+                <button onclick="window.location.hash=''" style="background:none; border:none; color:#888; cursor:pointer;">Maybe later, go back</button>
+            </div>
+            <button id="simpleCloseBtn" onclick="window.location.hash=''" style="display:none; width:100%; background:#000; color:#fff; padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer;">Return to Inbox</button>
+        </div>
+        
+        <div id="chatLoading" class="chat-loading-overlay">
+            <div class="loader"></div>
+            <p style="font-weight:800; letter-spacing:1px; color:#00CED1;">OPENING SECURE CHAT...</p>
         </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
     import { getDatabase, ref, get, set, update, increment, serverTimestamp, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 
     const firebaseConfig = {
         apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
@@ -219,13 +175,10 @@
                 listDiv.innerHTML = "<p style='color:#999; text-align:center;'>No applications in queue.</p>";
                 return;
             }
-
             const entries = Object.entries(snapshot.val()).sort((a, b) => b[1].timestamp - a[1].timestamp);
-
             for (const [id, pitch] of entries) {
                 const startupSnap = await get(ref(db, `startupProfile/${pitch.founderId}`));
                 const sData = startupSnap.exists() ? startupSnap.val() : {};
-
                 const card = document.createElement('div');
                 card.className = 'pitch-card';
                 card.innerHTML = `
@@ -241,32 +194,27 @@
                             <span class="meta-time">${formatTime(pitch.timestamp)}</span>
                         </div>
                     </div>
-                    <button class="delete-icon-btn" onclick="deletePitch('${pitch.appId}')">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
-                    </button>
+                    <button class="delete-icon-btn" onclick="deletePitch('${pitch.appId}')">🗑️</button>
                 `;
                 listDiv.appendChild(card);
             }
         });
     }
 
-   async function viewApplication(appId) {
-    document.getElementById('inboxView').style.display = 'none';
-    document.getElementById('applicationDetail').style.display = 'block';
-    const contentDiv = document.getElementById('appContent');
-    contentDiv.innerHTML = '<div class="loader"></div>';
+    async function viewApplication(appId) {
+        document.getElementById('inboxView').style.display = 'none';
+        document.getElementById('applicationDetail').style.display = 'block';
+        const contentDiv = document.getElementById('appContent');
+        contentDiv.innerHTML = '<div class="loader"></div>';
 
-    try {
-        // 1. Get pitch metadata from inbox
         const inboxSnap = await get(ref(db, `investorInbox/${auth.currentUser.uid}/${appId}`));
         if (!inboxSnap.exists()) return;
         const pitch = inboxSnap.val();
-        const founderUid = pitch.founderId;
+        currentApp = pitch;
 
-        // 2. Fetch App and Startup Profile
         const [appSnap, startupSnap] = await Promise.all([
-            get(ref(db, `Applications/${founderUid}/${appId}`)),
-            get(ref(db, `startupProfile/${founderUid}`))
+            get(ref(db, `Applications/${pitch.founderId}/${appId}`)),
+            get(ref(db, `startupProfile/${pitch.founderId}`))
         ]);
 
         const aData = appSnap.val() || {};
@@ -280,74 +228,54 @@
                     <p style="color:#00CED1; font-weight:800; margin-top:5px; text-transform:uppercase; letter-spacing:1px;">Application for Funding</p>
                 </div>
             </div>
-
             <div style="padding: 40px;">
-                <div style="background:#000; padding:20px 30px; border-radius:12px; display:inline-block; margin-bottom:35px; width: 100%; box-sizing: border-box;">
+                <div style="background:#000; padding:20px 30px; border-radius:12px; margin-bottom:35px;">
                     <small style="color:#555; font-weight:900; letter-spacing:2px; display:block; margin-bottom:10px;">PITCH HOOK</small>
-                    <p style="font-size:1.5rem; font-style:italic; margin:0; color:#00CED1; font-weight:300;">"${aData.appHook || pitch.vestHook}"</p>
+                    <p style="font-size:1.5rem; font-style:italic; margin:0; color:#00CED1;">"${aData.appHook || pitch.vestHook}"</p>
                 </div>
-                
-                <div style="background: #fdfdfd; border: 1px solid #eee; padding: 40px; border-radius: 4px; line-height: 1.8; color: #333; font-size: 1.1rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.02);">
-                    
-                    <h4 style="color:#000; font-weight:900; border-bottom: 2px solid #000; padding-bottom:10px; margin-bottom:20px; letter-spacing:1px;">EXECUTIVE PROPOSAL</h4>
-
-                    <div class="app-section">
-                        <p style="white-space: pre-wrap;">${aData.startingContent || ''}</p>
-                    </div>
-
+                <div style="background: #fdfdfd; border: 1px solid #eee; padding: 40px; border-radius: 4px; line-height: 1.8;">
+                    <h4 style="color:#000; font-weight:900; border-bottom: 2px solid #000; padding-bottom:10px; margin-bottom:20px;">EXECUTIVE PROPOSAL</h4>
+                    <p style="white-space: pre-wrap;">${aData.startingContent || ''}</p>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-
-                    <div class="app-section">
-                        <p style="white-space: pre-wrap;">${aData.mainContent || ''}</p>
-                    </div>
-
+                    <p style="white-space: pre-wrap;">${aData.mainContent || ''}</p>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-
-                    <div class="app-section">
-                        <p style="white-space: pre-wrap;">${aData.endingContent || ''}</p>
-                    </div>
-
+                    <p style="white-space: pre-wrap;">${aData.endingContent || ''}</p>
                     <div style="margin-top: 50px; border-top: 1px solid #333; padding-top: 20px;">
-                        <p style="margin:0; font-weight:700; color:#000;">Best Regards,</p>
+                        <p style="margin:0; font-weight:700;">Best Regards,</p>
                         <p style="margin:0; font-size: 1.2rem; color:#00CED1; font-weight:800; text-transform: uppercase;">${aData.founderName || pitch.founderName}</p>
                     </div>
                 </div>
-
-                <div style="margin-top: 30px; background: #f0f0f0; padding: 15px; border-radius: 8px; display: flex; align-items: center; gap: 10px;">
-                    <span style="font-size: 12px; font-weight: 900; color: #666;">ATTACHED VEST:</span>
-                    <a href="https://upscalevest.site/vest-details.html?id=${aData.vestId}&owner=${founderUid}" 
-                       target="_blank" 
-                       style="color: #000; font-weight: 700; text-decoration: underline; font-size: 0.95rem;">
-                       ${sData.startupName || 'Startup'} Vest
-                    </a>
+                <div style="margin-top: 30px; background: #f0f0f0; padding: 15px; border-radius: 8px;">
+                    <a href="https://upscalevest.site/vest-details.html?id=${aData.vestId}&owner=${pitch.founderId}" target="_blank" style="color: #000; font-weight: 700;">View Full Startup Vest Profile →</a>
                 </div>
             </div>
         `;
-
-        currentApp = { appId: appId, founderId: founderUid };
-
-    } catch (error) {
-        console.error("Error loading application:", error);
-        contentDiv.innerHTML = "<p style='color:red; text-align:center;'>Failed to load startup profile details.</p>";
-    }
-}
-
-    window.deletePitch = async (appId) => {
-        if(confirm("Permanently archive this application?")) {
-            await remove(ref(db, `investorInbox/${auth.currentUser.uid}/${appId}`));
-        }
     }
 
-    window.openReplyPopup = () => document.getElementById('replyModal').style.display = 'flex';
-    window.closeReplyPopup = () => document.getElementById('replyModal').style.display = 'none';
+    /* --- LOGIC FLOW FUNCTIONS --- */
+
+    window.confirmReadStatus = () => document.getElementById('confirmModal').style.display = 'flex';
+    window.closeConfirmModal = () => document.getElementById('confirmModal').style.display = 'none';
+    
+    window.proceedToReply = () => {
+        closeConfirmModal();
+        document.getElementById('replyModal').style.display = 'flex';
+    };
+
+    window.closeReplyPopup = () => {
+        document.getElementById('replyModal').style.display = 'none';
+        tempStatus = null;
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+    };
+
     window.handleChoice = (status) => { 
         tempStatus = status; 
-        document.querySelectorAll('.choice-btn').forEach(b => b.style.transform = "scale(1)");
-        event.target.style.transform = "scale(1.1)";
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`opt${status}`).classList.add('active');
     };
 
     window.submitDecision = async () => {
-        if(!tempStatus) return alert("Please select a status");
+        if(!tempStatus) return alert("Select YES, NO, or LATER");
         const comment = document.getElementById('replyText').value;
 
         try {
@@ -362,10 +290,40 @@
                 replyReputation: increment(1)
             });
 
-            alert("Response Sent Successfully.");
-            if (tempStatus === 'YES') window.location.href = `chat.html?recipient=${currentApp.founderId}`;
-            else window.location.hash = "";
+            document.getElementById('replyModal').style.display = 'none';
+            showSuccessPrompt(tempStatus);
+
         } catch(e) { console.error(e); }
+    };
+
+    function showSuccessPrompt(status) {
+        const modal = document.getElementById('successModal');
+        const msg = document.getElementById('successMsg');
+        modal.style.display = 'flex';
+
+        if (status === 'YES') {
+            msg.innerText = "Your decision has been sent! Since you are interested, would you like to start a Chat Q&A session with this founder?";
+            document.getElementById('chatInviteActions').style.display = 'flex';
+            document.getElementById('simpleCloseBtn').style.display = 'none';
+        } else {
+            msg.innerText = "Your feedback has been sent successfully. The founder will be notified.";
+            document.getElementById('chatInviteActions').style.display = 'none';
+            document.getElementById('simpleCloseBtn').style.display = 'block';
+        }
+    }
+
+    window.startChatQA = () => {
+        document.getElementById('successContent').style.display = 'none';
+        document.getElementById('chatLoading').style.display = 'flex';
+        setTimeout(() => {
+            window.location.href = `chat.html?recipient=${currentApp.founderId}`;
+        }, 1500);
+    };
+
+    window.deletePitch = async (appId) => {
+        if(confirm("Permanently archive this application?")) {
+            await remove(ref(db, `investorInbox/${auth.currentUser.uid}/${appId}`));
+        }
     };
 
     function handleHashChange() {
@@ -374,6 +332,8 @@
         else {
             document.getElementById('inboxView').style.display = 'block';
             document.getElementById('applicationDetail').style.display = 'none';
+            // Close any open modals when returning to list
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
         }
     }
 
