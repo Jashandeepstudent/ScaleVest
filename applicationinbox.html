@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investor Inbox - Applications</title>
+    <style>
+        :root {
+            --primary: #00CED1;
+            --bg: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; }
+
+        h1 { font-size: 2rem; margin-bottom: 30px; border-left: 4px solid var(--primary); padding-left: 15px; }
+
+        /* --- LIST VIEW STYLES --- */
+        #inboxList { display: flex; flex-direction: column; gap: 15px; }
+
+        .pitch-card {
+            background: var(--card-bg);
+            border: 1px solid #333;
+            padding: 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pitch-card:hover { border-color: var(--primary); transform: translateY(-3px); background: #222; }
+
+        .time-ago { font-size: 0.75rem; color: var(--primary); font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+
+        .founder-name { font-size: 1.2rem; font-weight: 600; margin-bottom: 4px; }
+
+        .startup-title { color: #888; font-size: 0.9rem; font-weight: 500; }
+
+        .vest-hook { margin-top: 12px; font-style: italic; color: #bbb; border-left: 2px solid var(--primary); padding-left: 10px; }
+
+        /* --- SINGLE APPLICATION VIEW --- */
+        #applicationDetail { display: none; background: var(--card-bg); padding: 40px; border-radius: 16px; border: 1px solid #333; }
+
+        .back-btn { background: none; border: 1px solid #444; color: #ccc; padding: 8px 16px; border-radius: 20px; cursor: pointer; margin-bottom: 20px; }
+
+        /* --- REPLY SYSTEM --- */
+        .reply-box { margin-top: 40px; padding-top: 30px; border-top: 1px solid #333; }
+
+        .btn-group { display: flex; gap: 10px; margin: 20px 0; justify-content: center; }
+
+        .choice-btn { flex: 1; padding: 15px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; opacity: 0.6; }
+        .choice-btn.active { opacity: 1; transform: scale(1.05); }
+
+        .yes { background: #2ecc71; color: white; }
+        .no { background: #e74c3c; color: white; }
+        .later { background: #f1c40f; color: black; }
+
+        textarea { width: 100%; height: 100px; background: #222; border: 1px solid #444; color: #fff; padding: 15px; border-radius: 8px; margin-top: 15px; box-sizing: border-box; }
+
+        .submit-reply-btn { width: 100%; padding: 15px; background: var(--primary); border: none; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; }
+
+        .chat-btn { background: #3a86ff; color: white; padding: 15px 30px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; display: block; margin: 20px auto; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="inboxView">
+        <h1>Applications Inbox</h1>
+        <div id="inboxList">Loading applications...</div>
+    </div>
+
+    <div id="applicationDetail">
+        <button class="back-btn" onclick="window.location.hash = ''">← Back to Inbox</button>
+        <div id="appContent"></div>
+
+        <div class="reply-box" id="replySection">
+            <h3>Send a Response</h3>
+            <div class="btn-group">
+                <button class="choice-btn yes" id="btnYES" onclick="setReplyStatus('YES')">YES</button>
+                <button class="choice-btn no" id="btnNO" onclick="setReplyStatus('NO')">NO</button>
+                <button class="choice-btn later" id="btnLATER" onclick="setReplyStatus('LATER')">LATER</button>
+            </div>
+            <textarea id="replyComment" placeholder="Optional: Explain your decision..."></textarea>
+            <button class="submit-reply-btn" onclick="submitReply()">Submit Feedback (+1 Reputation)</button>
+        </div>
+
+        <div id="postReplyActions" style="display:none; text-align: center;">
+            <p style="color: var(--primary); font-weight: bold;">Response Submitted! Reputation Increased.</p>
+            <button class="chat-btn" id="chatActionBtn">Open Chat with Founder</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getDatabase, ref, get, set, update, increment, serverTimestamp, onValue } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js';
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+        authDomain: "scalevest-163a0.firebaseapp.com",
+        databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+        projectId: "scalevest-163a0",
+        storageBucket: "scalevest-163a0.firebasestorage.app",
+        messagingSenderId: "938358950124",
+        appId: "1:938358950124:web:043506aeaacea2a96bfdc9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let currentAppId = null;
+    let currentFounderId = null;
+    let selectedStatus = null;
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+        } else {
+            loadInbox();
+            handleHashChange();
+        }
+    });
+
+    // --- LOAD INBOX LIST ---
+    function loadInbox() {
+        const inboxRef = ref(db, `investorInbox/${auth.currentUser.uid}`);
+        onValue(inboxRef, (snapshot) => {
+            const listDiv = document.getElementById('inboxList');
+            if (!snapshot.exists()) {
+                listDiv.innerHTML = "<p>No applications received yet.</p>";
+                return;
+            }
+
+            const data = snapshot.val();
+            listDiv.innerHTML = "";
+            
+            // Sort by latest
+            const sortedApps = Object.entries(data).sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+            sortedApps.forEach(([id, pitch]) => {
+                const timeStr = formatTimeAgo(pitch.timestamp);
+                const card = document.createElement('div');
+                card.className = 'pitch-card';
+                card.onclick = () => window.location.hash = `view_application_${pitch.appId}`;
+                card.innerHTML = `
+                    <div class="time-ago">${timeStr}</div>
+                    <div class="founder-name">${pitch.founderName}</div>
+                    <div class="startup-title">${pitch.startupName}</div>
+                    <div class="vest-hook">"${pitch.vestHook}"</div>
+                `;
+                listDiv.appendChild(card);
+            });
+        });
+    }
+
+    // --- VIEW SINGLE APPLICATION ---
+    async function viewApplication(appId) {
+        currentAppId = appId;
+        document.getElementById('inboxView').style.display = 'none';
+        document.getElementById('applicationDetail').style.display = 'block';
+        
+        // Find founder ID from the inbox first
+        const inboxItemRef = ref(db, `investorInbox/${auth.currentUser.uid}/${appId}`);
+        const inboxSnap = await get(inboxItemRef);
+        if (inboxSnap.exists()) {
+            currentFounderId = inboxSnap.val().founderId;
+        }
+
+        // Fetch actual application content
+        const appRef = ref(db, `Applications/${currentFounderId}/${appId}`);
+        const appSnap = await get(appRef);
+
+        if (appSnap.exists()) {
+            const data = appSnap.val();
+            document.getElementById('appContent').innerHTML = `
+                <h2>${data.startupName}</h2>
+                <p><strong>Founder:</strong> ${data.founderName}</p>
+                <p><strong>Pitch Hook:</strong> ${data.appHook}</p>
+                <div style="background:#000; padding:20px; border-radius:8px; margin:20px 0;">
+                    ${data.description || "Full description details would be rendered here."}
+                </div>
+                <a href="https://upscalevest.site/vest-details.html?id=${data.vestId}&owner=${currentFounderId}" target="_blank" style="color:var(--primary)">View Full Linked Vest →</a>
+            `;
+        }
+    }
+
+    // --- REPLY LOGIC ---
+    window.setReplyStatus = (status) => {
+        selectedStatus = status;
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn${status}`).classList.add('active');
+    };
+
+    window.submitReply = async () => {
+        if (!selectedStatus) return alert("Please select YES, NO, or LATER");
+        
+        const comment = document.getElementById('replyComment').value;
+        const investorUid = auth.currentUser.uid;
+
+        try {
+            // 1. Save Reply
+            await set(ref(db, `ApplicationReplies/${currentAppId}`), {
+                investorId: investorUid,
+                status: selectedStatus,
+                comment: comment,
+                timestamp: serverTimestamp()
+            });
+
+            // 2. Increase Reputation Points (+1)
+            await update(ref(db, `angelProfiles/${investorUid}`), {
+                replyReputation: increment(1)
+            });
+
+            // 3. Show Post-Actions
+            document.getElementById('replySection').style.display = 'none';
+            document.getElementById('postReplyActions').style.display = 'block';
+
+            if (selectedStatus === 'YES') {
+                const chatBtn = document.getElementById('chatActionBtn');
+                chatBtn.style.display = 'block';
+                chatBtn.onclick = () => window.location.href = `chat.html?recipient=${currentFounderId}`;
+            } else {
+                document.getElementById('chatActionBtn').style.display = 'none';
+            }
+        } catch (e) { console.error(e); }
+    };
+
+    // --- ROUTING ---
+    function handleHashChange() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#view_application_')) {
+            const id = hash.replace('#view_application_', '');
+            viewApplication(id);
+        } else {
+            document.getElementById('inboxView').style.display = 'block';
+            document.getElementById('applicationDetail').style.display = 'none';
+            document.getElementById('replySection').style.display = 'block';
+            document.getElementById('postReplyActions').style.display = 'none';
+        }
+    }
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    function formatTimeAgo(timestamp) {
+        if (!timestamp) return "Just now";
+        const diff = Date.now() - timestamp;
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return "Just now";
+        if (mins < 60) return `${mins}m ago`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs}h ago`;
+        return `${Math.floor(hrs / 24)}d ago`;
+    }
+</script>
+
+</body>
+</html>
