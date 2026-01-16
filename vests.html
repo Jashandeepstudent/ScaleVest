@@ -4408,24 +4408,34 @@ window.renderFullApplicationPage = async function(appId) {
                         <h2 style="font-size: 26px; font-weight: 700; margin: 0;">${app.founderName}</h2>
                     </div>
 
-                    ${vest ? `
-                    <div style="margin-top: 70px; background: #000; color: #fff; padding: 40px; border-radius: 4px; font-family: sans-serif;">
-                        <p style="font-size: 10px; letter-spacing: 3px; color: #666; margin-bottom: 15px; text-transform: uppercase;">Linked Startup Identity</p>
-                        <h3 style="font-size: 24px; margin-bottom: 10px;">${vest.MainVest?.hook || 'Startup Vest'}</h3>
-                        <p style="font-size: 14px; color: #aaa; margin-bottom: 25px; line-height: 1.5;">${vest.MainVest?.description?.substring(0, 180)}...</p>
-                        
-                        <div style="display: flex; gap: 40px; border-top: 1px solid #333; padding-top: 20px;">
-                            <div>
-                                <small style="color: #666; display: block; margin-bottom: 5px;">FUNDING ASK</small>
-                                <span style="font-size: 1.2rem; font-weight: 800;">$${vest.MainVest?.fundAsk || '0'}</span>
-                            </div>
-                            <div>
-                                <small style="color: #666; display: block; margin-bottom: 5px;">EQUITY OFFER</small>
-                                <span style="font-size: 1.2rem; font-weight: 800;">${vest.MainVest?.equityOffered || '0'}%</span>
-                            </div>
-                        </div>
-                    </div>
-                    ` : ''}
+                   ${vest ? `
+<div style="margin-top: 70px; background: #000; color: #fff; padding: 40px; border-radius: 4px; font-family: sans-serif;">
+    <p style="font-size: 10px; letter-spacing: 3px; color: #666; margin-bottom: 15px; text-transform: uppercase;">Linked Startup Identity</p>
+    <h3 style="font-size: 24px; margin-bottom: 10px;">${vest.MainVest?.hook || 'Startup Vest'}</h3>
+    
+    <div style="margin-bottom: 25px;">
+        <p style="font-size: 12px; color: #888; margin-bottom: 4px; font-weight: 700;">VEST LINK:</p>
+        <a href="https://upscalevest.site/vest-details.html?id=${app.vestId}&owner=${currentUser.uid}" 
+           target="_blank" 
+           style="color: #3a86ff; text-decoration: none; font-size: 13px; font-family: monospace; word-break: break-all;">
+           https://upscalevest.site/vest-details.html?id=${app.vestId}&owner=${currentUser.uid}
+        </a>
+    </div>
+
+    <p style="font-size: 14px; color: #aaa; margin-bottom: 25px; line-height: 1.5;">${vest.MainVest?.description?.substring(0, 180)}...</p>
+    
+    <div style="display: flex; gap: 40px; border-top: 1px solid #333; padding-top: 20px;">
+        <div>
+            <small style="color: #666; display: block; margin-bottom: 5px;">FUNDING ASK</small>
+            <span style="font-size: 1.2rem; font-weight: 800;">$${vest.MainVest?.fundAsk || '0'}</span>
+        </div>
+        <div>
+            <small style="color: #666; display: block; margin-bottom: 5px;">EQUITY OFFER</small>
+            <span style="font-size: 1.2rem; font-weight: 800;">${vest.MainVest?.equityOffered || '0'}%</span>
+        </div>
+    </div>
+</div>
+` : ''}
                 </div>
             </div>
         </div>
@@ -4800,23 +4810,62 @@ function timeSince(date) {
 
 import {
   onDisconnect,
-  serverTimestamp
+  serverTimestamp,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-function setUserPresence(user) {
+async function setUserPresence(user) {
+    // 1. Manage Real-time Presence
     const presenceRef = ref(db, `presence/${user.uid}`);
-
-    // Mark online
-    set(presenceRef, {
-        online: true,
-        lastSeen: serverTimestamp()
+    set(presenceRef, { 
+        online: true, 
+        lastSeen: serverTimestamp() 
+    });
+    
+    // Ensure they show as offline when they disconnect
+    onDisconnect(presenceRef).set({ 
+        online: false, 
+        lastSeen: serverTimestamp() 
     });
 
-    // Auto mark offline
-    onDisconnect(presenceRef).set({
-        online: false,
-        lastSeen: serverTimestamp()
-    });
+    // 2. Update Login Stats (Streak & Today's Status)
+    const statsRef = ref(db, `users/${user.uid}/stats`);
+    
+    try {
+        await runTransaction(statsRef, (currentData) => {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0]; // e.g., "2026-01-16"
+            
+            if (!currentData) {
+                return { todayLogin: true, loginStreak: 1, lastLoginDate: todayStr };
+            }
+
+            // If they already logged in today, don't change the streak
+            if (currentData.lastLoginDate === todayStr) {
+                return { ...currentData, todayLogin: true };
+            }
+
+            // Check if they logged in yesterday to continue the streak
+            const yesterday = new Date();
+            yesterday.setDate(now.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            let newStreak = currentData.loginStreak || 0;
+            if (currentData.lastLoginDate === yesterdayStr) {
+                newStreak += 1;
+            } else {
+                newStreak = 1; // Streak broken, reset to 1
+            }
+
+            return {
+                todayLogin: true,
+                loginStreak: newStreak,
+                lastLoginDate: todayStr
+            };
+        });
+    } catch (error) {
+        console.error("Streak update failed:", error);
+    }
 }
 window.handleBellClick = async function() {
     // 1. Instant UI Feedback (Remove the dot immediately)
@@ -5062,170 +5111,6 @@ window.saveNewUsername = async function() {
         btn.innerText = originalText;
         btn.disabled = false;
     }
-};
-window.showApplicationReplies = async function() {
-    const container = document.getElementById('dashboardContainer');
-    document.querySelector('.vest-container').style.display = 'none';
-    container.style.display = 'block';
-    
-    container.innerHTML = `<div class="loading-box"><div class="spinner"></div><p>Loading Replies...</p></div>`;
-
-    try {
-        const repliesRef = ref(db, `ApplicationReplies/${currentUser.uid}`);
-        const snapshot = await get(repliesRef);
-        const replies = snapshot.val() || {};
-
-        // Mark all as read immediately
-        const updates = {};
-        Object.keys(replies).forEach(replyId => {
-            if (replies[replyId].read === false) {
-                updates[`ApplicationReplies/${currentUser.uid}/${replyId}/read`] = true;
-            }
-        });
-        if (Object.keys(updates).length > 0) {
-            await update(ref(db), updates);
-        }
-
-        // Fetch application details for each reply
-        const enrichedReplies = await Promise.all(
-            Object.entries(replies).map(async ([replyId, reply]) => {
-                const appRef = ref(db, `Applications/${currentUser.uid}/${reply.applicationId}`);
-                const appSnap = await get(appRef);
-                const appData = appSnap.exists() ? appSnap.val() : { appName: 'Unknown Application' };
-
-                return {
-                    replyId,
-                    ...reply,
-                    appName: appData.appName || 'Untitled Application',
-                    timestamp: reply.timestamp || Date.now()
-                };
-            })
-        );
-
-        // Sort by newest first
-        enrichedReplies.sort((a, b) => b.timestamp - a.timestamp);
-
-        container.innerHTML = `
-            <div class="manage-vests-page">
-                <div class="header-row">
-                    <a href="#founder_dashboard" class="back-to-dash">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                        Dashboard
-                    </a>
-                    <h1>Application Replies</h1>
-                </div>
-
-                <div class="vest-cards-grid">
-                    ${enrichedReplies.length > 0 
-                        ? enrichedReplies.map(reply => `
-                            <div class="reply-card" onclick="openReply('${reply.replyId}', '${reply.applicationId}')">
-                                <div class="reply-header">
-                                    <div class="investor-avatar">
-                                        ${reply.investorName ? reply.investorName.charAt(0).toUpperCase() : 'I'}
-                                    </div>
-                                    <div class="reply-info">
-                                        <div class="investor-name">${reply.investorName || 'Investor'}</div>
-                                        <div class="reply-app-name">${reply.appName}</div>
-                                    </div>
-                                    <div class="reply-time">${timeSince(new Date(reply.timestamp))}</div>
-                                </div>
-                                
-                                <div class="reply-preview">
-                                    ${reply.message?.substring(0, 120) || 'View full reply...'}${reply.message?.length > 120 ? '...' : ''}
-                                </div>
-
-                                ${reply.read === false 
-                                    ? '<div class="unread-indicator">NEW</div>' 
-                                    : ''}
-                            </div>
-                        `).join('') 
-                        : `<div class="empty-state-box" style="grid-column:1/-1;">
-                               <p style="color:#666;">No replies yet. Investors will reply to your applications here.</p>
-                           </div>`
-                    }
-                </div>
-            </div>
-
-            <style>
-            .reply-card {
-                background: #0f0f0f;
-                border: 1px solid #222;
-                border-radius: 16px;
-                padding: 1.5rem;
-                cursor: pointer;
-                transition: all 0.3s;
-                position: relative;
-            }
-            .reply-card:hover {
-                border-color: #444;
-                transform: translateY(-5px);
-                box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-            }
-            .reply-header {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                margin-bottom: 1rem;
-            }
-            .investor-avatar {
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #ff006e, #8338ec);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.5rem;
-                font-weight: 800;
-                color: #fff;
-            }
-            .reply-info {
-                flex: 1;
-            }
-            .investor-name {
-                font-weight: 700;
-                font-size: 1.1rem;
-                margin-bottom: 0.25rem;
-            }
-            .reply-app-name {
-                color: #888;
-                font-size: 0.85rem;
-            }
-            .reply-time {
-                color: #666;
-                font-size: 0.75rem;
-            }
-            .reply-preview {
-                color: #aaa;
-                line-height: 1.6;
-            }
-            .unread-indicator {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: #10b981;
-                color: #fff;
-                padding: 4px 10px;
-                border-radius: 12px;
-                font-size: 0.7rem;
-                font-weight: 800;
-            }
-            </style>
-        `;
-
-    } catch (error) {
-        console.error("Error loading replies:", error);
-        container.innerHTML = `<div style="text-align:center;padding:4rem;color:#ff4d4d;">
-            <h3>Error Loading Replies</h3>
-        </div>`;
-    }
-};
-
-window.openReply = function(replyId, applicationId) {
-    // You can expand this to show full reply details
-    alert(`Opening reply ${replyId} for application ${applicationId}`);
-    // Or navigate to a detailed view:
-    // window.location.hash = `reply_detail_${replyId}`;
 };
    onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -6024,6 +5909,16 @@ window.saveWorkExperience = async function() {
 };
 
 
+   // ========================================
+    // SECTION 2: PLACE HASH CHANGE HANDLER HERE
+    // ========================================
+    
+    // Handle hash navigation
+    window.addEventListener('hashchange', handleHashChange);
+
+    // ==========================================
+// 1. ROUTING GATEKEEPER (Strict Custom Check)
+// ==========================================
 function handleHashChange() {
     // 1. DATA CHECK
     if (!currentUser || !cachedFounderData) {
@@ -6082,10 +5977,6 @@ function handleHashChange() {
             document.body.style.background = "#000";
             window.showApplicationsList(); 
         } 
-       else if (hash === 'application_replies') {
-    document.body.style.background = "#000";
-    window.showApplicationReplies();
-}
         else if (hash.startsWith('view_application_')) {
             const appId = hash.replace('view_application_', '');
             document.body.style.background = "#f4f4f4"; // Document feel
@@ -6285,40 +6176,7 @@ async function createDashboard() {
     
     const draftCount = Object.values(vestsData).filter(v => v.status === 'draft').length;
     const activeCount = Object.values(vestsData).filter(v => v.status === 'live').length;
-  // Real-time listener for new replies
-const repliesRef = ref(db, `ApplicationReplies/${currentUser.uid}`);
-onValue(repliesRef, (snapshot) => {
-    if (!snapshot.exists()) {
-        hideBadge();
-        return;
-    }
-
-    const allReplies = snapshot.val();
-    let unreadCount = 0;
-
-    Object.values(allReplies).forEach(reply => {
-        if (reply.read === false) unreadCount++;
-    });
-
-    updateReplyBadge(unreadCount);
-});
-
-function updateReplyBadge(count) {
-    const badge = document.getElementById('newRepliesBadge');
-    if (!badge) return;
-
-    if (count > 0) {
-        badge.textContent = `+${count} NEW`;
-        badge.style.display = 'inline-block';
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
-function hideBadge() {
-    const badge = document.getElementById('newRepliesBadge');
-    if (badge) badge.style.display = 'none';
-}
+  
     
     const dashboardHTML = `
        <style>
@@ -7175,7 +7033,78 @@ max-width: 1100px;
                 justify-content: center;
             }
         }
+/* --- LOGO STYLING --- */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.8rem; /* Adjusted slightly for alignment */
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    text-shadow: none; /* Optional: Cleaner look */
+}
 
+.nav-logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Makes image circular */
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-browse-angels {
+    /* Background & Text */
+    background-color: #ffffff;
+    color: #000000;
+    
+    /* Font: Clean, modern sans-serif with tight tracking */
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    font-size: 0.72rem; 
+    font-weight: 800; /* Extra bold for that modern "sticker" look */
+    letter-spacing: 0.02em; 
+    text-transform: uppercase;
+    
+    /* Sizing: Tight and compact */
+    border: none;
+    padding: 6px 14px; 
+    width: fit-content; 
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Shape: Perfect Pill */
+    border-radius: 999px; 
+    cursor: pointer;
+    white-space: nowrap;
+    margin-left: 15px;
+    
+    /* Modern Depth & Border */
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    /* Interactions */
+    transition: all 0.2s ease;
+}
+
+.btn-browse-angels:hover {
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #000000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-browse-angels:active {
+    transform: translateY(0);
+    opacity: 0.8;
+}
+/* --- EXISTING NAV LINKS ALIGNMENT --- */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
         @media (max-width: 480px) {
             .top-nav {
                 padding: 0.75rem 1rem;
@@ -7231,7 +7160,6 @@ max-width: 1100px;
             .card {
                 padding: 1.5rem;
             }
-
             .profile-avatar, .startup-logo, .availability-indicator {
                 width: 70px;
                 height: 70px;
@@ -7255,38 +7183,43 @@ max-width: 1100px;
 
        <!-- Top Navigation -->
 <nav class="top-nav">
-    <div class="logo">ScaleVest</div>
+    <div class="logo" onclick="window.location.hash='founder_dashboard'">
+        <img src="ScaleVestLogo.png" alt="ScaleVest Logo" class="nav-logo-img">
+        <span>ScaleVest</span>
+    </div>
 
     <div class="nav-links">
         <a href="#founder_dashboard" class="nav-link">Dashboard</a>
-     <a href="vests.html#edit_startup" class="nav-link">My Startup</a>
-
+        <a href="vests.html#edit_startup" class="nav-link">My Startup</a>
         <a href="#" class="nav-link">Analytics</a>
 
-<div class="dropdown">
-    <span class="nav-link" onclick="toggleDropdown('scaleDropdown'); event.stopPropagation();">
-        Scale and Elevate ▾
-    </span>
-    <div class="dropdown-content" id="scaleDropdown">
-       <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
-        <a href="#" class="dropdown-item">Referrals</a>
-        <a href="#" class="dropdown-item">Contacts</a>
-        <a href="#applications" class="dropdown-item">My Applications</a>
-    </div>
-</div>
-    </div>
-<div class="top-nav-right">
-<div class="nav-icon-wrapper" onclick="window.handleBellClick()">
-        <div class="icon-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
+        <div class="dropdown">
+            <span class="nav-link" onclick="toggleDropdown('scaleDropdown'); event.stopPropagation();">
+                Scale and Elevate ▾
+            </span>
+            <div class="dropdown-content" id="scaleDropdown">
+                <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
+                <a href="#" class="dropdown-item">Referrals</a>
+                <a href="#" class="dropdown-item">Contacts</a>
+                <a href="#applications" class="dropdown-item">My Applications</a>
+            </div>
         </div>
-        <div class="notif-badge" id="navBellBadge"></div>
+
+        <button class="btn-browse-angels" onclick="window.location.href='angelbrowse.html'">
+            Browse Angel Profiles
+        </button>
     </div>
 
-
+    <div class="top-nav-right">
+        <div class="nav-icon-wrapper" onclick="window.handleBellClick()">
+            <div class="icon-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </div>
+            <div class="notif-badge" id="navBellBadge"></div>
+        </div>
 
         <div class="profile-dropdown">
 <div class="icon-btn" onclick="toggleDashProfileDropdown()">
@@ -7468,31 +7401,6 @@ max-width: 1100px;
         <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
              stroke="white" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-        </svg>
-    </div>
-</div>
-
-<div class="banner" onclick="window.location.hash='application_replies'" style="cursor: pointer;">
-    <div class="banner-content">
-        <h3>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                 stroke="white" stroke-width="2"
-                 style="vertical-align:middle;margin-right:.5rem;">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                <circle cx="9" cy="10" r="1"></circle>
-                <circle cx="12" cy="10" r="1"></circle>
-                <circle cx="15" cy="10" r="1"></circle>
-            </svg>
-            Application Replies Inbox
-            <span id="newRepliesBadge" style="display:none; background:#10b981; color:#fff; padding:4px 12px; border-radius:20px; font-size:0.75rem; margin-left:12px; font-weight:800;">+0 NEW</span>
-        </h3>
-        <p>View responses from investors on your funding applications.</p>
-    </div>
-
-    <div class="banner-icon">
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
-             stroke="white" stroke-width="2">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
         </svg>
     </div>
 </div>
@@ -7841,8 +7749,7 @@ async function showEditProfile() {
         }
 
         .nav-link {
-            c
-olor: #fff;
+            color: #fff;
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s;
