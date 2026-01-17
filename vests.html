@@ -5150,6 +5150,8 @@ window.saveNewUsername = async function() {
 // ==========================================
 
 window.showApplicationReplies = async function() {
+let userReplies = {};
+
     const container = document.getElementById('dashboardContainer');
     document.querySelector('.vest-container').style.display = 'none';
     container.style.display = 'block';
@@ -5185,9 +5187,9 @@ window.showApplicationReplies = async function() {
             return;
         }
         
-        const allReplies = snapshot.val() || {};
+const allReplies = snapshot.val() || {};
 
-const userReplies = Object.fromEntries(
+userReplies = Object.fromEntries(
   Object.entries(allReplies).filter(
     ([_, reply]) => reply.founderId === currentUser.uid
   )
