@@ -4834,19 +4834,19 @@ function startApplicationReplyListener() {
 }
 
 function updateReplyBadge(count) {
-    // Target both the global nav badge and the dashboard-specific badge
-    const badges = [
-        { b: document.getElementById('replyNotifBadge'), c: document.getElementById('replyCount') },
-        { b: document.getElementById('dashboardReplyBadge'), c: document.getElementById('dashboardReplyCount') }
+    // List of badge elements to update
+    const elements = [
+        { badge: document.getElementById('replyNotifBadge'), count: document.getElementById('replyCount') },
+        { badge: document.getElementById('dashboardReplyBadge'), count: document.getElementById('dashboardReplyCount') }
     ];
 
-    badges.forEach(item => {
-        if (item.b && item.c) {
+    elements.forEach(el => {
+        if (el.badge && el.count) {
             if (count > 0) {
-                item.b.style.display = 'block';
-                item.c.textContent = count;
+                el.badge.style.display = 'block';
+                el.count.textContent = count;
             } else {
-                item.b.style.display = 'none';
+                el.badge.style.display = 'none';
             }
         }
     });
@@ -5094,6 +5094,7 @@ async function showUsernameSetupModal() {
     
     // Trap focus
     setTimeout(() => document.getElementById('newUsernameInput').focus(), 100);
+startApplicationReplyListener();
 }
 
 window.saveNewUsername = async function() {
@@ -8252,6 +8253,8 @@ max-width: 1100px;
         </svg>
     </div>
 </div>
+// Inside createDashboard() function, find the banner for application_replies and replace it:
+
 <div class="banner" onclick="window.location.hash='application_replies'" style="cursor: pointer; position: relative;">
     <div class="banner-content">
         <h3>
@@ -8274,8 +8277,6 @@ max-width: 1100px;
         <span id="dashboardReplyCount">0</span> New
     </div>
 </div>
-</div>
-
 </div>
 
 
