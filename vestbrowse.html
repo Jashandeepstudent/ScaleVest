@@ -15,7 +15,7 @@
             padding: 40px 20px;
         }
 
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { max-width: 1600px; margin: 0 auto; }
 
         .header-area { 
             margin-bottom: 50px; 
@@ -30,101 +30,289 @@
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent;
             letter-spacing: -2px;
+            margin-bottom: 10px;
         }
 
-        .cards-wrapper {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
+        .header-subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
         }
 
-        /* FIVERR GIG STYLE CARD */
+        /* Stage Filter Pills */
+        .category-filter {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .category-pill {
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+            backdrop-filter: blur(10px);
+        }
+
+        .category-pill:hover {
+            border-color: #10b981;
+            background: rgba(16,185,129,0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+
+        .category-pill.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-color: #10b981;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.5);
+        }
+
+        /* Search Box */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 16px 24px;
+            font-size: 1rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            outline: none;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .search-box:focus {
+            border-color: #10b981;
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+        }
+
+        /* Vest Row Section */
+        .vest-row {
+            margin-bottom: 60px;
+        }
+
+        .row-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-left: 10px;
+        }
+
+        .row-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .row-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .badge-perfect { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .badge-new { background: linear-gradient(135deg, #32CD32, #228B22); }
+        .badge-active { background: linear-gradient(135deg, #4169E1, #1E90FF); }
+        .badge-trending { background: linear-gradient(135deg, #FF6B6B, #FF1493); }
+
+        /* Horizontal Scroll Container */
+        .cards-scroll-container {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #10b981 rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .cards-scroll-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .cards-scroll-container::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .cards-scroll-container::-webkit-scrollbar-thumb {
+            background: #10b981;
+            border-radius: 10px;
+        }
+
+        .cards-row {
+            display: flex;
+            gap: 25px;
+            padding: 10px;
+            min-width: min-content;
+        }
+
+        /* ENHANCED FIVERR-STYLE CARD */
         .card {
             background: #fff;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            height: 380px;
+            height: 420px;
+            min-width: 320px;
+            max-width: 320px;
+            flex-shrink: 0;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(16,185,129,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .card:hover::before {
+            opacity: 1;
         }
 
         .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.3);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.4);
         }
 
         .thumbnail-area {
-            height: 180px;
+            height: 200px;
             width: 100%;
             position: relative;
-            background: #000;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
             overflow: hidden;
+        }
+
+        .thumbnail-area::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.5) 100%);
+            pointer-events: none;
         }
 
         .thumbnail-area img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s ease;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .card:hover .thumbnail-area img {
-            transform: scale(1.08);
+            transform: scale(1.15);
+        }
+
+        .stage-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(16,185,129,0.95);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
         .card-content {
-            padding: 16px;
+            padding: 20px;
             flex: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 2;
         }
 
         .hook-text {
             color: #1a1a1a;
-            font-size: 15px;
-            font-weight: 600;
-            line-height: 1.4;
-            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.5;
+            margin-bottom: 14px;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            min-height: 42px;
+            min-height: 48px;
         }
 
         .startup-info {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 12px;
+            margin-bottom: 14px;
         }
 
         .startup-logo {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea, #764ba2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 700;
             color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
         }
 
         .startup-name {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: #374151;
         }
 
+        .startup-category {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
         .card-footer {
             margin-top: auto;
-            padding-top: 12px;
-            border-top: 1px solid #e5e7eb;
+            padding-top: 14px;
+            border-top: 2px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -133,29 +321,33 @@
         .fund-ask {
             font-size: 13px;
             color: #6b7280;
+            font-weight: 600;
         }
 
         .fund-amount {
-            font-size: 15px;
-            font-weight: 700;
-            color: #10b981;
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .analyze-btn {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
         .analyze-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            transform: scale(1.08);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
         }
 
         #noVests { 
@@ -164,8 +356,11 @@
             padding: 100px; 
             color: #10b981; 
             font-weight: 700; 
-            font-size: 1.2rem; 
-            display: none; 
+            font-size: 1.3rem; 
+            display: none;
+            background: rgba(16,185,129,0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
         }
 
         @keyframes fadeInDown {
@@ -174,10 +369,9 @@
         }
 
         @media (max-width: 768px) {
-            .cards-wrapper {
-                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            }
             .header-area h1 { font-size: 2.5rem; }
+            .category-filter { gap: 8px; }
+            .category-pill { padding: 8px 16px; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -186,25 +380,32 @@
 <div class="container">
     <div class="header-area">
         <h1>Investment Terminal</h1>
-        <p style="color: #94a3b8; margin-top: 10px;">Direct access to verified high-growth startup equity.</p>
+        <p class="header-subtitle">AI-powered vest discovery matching your investment preferences</p>
+    </div>
+
+    <div class="category-filter">
+        <button class="category-pill active" data-stage="All">All Stages</button>
+        <button class="category-pill" data-stage="Idea">Idea</button>
+        <button class="category-pill" data-stage="Building">Building</button>
+        <button class="category-pill" data-stage="MVP">MVP</button>
+        <button class="category-pill" data-stage="Pre-Launch">Pre-Launch</button>
+        <button class="category-pill" data-stage="Growing">Growing</button>
+        <button class="category-pill" data-stage="Scale">Scale</button>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchBox" class="search-box" placeholder="Search by startup name or category...">
     </div>
 
     <div id="noVests">INITIALIZING TERMINAL...</div>
     
-    <div class="cards-wrapper" id="vestsContainer"></div>
+    <div id="vestsContainer"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get, set, onDisconnect, serverTimestamp, runTransaction, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-  set,
-  onDisconnect,
-  serverTimestamp,
-  runTransaction,
-  update
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
@@ -219,66 +420,437 @@ import {
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
-async function setUserPresence(user) {
-    // 1. Manage Real-time Presence
-    const presenceRef = ref(db, `presence/${user.uid}`);
-    set(presenceRef, { 
-        online: true, 
-        lastSeen: serverTimestamp() 
-    });
-    
-    // Ensure they show as offline when they disconnect
-    onDisconnect(presenceRef).set({ 
-        online: false, 
-        lastSeen: serverTimestamp() 
-    });
 
-    // 2. Update Login Stats (Streak & Today's Status)
-    const statsRef = ref(db, `users/${user.uid}/stats`);
-    
-    try {
-        await runTransaction(statsRef, (currentData) => {
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0]; // e.g., "2026-01-16"
-            
-            if (!currentData) {
-                return { todayLogin: true, loginStreak: 1, lastLoginDate: todayStr };
-            }
+    let currentUser = null;
+    let investorPreferences = null;
+    let allVests = {};
+    let selectedStage = 'All';
+    let searchTerm = '';
+    let onlineStatusMap = {};
 
-            // If they already logged in today, don't change the streak
-            if (currentData.lastLoginDate === todayStr) {
-                return { ...currentData, todayLogin: true };
-            }
+    // ============================================
+    // INVESTOR BEHAVIOR TRACKING
+    // ============================================
+    let investorBehaviorData = {
+        vestViews: {},
+        categoryViews: {},
+        stageViews: {},
+        timeSpentOnVests: {},
+        searchHistory: [],
+        totalBrowseTime: 0,
+        sessionStartTime: Date.now(),
+        analyzedVests: [],
+        lastActivityTime: Date.now()
+    };
 
-            // Check if they logged in yesterday to continue the streak
-            const yesterday = new Date();
-            yesterday.setDate(now.getDate() - 1);
-            const yesterdayStr = yesterday.toISOString().split('T')[0];
+    let browseTimeInterval = null;
 
-            let newStreak = currentData.loginStreak || 0;
-            if (currentData.lastLoginDate === yesterdayStr) {
-                newStreak += 1;
-            } else {
-                newStreak = 1; // Streak broken, reset to 1
-            }
-
-            return {
-                todayLogin: true,
-                loginStreak: newStreak,
-                lastLoginDate: todayStr
-            };
+    async function setUserPresence(user) {
+        const presenceRef = ref(db, `presence/${user.uid}`);
+        set(presenceRef, { 
+            online: true, 
+            lastSeen: serverTimestamp() 
         });
-    } catch (error) {
-        console.error("Streak update failed:", error);
+        
+        onDisconnect(presenceRef).set({ 
+            online: false, 
+            lastSeen: serverTimestamp() 
+        });
+
+        const statsRef = ref(db, `users/${user.uid}/stats`);
+        
+        try {
+            await runTransaction(statsRef, (currentData) => {
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0];
+                
+                if (!currentData) {
+                    return { todayLogin: true, loginStreak: 1, lastLoginDate: todayStr };
+                }
+
+                if (currentData.lastLoginDate === todayStr) {
+                    return { ...currentData, todayLogin: true };
+                }
+
+                const yesterday = new Date();
+                yesterday.setDate(now.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+                let newStreak = currentData.loginStreak || 0;
+                if (currentData.lastLoginDate === yesterdayStr) {
+                    newStreak += 1;
+                } else {
+                    newStreak = 1;
+                }
+
+                return {
+                    todayLogin: true,
+                    loginStreak: newStreak,
+                    lastLoginDate: todayStr
+                };
+            });
+        } catch (error) {
+            console.error("Streak update failed:", error);
+        }
     }
-}
-    onAuthStateChanged(auth, (user) => {
+
+    async function loadOnlineStatus() {
+        try {
+            const presenceRef = ref(db, 'presence');
+            
+            onValue(presenceRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const presenceData = snapshot.val();
+                    
+                    Object.keys(presenceData).forEach(userId => {
+                        const userPresence = presenceData[userId];
+                        
+                        onlineStatusMap[userId] = {
+                            online: userPresence.online === true,
+                            todayLogin: userPresence.todayLogin === true,
+                            loginStreak: userPresence.loginStreak || 0,
+                            lastSeen: userPresence.lastSeen || null
+                        };
+                    });
+                    
+                    if (allVests && Object.keys(allVests).length > 0) {
+                        displayVests();
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error loading online status:', error);
+        }
+    }
+
+    function trackVestView(vestId, vestData) {
+        if (!investorBehaviorData.vestViews[vestId]) {
+            investorBehaviorData.vestViews[vestId] = {
+                count: 0,
+                firstSeen: Date.now(),
+                stage: vestData.StartupDetails?.stage,
+                category: vestData.StartupDetails?.category
+            };
+        }
+        investorBehaviorData.vestViews[vestId].count++;
+        investorBehaviorData.vestViews[vestId].lastSeen = Date.now();
+        
+        const stage = vestData.StartupDetails?.stage;
+        if (stage) {
+            investorBehaviorData.stageViews[stage] = (investorBehaviorData.stageViews[stage] || 0) + 1;
+        }
+        
+        const category = vestData.StartupDetails?.category;
+        if (category) {
+            investorBehaviorData.categoryViews[category] = (investorBehaviorData.categoryViews[category] || 0) + 1;
+        }
+        
+        saveInvestorBehavior();
+    }
+
+    function trackSearchBehavior(term) {
+        if (term && term.length > 2) {
+            investorBehaviorData.searchHistory.push({
+                term: term,
+                timestamp: Date.now()
+            });
+            
+            if (investorBehaviorData.searchHistory.length > 50) {
+                investorBehaviorData.searchHistory.shift();
+            }
+            
+            saveInvestorBehavior();
+        }
+    }
+
+    async function saveInvestorBehavior() {
+        if (!currentUser) return;
+        
+        try {
+            const behaviorRef = ref(db, `investorBehavior/${currentUser.uid}`);
+            await set(behaviorRef, {
+                ...investorBehaviorData,
+                lastUpdated: Date.now()
+            });
+        } catch (error) {
+            console.error('Error saving behavior:', error);
+        }
+    }
+
+    async function loadInvestorBehavior() {
+        if (!currentUser) return;
+        
+        try {
+            const behaviorRef = ref(db, `investorBehavior/${currentUser.uid}`);
+            const snapshot = await get(behaviorRef);
+            
+            if (snapshot.exists()) {
+                const savedData = snapshot.val();
+                investorBehaviorData = {
+                    ...investorBehaviorData,
+                    ...savedData
+                };
+            }
+        } catch (error) {
+            console.error('Error loading behavior:', error);
+        }
+    }
+
+    function startBrowseTimeTracking() {
+        browseTimeInterval = setInterval(() => {
+            const currentTime = Date.now();
+            const sessionDuration = Math.floor((currentTime - investorBehaviorData.sessionStartTime) / 1000);
+            
+            investorBehaviorData.totalBrowseTime = sessionDuration;
+            investorBehaviorData.lastActivityTime = currentTime;
+            
+            if (sessionDuration % 30 === 0) {
+                saveInvestorBehavior();
+            }
+        }, 10000);
+    }
+
+    window.addEventListener('beforeunload', () => {
+        if (browseTimeInterval) {
+            clearInterval(browseTimeInterval);
+            saveInvestorBehavior();
+        }
+    });
+
+    // ============================================
+    // AI LEARNING ALGORITHM
+    // ============================================
+    function analyzeInvestorPreferences() {
+        const analysis = {
+            preferredStages: [],
+            preferredCategories: [],
+            learningConfidence: 0
+        };
+        
+        const totalViews = Object.keys(investorBehaviorData.vestViews).length;
+        const totalAnalyzed = investorBehaviorData.analyzedVests.length;
+        
+        if (totalViews < 5) {
+            analysis.learningConfidence = totalViews * 15;
+            return analysis;
+        } else if (totalViews < 15) {
+            analysis.learningConfidence = 75 + (totalViews - 5);
+        } else if (totalViews < 30) {
+            analysis.learningConfidence = 85 + ((totalViews - 15) * 0.5);
+        } else {
+            const baseLearning = 92;
+            const analyzeBonus = Math.min(totalAnalyzed * 1.5, 8);
+            analysis.learningConfidence = Math.min(baseLearning + analyzeBonus, 100);
+        }
+        
+        const stageScores = {};
+        Object.entries(investorBehaviorData.stageViews).forEach(([stage, count]) => {
+            stageScores[stage] = count;
+        });
+        
+        analysis.preferredStages = Object.entries(stageScores)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([stage]) => stage);
+        
+        const categoryScores = {};
+        Object.entries(investorBehaviorData.categoryViews).forEach(([cat, count]) => {
+            categoryScores[cat] = count;
+        });
+        
+        analysis.preferredCategories = Object.entries(categoryScores)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([cat]) => cat);
+        
+        return analysis;
+    }
+
+    function calculateIntelligentBoost(vestData, vestId) {
+        const preferences = analyzeInvestorPreferences();
+        let boost = 0;
+        
+        if (preferences.learningConfidence < 30) {
+            return boost;
+        }
+        
+        // Stage preference boost
+        const stage = vestData.StartupDetails?.stage;
+        if (stage && preferences.preferredStages.includes(stage)) {
+            const rank = preferences.preferredStages.indexOf(stage);
+            boost += (3 - rank) * 350;
+        }
+        
+        // Category preference boost
+        const category = vestData.StartupDetails?.category;
+        if (category && preferences.preferredCategories.includes(category)) {
+            const rank = preferences.preferredCategories.indexOf(category);
+            boost += (3 - rank) * 400;
+        }
+        
+        // View count boost
+        if (investorBehaviorData.vestViews[vestId]) {
+            const viewCount = investorBehaviorData.vestViews[vestId].count;
+            boost += viewCount * 100;
+        }
+        
+        // Time spent boost
+        const timeSpent = investorBehaviorData.timeSpentOnVests[vestId] || 0;
+        boost += Math.min(timeSpent * 5, 500);
+        
+        // Search history boost
+        if (investorBehaviorData.searchHistory.length > 0) {
+            const recentSearches = investorBehaviorData.searchHistory.slice(-10);
+            recentSearches.forEach(search => {
+                const searchTerm = search.term.toLowerCase();
+                const startupName = (vestData.StartupDetails?.name || '').toLowerCase();
+                const vestCategory = (vestData.StartupDetails?.category || '').toLowerCase();
+                
+                if (startupName.includes(searchTerm) || vestCategory.includes(searchTerm)) {
+                    boost += 400;
+                }
+            });
+        }
+        
+        boost = boost * (preferences.learningConfidence / 100);
+        
+        return boost;
+    }
+
+    // ============================================
+    // VEST SCORING ALGORITHM (ALL BOOSTS)
+    // ============================================
+    function calculateVestScore(vestData, vestId) {
+        let score = 0;
+        const now = Date.now();
+        const preferences = analyzeInvestorPreferences();
+        const learningConfidence = preferences.learningConfidence;
+        
+        // **PRIORITY 1: SUI MATCHMAKING** (Category match with investor preferences)
+        const vestCategory = vestData.StartupDetails?.category;
+        const hasSUIMatch = investorPreferences && 
+                           investorPreferences.preferredCategories && 
+                           Array.isArray(investorPreferences.preferredCategories) &&
+                           vestCategory &&
+                           investorPreferences.preferredCategories.includes(vestCategory);
+        
+        if (hasSUIMatch) {
+            score = 10000; // Massive base score for perfect match
+        } else {
+            score += 100; // Base score
+        }
+        
+        // **PRIORITY 2: AI INTELLIGENCE BOOST**
+        if (learningConfidence >= 30) {
+            const intelligentBoost = calculateIntelligentBoost(vestData, vestId);
+            score += intelligentBoost;
+        }
+        
+        // **PRIORITY 3: FOUNDER ONLINE STATUS BOOSTS**
+        const founderUID = vestData.ownerUID || vestData.userId;
+        const presenceData = onlineStatusMap[founderUID] || {};
+        
+        // Online NOW
+        if (presenceData.online === true) {
+            score += 1500;
+        }
+        
+        // Logged in today
+        if (presenceData.todayLogin === true) {
+            score += 400;
+        }
+        
+        // Login streak boost
+        if (presenceData.loginStreak && presenceData.loginStreak > 0) {
+            const streakBonus = Math.min(presenceData.loginStreak * 10, 300);
+            score += streakBonus;
+        }
+        
+        // **PRIORITY 4: NEW VEST BOOST** (Created in last 24-72 hours)
+        if (vestData.createdAt) {
+            const createdTime = new Date(vestData.createdAt).getTime();
+            const hoursSinceCreation = (now - createdTime) / (1000 * 60 * 60);
+            if (hoursSinceCreation < 24) {
+                score += 800;
+            } else if (hoursSinceCreation < 72) {
+                score += 400;
+            }
+        }
+        
+        // **PRIORITY 5: STAGE PREFERENCE MATCH**
+        const vestStage = vestData.StartupDetails?.stage;
+        if (investorPreferences && investorPreferences.preferredStages) {
+            if (Array.isArray(investorPreferences.preferredStages) && 
+                investorPreferences.preferredStages.includes(vestStage)) {
+                score += 600;
+            }
+        }
+        
+        // **PRIORITY 6: TRENDING BOOST** (Based on views if available)
+        if (vestData.viewCount && vestData.viewCount > 50) {
+            score += vestData.viewCount * 2;
+        }
+        
+        // **PRIORITY 7: RANDOMNESS** (2% only)
+        const randomFactor = Math.random() * 0.02 * score;
+        score += randomFactor;
+        
+        return score;
+    }
+
+    // ============================================
+    // LOAD INVESTOR PREFERENCES
+    // ============================================
+    async function loadInvestorPreferences() {
+        try {
+            const profileRef = ref(db, `angelProfiles/${currentUser.uid}`);
+            const snapshot = await get(profileRef);
+            
+            if (snapshot.exists()) {
+                investorPreferences = snapshot.val();
+                console.log('✅ Loaded investor preferences:', investorPreferences);
+            }
+        } catch (error) {
+            console.error('Error loading investor preferences:', error);
+        }
+    }
+
+    // ============================================
+    // LOAD AND DISPLAY VESTS
+    // ============================================
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
-             setUserPresence(user);
+            currentUser = user;
+            setUserPresence(user);
+            await loadInvestorPreferences();
+            await loadInvestorBehavior();
             loadVests();
+            loadOnlineStatus();
+            startBrowseTimeTracking();
         } else {
             window.location.href = "login3.html";
         }
+    });
+
+    // Stage filter buttons
+    document.querySelectorAll('.category-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.category-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedStage = btn.dataset.stage;
+            displayVests();
+        });
+    });
+
+    // Search box
+    document.getElementById('searchBox').addEventListener('input', (e) => {
+        searchTerm = e.target.value.toLowerCase().trim();
+        
+        if (searchTerm.length > 2) {
+            trackSearchBehavior(searchTerm);
+        }
+        
+        displayVests();
     });
 
     async function loadVests() {
@@ -289,15 +861,16 @@ async function setUserPresence(user) {
             const vestRef = ref(db, "Vests");
             const snapshot = await get(vestRef);
 
+            noVestsMsg.style.display = 'none';
+
             if (!snapshot.exists()) {
                 noVestsMsg.innerText = "NO ACTIVE OPPORTUNITIES IN TERMINAL.";
                 noVestsMsg.style.display = "block";
                 return;
             }
 
-            container.innerHTML = "";
-            let activeCount = 0;
-
+            allVests = {};
+            
             snapshot.forEach((userNode) => {
                 const ownerUID = userNode.key;
                 
@@ -306,53 +879,339 @@ async function setUserPresence(user) {
                     const vestID = vest.key;
 
                     if (vestData.status === "active") {
-                        activeCount++;
-                        
-                        const main = vestData.MainVest || {};
-                        const details = vestData.StartupDetails || {};
-                        const startupName = details.name || 'Premium Startup';
-                        const initials = startupName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-
-                        const cardHtml = `
-                            <div class="card" onclick="window.location.href='vest-details.html?id=${vestID}&owner=${ownerUID}'">
-                                <div class="thumbnail-area">
-                                    <img src="${main.thumbnailUrl || 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800'}" alt="Preview">
-                                </div>
-                                <div class="card-content">
-                                    <div class="hook-text">${main.hook || 'Next-Gen Innovation Opportunity Available'}</div>
-                                    <div class="startup-info">
-                                        <div class="startup-logo">${initials}</div>
-                                        <div class="startup-name">${startupName}</div>
-                                    </div>
-                                    <div class="card-footer">
-                                        <div>
-                                            <div class="fund-ask">Funding Ask</div>
-                                            <div class="fund-amount">$${main.fundAsk || '50K'}</div>
-                                        </div>
-                                        <button class="analyze-btn" onclick="event.stopPropagation(); window.location.href='vest-details.html?id=${vestID}&owner=${ownerUID}'">
-                                            Analyze →
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        container.innerHTML += cardHtml;
+                        allVests[vestID] = {
+                            ...vestData,
+                            vestId: vestID,
+                            ownerUID: ownerUID
+                        };
                     }
                 });
             });
 
-            if (activeCount === 0) {
-                noVestsMsg.innerText = "NO ACTIVE OPPORTUNITIES IN TERMINAL.";
-                noVestsMsg.style.display = "block";
-            } else {
-                noVestsMsg.style.display = "none";
-            }
+            displayVests();
 
         } catch (err) {
             console.error("Load Error:", err);
             noVestsMsg.innerText = "PERMISSION DENIED: CHECK FIREBASE RULES.";
             noVestsMsg.style.display = "block";
         }
+    }
+
+    function filterAndSortVests() {
+        let filtered = Object.entries(allVests).filter(([vestId, vestData]) => {
+            // Filter by stage
+            if (selectedStage !== 'All' && vestData.StartupDetails?.stage !== selectedStage) {
+                return false;
+            }
+            
+            // Filter by search
+            if (searchTerm) {
+                const startupName = (vestData.StartupDetails?.name || '').toLowerCase();
+                const category = (vestData.StartupDetails?.category || '').toLowerCase();
+                const hook = (vestData.MainVest?.hook || '').toLowerCase();
+                
+                if (!startupName.includes(searchTerm) && 
+                    !category.includes(searchTerm) && 
+                    !hook.includes(searchTerm)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+
+        filtered = filtered.map(([vestId, vestData]) => ({
+            vestId,
+            vestData,
+            score: calculateVestScore(vestData, vestId)
+        }));
+
+        return filtered;
+    }
+
+    function displayVests() {
+        const container = document.getElementById('vestsContainer');
+        const noVestsMsg = document.getElementById('noVests');
+        
+        container.innerHTML = '';
+        
+        const vests = filterAndSortVests();
+        
+        if (vests.length === 0) {
+            noVestsMsg.innerText = 'No vests found matching your criteria.';
+            noVestsMsg.style.display = 'block';
+            return;
+        }
+
+        noVestsMsg.style.display = 'none';
+
+        const preferences = analyzeInvestorPreferences();
+        const learningConfidence = preferences.learningConfidence;
+
+        // Organize vests by STARTUP CATEGORY (not stage)
+        const categoryRows = {
+            suiMatch: [],
+            onlineNow: [],
+            dailyActive: [],
+            new: [],
+            aiPicked: []
+        };
+
+        // Dynamic category storage
+        const startupCategories = {};
+
+        vests.forEach(item => {
+            const intelligentBoost = calculateIntelligentBoost(item.vestData, item.vestId);
+            const vestCategory = item.vestData.StartupDetails?.category;
+            const now = Date.now();
+            
+            // Track vest view
+            trackVestView(item.vestId, item.vestData);
+            
+            // Check founder online status
+            const founderUID = item.vestData.ownerUID || item.vestData.userId;
+            const presenceData = onlineStatusMap[founderUID] || {};
+            
+            let isOnlineNow = presenceData.online === true;
+            let isDailyActive = presenceData.todayLogin === true;
+            
+            // **PRIORITY 1: ONLINE NOW**
+            if (isOnlineNow) {
+                categoryRows.onlineNow.push(item);
+                return;
+            }
+            
+            // **PRIORITY 2: SUI PERFECT MATCH**
+            const hasSUIMatch = investorPreferences && 
+                               investorPreferences.preferredCategories && 
+                               Array.isArray(investorPreferences.preferredCategories) &&
+                               vestCategory &&
+                               investorPreferences.preferredCategories.includes(vestCategory);
+            
+            if (hasSUIMatch && !isOnlineNow) {
+                categoryRows.suiMatch.push(item);
+                return;
+            }
+            
+            // **PRIORITY 3: DAILY ACTIVE**
+            if (isDailyActive && !isOnlineNow && !hasSUIMatch) {
+                categoryRows.dailyActive.push(item);
+                return;
+            }
+            
+            // **PRIORITY 4: NEW VESTS** (Last 24 hours - Reserve 3 minimum)
+            if (item.vestData.createdAt) {
+                const createdTime = new Date(item.vestData.createdAt).getTime();
+                const hoursSinceCreation = (now - createdTime) / (1000 * 60 * 60);
+                if (hoursSinceCreation < 24) {
+                    categoryRows.new.push(item);
+                    return;
+                }
+            }
+            
+            // **PRIORITY 5: AI PICKED** (if confidence >= 30%)
+            if (learningConfidence >= 30 && intelligentBoost > 500) {
+                categoryRows.aiPicked.push(item);
+                return;
+            }
+            
+            // **PRIORITY 6: BY STARTUP CATEGORY** (E-commerce, SaaS, FinTech, etc.)
+            if (vestCategory) {
+                if (!startupCategories[vestCategory]) {
+                    startupCategories[vestCategory] = [];
+                }
+                startupCategories[vestCategory].push(item);
+            }
+        });
+
+        // ============================================
+        // DISPLAY ORDER - PRIORITY BASED
+        // ============================================
+        
+        // **ROW 1: FOUNDERS ONLINE NOW**
+        if (categoryRows.onlineNow.length > 0) {
+            categoryRows.onlineNow.sort((a, b) => b.score - a.score);
+            createRow(
+                categoryRows.onlineNow.slice(0, 10),
+                '🔥 Founders Active Now',
+                'Live',
+                'badge-perfect'
+            );
+        }
+        
+        // **ROW 2: SUI PERFECT MATCHES**
+        if (categoryRows.suiMatch.length > 0) {
+            categoryRows.suiMatch.sort((a, b) => b.score - a.score);
+            createRow(
+                categoryRows.suiMatch.slice(0, 10),
+                `🎯 Perfect Match: ${investorPreferences?.preferredCategories?.[0] || 'Your Preferences'}`,
+                'Perfect Match',
+                'badge-perfect'
+            );
+        }
+        
+        // **ROW 3: ACTIVE TODAY**
+        if (categoryRows.dailyActive.length > 0) {
+            categoryRows.dailyActive.sort((a, b) => b.score - a.score);
+            createRow(
+                categoryRows.dailyActive.slice(0, 10),
+                '⚡ Founders Active Today',
+                'Active',
+                'badge-active'
+            );
+        }
+        
+        // **ROW 4: NEW VESTS** (Reserve 3 slots minimum)
+        if (categoryRows.new.length > 0) {
+            categoryRows.new.sort((a, b) => b.score - a.score);
+            const minSlots = 3;
+            const vestsToShow = Math.max(categoryRows.new.length, minSlots);
+            createRow(
+                categoryRows.new.slice(0, vestsToShow),
+                '✨ Fresh Opportunities',
+                'New',
+                'badge-new'
+            );
+        }
+        
+        // **ROW 5: AI PICKED** (Show when confidence >= 30%)
+        if (learningConfidence >= 30 && categoryRows.aiPicked.length > 0) {
+            categoryRows.aiPicked.sort((a, b) => b.score - a.score);
+            createRow(
+                categoryRows.aiPicked.slice(0, 10),
+                `🤖 AI Picked For You (${Math.round(learningConfidence)}% Confidence)`,
+                'AI Match',
+                'badge-trending'
+            );
+        }
+        
+        // **ROWS 6+: BY STARTUP CATEGORY** (One row per category - E-commerce, SaaS, etc.)
+        // Sort categories by total score
+        const sortedCategories = Object.entries(startupCategories)
+            .map(([category, vests]) => {
+                const totalScore = vests.reduce((sum, v) => sum + v.score, 0);
+                return { category, vests, totalScore };
+            })
+            .sort((a, b) => b.totalScore - a.totalScore);
+        
+        sortedCategories.forEach(({ category, vests }) => {
+            if (vests.length > 0) {
+                vests.sort((a, b) => b.score - a.score);
+                
+                // Show max 10 per category
+                const vestsToShow = vests.slice(0, 10);
+                
+                // Get category emoji
+                const categoryEmoji = getCategoryEmoji(category);
+                
+                createRow(
+                    vestsToShow,
+                    `${categoryEmoji} ${category}`,
+                    category,
+                    'badge-active'
+                );
+            }
+        });
+    }
+
+    function getCategoryEmoji(category) {
+        const emojiMap = {
+            'E-commerce': '🛒',
+            'SaaS': '☁️',
+            'FinTech': '💰',
+            'HealthTech': '🏥',
+            'EdTech': '📚',
+            'AI/ML': '🤖',
+            'Blockchain': '⛓️',
+            'Gaming': '🎮',
+            'Social Media': '📱',
+            'MarketPlace': '🏪',
+            'IoT': '📡',
+            'Cybersecurity': '🔒',
+            'Green Tech': '🌱',
+            'PropTech': '🏢',
+            'FoodTech': '🍔',
+            'Travel': '✈️',
+            'Fashion': '👗',
+            'Entertainment': '🎬',
+            'Sports': '⚽',
+            'Automotive': '🚗'
+        };
+        
+        return emojiMap[category] || '🚀';
+    }
+
+    function createRow(vests, title, badge, badgeClass) {
+        const container = document.getElementById('vestsContainer');
+        
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'vest-row';
+        
+        const headerHTML = badge 
+            ? `<div class="row-header">
+                 <h2 class="row-title">${title}</h2>
+                 <span class="row-badge ${badgeClass}">${badge}</span>
+               </div>`
+            : `<div class="row-header"><h2 class="row-title">${title}</h2></div>`;
+        
+        rowDiv.innerHTML = `
+            ${headerHTML}
+            <div class="cards-scroll-container">
+                <div class="cards-row" id="row-${title.replace(/\s+/g, '-')}"></div>
+            </div>
+        `;
+        
+        container.appendChild(rowDiv);
+        
+        const cardsRow = rowDiv.querySelector('.cards-row');
+        vests.forEach(item => {
+            const card = createCard(item.vestId, item.vestData);
+            cardsRow.appendChild(card);
+        });
+    }
+
+    function createCard(vestId, vestData) {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const main = vestData.MainVest || {};
+        const details = vestData.StartupDetails || {};
+        const startupName = details.name || 'Premium Startup';
+        const initials = startupName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+        const stage = details.stage || 'Growing';
+        const category = details.category || 'Tech';
+
+        card.innerHTML = `
+            <div class="thumbnail-area">
+                <img src="${main.thumbnailUrl || 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800'}" alt="Preview">
+                <div class="stage-badge">${stage}</div>
+            </div>
+            <div class="card-content">
+                <div class="hook-text">${main.hook || 'Next-Gen Innovation Opportunity Available'}</div>
+                <div class="startup-info">
+                    <div class="startup-logo">${initials}</div>
+                    <div>
+                        <div class="startup-name">${startupName}</div>
+                        <div class="startup-category">${category}</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div>
+                        <div class="fund-ask">Funding Ask</div>
+                        <div class="fund-amount">${main.fundAsk || '50K'}</div>
+                    </div>
+                    <button class="analyze-btn" onclick="event.stopPropagation(); window.location.href='vest-details.html?id=${vestId}&owner=${vestData.ownerUID}'">
+                        Analyze →
+                    </button>
+                </div>
+            </div>
+        `;
+
+        card.onclick = () => {
+            window.location.href = `vest-details.html?id=${vestId}&owner=${vestData.ownerUID}`;
+        };
+
+        return card;
     }
 </script>
 
