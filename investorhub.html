@@ -1847,48 +1847,38 @@ let shownApplicationPopups = new Set(JSON.parse(localStorage.getItem('shownAppPo
 function startApplicationInboxListener() {
     if (!currentUser) return;
 
-    const applicationsRef = ref(db, 'Applications');
+    // POINT TO THE CORRECT NODE: investorInbox/[Your_UID]
+    const inboxRef = ref(db, `investorInbox/${currentUser.uid}`);
 
-    // Listen for changes in real-time
-    onValue(applicationsRef, async (snapshot) => {
+    onValue(inboxRef, async (snapshot) => {
         if (!snapshot.exists()) return;
 
-        const allApplications = snapshot.val() || {};
+        const allInboxApps = snapshot.val() || {};
 
-        for (const founderId in allApplications) {
-            const founderApps = allApplications[founderId];
+        for (const [appId, appData] of Object.entries(allInboxApps)) {
+            
+            // 1. Check if the app is unread (read: false)
+            const isUnread = appData.read === false;
 
-            for (const [appId, appData] of Object.entries(founderApps)) {
+            if (isUnread) {
+                // 2. Only show if user is on the dashboard
+                const isDashboard = window.location.hash === '#dashboard' || window.location.hash === '';
                 
-                // --- LOGIC: Only show if completed AND not yet read ---
-                const isCompleted = appData.status === 'completed';
-                const isUnread = appData.read !== true; 
+                if (isDashboard) {
+                    // Prevent duplicate popups
+                    if (document.getElementById('newAppPopup')) return;
 
-                if (isCompleted && isUnread) {
-                    // Only show if user is on the dashboard
-                    const isDashboard = window.location.hash === '#dashboard' || window.location.hash === '';
-                    
-                    if (isDashboard) {
-                        // Fetch founder name for the popup
-                        let founderName = 'A Founder';
-                        try {
-                            const founderSnap = await get(ref(db, `founderProfile/${founderId}/founderUsername`));
-                            if (founderSnap.exists()) {
-                                founderName = founderSnap.val();
-                            }
-                        } catch (e) {
-                            console.error("Error fetching founder:", e);
-                        }
-                        
-                        // Show the popup and pass the founderId for the update function
-                        showNewApplicationPopup(appData, founderName, appId, founderId);
-                    }
+                    const founderName = appData.founderName || 'A Founder';
+                    const startupName = appData.startupName || 'Unnamed Startup';
+                    const founderId = appData.founderId;
+
+                    // Show the popup
+                    showNewApplicationPopup(appData, founderName, appId, founderId);
                 }
             }
         }
     });
 }
-
 function showNewApplicationPopup(appData, founderName, appId, founderId) {
     // Prevent duplicate popups from stacking
     if (document.getElementById('newAppPopup')) return;
