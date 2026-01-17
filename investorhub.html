@@ -1838,38 +1838,38 @@ window.checkAngelStatus = async () => {
 // Track which applications we've already shown popups for
 let shownApplicationPopups = new Set(JSON.parse(localStorage.getItem('shownAppPopups') || '[]'));
 
+/**
+ * APPLICATION INBOX NOTIFICATION SYSTEM
+ * Logic: Shows popup if status is 'completed' AND read is false/undefined.
+ * Persistence: Updates Firebase on dismissal.
+ */
+
 function startApplicationInboxListener() {
     if (!currentUser) return;
 
     const applicationsRef = ref(db, 'Applications');
 
+    // Listen for changes in real-time
     onValue(applicationsRef, async (snapshot) => {
         if (!snapshot.exists()) return;
 
         const allApplications = snapshot.val() || {};
 
-        // Loop through all founders' applications
         for (const founderId in allApplications) {
             const founderApps = allApplications[founderId];
 
             for (const [appId, appData] of Object.entries(founderApps)) {
-                // Check if this application is NEW and COMPLETE
-                const isNewApp = appData.status === 'completed';
-                const alreadyShown = shownApplicationPopups.has(appId);
+                
+                // --- LOGIC: Only show if completed AND not yet read ---
+                const isCompleted = appData.status === 'completed';
+                const isUnread = appData.read !== true; 
 
-                // Show popup ONLY if:
-                // 1. Application is completed (new submission)
-                // 2. We haven't shown popup for this app before
-                // 3. User is on dashboard
-                if (isNewApp && !alreadyShown) {
+                if (isCompleted && isUnread) {
+                    // Only show if user is on the dashboard
                     const isDashboard = window.location.hash === '#dashboard' || window.location.hash === '';
                     
                     if (isDashboard) {
-                        // Mark as shown IMMEDIATELY to prevent duplicates
-                        shownApplicationPopups.add(appId);
-                        localStorage.setItem('shownAppPopups', JSON.stringify([...shownApplicationPopups]));
-                        
-                        // Fetch founder name
+                        // Fetch founder name for the popup
                         let founderName = 'A Founder';
                         try {
                             const founderSnap = await get(ref(db, `founderProfile/${founderId}/founderUsername`));
@@ -1880,8 +1880,8 @@ function startApplicationInboxListener() {
                             console.error("Error fetching founder:", e);
                         }
                         
-                        // Show the popup
-                        showNewApplicationPopup(appData, founderName, appId);
+                        // Show the popup and pass the founderId for the update function
+                        showNewApplicationPopup(appData, founderName, appId, founderId);
                     }
                 }
             }
@@ -1889,22 +1889,18 @@ function startApplicationInboxListener() {
     });
 }
 
-// Show Beautiful Application Notification Popup
-function showNewApplicationPopup(appData, founderName, appId) {
-    // Prevent duplicate popups
+function showNewApplicationPopup(appData, founderName, appId, founderId) {
+    // Prevent duplicate popups from stacking
     if (document.getElementById('newAppPopup')) return;
     
-    // Create popup overlay
     const popup = document.createElement('div');
     popup.id = 'newAppPopup';
     popup.innerHTML = `
         <style>
             .new-app-popup-overlay {
                 position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
+                top: 0; left: 0;
+                width: 100vw; height: 100vh;
                 background: rgba(0, 0, 0, 0.95);
                 backdrop-filter: blur(10px);
                 display: flex;
@@ -1913,11 +1909,7 @@ function showNewApplicationPopup(appData, founderName, appId) {
                 z-index: 999999;
                 animation: popupFadeIn 0.4s ease;
             }
-            
-            @keyframes popupFadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
+            @keyframes popupFadeIn { from { opacity: 0; } to { opacity: 1; } }
             
             .new-app-popup-box {
                 background: linear-gradient(135deg, #0a2f23 0%, #134e4a 100%);
@@ -1930,22 +1922,12 @@ function showNewApplicationPopup(appData, founderName, appId) {
                 box-shadow: 0 30px 60px rgba(16, 185, 129, 0.3);
                 animation: popupSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
-            
             @keyframes popupSlideUp {
-                from { 
-                    transform: translateY(50px) scale(0.9);
-                    opacity: 0;
-                }
-                to { 
-                    transform: translateY(0) scale(1);
-                    opacity: 1;
-                }
+                from { transform: translateY(50px) scale(0.9); opacity: 0; }
+                to { transform: translateY(0) scale(1); opacity: 1; }
             }
             
-            .popup-content-area {
-                padding: 50px 40px;
-                text-align: center;
-            }
+            .popup-content-area { padding: 50px 40px; text-align: center; }
             
             .popup-new-tag {
                 display: inline-block;
@@ -1959,93 +1941,43 @@ function showNewApplicationPopup(appData, founderName, appId) {
                 letter-spacing: 1.5px;
                 margin-bottom: 2rem;
                 animation: tagPulse 1.5s infinite;
-                box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
             }
-            
-            @keyframes tagPulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-            }
+            @keyframes tagPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
             
             .popup-main-title {
-                font-size: 2rem;
-                font-weight: 800;
-                color: #fff;
-                margin-bottom: 2rem;
-                line-height: 1.3;
-                text-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+                font-size: 2rem; font-weight: 800; color: #fff;
+                margin-bottom: 2rem; line-height: 1.3;
             }
             
-            .popup-message-text {
-                color: #a7f3d0;
-                font-size: 1.1rem;
-                line-height: 1.8;
-                margin-bottom: 3rem;
-            }
-            
-            .popup-app-highlight {
-                color: #10b981;
-                font-weight: 700;
-                text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
-            }
-            
-            .popup-founder-highlight {
-                color: #3b82f6;
-                font-weight: 700;
-                text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-            }
+            .popup-message-text { color: #a7f3d0; font-size: 1.1rem; line-height: 1.8; margin-bottom: 3rem; }
+            .popup-app-highlight { color: #10b981; font-weight: 700; }
+            .popup-founder-highlight { color: #3b82f6; font-weight: 700; }
             
             .popup-action-btn {
                 background: linear-gradient(135deg, #10b981, #059669);
-                color: #fff;
-                border: none;
-                padding: 18px 50px;
-                border-radius: 12px;
-                font-weight: 800;
-                font-size: 1rem;
-                text-transform: uppercase;
-                letter-spacing: 1.5px;
-                cursor: pointer;
-                transition: all 0.3s;
-                box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
-                width: 100%;
+                color: #fff; border: none; padding: 18px 50px;
+                border-radius: 12px; font-weight: 800; font-size: 1rem;
+                text-transform: uppercase; letter-spacing: 1.5px;
+                cursor: pointer; transition: all 0.3s; width: 100%;
             }
-            
-            .popup-action-btn:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 15px 40px rgba(16, 185, 129, 0.6);
-                background: linear-gradient(135deg, #059669, #047857);
-            }
-            
-            .popup-action-btn:active {
-                transform: translateY(-1px);
-            }
+            .popup-action-btn:hover { transform: translateY(-3px); background: linear-gradient(135deg, #059669, #047857); }
         </style>
         
-        <div class="new-app-popup-overlay" onclick="closeNewApplicationPopup('${appId}')">
+        <div class="new-app-popup-overlay">
             <div class="new-app-popup-box" onclick="event.stopPropagation()">
-                
                 <div class="popup-content-area">
-                    
                     <div class="popup-new-tag">📥 NEW APPLICATION</div>
-                    
-                    <h2 class="popup-main-title">
-                        New Funding Request!
-                    </h2>
-                    
+                    <h2 class="popup-main-title">New Funding Request!</h2>
                     <p class="popup-message-text">
                         <strong class="popup-founder-highlight">${founderName}</strong> has submitted a funding application 
                         <strong class="popup-app-highlight">"${appData.appName || 'Funding Proposal'}"</strong>
                         <br><br>
                         Please check the <strong>Applications Inbox</strong> to review the full details.
                     </p>
-                    
-                    <button class="popup-action-btn" onclick="closeNewApplicationPopup('${appId}')">
+                    <button class="popup-action-btn" onclick="markAppAsRead('${founderId}', '${appId}')">
                         OK, Got It!
                     </button>
-                    
                 </div>
-                
             </div>
         </div>
     `;
@@ -2053,12 +1985,23 @@ function showNewApplicationPopup(appData, founderName, appId) {
     document.body.appendChild(popup);
 }
 
-// Close popup function
-window.closeNewApplicationPopup = function(appId) {
-    const popup = document.getElementById('newAppPopup');
-    if (popup) {
-        popup.style.animation = 'popupFadeIn 0.3s ease reverse';
-        setTimeout(() => popup.remove(), 300);
+// Function to update the database and close the UI
+window.markAppAsRead = async function(founderId, appId) {
+    try {
+        // Update Firebase node
+        const appRef = ref(db, `Applications/${founderId}/${appId}`);
+        await update(appRef, { read: true });
+
+        // Remove UI
+        const popup = document.getElementById('newAppPopup');
+        if (popup) {
+            popup.style.animation = 'popupFadeIn 0.3s ease reverse';
+            setTimeout(() => popup.remove(), 300);
+        }
+    } catch (error) {
+        console.error("Error marking as read:", error);
+        // Fallback: just remove popup if DB update fails so user isn't stuck
+        document.getElementById('newAppPopup')?.remove();
     }
 };
 // 2. Helper function to change the button appearance and behavior
