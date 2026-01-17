@@ -4810,20 +4810,25 @@ function timeSince(date) {
 // --- PASTE AFTER timeSince function ---
 function startApplicationReplyListener() {
     if (!currentUser) return;
+
     const repliesRef = ref(db, 'ApplicationReplies');
+
     onValue(repliesRef, (snapshot) => {
         if (!snapshot.exists()) {
             updateReplyBadge(0);
             return;
         }
-        const allReplies = snapshot.val();
+
+        const allReplies = snapshot.val() || {};
         let unreadCount = 0;
-        Object.values(userReplies
-).forEach(reply => {
-            if (reply.read === false) {
+
+        Object.values(allReplies).forEach(reply => {
+            // ✅ FILTER BY LOGGED-IN USER
+            if (reply.founderId === currentUser.uid && reply.read === false) {
                 unreadCount++;
             }
         });
+
         updateReplyBadge(unreadCount);
     });
 }
