@@ -2258,7 +2258,7 @@ window.handleViewProfile = async function(userId) {
                 
                 if (snapshot.exists()) {
                     const apps = snapshot.val();
-                    const readyApps = Object.entries(apps).filter(([id, app]) => app.status === 'ready');
+                    const readyApps = Object.entries(apps).filter(([id, app]) => app.status === 'completed');
                     
                     if (readyApps.length === 0) {
                         alert('You have no ready applications to pitch. Please create an application first.');
