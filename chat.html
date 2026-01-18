@@ -47,7 +47,7 @@
     font-size: 1rem;
   }
   #msgInput {
-    font-size: 16px; /* stops iOS zoom */
+    font-size: 16px;
   }
 }
 
@@ -201,8 +201,6 @@
     import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // ========== CONFIG - ADD YOUR KEYS HERE ==========
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
   authDomain: "scalevest-163a0.firebaseapp.com",
@@ -215,44 +213,39 @@ const firebaseConfig = {
 };
         const VIDEOSDK_API_KEY = "b177e40f-0265-4488-9695-80d63d012463";
         const VIDEOSDK_API_ENDPOINT = "https://api.videosdk.live/v2";
-        // ==================================================
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const storage = getStorage(app);
         const auth = getAuth(app);
+
 async function setUserPresence(user) {
-    // 1. Manage Real-time Presence
     const presenceRef = ref(db, `presence/${user.uid}`);
     set(presenceRef, { 
         online: true, 
         lastSeen: serverTimestamp() 
     });
     
-    // Ensure they show as offline when they disconnect
     onDisconnect(presenceRef).set({ 
         online: false, 
         lastSeen: serverTimestamp() 
     });
 
-    // 2. Update Login Stats (Streak & Today's Status)
     const statsRef = ref(db, `users/${user.uid}/stats`);
     
     try {
         await runTransaction(statsRef, (currentData) => {
             const now = new Date();
-            const todayStr = now.toISOString().split('T')[0]; // e.g., "2026-01-16"
+            const todayStr = now.toISOString().split('T')[0];
             
             if (!currentData) {
                 return { todayLogin: true, loginStreak: 1, lastLoginDate: todayStr };
             }
 
-            // If they already logged in today, don't change the streak
             if (currentData.lastLoginDate === todayStr) {
                 return { ...currentData, todayLogin: true };
             }
 
-            // Check if they logged in yesterday to continue the streak
             const yesterday = new Date();
             yesterday.setDate(now.getDate() - 1);
             const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -261,7 +254,7 @@ async function setUserPresence(user) {
             if (currentData.lastLoginDate === yesterdayStr) {
                 newStreak += 1;
             } else {
-                newStreak = 1; // Streak broken, reset to 1
+                newStreak = 1;
             }
 
             return {
@@ -289,24 +282,18 @@ async function setUserPresence(user) {
                 await identifyUserRole();
                 initializeChat();
 
-
-
 const triggerMeeting = params.get('triggerMeeting');
 const meetingType = params.get('meetingType');
 
 if (triggerMeeting === 'true') {
-    // Wait a brief moment for the chat to sync
     setTimeout(async () => {
         if (meetingType === 'now') {
-            // Logic to auto-create 'Now' meeting
             if (window.createMeetingNow) {
                 await window.createMeetingNow();
             }
         } else if (meetingType === 'schedule') {
-            // Open the schedule modal automatically
             if (window.openMeetingModal) {
                 window.openMeetingModal();
-                // Optionally reveal the schedule section specifically
                 if (window.showScheduleOptions) window.showScheduleOptions();
             }
         }
@@ -345,11 +332,6 @@ async function initializeChat() {
     chatRoomID = `chat_${participantIDs[0]}_${participantIDs[1]}`;
     let chatTitle = "Chat";
     
-    console.log("🔧 Initializing chat...");
-    console.log("Chat room ID:", chatRoomID);
-    console.log("Current user:", currentUser.uid);
-    console.log("Recipient:", recipientUID);
-    
     try {
         const fSnap = await get(ref(db, `founderProfile/${recipientUID}`));
         if (fSnap.exists()) chatTitle = fSnap.val().firstName || "Founder";
@@ -357,20 +339,16 @@ async function initializeChat() {
             const iSnap = await get(ref(db, `investorProfiles/${recipientUID}`));
             if (iSnap.exists()) chatTitle = iSnap.val().fullName || "Investor";
         }
-    } catch (e) {
-        console.error("Error fetching chat title:", e);
-    }
+    } catch (e) {}
     
     document.getElementById('chatTitle').textContent = chatTitle;
     document.getElementById('initialLoader').style.display = 'none';
 
     const messagesRef = ref(db, `Chats/${chatRoomID}`);
     
-    // Track if this is initial load or a new message
     let isInitialLoad = true;
     let initialMessageCount = 0;
     
-    // Listen for new messages
     onChildAdded(messagesRef, async (snapshot) => {
         const msg = snapshot.val();
         if(msg && msg.sender) {
@@ -379,18 +357,12 @@ async function initializeChat() {
             if (isInitialLoad) {
                 initialMessageCount++;
             } else {
-                // Only check auto-reply for NEW messages (not during initial load)
-                console.log("🆕 NEW message detected, checking auto-reply...");
                 await checkAndSendAutoReply(msg);
             }
         }
     });
     
-    // After initial messages are loaded, check if we need to send auto-reply for existing conversation
     setTimeout(async () => {
-        console.log(`📥 Initial load: ${initialMessageCount} messages loaded`);
-        
-        // Check existing messages to see if auto-reply should be sent
         const snapshot = await get(messagesRef);
         if (snapshot.exists()) {
             const messages = Object.values(snapshot.val()).filter(m => m && m.sender);
@@ -398,26 +370,14 @@ async function initializeChat() {
             const myNonAutoMessages = myMessages.filter(m => !m.isAutoReply);
             const theirMessages = messages.filter(m => m.sender === recipientUID);
             
-            console.log("📊 Existing conversation stats:");
-            console.log("  - Total messages:", messages.length);
-            console.log("  - My messages:", myMessages.length);
-            console.log("  - My non-auto messages:", myNonAutoMessages.length);
-            console.log("  - Their messages:", theirMessages.length);
-            
-            // If investor has sent messages but I haven't (excluding auto-replies), check for auto-reply
             if (theirMessages.length > 0 && myNonAutoMessages.length === 0) {
-                console.log("🔍 Checking auto-reply for existing conversation...");
-                // Send the last investor message through the check
                 const lastInvestorMsg = theirMessages[theirMessages.length - 1];
                 await checkAndSendAutoReply(lastInvestorMsg);
-            } else {
-                console.log("ℹ️ Auto-reply not needed for existing conversation");
             }
         }
         
         isInitialLoad = false;
-        console.log("✅ Initial load complete, auto-reply is now active for NEW messages");
-    }, 2000); // Increased delay to 2 seconds for better reliability
+    }, 2000);
     
     const typingRef = ref(db, `Chats/${chatRoomID}/typing/${recipientUID}`);
     onValue(typingRef, (snapshot) => {
@@ -433,16 +393,12 @@ async function initializeChat() {
         }
     });
 }
-// This runs when FOUNDER opens an existing conversation
+
 async function checkAndSendAutoReply(newMessage) {
     try {
-        console.log("=== FOUNDER-SIDE AUTO-REPLY CHECK ===");
-        
-        // Only proceed if I'm a founder
         const founderSnap = await get(ref(db, `founderProfile/${currentUser.uid}`));
         
         if (!founderSnap.exists()) {
-            console.log("Not a founder, skipping");
             return;
         }
         
@@ -450,11 +406,9 @@ async function checkAndSendAutoReply(newMessage) {
         const autoReplyData = founderData.autoReply;
         
         if (!autoReplyData || !autoReplyData.enabled) {
-            console.log("Auto-reply not enabled");
             return;
         }
         
-        // Get all messages
         const messagesRef = ref(db, `Chats/${chatRoomID}`);
         const snapshot = await get(messagesRef);
         
@@ -463,7 +417,6 @@ async function checkAndSendAutoReply(newMessage) {
         const messages = snapshot.val();
         const messageArray = Object.values(messages).filter(m => m && m.sender);
         
-        // Count my non-auto messages
         const myRealMessages = messageArray.filter(m => 
             m.sender === currentUser.uid && !m.isAutoReply
         );
@@ -473,10 +426,7 @@ async function checkAndSendAutoReply(newMessage) {
             m.sender === currentUser.uid && m.isAutoReply
         );
         
-        // Send auto-reply if investor messaged but I haven't replied
         if (theirMessages.length > 0 && myRealMessages.length === 0 && !autoReplySent) {
-            console.log("🚀 Sending auto-reply (founder opened chat)...");
-            
             await push(ref(db, `Chats/${chatRoomID}`), {
                 sender: currentUser.uid,
                 text: autoReplyData.message,
@@ -485,14 +435,13 @@ async function checkAndSendAutoReply(newMessage) {
                 read: false,
                 isAutoReply: true
             });
-            
-            console.log("✅ Auto-reply sent");
         }
         
     } catch (error) {
         console.error("Error in founder auto-reply:", error);
     }
 }
+
         function renderMessage(msg) {
     const container = document.getElementById('chatContainer');
     const isMine = msg.sender === currentUser.uid;
@@ -513,7 +462,6 @@ async function checkAndSendAutoReply(newMessage) {
     if (msg.text) {
         contentHtml += `<div>${msg.text}</div>`;
         
-        // Add auto-reply indicator
         if (msg.isAutoReply && isMine) {
             contentHtml += `<div style="font-size: 0.75rem; opacity: 0.7; margin-top: 5px; font-style: italic;">🤖 Auto-reply</div>`;
         }
@@ -530,336 +478,283 @@ async function checkAndSendAutoReply(newMessage) {
 }
 
 async function createVideoSDKRoom() {
-    // Generate a unique room ID locally - no API call needed
     const roomId = `scalevest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    console.log('Created room ID:', roomId);
     return roomId;
 }
 
 async function getVideoSDKToken(roomId) {
-    // VideoSDK Prebuilt accepts API key directly as token
-    console.log('Using API key as token for room:', roomId);
     return VIDEOSDK_API_KEY;
 }
+
         window.openMeetingModal = () => { document.getElementById('meetingSetupModal').style.display = 'flex'; };
         window.closeMeetingModal = () => { document.getElementById('meetingSetupModal').style.display = 'none'; };
-// Function to show the scheduling inputs
+
 window.showScheduleOptions = () => {
     document.getElementById('meetingChoices').style.display = 'none';
     document.getElementById('modalCloseBtn').style.display = 'none';
     document.getElementById('scheduleDetails').style.display = 'block';
 };
 
-// Function to go back to the first step
 window.resetMeetingModal = () => {
     document.getElementById('meetingChoices').style.display = 'grid';
     document.getElementById('modalCloseBtn').style.display = 'block';
     document.getElementById('scheduleDetails').style.display = 'none';
 };
-
-// Shortcut for "Meet Now"
 window.createMeetingNow = async () => {
-    // Set values to 'now' logic
-    document.getElementById('meetingTitle').value = "Quick Sync";
-    document.getElementById('meetingDate').value = "";
-    document.getElementById('meetingTime').value = "";
-    
-    // Call your existing createMeeting function
-    await window.createMeeting();
+document.getElementById('meetingTitle').value = "Quick Sync";
+document.getElementById('meetingDate').value = "";
+document.getElementById('meetingTime').value = "";
+await window.createMeeting();
 };
-
-// Extend your existing closeMeetingModal to reset UI for next time
 const originalCloseModal = window.closeMeetingModal;
 window.closeMeetingModal = () => {
-    originalCloseModal();
-    resetMeetingModal(); // Reset the view so it starts at Step 1 next time
+originalCloseModal();
+resetMeetingModal();
 };
-        window.createMeeting = async () => {
-            const title = document.getElementById('meetingTitle').value || "Quick Sync";
-            const dateVal = document.getElementById('meetingDate').value;
-            const timeVal = document.getElementById('meetingTime').value;
-            let scheduledTime = 'now';
-            if (dateVal && timeVal) scheduledTime = new Date(`${dateVal}T${timeVal}`).getTime();
+    window.createMeeting = async () => {
+        const title = document.getElementById('meetingTitle').value || "Quick Sync";
+        const dateVal = document.getElementById('meetingDate').value;
+        const timeVal = document.getElementById('meetingTime').value;
+        let scheduledTime = 'now';
+        if (dateVal && timeVal) scheduledTime = new Date(`${dateVal}T${timeVal}`).getTime();
 
-            const roomId = await createVideoSDKRoom();
-            if (!roomId) { alert('Failed to create meeting room.'); return; }
-            const roomToken = await getVideoSDKToken(roomId);
-            if (!roomToken) { alert('Failed to get meeting token.'); return; }
+        const roomId = await createVideoSDKRoom();
+        if (!roomId) { alert('Failed to create meeting room.'); return; }
+        const roomToken = await getVideoSDKToken(roomId);
+        if (!roomToken) { alert('Failed to get meeting token.'); return; }
 
-            await push(ref(db, `Chats/${chatRoomID}`), {
-                sender: currentUser.uid, type: 'meeting', title: title, meetingId: roomId,
-                roomToken: roomToken, scheduledTime: scheduledTime, timestamp: Date.now(), recipient: recipientUID
-            });
-            closeMeetingModal();
-        };
+        await push(ref(db, `Chats/${chatRoomID}`), {
+            sender: currentUser.uid, type: 'meeting', title: title, meetingId: roomId,
+            roomToken: roomToken, scheduledTime: scheduledTime, timestamp: Date.now(), recipient: recipientUID
+        });
+        closeMeetingModal();
+    };
 
-        window.tryJoinMeeting = async (meetingId, roomToken, scheduledTime) => {
-            const now = Date.now();
-            if (scheduledTime !== 'now' && now < (scheduledTime - 5 * 60 * 1000)) {
-                const dateObj = new Date(scheduledTime);
-                document.getElementById('waitDisplayTime').textContent = dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                document.getElementById('waitDisplayDate').textContent = dateObj.toLocaleDateString();
-                document.getElementById('waitingRoomModal').style.display = 'flex';
-                return;
-            }
-            document.getElementById('videoConferenceContainer').style.display = 'flex';
-            document.getElementById('meetingLoader').style.display = 'flex';
-            try {
-                await initializeVideoSDK(meetingId, roomToken);
-            } catch (err) {
-                console.error("VideoSDK error:", err);
-                document.getElementById('videoConferenceContainer').style.display = 'none';
-                alert("Failed to join meeting.");
-            }
-        };
+    window.tryJoinMeeting = async (meetingId, roomToken, scheduledTime) => {
+        const now = Date.now();
+        if (scheduledTime !== 'now' && now < (scheduledTime - 5 * 60 * 1000)) {
+            const dateObj = new Date(scheduledTime);
+            document.getElementById('waitDisplayTime').textContent = dateObj.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('waitDisplayDate').textContent = dateObj.toLocaleDateString();
+            document.getElementById('waitingRoomModal').style.display = 'flex';
+            return;
+        }
+        document.getElementById('videoConferenceContainer').style.display = 'flex';
+        document.getElementById('meetingLoader').style.display = 'flex';
+        try {
+            await initializeVideoSDK(meetingId, roomToken);
+        } catch (err) {
+            console.error("VideoSDK error:", err);
+            document.getElementById('videoConferenceContainer').style.display = 'none';
+            alert("Failed to join meeting.");
+        }
+    };
 
-       async function initializeVideoSDK(roomId, token) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const recipient = urlParams.get('recipient');
-    const returnUrl = window.location.origin + window.location.pathname + `?recipient=${recipient}`;
+   async function initializeVideoSDK(roomId, token) {
+const urlParams = new URLSearchParams(window.location.search);
+const recipient = urlParams.get('recipient');
+const returnUrl = window.location.origin + window.location.pathname + `?recipient=${recipient}`;
 
-    // Ensure the container is visible before initializing
-    document.getElementById('videoConferenceContainer').style.display = 'flex';
+document.getElementById('videoConferenceContainer').style.display = 'flex';
 
-    const config = {
-        name: userDisplayName,
-        meetingId: roomId,
-        apiKey: VIDEOSDK_API_KEY,
-        containerId: "videoGrid",
-        micEnabled: true,
-        webcamEnabled: true,
-        participantCanToggleSelfWebcam: true,
-        participantCanToggleSelfMic: true,
+const config = {
+    name: userDisplayName,
+    meetingId: roomId,
+    apiKey: VIDEOSDK_API_KEY,
+    containerId: "videoGrid",
+    micEnabled: true,
+    webcamEnabled: true,
+    participantCanToggleSelfWebcam: true,
+    participantCanToggleSelfMic: true,
 raiseHandEnabled: false,
 screenShareEnabled: true,
 chatEnabled: false,
 pollEnabled: false,
 participantName: userDisplayName,
 participantAvatar: userAvatar || undefined,
+    whiteboardEnabled: false,
+    recordingEnabled: false,
+    brandingEnabled: false,
+    participantCanLeave: true,
+    poweredBy: false,
+    redirectOnLeave: returnUrl, 
+    permissions: { 
+        askToJoin: false, 
+        toggleParticipantMic: true, 
+        toggleParticipantWebcam: true, 
+        removeParticipant: true, 
+        endMeeting: true, 
+        drawOnWhiteboard: false, 
+        toggleWhiteboard: false, 
+        toggleRecording: false 
+    },
+    joinScreen: { visible: false },
+    leftScreen: { 
+        visible: true,
+        actionButton: { label: "Return to Chat", href: returnUrl } 
+    },
+    notificationSoundEnabled: true,
+    debug: false,
+    maxResolution: "hd",
+    defaultCameraIndex: 0,
+    layout: { type: "GRID", priority: "PIN", gridSize: 3 }
+};
 
-        whiteboardEnabled: false,
-        recordingEnabled: false,
-        brandingEnabled: false,
-        participantCanLeave: true,
-        poweredBy: false,
-        // This handles the redirect automatically when the user leaves
-        redirectOnLeave: returnUrl, 
-        permissions: { 
-            askToJoin: false, 
-            toggleParticipantMic: true, 
-            toggleParticipantWebcam: true, 
-            removeParticipant: true, 
-            endMeeting: true, 
-            drawOnWhiteboard: false, 
-            toggleWhiteboard: false, 
-            toggleRecording: false 
-        },
-        joinScreen: { visible: false },
-        leftScreen: { 
-            visible: true,
-            actionButton: { label: "Return to Chat", href: returnUrl } 
-        },
-        notificationSoundEnabled: true,
-        debug: false,
-        maxResolution: "hd",
-        defaultCameraIndex: 0,
-        layout: { type: "GRID", priority: "PIN", gridSize: 3 }
+const meeting = new VideoSDKMeeting();
+meeting.init(config);
+
+document.getElementById('meetingLoader').style.display = 'none';
+}
+    window.toggleAudio = () => {
+        if(meeting) {
+            audioMuted = !audioMuted;
+            meeting.toggleMic();
+            document.getElementById('btnMic').classList.toggle('active', audioMuted);
+        }
     };
 
-    // Initialize the meeting
-    const meeting = new VideoSDKMeeting();
-    meeting.init(config);
-
-    document.getElementById('meetingLoader').style.display = 'none';
-}
-
-        window.toggleAudio = () => {
-            if(meeting) {
-                audioMuted = !audioMuted;
-                meeting.toggleMic();
-                document.getElementById('btnMic').classList.toggle('active', audioMuted);
-            }
-        };
-
-        window.toggleVideo = () => {
-            if(meeting) {
-                videoMuted = !videoMuted;
-                meeting.toggleWebcam();
-                document.getElementById('btnCam').classList.toggle('active', videoMuted);
-            }
-        };
-
-        window.leaveMeeting = () => {
-            if(meeting) meeting.leave();
-            closeVideoInterface();
-        };
-
-        window.endMeetingForAll = () => {
-            if(!confirm("End meeting for everyone?")) return;
-            if(meeting) meeting.end();
-            closeVideoInterface();
-        };
-
-        function closeVideoInterface() {
-            document.getElementById('videoConferenceContainer').style.display = 'none';
-            meeting = null;
-            audioMuted = false;
-            videoMuted = false;
-            document.getElementById('btnMic').classList.remove('active');
-            document.getElementById('btnCam').classList.remove('active');
+    window.toggleVideo = () => {
+        if(meeting) {
+            videoMuted = !videoMuted;
+            meeting.toggleWebcam();
+            document.getElementById('btnCam').classList.toggle('active', videoMuted);
         }
+    };
 
-        const fileInput = document.getElementById('fileInput');
-        const attachBtn = document.getElementById('attachBtn');
-        attachBtn.addEventListener('click', () => fileInput.click());
+    window.leaveMeeting = () => {
+        if(meeting) meeting.leave();
+        closeVideoInterface();
+    };
 
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const progressBar = document.getElementById('uploadProgress');
-            progressBar.style.width = '10%';
-            try {
-                const storagePath = `chat_uploads/${chatRoomID}/${Date.now()}_${file.name}`;
-                const fileRef = storageRef(storage, storagePath);
-                const uploadTask = uploadBytesResumable(fileRef, file);
-                uploadTask.on('state_changed', 
-                    (snapshot) => { progressBar.style.width = ((snapshot.bytesTransferred / snapshot.totalBytes) * 100) + '%'; }, 
-                    (error) => { console.error("Upload failed", error); alert("File upload failed."); progressBar.style.width = '0%'; }, 
-                    async () => {
-                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        let type = 'document';
-                        if (file.type.startsWith('image/')) type = 'image';
-                        else if (file.type.startsWith('video/')) type = 'video';
-                        await push(ref(db, `Chats/${chatRoomID}`), {
+    window.endMeetingForAll = () => {
+        if(!confirm("End meeting for everyone?")) return;
+        if(meeting) meeting.end();
+        closeVideoInterface();
+    };
+
+    function closeVideoInterface() {
+        document.getElementById('videoConferenceContainer').style.display = 'none';
+        meeting = null;
+        audioMuted = false;
+        videoMuted = false;
+        document.getElementById('btnMic').classList.remove('active');
+        document.getElementById('btnCam').classList.remove('active');
+    }
+
+    const fileInput = document.getElementById('fileInput');
+    const attachBtn = document.getElementById('attachBtn');
+    attachBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const progressBar = document.getElementById('uploadProgress');
+        progressBar.style.width = '10%';
+        try {
+            const storagePath = `chat_uploads/${chatRoomID}/${Date.now()}_${file.name}`;
+            const fileRef = storageRef(storage, storagePath);
+            const uploadTask = uploadBytesResumable(fileRef, file);
+            uploadTask.on('state_changed', 
+                (snapshot) => { progressBar.style.width = ((snapshot.bytesTransferred / snapshot.totalBytes) * 100) + '%'; }, 
+                (error) => { console.error("Upload failed", error); alert("File upload failed."); progressBar.style.width = '0%'; }, 
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    let type = 'document';
+                    if (file.type.startsWith('image/')) type = 'image';
+                    else if (file.type.startsWith('video/')) type = 'video';
+                    await push(ref(db, `Chats/${chatRoomID}`), {
 sender: currentUser.uid, text: "", fileUrl: downloadURL, fileType: type, fileName: file.name, timestamp: Date.now(), recipient: recipientUID
-                        });
-                        progressBar.style.width = '0%';
-                        fileInput.value = '';
-                    }
-                );
-            } catch (error) {
-                console.error("Error", error);
-                progressBar.style.width = '0%';
-            }
-        });
-
-        const input = document.getElementById('msgInput');
-        const sendBtn = document.getElementById('sendBtn');
-
+});
+progressBar.style.width = '0%';
+fileInput.value = '';
+}
+);
+} catch (error) {
+console.error("Error", error);
+progressBar.style.width = '0%';
+}
+});
+    const input = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
 async function sendMessage() {
-    const text = input.value.trim();
-    if (!text || !chatRoomID) return;
+const text = input.value.trim();
+if (!text || !chatRoomID) return;
+const badWords = ["abuse", "scam", "fraud", "kill", "idiot"];
+let cleanText = text;
+badWords.forEach(w => { cleanText = cleanText.replace(new RegExp(`\\b${w}\\b`,'gi'), '####'); });
 
-    const badWords = ["abuse", "scam", "fraud", "kill", "idiot"];
-    let cleanText = text;
-    badWords.forEach(w => { cleanText = cleanText.replace(new RegExp(`\\b${w}\\b`,'gi'), '####'); });
+await push(ref(db, `Chats/${chatRoomID}`), {
+    sender: currentUser.uid,
+    text: cleanText,
+    timestamp: Date.now(),
+    recipient: recipientUID,
+    read: false
+});
 
-    // Send my message first
-    await push(ref(db, `Chats/${chatRoomID}`), {
-        sender: currentUser.uid,
-        text: cleanText,
-        timestamp: Date.now(),
-        recipient: recipientUID,
-        read: false
+input.value = "";
+set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
+
+await triggerRecipientAutoReply();
+}
+async function triggerRecipientAutoReply() {
+try {
+const founderSnap = await get(ref(db, founderProfile/${recipientUID}));
+    if (!founderSnap.exists()) {
+        return;
+    }
+    
+    const founderData = founderSnap.val();
+    const autoReplyData = founderData.autoReply;
+    
+    if (!autoReplyData || !autoReplyData.enabled) {
+        return;
+    }
+    
+    const messagesRef = ref(db, `Chats/${chatRoomID}`);
+    const snapshot = await get(messagesRef);
+    
+    if (!snapshot.exists()) {
+        return;
+    }
+    
+    const messages = snapshot.val();
+    const messageArray = Object.values(messages).filter(m => m && m.sender && m.timestamp);
+    
+    const founderMessages = messageArray.filter(m => 
+        m.sender === recipientUID && !m.isAutoReply
+    );
+    
+    const autoReplySent = messageArray.some(m => 
+        m.sender === recipientUID && m.isAutoReply === true
+    );
+    
+    if (founderMessages.length === 0 && !autoReplySent) {
+        await push(ref(db, `Chats/${chatRoomID}`), {
+            sender: recipientUID,
+            text: autoReplyData.message,
+            timestamp: Date.now(),
+            recipient: currentUser.uid,
+            read: false,
+            isAutoReply: true
+        });
+    }
+    
+} catch (error) {
+    console.error("Error triggering auto-reply:", error);
+}
+}
+    input.addEventListener('input', () => {
+        if (!chatRoomID) return;
+        set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), true);
+        if (typingTimeout) clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
+        }, 2000);
     });
 
-    input.value = "";
-    set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
+    sendBtn.addEventListener('click', sendMessage);
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    // ========================================
-    // AUTO-REPLY TRIGGER (NEW CODE)
-    // ========================================
-    // Check if recipient should send auto-reply
-    await triggerRecipientAutoReply();
-}
-
-// NEW FUNCTION: Check if recipient has auto-reply and trigger it
-async function triggerRecipientAutoReply() {
-    try {
-        console.log("🔍 Checking if recipient has auto-reply enabled...");
-        
-        // 1. Check if recipient is a founder
-        const founderSnap = await get(ref(db, `founderProfile/${recipientUID}`));
-        
-        if (!founderSnap.exists()) {
-            console.log("❌ Recipient is not a founder");
-            return;
-        }
-        
-        console.log("✅ Recipient is a founder");
-        
-        const founderData = founderSnap.val();
-        const autoReplyData = founderData.autoReply;
-        
-        if (!autoReplyData || !autoReplyData.enabled) {
-            console.log("❌ Auto-reply not configured or disabled");
-            return;
-        }
-        
-        console.log("✅ Auto-reply is enabled:", autoReplyData);
-        
-        // 2. Check if this is the first message in the conversation
-        const messagesRef = ref(db, `Chats/${chatRoomID}`);
-        const snapshot = await get(messagesRef);
-        
-        if (!snapshot.exists()) {
-            console.log("❌ No messages found (shouldn't happen)");
-            return;
-        }
-        
-        const messages = snapshot.val();
-        const messageArray = Object.values(messages).filter(m => m && m.sender && m.timestamp);
-        
-        // Count founder's non-auto-reply messages
-        const founderMessages = messageArray.filter(m => 
-            m.sender === recipientUID && !m.isAutoReply
-        );
-        
-        // Check if auto-reply already sent
-        const autoReplySent = messageArray.some(m => 
-            m.sender === recipientUID && m.isAutoReply === true
-        );
-        
-        console.log("📊 Stats:");
-        console.log("  - Founder's real messages:", founderMessages.length);
-        console.log("  - Auto-reply already sent:", autoReplySent);
-        
-        // 3. Send auto-reply if conditions are met
-        if (founderMessages.length === 0 && !autoReplySent) {
-            console.log("🚀 SENDING AUTO-REPLY on behalf of founder...");
-            
-            await push(ref(db, `Chats/${chatRoomID}`), {
-                sender: recipientUID,  // Send as the founder
-                text: autoReplyData.message,
-                timestamp: Date.now(),
-                recipient: currentUser.uid,
-                read: false,
-                isAutoReply: true
-            });
-            
-            console.log("✅✅✅ AUTO-REPLY SENT SUCCESSFULLY ✅✅✅");
-        } else {
-            console.log("ℹ️ Auto-reply conditions not met (founder already replied or auto-reply sent)");
-        }
-        
-    } catch (error) {
-        console.error("💥 Error triggering auto-reply:", error);
-    }
-}
-        
-        input.addEventListener('input', () => {
-            if (!chatRoomID) return;
-            set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), true);
-            if (typingTimeout) clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                set(ref(db, `Chats/${chatRoomID}/typing/${currentUser.uid}`), false);
-            }, 2000);
-        });
-
-        sendBtn.addEventListener('click', sendMessage);
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-
-    </script>
-
+</script>
 </body>
 </html>
