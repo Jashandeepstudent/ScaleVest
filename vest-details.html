@@ -663,7 +663,8 @@ async function setUserPresence(user) {
     const params = new URLSearchParams(window.location.search);
     const vestID = params.get('id');
     const ownerUID = params.get('owner');
-
+    let pageLoadTime = Date.now();
+    let isPageActive = true;
     /* --- 1. LOCAL PROGRESS PERSISTENCE --- */
     let viewedSections = new Set(['main']);
     const storageKey = vestID ? `progress_${vestID}` : 'progress_default';
@@ -679,6 +680,63 @@ async function setUserPresence(user) {
         }
         updateProgressUI();
     }
+// ============================================
+    // TIME TRACKING FUNCTIONS
+    // ============================================
+
+    async function trackTimeSpent() {
+        if (!vestID || !ownerUID || !pageLoadTime) return;
+        
+        const timeSpent = Math.floor((Date.now() - pageLoadTime) / 1000); // seconds
+        if (timeSpent < 3) return; // Ignore very short visits
+        
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const analyticsRef = ref(db, `Vests/${ownerUID}/${vestID}/analytics`);
+            
+            await runTransaction(analyticsRef, (current) => {
+                if (!current) {
+                    current = {
+                        totalTimeSpent: 0,
+                        todayTimeSpent: 0,
+                        lastImpressionDate: today
+                    };
+                }
+                
+                if (current.lastImpressionDate !== today) {
+                    current.todayTimeSpent = 0;
+                    current.lastImpressionDate = today;
+                }
+                
+                current.totalTimeSpent = (current.totalTimeSpent || 0) + timeSpent;
+                current.todayTimeSpent = (current.todayTimeSpent || 0) + timeSpent;
+                
+                return current;
+            });
+            
+        } catch (error) {
+            console.error('Error tracking time:', error);
+        }
+    }
+
+    // Track when user leaves page
+    window.addEventListener('beforeunload', () => {
+        if (isPageActive) {
+            trackTimeSpent();
+        }
+    });
+
+    // Track when user switches tabs
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            isPageActive = false;
+            trackTimeSpent();
+        } else {
+            isPageActive = true;
+            pageLoadTime = Date.now(); // Reset timer when they return
+        }
+    });
+
 
     function updateProgressUI() {
         const progress = (viewedSections.size / 5) * 100;
@@ -920,17 +978,63 @@ async function loadVestData() {
         document.getElementById('fundModal').classList.remove('active');
     };
 
-window.scheduleCall = function() {
-    // Check if the variables exist (they are defined at the top of your script)
-    if (!ownerUID || !vestID) {
-        alert("Error: Missing founder information.");
-        return;
+window.scheduleCall = async function() {
+        if (!ownerUID || !vestID) {
+            alert("Error: Missing founder information.");
+            return;
+        }
+
+        // Track funding interest
+        await trackFundingInterest();
+
+        // Redirect to chat
+        window.location.href = `chat.html?recipient=${ownerUID}&refVest=${vestID}`;
+    };
+ async function trackFundingInterest() {
+        if (!currentUser || !vestID || !ownerUID) return;
+        
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const interestKey = `${currentUser.uid}_${vestID}_interest`;
+            
+            const tracked = sessionStorage.getItem(interestKey);
+            if (tracked === today) return;
+            
+            const analyticsRef = ref(db, `Vests/${ownerUID}/${vestID}/analytics`);
+            const userInterestRef = ref(db, `Vests/${ownerUID}/${vestID}/analytics/interestedUsers/${currentUser.uid}`);
+            
+            await runTransaction(analyticsRef, (current) => {
+                if (!current) {
+                    current = {
+                        totalInterestedToFund: 0,
+                        todayInterestedToFund: 0,
+                        lastImpressionDate: today
+                    };
+                }
+                
+                if (current.lastImpressionDate !== today) {
+                    current.todayInterestedToFund = 0;
+                    current.lastImpressionDate = today;
+                }
+                
+                current.totalInterestedToFund = (current.totalInterestedToFund || 0) + 1;
+                current.todayInterestedToFund = (current.todayInterestedToFund || 0) + 1;
+                
+                return current;
+            });
+            
+            await set(userInterestRef, {
+                timestamp: Date.now(),
+                date: today,
+                investorId: currentUser.uid
+            });
+            
+            sessionStorage.setItem(interestKey, today);
+            
+        } catch (error) {
+            console.error('Error tracking funding interest:', error);
+        }
     }
-
-    // Redirect to chat.html passing the founder's ID and the context (Vest ID)
-    window.location.href = `chat.html?recipient=${ownerUID}&refVest=${vestID}`;
-};
-
     window.inviteMeeting = function() {
         alert('Meeting invitation feature coming soon!');
         closeModal();
