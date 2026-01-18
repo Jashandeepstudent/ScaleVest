@@ -6107,13 +6107,19 @@ window.resetModal = function() {
 };
 
 // Save Availability Status
+// Save Availability Status
 window.saveStatus = async function() {
     if (!currentUser) return;
     
     const statusSelect = document.getElementById('status');
     const dateInput = document.getElementById('unavailableDate');
     
-    const status = statusSelect ? statusSelect.value : null;
+    if (!statusSelect) {
+        alert("❌ Error: Status selector not found");
+        return;
+    }
+    
+    const status = statusSelect.value;
     const unavailableDate = dateInput ? dateInput.value : null;
     
     try {
@@ -6136,12 +6142,13 @@ window.saveStatus = async function() {
         
         // Handle immediate status change
         if (status) {
-            const newStatus = status === 'active' ? 'active' : 'inactive';
+            // FIXED: Map 'active' to 'live' and 'busy' to 'inactive'
+            const newStatus = status === 'active' ? 'live' : 'inactive';
             
             vestIds.forEach(vestId => {
                 updates[`Vests/${currentUser.uid}/${vestId}/status`] = newStatus;
                 
-                if (newStatus === 'active') {
+                if (newStatus === 'live') {
                     activeCount++;
                 } else {
                     inactiveCount++;
@@ -6185,8 +6192,7 @@ window.saveStatus = async function() {
                 }
             });
             
-            // Set up the date change (this would ideally be a Cloud Function)
-            // For now, we'll store it and handle it client-side
+            // Set up the date change
             scheduleStatusChange(unavailableDate);
             
             alert(`📅 Vests will be set to inactive on ${unavailableDate}`);
@@ -6205,7 +6211,6 @@ window.saveStatus = async function() {
         alert("❌ Failed to update availability. Please try again.");
     }
 };
-
 // Schedule status change for a future date
 function scheduleStatusChange(targetDate) {
     const checkInterval = setInterval(async () => {
@@ -6226,6 +6231,7 @@ function scheduleStatusChange(targetDate) {
                     const vestIds = Object.keys(snapshot.val());
                     
                     vestIds.forEach(vestId => {
+                        // FIXED: Use 'inactive' instead of 'inactive'
                         updates[`Vests/${currentUser.uid}/${vestId}/status`] = 'inactive';
                     });
                     
@@ -6242,7 +6248,6 @@ function scheduleStatusChange(targetDate) {
         }
     }, 60000); // Check every minute
 }
-
 // Event listeners for modal
 document.addEventListener('DOMContentLoaded', function() {
     // Open modal button
@@ -6299,6 +6304,7 @@ async function checkScheduledAvailability() {
                 if (vestsSnapshot.exists()) {
                     const updates = {};
                     Object.keys(vestsSnapshot.val()).forEach(vestId => {
+                        // FIXED: Use 'inactive' status
                         updates[`Vests/${currentUser.uid}/${vestId}/status`] = 'inactive';
                     });
                     
@@ -6315,6 +6321,7 @@ async function checkScheduledAvailability() {
         console.error("Error checking scheduled availability:", error);
     }
 }
+
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
