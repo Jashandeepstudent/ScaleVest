@@ -5998,6 +5998,96 @@ function formatTimestamp(timestamp) {
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
     return date.toLocaleDateString();
 }
+// Auto-Reply Functions
+window.openAutoReplySetup = async function() {
+    const modal = document.getElementById('autoReplyModal');
+    if (!modal) {
+        alert("Auto-reply feature is loading...");
+        return;
+    }
+    
+    // Load existing auto-reply if it exists
+    try {
+        const autoReplyRef = ref(db, `founderProfile/${currentUser.uid}/autoReply`);
+        const snapshot = await get(autoReplyRef);
+        
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            document.getElementById('autoReplyTextarea').value = data.message || '';
+            document.getElementById('autoReplyEnabled').checked = data.enabled || false;
+        } else {
+            // Set default message
+            document.getElementById('autoReplyTextarea').value = 
+                "Hi! Thanks for reaching out. I'm excited to discuss potential opportunities. I typically respond within 24 hours.";
+            document.getElementById('autoReplyEnabled').checked = true;
+        }
+    } catch (error) {
+        console.error("Error loading auto-reply:", error);
+    }
+    
+    modal.classList.add('show');
+};
+
+window.closeAutoReplyModal = function() {
+    const modal = document.getElementById('autoReplyModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+};
+
+window.saveAutoReply = async function() {
+    const message = document.getElementById('autoReplyTextarea').value.trim();
+    const enabled = document.getElementById('autoReplyEnabled').checked;
+    
+    if (!message) {
+        alert("❌ Please enter an auto-reply message");
+        return;
+    }
+    
+    if (message.length > 500) {
+        alert("❌ Message is too long. Please keep it under 500 characters.");
+        return;
+    }
+    
+    const saveBtn = document.querySelector('#autoReplyModal .modal-btn-save');
+    const originalText = saveBtn.innerText;
+    saveBtn.innerText = 'Saving...';
+    saveBtn.disabled = true;
+    
+    try {
+        const autoReplyData = {
+            message: message,
+            enabled: enabled,
+            updatedAt: Date.now()
+        };
+        
+        await update(ref(db, `founderProfile/${currentUser.uid}`), {
+            autoReply: autoReplyData
+        });
+        
+        // Update cache
+        if (cachedFounderData) {
+            cachedFounderData.autoReply = autoReplyData;
+        }
+        
+        closeAutoReplyModal();
+        alert("✅ Auto-reply saved successfully!");
+        
+    } catch (error) {
+        console.error("Error saving auto-reply:", error);
+        alert("❌ Failed to save auto-reply");
+        saveBtn.innerText = originalText;
+        saveBtn.disabled = false;
+    }
+};
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('autoReplyModal');
+    if (e.target === modal) {
+        closeAutoReplyModal();
+    }
+});
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -8417,27 +8507,26 @@ max-width: 1100px;
             </div>
         </div>
 
-        <div class="banner">
-            <div class="banner-content">
-                <h3>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                         stroke="white" stroke-width="2"
-                         style="vertical-align:middle;margin-right:.5rem;">
-                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"></path>
-                    </svg>
-                    Setup Auto Reply for Investors
-                </h3>
-                <p>Respond instantly to investor messages with smart auto replies.</p>
-            </div>
-
-            <div class="banner-icon">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
-                     stroke="white" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14"></path>
-                </svg>
-            </div>
-        </div>
+       <div class="banner" onclick="openAutoReplySetup()" style="cursor: pointer;">
+    <div class="banner-content">
+        <h3>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                 stroke="white" stroke-width="2"
+                 style="vertical-align:middle;margin-right:.5rem;">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8"></path>
+            </svg>
+            Setup Auto Reply for Investors
+        </h3>
+        <p>Respond instantly to investor messages with smart auto replies.</p>
     </div>
+
+    <div class="banner-icon">
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none"
+             stroke="white" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14"></path>
+        </svg>
+    </div>
+</div>
 
 
 <div class="banner" onclick="window.location.hash='manage_vests'" style="cursor: pointer;">
@@ -11616,7 +11705,48 @@ window.closeFullScreenPDF = function() {
 </script>
 <!-- FOUNDER DASHBOARD -->
 <div id="dashboardContainer" style="display: none;"></div>
-
+<!-- Auto Reply Setup Modal -->
+<div id="autoReplyModal" class="edit-modal">
+    <div class="edit-modal-content">
+        <button class="modal-close" onclick="closeAutoReplyModal()">×</button>
+        
+        <div class="edit-modal-header">
+            <h3>Setup Auto-Reply for Investors</h3>
+        </div>
+        
+        <div class="edit-modal-body">
+            <p style="color: #aaa; margin-bottom: 1.5rem; line-height: 1.6;">
+                This message will be automatically sent to investors when they first message you. 
+                Use it to introduce yourself or set expectations.
+            </p>
+            
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                Auto-Reply Message
+            </label>
+            <textarea 
+                id="autoReplyTextarea" 
+                placeholder="e.g., Hi! Thanks for reaching out. I'm excited to discuss potential opportunities. I typically respond within 24 hours."
+                style="width: 100%; min-height: 150px; padding: 12px; background: #0a0a0a; border: 2px solid #333; border-radius: 8px; color: #fff; font-size: 1rem; resize: vertical; font-family: inherit; line-height: 1.5;"
+            ></textarea>
+            
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 1rem; padding: 10px; background: #000; border-radius: 8px; border: 1px solid #222;">
+                <input 
+                    type="checkbox" 
+                    id="autoReplyEnabled" 
+                    style="width: 18px; height: 18px; cursor: pointer;"
+                >
+                <label for="autoReplyEnabled" style="margin: 0; cursor: pointer; font-size: 0.95rem;">
+                    Enable auto-reply for new investor conversations
+                </label>
+            </div>
+        </div>
+        
+        <div class="edit-modal-footer">
+            <button class="modal-btn-cancel" onclick="closeAutoReplyModal()">Cancel</button>
+            <button class="modal-btn-save" onclick="saveAutoReply()">Save Auto-Reply</button>
+        </div>
+    </div>
+</div>
 
 
 </body>
