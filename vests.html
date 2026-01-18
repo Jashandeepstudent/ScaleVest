@@ -46,7 +46,93 @@
             width: 50px;
             height: 50px;
         }
+/* Black & White Premium Theme */
+#autoReplyModal .edit-modal-content {
+    background: #000000;
+    border: 1px solid #333;
+    border-radius: 0; /* Sharp edges for a more professional look */
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
+    max-width: 550px;
+    padding: 0;
+}
 
+.edit-modal-header {
+    padding: 24px 30px;
+    background: #000;
+    border-bottom: 1px solid #222;
+}
+
+.edit-modal-header h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+#autoReplyTextarea {
+    width: 100%;
+    min-height: 180px;
+    padding: 18px;
+    background: #050505;
+    border: 1px solid #222;
+    border-radius: 0;
+    color: #fff;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#autoReplyTextarea:focus {
+    border-color: #fff; /* High contrast focus */
+}
+
+/* Monochrome Toggle */
+.status-card-lite {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 16px;
+    background: #0a0a0a;
+    border: 1px solid #222;
+}
+
+/* Sharp Action Buttons */
+.modal-btn-save {
+    background: #fff;
+    color: #000;
+    padding: 12px 28px;
+    border-radius: 0;
+    border: 1px solid #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-btn-save:hover {
+    background: #000;
+    color: #fff;
+}
+
+.modal-btn-cancel {
+    background: transparent;
+    color: #666;
+    border: 1px solid #222;
+    padding: 12px 24px;
+    border-radius: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+}
+
+.modal-btn-cancel:hover {
+    border-color: #444;
+    color: #fff;
+}
         .roadmap {
             display: flex;
             justify-content: space-between;
@@ -54,98 +140,7 @@
             position: relative;
             padding: 20px 0;
         }
-/* Premium Glassmorphism Modal */
-#autoReplyModal .edit-modal-content {
-    background: rgba(18, 18, 18, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 
-                0 0 20px rgba(131, 56, 236, 0.1); /* Subtle purple glow */
-    max-width: 550px;
-    padding: 0;
-    overflow: hidden;
-}
 
-/* Header Styling */
-.edit-modal-header {
-    padding: 24px 30px;
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.edit-modal-header h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #fff 0%, #bbb 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
-}
-
-/* Textarea Enhancement */
-#autoReplyTextarea {
-    width: 100%;
-    min-height: 180px;
-    padding: 18px;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    color: #fff;
-    font-size: 1rem;
-    line-height: 1.6;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    outline: none;
-}
-
-#autoReplyTextarea:focus {
-    border-color: #8338ec;
-    background: rgba(0, 0, 0, 0.5);
-    box-shadow: 0 0 0 4px rgba(131, 56, 236, 0.15);
-}
-
-/* Custom Toggle Container */
-.status-card-lite {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    padding: 16px;
-    background: linear-gradient(90deg, rgba(131, 56, 236, 0.1) 0%, transparent 100%);
-    border-radius: 12px;
-    border: 1px solid rgba(131, 56, 236, 0.2);
-}
-
-/* Buttons */
-.modal-btn-save {
-    background: linear-gradient(135deg, #8338ec 0%, #3a86ff 100%);
-    color: white;
-    padding: 12px 28px;
-    border-radius: 10px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.modal-btn-save:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(131, 56, 236, 0.4);
-}
-
-.modal-btn-cancel {
-    background: transparent;
-    color: #888;
-    border: 1px solid #333;
-    padding: 12px 24px;
-    border-radius: 10px;
-    transition: all 0.2s;
-}
-
-.modal-btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #fff;
-}
         .roadmap::before {
             content: '';
             position: absolute;
@@ -12031,37 +12026,37 @@ window.closeFullScreenPDF = function() {
 <div id="dashboardContainer" style="display: none;"></div>
 <div id="autoReplyModal" class="edit-modal">
     <div class="edit-modal-content">
-        <button class="modal-close" onclick="closeAutoReplyModal()">×</button>
+        <button class="modal-close" onclick="closeAutoReplyModal()" style="filter: invert(1);">×</button>
         
         <div class="edit-modal-header">
-            <h3>Investor Auto-Response</h3>
+            <h3>Auto-Response Settings</h3>
         </div>
         
         <div class="edit-modal-body" style="padding: 30px;">
-            <p style="color: #999; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.5;">
-                Automate your first impression. This message triggers the moment an investor initiates interest.
+            <p style="color: #666; margin-bottom: 25px; font-size: 0.85rem; line-height: 1.5; font-style: italic;">
+                Set a professional tone. This message is automatically delivered to investors upon their first outreach.
             </p>
             
-            <label style="display: block; margin-bottom: 10px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #8338ec; font-weight: 700;">
-                Message Template
+            <label style="display: block; margin-bottom: 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #fff; font-weight: 600;">
+                Message Content
             </label>
             
             <textarea 
                 id="autoReplyTextarea" 
-                placeholder="Hi! Thanks for checking out our Vest. &#10;&#10;We're currently scaling our seed round. I'd love to share our latest traction deck and data room with you. &#10;&#10;When are you free for a 15-minute intro call?"
+                placeholder="Hi! Thanks for reaching out. I'm excited to discuss potential opportunities. I typically respond within 24 hours."
             ></textarea>
             
             <div class="status-card-lite">
-                <input type="checkbox" id="autoReplyEnabled" style="width: 20px; height: 20px; accent-color: #8338ec; cursor: pointer;">
-                <label for="autoReplyEnabled" style="margin: 0; cursor: pointer; font-size: 0.95rem; font-weight: 500;">
-                    Activate Auto-Reply System
+                <input type="checkbox" id="autoReplyEnabled" style="width: 18px; height: 18px; accent-color: #fff; cursor: pointer;">
+                <label for="autoReplyEnabled" style="margin: 0; cursor: pointer; font-size: 0.85rem; color: #ccc; letter-spacing: 0.5px;">
+                    ENABLE AUTO-REPLY SYSTEM
                 </label>
             </div>
         </div>
         
-        <div class="edit-modal-footer" style="padding: 20px 30px; background: rgba(0,0,0,0.2); border-top: 1px solid rgba(255,255,255,0.05);">
+        <div class="edit-modal-footer" style="padding: 20px 30px; background: #050505; border-top: 1px solid #222;">
             <button class="modal-btn-cancel" onclick="closeAutoReplyModal()">Discard</button>
-            <button class="modal-btn-save" onclick="saveAutoReply()">Sync Settings</button>
+            <button class="modal-btn-save" onclick="saveAutoReply()">Save Changes</button>
         </div>
     </div>
 </div>
