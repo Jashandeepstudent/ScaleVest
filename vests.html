@@ -9441,7 +9441,7 @@ window.saveWorkExperience = async function() {
     // ==========================================
 // 1. ROUTING GATEKEEPER (Strict Custom Check)
 // ==========================================
-function handleHashChange() {
+ async function handleHashChange() {
     // 1. DATA CHECK
     if (!currentUser || !cachedFounderData) {
         console.log("Waiting for data...");
