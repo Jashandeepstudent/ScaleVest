@@ -9743,7 +9743,21 @@ max-width: 1100px;
         flex-wrap: nowrap;
         overflow-x: auto;
     }
-    
+    .card-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.inbox-card:hover {
+    border-color: #fff;
+    transform: translateY(-2px);
+    transition: all 0.3s ease;
+}
     .logo {
         font-size: 1.5rem;
     }
@@ -9921,18 +9935,20 @@ max-width: 1100px;
 
 <div class="card inbox-card" onclick="window.handleBellClick()" style="cursor:pointer;">
     <div class="card-title">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
-            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89"></path>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
         </svg>
-        Inbox
+        
+        <div style="display: flex; align-items: center; gap: 10px;">
+            Inbox
+            <img src="email.svg" alt="Email Icon" style="width: 20px; height: 20px; object-fit: contain;">
+        </div>
     </div>
 
     <div id="inbox-preview-content" class="inbox-message" style="border-left: 3px solid #333; padding: 12px; background: transparent;">
         <p style="color:#666; font-style:italic;">Loading messages...</p>
     </div>
-</div>
-</div>
 </div>
 
 <!-- RIGHT -->
