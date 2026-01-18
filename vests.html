@@ -6845,6 +6845,665 @@ window.copyReferralUrl = function() {
         btn.style.color = "#fff";
     }, 2000);
 };
+async function showAnalytics() {
+    document.title = "Analytics Dashboard | ScaleVest";
+    const container = document.getElementById('dashboardContainer');
+    document.querySelector('.vest-container').style.display = 'none';
+    container.style.display = 'block';
+    
+    container.innerHTML = `
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <p style="color:#888;">Loading Analytics Dashboard...</p>
+        </div>`;
+    
+    try {
+        const vestsRef = ref(db, `Vests/${currentUser.uid}`);
+        const snapshot = await get(vestsRef);
+        
+        if (!snapshot.exists()) {
+            container.innerHTML = `
+             
+                <div style="max-width:800px; margin:0 auto; padding:4rem; text-align:center;">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" style="margin-bottom:2rem;">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                    <h2 style="color:#fff; margin-bottom:1rem;">No Analytics Data</h2>
+                    <p style="color:#666;">Create a vest to start tracking performance metrics</p>
+                    <button class="buy-btn-premium" onclick="window.location.hash='vest_step1'" style="margin-top:2rem; max-width:300px;">
+                        Create Your First Vest
+                    </button>
+                </div>`;
+            return;
+        }
+        
+        const vests = snapshot.val();
+        
+        container.innerHTML = `
+           
+            
+            <style>
+                .analytics-page {
+                    max-width: 1400px;
+                    margin: 0 auto;
+                    padding: 3rem;
+                    background: #000;
+                    min-height: 100vh;
+                }
+                
+                .analytics-header {
+                    margin-bottom: 3rem;
+                    padding-bottom: 2rem;
+                    border-bottom: 1px solid #1a1a1a;
+                }
+                
+                .analytics-title {
+                    font-size: 2.5rem;
+                    font-weight: 800;
+                    color: #fff;
+                    margin-bottom: 0.5rem;
+                    letter-spacing: -0.5px;
+                }
+                
+                .analytics-subtitle {
+                    color: #666;
+                    font-size: 1rem;
+                    line-height: 1.6;
+                }
+                
+                .vest-selection-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+                    gap: 2rem;
+                }
+                
+                .vest-analytics-card {
+                    background: #0a0a0a;
+                    border: 1px solid #1a1a1a;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    cursor: pointer;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                
+                .vest-analytics-card:hover {
+                    border-color: #333;
+                    transform: translateY(-4px);
+                    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+                }
+                
+                .vest-analytics-thumb {
+                    width: 100%;
+                    height: 200px;
+                    background: #111;
+                    position: relative;
+                    overflow: hidden;
+                }
+                
+                .vest-analytics-thumb img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: transform 0.3s;
+                }
+                
+                .vest-analytics-card:hover .vest-analytics-thumb img {
+                    transform: scale(1.05);
+                }
+                
+                .vest-analytics-content {
+                    padding: 1.5rem;
+                }
+                
+                .vest-analytics-hook {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #fff;
+                    margin-bottom: 0.5rem;
+                    line-height: 1.4;
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
+                
+                .vest-analytics-startup {
+                    color: #666;
+                    font-size: 0.9rem;
+                    margin-bottom: 1.5rem;
+                }
+                
+                .vest-mini-stats {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                }
+                
+                .vest-mini-stat {
+                    background: #000;
+                    padding: 0.75rem;
+                    border-radius: 8px;
+                    border: 1px solid #1a1a1a;
+                }
+                
+                .vest-mini-stat-label {
+                    color: #666;
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 0.25rem;
+                }
+                
+                .vest-mini-stat-value {
+                    color: #fff;
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                }
+                
+                .vest-analytics-btn {
+                    width: 100%;
+                    padding: 0.875rem;
+                    background: #fff;
+                    color: #000;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 700;
+                    font-size: 0.9rem;
+                    letter-spacing: 0.5px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                    text-transform: uppercase;
+                }
+                
+                .vest-analytics-btn:hover {
+                    background: #f0f0f0;
+                    transform: translateY(-1px);
+                }
+            </style>
+            
+            <div class="analytics-page">
+                <a href="#founder_dashboard" class="back-to-dash">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Dashboard
+                </a>
+                
+                <div class="analytics-header">
+                    <h1 class="analytics-title">Performance Analytics</h1>
+                    <p class="analytics-subtitle">
+                        Monitor your vest performance with real-time metrics and insights. 
+                        Track engagement, clicks, and investor interest across all your active campaigns.
+                    </p>
+                </div>
+                
+                <div class="vest-selection-grid" id="vestSelectionGrid">
+                    <div style="text-align:center; padding:2rem;">
+                        <div class="spinner"></div>
+                        <p style="color:#666; margin-top:1rem;">Loading vests...</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Fetch analytics for each vest
+        const vestCards = await Promise.all(
+            Object.entries(vests).map(async ([vestId, vest]) => {
+                const analyticsRef = ref(db, `interestedUsers/${vestId}`);
+                const analyticsSnap = await get(analyticsRef);
+                const analytics = analyticsSnap.exists() ? analyticsSnap.val() : {};
+                
+                return {
+                    vestId,
+                    vest,
+                    analytics
+                };
+            })
+        );
+        
+        const gridContainer = document.getElementById('vestSelectionGrid');
+        gridContainer.innerHTML = vestCards.map(({ vestId, vest, analytics }) => `
+            <div class="vest-analytics-card" onclick="window.location.hash='vest_analytics_${vestId}'">
+                <div class="vest-analytics-thumb">
+                    <img src="${vest.MainVest?.thumbnailUrl || 'https://via.placeholder.com/400x225?text=No+Image'}" 
+                         alt="Vest Thumbnail">
+                </div>
+                <div class="vest-analytics-content">
+                    <h3 class="vest-analytics-hook">${vest.MainVest?.hook || 'Vest Campaign'}</h3>
+                    <p class="vest-analytics-startup">${vest.StartupDetails?.name || 'Startup'}</p>
+                    
+                    <div class="vest-mini-stats">
+                        <div class="vest-mini-stat">
+                            <div class="vest-mini-stat-label">Total Clicks</div>
+                            <div class="vest-mini-stat-value">${analytics.totalClicks || 0}</div>
+                        </div>
+                        <div class="vest-mini-stat">
+                            <div class="vest-mini-stat-label">Impressions</div>
+                            <div class="vest-mini-stat-value">${analytics.totalImpressions || 0}</div>
+                        </div>
+                    </div>
+                    
+                    <button class="vest-analytics-btn">View Full Analytics</button>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error("Analytics Error:", error);
+        container.innerHTML = `
+           
+            <div style="text-align:center; padding:4rem; color:#ef4444;">
+                <h3>Error Loading Analytics</h3>
+                <p style="color:#666; margin-top:1rem;">${error.message}</p>
+            </div>`;
+    }
+}
+async function showVestAnalytics(vestId) {
+    const container = document.getElementById('dashboardContainer');
+    
+    container.innerHTML = `
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <p style="color:#888;">Loading Analytics...</p>
+        </div>`;
+    
+    try {
+        // Fetch vest data
+        const vestRef = ref(db, `Vests/${currentUser.uid}/${vestId}`);
+        const vestSnap = await get(vestRef);
+        const vest = vestSnap.val();
+        
+        // Fetch analytics data
+        const analyticsRef = ref(db, `interestedUsers/${vestId}`);
+        const snapshot = await get(analyticsRef);
+        
+        const analytics = snapshot.exists() ? snapshot.val() : {
+            totalClicks: 0,
+            totalImpressions: 0,
+            totalTimeSpent: 0,
+            totalInterestedToFund: 0,
+            todayClicks: 0,
+            todayImpressions: 0,
+            todayTimeSpent: 0,
+            todayInterestedToFund: 0,
+            yesterdayClicks: 0,
+            yesterdayImpressions: 0,
+            yesterdayTimeSpent: 0
+        };
+        
+        // Calculate changes
+        const clickChange = analytics.yesterdayClicks > 0 
+            ? ((analytics.todayClicks - analytics.yesterdayClicks) / analytics.yesterdayClicks * 100).toFixed(1)
+            : analytics.todayClicks > 0 ? 100 : 0;
+            
+        const impressionChange = analytics.yesterdayImpressions > 0
+            ? ((analytics.todayImpressions - analytics.yesterdayImpressions) / analytics.yesterdayImpressions * 100).toFixed(1)
+            : analytics.todayImpressions > 0 ? 100 : 0;
+            
+        const timeChange = analytics.yesterdayTimeSpent > 0
+            ? ((analytics.todayTimeSpent - analytics.yesterdayTimeSpent) / analytics.yesterdayTimeSpent * 100).toFixed(1)
+            : analytics.todayTimeSpent > 0 ? 100 : 0;
+        
+        // Format time
+        const formatTime = (seconds) => {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+        };
+        
+        container.innerHTML = `
+           
+            
+            <style>
+                .analytics-detail-page {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 3rem;
+                    background: #000;
+                    min-height: 100vh;
+                }
+                
+                .analytics-vest-header {
+                    background: #0a0a0a;
+                    border: 1px solid #1a1a1a;
+                    border-radius: 12px;
+                    padding: 2rem;
+                    margin-bottom: 3rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 2rem;
+                }
+                
+                .analytics-vest-thumb-small {
+                    width: 120px;
+                    height: 120px;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    flex-shrink: 0;
+                    background: #111;
+                }
+                
+                .analytics-vest-thumb-small img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+                
+                .analytics-vest-info h2 {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: #fff;
+                    margin-bottom: 0.5rem;
+                }
+                
+                .analytics-vest-info p {
+                    color: #666;
+                    font-size: 0.95rem;
+                }
+                
+                .analytics-section {
+                    margin-bottom: 3rem;
+                }
+                
+                .analytics-section-title {
+                    font-size: 1.25rem;
+                    font-weight: 700;
+                    color: #fff;
+                    margin-bottom: 1.5rem;
+                    padding-bottom: 0.75rem;
+                    border-bottom: 1px solid #1a1a1a;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    font-size: 0.95rem;
+                }
+                
+                .stat-grid-analytics {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                    gap: 1.5rem;
+                }
+                
+                .stat-card-pro {
+                    background: #0a0a0a;
+                    border: 1px solid #1a1a1a;
+                    border-radius: 12px;
+                    padding: 1.75rem;
+                    transition: all 0.3s;
+                }
+                
+                .stat-card-pro:hover {
+                    border-color: #333;
+                    transform: translateY(-2px);
+                }
+                
+                .stat-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 1rem;
+                }
+                
+                .stat-label-pro {
+                    color: #888;
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    font-weight: 600;
+                }
+                
+                .stat-icon {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 6px;
+                    background: #111;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .stat-value-pro {
+                    font-size: 2.25rem;
+                    font-weight: 800;
+                    color: #fff;
+                    margin-bottom: 0.75rem;
+                    line-height: 1;
+                }
+                
+                .stat-comparison {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                }
+                
+                .stat-comparison.positive {
+                    color: #10b981;
+                }
+                
+                .stat-comparison.negative {
+                    color: #ef4444;
+                }
+                
+                .stat-comparison.neutral {
+                    color: #888;
+                }
+                
+                .stat-arrow {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 4px;
+                    font-weight: 700;
+                }
+                
+                .stat-arrow.up {
+                    background: rgba(16, 185, 129, 0.15);
+                }
+                
+                .stat-arrow.down {
+                    background: rgba(239, 68, 68, 0.15);
+                }
+                
+                .comparison-detail {
+                    color: #666;
+                    font-size: 0.75rem;
+                    margin-top: 0.25rem;
+                }
+            </style>
+            
+            <div class="analytics-detail-page">
+                <a href="#analytics" class="back-to-dash">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Analytics
+                </a>
+                
+                <div class="analytics-vest-header">
+                    <div class="analytics-vest-thumb-small">
+                        <img src="${vest?.MainVest?.thumbnailUrl || 'https://via.placeholder.com/120?text=No+Image'}" alt="Vest">
+                    </div>
+                    <div class="analytics-vest-info">
+                        <h2>${vest?.MainVest?.hook || 'Vest Analytics'}</h2>
+                        <p>${vest?.StartupDetails?.name || 'Startup'} • Last updated: ${new Date().toLocaleDateString()}</p>
+                    </div>
+                </div>
+                
+                <!-- Lifetime Performance -->
+                <div class="analytics-section">
+                    <h3 class="analytics-section-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle; margin-right:0.5rem;">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        Lifetime Performance
+                    </h3>
+                    <div class="stat-grid-analytics">
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">Total Clicks</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                        <path d="M9 11l3 3L22 4"></path>
+                                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${analytics.totalClicks || 0}</div>
+                            <div class="comparison-detail">All-time vest clicks</div>
+                        </div>
+                        
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">Total Impressions</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${analytics.totalImpressions || 0}</div>
+                            <div class="comparison-detail">Total views</div>
+                        </div>
+                        
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">Time Spent</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${formatTime(analytics.totalTimeSpent || 0)}</div>
+                            <div class="comparison-detail">Total engagement time</div>
+                        </div>
+                        
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">Interested</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${analytics.totalInterestedToFund || 0}</div>
+                            <div class="comparison-detail">Total interested investors</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Today's Performance -->
+                <div class="analytics-section">
+                    <h3 class="analytics-section-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle; margin-right:0.5rem;">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Today's Performance
+                    </h3>
+                    <div class="stat-grid-analytics">
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">Clicks Today</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                        <path d="M9 11l3 3L22 4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${analytics.todayClicks || 0}</div>
+                            <div class="stat-comparison ${parseFloat(clickChange) > 0 ? 'positive' : parseFloat(clickChange) < 0 ? 'negative' : 'neutral'}">
+                                <span class="stat-arrow ${parseFloat(clickChange) > 0 ? 'up' : 'down'}">
+                                    ${parseFloat(clickChange) > 0 ? '↑' : parseFloat(clickChange) < 0 ? '↓' : '—'}
+                                </span>
+                                ${Math.abs(clickChange)}% vs yesterday
+                            </div>
+                            <div class="comparison-detail">Yesterday: ${analytics.yesterdayClicks || 0} clicks</div>
+                        </div>
+                        
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">Impressions</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${analytics.todayImpressions || 0}</div>
+                            <div class="stat-comparison ${parseFloat(impressionChange) > 0 ? 'positive' : parseFloat(impressionChange) < 0 ? 'negative' : 'neutral'}">
+                                <span class="stat-arrow ${parseFloat(impressionChange) > 0 ? 'up' : 'down'}">
+                                    ${parseFloat(impressionChange) > 0 ? '↑' : parseFloat(impressionChange) < 0 ? '↓' : '—'}
+                                </span>
+                                ${Math.abs(impressionChange)}% vs yesterday
+                            </div>
+                            <div class="comparison-detail">Yesterday: ${analytics.yesterdayImpressions || 0} views</div>
+                        </div>
+                        
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">Time Spent</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${formatTime(analytics.todayTimeSpent || 0)}</div>
+                            <div class="stat-comparison ${parseFloat(timeChange) > 0 ? 'positive' : parseFloat(timeChange) < 0 ? 'negative' : 'neutral'}">
+                                <span class="stat-arrow ${parseFloat(timeChange) > 0 ? 'up' : 'down'}">
+                                    ${parseFloat(timeChange) > 0 ? '↑' : parseFloat(timeChange) < 0 ? '↓' : '—'}
+                                </span>
+                                ${Math.abs(timeChange)}% vs yesterday
+                            </div>
+                            <div class="comparison-detail">Yesterday: ${formatTime(analytics.yesterdayTimeSpent || 0)}</div>
+                        </div>
+                        
+                        <div class="stat-card-pro">
+                            <div class="stat-header">
+                                <div class="stat-label-pro">New Interest</div>
+                                <div class="stat-icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value-pro">${analytics.todayInterestedToFund || 0}</div>
+                            <div class="comparison-detail">New interested investors today</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+    } catch (error) {
+        console.error("Vest Analytics Error:", error);
+        container.innerHTML = `
+           
+            <div style="text-align:center; padding:4rem; color:#ef4444;">
+                <h3>Error Loading Analytics</h3>
+                <p style="color:#666; margin-top:1rem;">${error.message}</p>
+                <button class="buy-btn-premium" onclick="window.location.hash='analytics'" style="margin-top:2rem;">
+                    Back to Analytics
+                </button>
+            </div>`;
+    }
+}
+
+// Make functions globally accessible
+window.showVestAnalytics = showVestAnalytics;
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -7719,6 +8378,15 @@ function handleHashChange() {
         else if (hash === 'application_replies') {
     document.body.style.background = "#000";
     showApplicationReplies();
+}
+else if (hash === 'analytics') {
+    document.body.style.background = "#000";
+    showAnalytics();
+}
+else if (hash.startsWith('vest_analytics_')) {
+    const vestId = hash.replace('vest_analytics_', '');
+    document.body.style.background = "#000";
+    showVestAnalytics(vestId);
 }
         else if (hash === 'edit_founderprofile') {
             document.body.style.background = "#000";
