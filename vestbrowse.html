@@ -1320,7 +1320,7 @@
             badgeClass = 'badge-perfect';
         }
         
-        createRow(
+        await createRow(
             finalVests,
             `${categoryEmoji} ${category}`,
             badge,
@@ -1355,7 +1355,7 @@
         return emojiMap[category] || '🚀';
     }
 
-    function createRow(vests, title, badge, badgeClass) {
+    async function createRow(vests, title, badge, badgeClass) {
         const container = document.getElementById('vestsContainer');
         
         const rowDiv = document.createElement('div');
@@ -1378,8 +1378,12 @@
         container.appendChild(rowDiv);
         
         const cardsRow = rowDiv.querySelector('.cards-row');
-        vests.forEach(item => {
-            const card = createCard(item.vestId, item.vestData);
+        
+        // Use Promise.all to load all cards in parallel
+        const cardPromises = vests.map(item => createCard(item.vestId, item.vestData));
+        const cards = await Promise.all(cardPromises);
+        
+        cards.forEach(card => {
             cardsRow.appendChild(card);
         });
     }
