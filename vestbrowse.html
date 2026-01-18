@@ -1426,7 +1426,7 @@
                         <div class="fund-ask">Funding Ask</div>
                         <div class="fund-amount">${main.fundAsk || '50K'}</div>
                     </div>
-                    <button class="analyze-btn" onclick="event.stopPropagation(); window.location.href='vest-details.html?id=${vestId}&owner=${vestData.ownerUID}'">
+                    <button class="analyze-btn" data-vest-id="${vestId}" data-owner="${vestData.ownerUID}">
                         Analyze →
                     </button>
                 </div>
@@ -1455,6 +1455,15 @@
         
         observer.observe(card);
 
+        // Handle analyze button click
+        const analyzeBtn = card.querySelector('.analyze-btn');
+        analyzeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            trackClick(vestId, vestData.ownerUID);
+            window.location.href = `vest-details.html?id=${vestId}&owner=${vestData.ownerUID}`;
+        });
+
+        // Handle card click
         card.onclick = () => {
             trackClick(vestId, vestData.ownerUID);
             window.location.href = `vest-details.html?id=${vestId}&owner=${vestData.ownerUID}`;
