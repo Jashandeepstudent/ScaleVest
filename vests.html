@@ -46,178 +46,7 @@
             width: 50px;
             height: 50px;
         }
-/* Referral Page Styling */
-.referral-container {
-    max-width: 800px;
-    margin: 60px auto;
-    text-align: center;
-    padding: 40px;
-    background: #000;
-    border: 1px solid #222;
-}
 
-.referral-icon-anim {
-    font-size: 60px;
-    margin-bottom: 20px;
-    animation: pulse-white 2s infinite;
-}
-
-@keyframes pulse-white {
-    0% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.8; }
-}
-
-.refer-url-box {
-    margin-top: 30px;
-    padding: 20px;
-    background: #0a0a0a;
-    border: 1px dashed #444;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
-}
-
-.refer-url-text {
-    font-family: monospace;
-    color: #fff;
-    background: #111;
-    padding: 10px 20px;
-    border: 1px solid #333;
-    word-break: break-all;
-}
-
-.token-badge {
-    display: inline-block;
-    padding: 5px 15px;
-    background: #fff;
-    color: #000;
-    font-weight: 900;
-    font-size: 0.8rem;
-    margin-top: 10px;
-}
-/* Black & White Premium Theme */
-#autoReplyModal .edit-modal-content {
-    background: #000000;
-    border: 1px solid #333;
-    border-radius: 0; /* Sharp edges for a more professional look */
-    box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
-    max-width: 550px;
-    padding: 0;
-}
-
-.edit-modal-header {
-    padding: 24px 30px;
-    background: #000;
-    border-bottom: 1px solid #222;
-}
-
-.edit-modal-header h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-#autoReplyTextarea {
-    width: 100%;
-    min-height: 180px;
-    padding: 18px;
-    background: #050505;
-    border: 1px solid #222;
-    border-radius: 0;
-    color: #fff;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-/* Status Pill Styling */
-.status-pill-nav {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    background: #000;
-    border: 1px solid #333;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-left: 10px;
-    transition: all 0.3s ease;
-}
-
-.status-pill-nav.active { color: #fff; border-color: #fff; }
-.status-pill-nav.busy { color: #666; border-color: #222; }
-
-/* The indicator dot */
-.dot-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.active .dot-indicator { 
-    background: #fff; 
-    box-shadow: 0 0 8px #fff; 
-}
-
-.busy .dot-indicator { 
-    background: #ef4444; /* Keep red for busy to ensure it stands out */
-}
-#autoReplyTextarea:focus {
-    border-color: #fff; /* High contrast focus */
-}
-
-/* Monochrome Toggle */
-.status-card-lite {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-top: 20px;
-    padding: 16px;
-    background: #0a0a0a;
-    border: 1px solid #222;
-}
-
-/* Sharp Action Buttons */
-.modal-btn-save {
-    background: #fff;
-    color: #000;
-    padding: 12px 28px;
-    border-radius: 0;
-    border: 1px solid #fff;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.modal-btn-save:hover {
-    background: #000;
-    color: #fff;
-}
-
-.modal-btn-cancel {
-    background: transparent;
-    color: #666;
-    border: 1px solid #222;
-    padding: 12px 24px;
-    border-radius: 0;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.8rem;
-}
-
-.modal-btn-cancel:hover {
-    border-color: #444;
-    color: #fff;
-}
         .roadmap {
             display: flex;
             justify-content: space-between;
@@ -2729,7 +2558,7 @@
 
         <div class="form-group">
             <label>Why You're Best For This <span class="required">*</span></label>
-            <textarea id="vestAdvantage" placeholder="What makes you uniquely qualified to solve this problem?" style="height: 120px; border-radius: 0; border: 2px solid #333;"></textarea>" style="height: 120px; border-radius: 0; border: 2px solid #333;"></textarea>
+            <textarea id="vestAdvantage" placeholder="What makes you uniquely qualified to solve this problem?"></textarea>" style="height: 120px; border-radius: 0; border: 2px solid #333;"></textarea>
         </div>
 <div class="form-group">
     <label>Vest Thumbnail (Image) <span class="required">*</span></label>
@@ -3063,7 +2892,7 @@ function createNavBar() {
                     <span class="nav-link" onclick="toggleDropdown('scaleDropdown')">Scale and Elevate ▾</span>
                     <div class="dropdown-content" id="scaleDropdown">
                        <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
-<a href="#scalevest_refers" class="dropdown-item">Referrals</a>
+                        <a href="#" class="dropdown-item">Referrals</a>
                         <a href="#" class="dropdown-item">Contacts</a>
                         <a href="#applications" class="dropdown-item">My Applications</a>
                     </div>
@@ -6189,7 +6018,7 @@ window.openAutoReplySetup = async function() {
         } else {
             // Set default message
             document.getElementById('autoReplyTextarea').value = 
-                "";
+                "Hi! Thanks for reaching out. I'm excited to discuss potential opportunities. I typically respond within 24 hours.";
             document.getElementById('autoReplyEnabled').checked = true;
         }
     } catch (error) {
@@ -6259,368 +6088,6 @@ document.addEventListener('click', (e) => {
         closeAutoReplyModal();
     }
 });
-
-// ==========================================
-// FOUNDER AVAILABILITY MANAGEMENT
-// ==========================================
-
-// Show availability detail section
-window.showAvailabilityDetail = function(sectionId) {
-    document.getElementById('modalMenu').style.display = 'none';
-    document.getElementById(sectionId).style.display = 'block';
-};
-
-// Reset modal to main menu
-window.resetModal = function() {
-    document.getElementById('dateSection').style.display = 'none';
-    document.getElementById('statusSection').style.display = 'none';
-    document.getElementById('modalMenu').style.display = 'block';
-};
-
-// Save Availability Status - CORRECTED VERSION
-// --- GLOBAL UI HELPER FOR NAVBAR ---
-window.updateNavStatusUI = function(status) {
-    const pill = document.getElementById('navStatusPill');
-    const text = document.getElementById('navStatusText');
-    if (pill && text) {
-        // Switch between 'active' and 'busy' classes for the Noir theme
-        pill.className = `status-pill-nav ${status === 'busy' ? 'busy' : 'active'}`;
-        text.innerText = `Status: ${status === 'busy' ? 'Busy' : 'Active'}`;
-    }
-};
-
-// Add this updated saveStatus function to replace the existing one:
-
-window.saveStatus = async function() {
-    if (!currentUser) return;
-    
-    const statusSelect = document.getElementById('status');
-    const dateInput = document.getElementById('unavailableDate');
-    
-    if (!statusSelect) {
-        console.error("❌ Status select not found");
-        return;
-    }
-    
-    const selectedStatus = statusSelect.value; // 'active' or 'busy'
-    const unavailableDate = dateInput ? dateInput.value : null;
-    
-    try {
-        // 1. Fetch current vests to perform bulk update
-        const vestsRef = ref(db, `Vests/${currentUser.uid}`);
-        const vestsSnapshot = await get(vestsRef);
-        
-        const updates = {};
-        let activeCount = 0;
-        
-        if (vestsSnapshot.exists()) {
-            const vestIds = Object.keys(vestsSnapshot.val());
-            const newVestStatus = selectedStatus === 'active' ? 'active' : 'inactive';
-            
-            // Loop through all vests to change their individual visibility
-            vestIds.forEach(vestId => {
-                updates[`Vests/${currentUser.uid}/${vestId}/status`] = newVestStatus;
-                if (newVestStatus === 'active') activeCount++;
-            });
-        }
-        
-        // 2. Update Founder Profile (Status + Active Count + Optional Date)
-        updates[`founderProfile/${currentUser.uid}/availabilityStatus`] = selectedStatus;
-        updates[`founderProfile/${currentUser.uid}/activeVestsCount`] = activeCount;
-        
-        // **NEW: Save the unavailability date if provided**
-        if (unavailableDate) {
-            const selectedDate = new Date(unavailableDate);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            if (selectedDate < today) {
-                alert("❌ Please select a future date.");
-                return;
-            }
-
-            updates[`founderProfile/${currentUser.uid}/scheduledUnavailability`] = {
-                date: unavailableDate,
-                scheduledAt: Date.now(),
-                targetStatus: 'busy' // When this date arrives, set status to busy
-            };
-        }
-
-        // 3. Execute all database changes in one trip
-        await update(ref(db), updates);
-        
-        // 4. Update Local Cache for immediate UI feedback
-        if (cachedFounderData) {
-            cachedFounderData.availabilityStatus = selectedStatus;
-            cachedFounderData.activeVestsCount = activeCount;
-            if (unavailableDate) {
-                cachedFounderData.scheduledUnavailability = {
-                    date: unavailableDate,
-                    scheduledAt: Date.now(),
-                    targetStatus: 'busy'
-                };
-            }
-        }
-
-        // 5. Update the Navbar Status Pill immediately
-        window.updateNavStatusUI(selectedStatus);
-        
-        // 6. Build success message
-        let statusMessage = selectedStatus === 'active' 
-            ? `✅ All vests activated! (${activeCount} live)` 
-            : `⏸️ System set to BUSY. All vests are now hidden.`;
-        
-        if (unavailableDate) {
-            statusMessage += `\n📅 Scheduled unavailability on ${unavailableDate}`;
-        }
-        
-        alert(statusMessage);
-        
-        // 7. Close modal and reset
-        document.getElementById('availabilityModal').style.display = 'none';
-        resetModal(); // Clear the form
-        
-        // 8. Refresh the Dashboard View
-        if (window.location.hash === '#founder_dashboard' || window.location.hash === '') {
-            if (typeof createDashboard === 'function') {
-                createDashboard(); 
-            } else if (typeof showDashboard === 'function') {
-                await showDashboard();
-            }
-        }
-        
-    } catch (error) {
-        console.error("❌ Sync Error:", error);
-        alert("❌ Failed to update status: " + error.message);
-    }
-};
-
-// Add this function to check and apply scheduled unavailability
-async function checkScheduledAvailability() {
-    if (!currentUser) return;
-    
-    try {
-        const profileRef = ref(db, `founderProfile/${currentUser.uid}/scheduledUnavailability`);
-        const snapshot = await get(profileRef);
-        
-        if (snapshot.exists()) {
-            const scheduled = snapshot.val();
-            const targetDate = new Date(scheduled.date);
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            targetDate.setHours(0, 0, 0, 0);
-            
-            // If the scheduled date has arrived or passed
-            if (now >= targetDate) {
-                console.log("⏰ Applying scheduled unavailability...");
-                
-                const vestsRef = ref(db, `Vests/${currentUser.uid}`);
-                const vestsSnapshot = await get(vestsRef);
-                
-                if (vestsSnapshot.exists()) {
-                    const updates = {};
-                    Object.keys(vestsSnapshot.val()).forEach(vestId => {
-                        updates[`Vests/${currentUser.uid}/${vestId}/status`] = 'inactive';
-                    });
-                    
-                    updates[`founderProfile/${currentUser.uid}/activeVestsCount`] = 0;
-                    updates[`founderProfile/${currentUser.uid}/availabilityStatus`] = 'busy';
-                    updates[`founderProfile/${currentUser.uid}/scheduledUnavailability`] = null; // Clear it
-                    
-                    await update(ref(db), updates);
-                    
-                    console.log("✅ Scheduled unavailability applied");
-                    
-                    // Update UI
-                    if (window.updateNavStatusUI) {
-                        window.updateNavStatusUI('busy');
-                    }
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error checking scheduled availability:", error);
-    }
-}
-
-// Update the modal reset function to clear inputs
-window.resetModal = function() {
-    // Hide sub-sections
-    document.getElementById('dateSection').style.display = 'none';
-    document.getElementById('statusSection').style.display = 'none';
-    
-    // Show main menu
-    document.getElementById('modalMenu').style.display = 'block';
-    
-    // **NEW: Clear the form inputs**
-    const dateInput = document.getElementById('unavailableDate');
-    const statusSelect = document.getElementById('status');
-    
-    if (dateInput) dateInput.value = '';
-    if (statusSelect) statusSelect.value = 'active'; // Reset to default
-};
-// Event listeners for modal
-document.addEventListener('DOMContentLoaded', function() {
-    // Open modal button
-    const openModalBtn = document.getElementById('openModal');
-    if (openModalBtn) {
-        openModalBtn.addEventListener('click', function() {
-            const modal = document.getElementById('availabilityModal');
-            if (modal) {
-                modal.style.display = 'block';
-                resetModal();
-            }
-        });
-    }
-    
-    // Close modal button
-    const closeBtn = document.querySelector('.close-btn');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            const modal = document.getElementById('availabilityModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        });
-    }
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        const modal = document.getElementById('availabilityModal');
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-});
-// Add this function to load current status when modal opens
-window.openAvailabilityModal = async function() {
-    const modal = document.getElementById('availabilityModal');
-    if (!modal) return;
-    
-    // Show modal
-    modal.style.display = 'block';
-    resetModal(); // Reset to main menu
-    
-    // **Load current status from database/cache**
-    if (cachedFounderData && cachedFounderData.availabilityStatus) {
-        const statusSelect = document.getElementById('status');
-        if (statusSelect) {
-            statusSelect.value = cachedFounderData.availabilityStatus;
-        }
-    }
-    
-    // **Load scheduled date if exists**
-    if (cachedFounderData && cachedFounderData.scheduledUnavailability) {
-        const dateInput = document.getElementById('unavailableDate');
-        if (dateInput && cachedFounderData.scheduledUnavailability.date) {
-            dateInput.value = cachedFounderData.scheduledUnavailability.date;
-        }
-    }
-};
-
-// Update the existing event listener to use the new function
-document.addEventListener('click', function (e) {
-    const modal = document.getElementById("availabilityModal");
-
-    // 1. Open Modal - Use new function
-    if (e.target && e.target.id === 'openModal') {
-        openAvailabilityModal(); // Changed from inline code
-        return;
-    }
-
-    // 2. Close Modal (X button)
-    if (e.target && e.target.classList.contains('close-btn')) {
-        modal.style.display = "none";
-    }
-
-    // 3. Close if clicking outside the box
-    if (e.target === modal) {
-        modal.style.display = "none";
-    }
-});
-// --- REFERRAL SYSTEM LOGIC ---
-window.showReferralPage = function() {
-    const mainContent = document.getElementById('mainContent');
-    if (!mainContent) return;
-
-    // Use default values if data isn't fully loaded to prevent crashes
-    const tokens = cachedFounderData?.scaleTokens || 0;
-    const existingUrl = cachedFounderData?.referralUrl || null;
-    const founderName = cachedFounderData?.founderName || "Founder";
-
-    mainContent.innerHTML = `
-        <div class="referral-container" style="max-width: 600px; margin: 80px auto; padding: 40px; border: 1px solid #222; background: #000; text-align: center;">
-            <div class="referral-icon-anim" style="font-size: 50px; margin-bottom: 20px;">✉️</div>
-            <h2 style="letter-spacing: 5px; text-transform: uppercase; color: #fff;">ScaleVest Refers</h2>
-            
-            <div style="margin: 20px 0; border: 1px solid #333; padding: 10px; display: inline-block;">
-                <span style="color: #888; font-size: 0.7rem; text-transform: uppercase;">Balance</span>
-                <div style="font-size: 1.5rem; font-weight: bold; color: #fff;">${tokens} TOKENS</div>
-            </div>
-
-            <div id="referralActionArea" style="margin-top: 40px;">
-                ${existingUrl ? `
-                    <p style="color: #666; font-size: 0.8rem; margin-bottom: 10px;">SHARE YOUR LINK</p>
-                    <div style="background: #111; color: #fff; padding: 15px; border: 1px solid #222; font-family: monospace; font-size: 0.9rem; margin-bottom: 20px; word-break: break-all;">
-                        ${existingUrl}
-                    </div>
-                    <button class="modal-btn-save" onclick="copyReferralLink()" style="width: 100%; background: #fff; color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer;">
-                        COPY LINK
-                    </button>
-                ` : `
-                    <p style="color: #555; margin-bottom: 30px; line-height: 1.6;">Generate your unique founder URL. Each person who joins using your link grants you +10 ScaleTokens.</p>
-                    <button class="modal-btn-save" onclick="generateReferralURL()" style="width: 100%; background: #fff; color: #000; border: none; padding: 12px; font-weight: bold; cursor: pointer;">
-                        GENERATE YOUR REFER URL
-                    </button>
-                `}
-            </div>
-        </div>
-    `;
-};
-
-window.generateReferralURL = async function() {
-    if (!currentUser) return;
-    
-    // Create the Gojo-style URL
-    const username = (cachedFounderData?.founderName || "Founder").replace(/\s+/g, '');
-    const referCode = `${username}_ScalevestRefer001`;
-    const fullURL = `https://scalevest.site/?ref=${referCode}`;
-
-    try {
-        const userRef = ref(db, `founderProfile/${currentUser.uid}`);
-        await update(userRef, {
-            referralUrl: fullURL
-        });
-
-        // Update local state
-        if (cachedFounderData) cachedFounderData.referralUrl = fullURL;
-        
-        // Instant Re-render
-        window.showReferralPage();
-        alert("✅ Referral Link Active!");
-    } catch (e) {
-        console.error(e);
-        alert("Error generating link.");
-    }
-};
-
-window.copyReferralLink = function() {
-    const url = cachedFounderData?.referralUrl;
-    if (url) {
-        navigator.clipboard.writeText(url);
-        alert("Copied to clipboard!");
-    }
-};
-
-// Detect referral in URL
-const urlParams = new URLSearchParams(window.location.search);
-const refCode = urlParams.get('ref');
-
-if (refCode) {
-    // Save it in session so if they sign up/login, we reward the referrer
-    sessionStorage.setItem('referrer_code', refCode);
-    console.log("Found referrer:", refCode);
-}
    onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -7487,16 +6954,6 @@ function handleHashChange() {
             document.body.style.background = "#000";
             window.showApplicationsList(); 
         } 
-else if (hash === 'scalevest_refers') {
-    document.body.style.background = "#000";
-    if (cachedFounderData) {
-        window.showReferralPage();
-    } else {
-        // If data isn't ready, show a loader and wait
-        document.getElementById('mainContent').innerHTML = '<div class="loader"></div>';
-    }
-}
-
         else if (hash.startsWith('view_application_')) {
             const appId = hash.replace('view_application_', '');
             document.body.style.background = "#f4f4f4"; // Document feel
@@ -7611,7 +7068,6 @@ window.saveCustomUserId = async function() {
         
         container.style.display = 'block';
         createDashboard();
-        checkScheduledAvailability();
     }
 
     // ========================================
@@ -7965,7 +7421,8 @@ onValue(appRef, (snapshot) => {
 .chat-avatar {
     width: 60px;
     height: 60px;
-    border-radius: 50%;
+    bord
+er-radius: 50%;
     background: #333;
     display: flex;
     align-items: center;
@@ -8890,7 +8347,7 @@ max-width: 1100px;
             </span>
             <div class="dropdown-content" id="scaleDropdown">
                 <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
-                <a href="#scalevest_refers" class="dropdown-item">Referrals</a>
+                <a href="#" class="dropdown-item">Referrals</a>
                 <a href="#" class="dropdown-item">Contacts</a>
                 <a href="#applications" class="dropdown-item">My Applications</a>
             </div>
@@ -8900,12 +8357,7 @@ max-width: 1100px;
             Browse Angel Profiles
         </button>
     </div>
-<div id="navStatusPill" class="status-pill-nav ${founderData?.availabilityStatus === 'busy' ? 'busy' : 'active'}">
-            <span class="dot-indicator"></span>
-            <span id="navStatusText">Status: ${founderData?.availabilityStatus === 'busy' ? 'Busy' : 'Active'}</span>
-        </div>
-    </div>
-</div>
+
     <div class="top-nav-right">
         <div class="nav-icon-wrapper" onclick="window.handleBellClick()">
             <div class="icon-btn">
@@ -8986,7 +8438,7 @@ max-width: 1100px;
 
     <div class="card-title">Founder Availability</div>
 
-   <button class="card-btn" onclick="openAvailabilityModal()">Set Availability</button>
+   <button class="card-btn" id="openModal">Set Availability</button>
 
     <p class="card-description">
         Control when you're available.
@@ -9127,8 +8579,8 @@ max-width: 1100px;
 </div>
 
 
-</div> 
-</div> <footer class="footer">
+<!-- FOOTER -->
+<footer class="footer">
     <div class="footer-content">
         <div>
             <div class="footer-logo-text">ScaleVest</div>
@@ -9265,7 +8717,13 @@ document.addEventListener('click', function (e) {
     }
 });
 
-
+// Save Function Placeholder
+window.saveStatus = function() {
+    const date = document.getElementById('unavailableDate').value;
+    const status = document.getElementById('status').value;
+    alert("ScaleVest Updated! \nStatus: " + status + (date ? "\nUnavailable on: " + date : ""));
+    document.getElementById("availabilityModal").style.display = "none";
+}
 
     // Add dropdown interaction after DOM is loaded
     setTimeout(() => {
@@ -11922,6 +11380,10 @@ window.saveTeamMember = async function() {
 
     await updateStartupField({ team: currentTeam });
 };
+// ==========================================
+//  STARTUP PROFILE EDIT LOGIC (Paste this!)
+// ==========================================
+
 // --- Helper: Save Changes to Firebase ---
 async function updateStartupField(updates) {
     if (!currentUser) return;
@@ -12244,39 +11706,45 @@ window.closeFullScreenPDF = function() {
 </script>
 <!-- FOUNDER DASHBOARD -->
 <div id="dashboardContainer" style="display: none;"></div>
+<!-- Auto Reply Setup Modal -->
 <div id="autoReplyModal" class="edit-modal">
     <div class="edit-modal-content">
-        <button class="modal-close" onclick="closeAutoReplyModal()" style="filter: invert(1);">×</button>
+        <button class="modal-close" onclick="closeAutoReplyModal()">×</button>
         
         <div class="edit-modal-header">
-            <h3>Auto-Response Settings</h3>
+            <h3>Setup Auto-Reply for Investors</h3>
         </div>
         
-        <div class="edit-modal-body" style="padding: 30px;">
-            <p style="color: #666; margin-bottom: 25px; font-size: 0.85rem; line-height: 1.5; font-style: italic;">
-                Set a professional tone. This message is automatically delivered to investors upon their first outreach.
+        <div class="edit-modal-body">
+            <p style="color: #aaa; margin-bottom: 1.5rem; line-height: 1.6;">
+                This message will be automatically sent to investors when they first message you. 
+                Use it to introduce yourself or set expectations.
             </p>
             
-            <label style="display: block; margin-bottom: 10px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: #fff; font-weight: 600;">
-                Message Content
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                Auto-Reply Message
             </label>
-            
             <textarea 
                 id="autoReplyTextarea" 
-                placeholder="Hi! Thanks for reaching out. I'm excited to discuss potential opportunities. I typically respond within 24 hours."
+                placeholder="e.g., Hi! Thanks for reaching out. I'm excited to discuss potential opportunities. I typically respond within 24 hours."
+                style="width: 100%; min-height: 150px; padding: 12px; background: #0a0a0a; border: 2px solid #333; border-radius: 8px; color: #fff; font-size: 1rem; resize: vertical; font-family: inherit; line-height: 1.5;"
             ></textarea>
             
-            <div class="status-card-lite">
-                <input type="checkbox" id="autoReplyEnabled" style="width: 18px; height: 18px; accent-color: #fff; cursor: pointer;">
-                <label for="autoReplyEnabled" style="margin: 0; cursor: pointer; font-size: 0.85rem; color: #ccc; letter-spacing: 0.5px;">
-                    ENABLE AUTO-REPLY SYSTEM
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 1rem; padding: 10px; background: #000; border-radius: 8px; border: 1px solid #222;">
+                <input 
+                    type="checkbox" 
+                    id="autoReplyEnabled" 
+                    style="width: 18px; height: 18px; cursor: pointer;"
+                >
+                <label for="autoReplyEnabled" style="margin: 0; cursor: pointer; font-size: 0.95rem;">
+                    Enable auto-reply for new investor conversations
                 </label>
             </div>
         </div>
         
-        <div class="edit-modal-footer" style="padding: 20px 30px; background: #050505; border-top: 1px solid #222;">
-            <button class="modal-btn-cancel" onclick="closeAutoReplyModal()">Discard</button>
-            <button class="modal-btn-save" onclick="saveAutoReply()">Save Changes</button>
+        <div class="edit-modal-footer">
+            <button class="modal-btn-cancel" onclick="closeAutoReplyModal()">Cancel</button>
+            <button class="modal-btn-save" onclick="saveAutoReply()">Save Auto-Reply</button>
         </div>
     </div>
 </div>
