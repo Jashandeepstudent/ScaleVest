@@ -381,7 +381,7 @@ async function initializeChat() {
         console.log("Initial load complete, auto-reply is now active");
     }, 1000);
     
-    const typingRef = ref(db, `Chats/${chatRoomID}/typing/${recipientUID}`;
+    const typingRef = ref(db, `Chats/${chatRoomID}/typing/${recipientUID)}`;
     onValue(typingRef, (snapshot) => {
         const isTyping = snapshot.val();
         const bubble = document.getElementById('typingBubble');
