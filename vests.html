@@ -109,7 +109,52 @@
     height: 8px;
     border-radius: 50%;
 }
+/* Container for positioning */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
 
+/* The Dropdown Box */
+.simple-back-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute;
+    right: 0;
+    top: 110%;
+    background-color: #1a1a1a; /* Simple dark background */
+    min-width: 160px;
+    border-radius: 8px;
+    padding: 8px 0;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
+    z-index: 9999;
+}
+
+/* Show class */
+.simple-back-dropdown.show {
+    display: block;
+}
+
+/* The Buttons */
+.drop-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    color: white; /* White text */
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.drop-btn:hover {
+    background-color: #333; /* Slight highlight on hover */
+}
+
+.drop-btn.logout {
+    color: #ff4d4d; /* Reddish color for Sign Out */
+    border-top: 1px solid #333;
+}
 .active .dot-indicator { 
     background: #fff; 
     box-shadow: 0 0 8px #fff; 
