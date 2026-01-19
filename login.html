@@ -72,8 +72,25 @@ input:focus { border-color: #2563eb; ring: 2px solid #bfdbfe; }
     display:flex; overflow:hidden;
 }
 .modal-left {
-    width:50%; background:linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-    display:flex; align-items:flex-end; padding:40px; color:#fff;
+    width: 50%;
+    /* Set your image here */
+    background: url('scalevestauth.png') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: flex-end;
+    padding: 40px;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+/* Add a dark overlay so the white text "ScaleVest" remains easy to read */
+.modal-left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    z-index: -1;
 }
 .modal-right { width:50%; padding:40px; }
 
@@ -98,12 +115,12 @@ input:focus { border-color: #2563eb; ring: 2px solid #bfdbfe; }
 
 <div class="modal-overlay">
     <div class="modal">
-        <div class="modal-left">
-            <div>
-                <h2 style="font-size:32px; margin-bottom:10px;">ScaleVest</h2>
-                <p style="opacity:0.9">Verified • Secure • Scalable</p>
-            </div>
-        </div>
+<div class="modal-left">
+    <div style="position: relative; z-index: 2;">
+        <h2 style="font-size:32px; margin-bottom:10px; font-weight: 700; letter-spacing: -0.5px;">ScaleVest</h2>
+        <p style="opacity:0.9; font-size: 14px; font-weight: 500;">Verified • Secure • Scalable</p>
+    </div>
+</div>
 
         <div class="modal-right">
             <h3 id="authTitle" style="margin-top:0;">Get Started</h3>
@@ -273,3 +290,4 @@ async function googleLogin() {
 </script>
 </body>
 </html>
+
