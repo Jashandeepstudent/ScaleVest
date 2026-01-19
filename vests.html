@@ -9575,7 +9575,6 @@ onAuthStateChanged(auth, async (user) => {
                 get(ref(db, `startupProfile/${user.uid}`))
             ]);
             
-            // Auto-create founder profile if not exists
             if (!founderSnapshot.exists()) {
                 const email = user.email || 'user@scalevest.com';
                 const username = email.split('@')[0];
@@ -9588,36 +9587,45 @@ onAuthStateChanged(auth, async (user) => {
                     title: '',
                     about: '',
                     createdAt: new Date().toISOString(),
-                    isVerified: false  // ⭐ AUTO-CREATE
+                    isVerified: false 
                 };
                 
                 await update(ref(db, `founderProfile/${user.uid}`), cachedFounderData);
                 
+                // Show Banner immediately for new user
+                showVerificationBanner();
+
                 document.getElementById('loadingScreen').classList.add('hidden');
                 showUserIdSetupModal();
                 return;
             } else {
                 cachedFounderData = founderSnapshot.val();
                 
-                // ⭐ AUTO-CREATE isVerified IF IT DOESN'T EXIST
+                // ⭐ 1. Ensure isVerified exists
                 if (cachedFounderData.isVerified === undefined) {
-                    console.log("⚠️ isVerified field missing. Auto-creating...");
                     cachedFounderData.isVerified = false;
-                    await update(ref(db, `founderProfile/${user.uid}`), {
-                        isVerified: false
-                    });
+                    await update(ref(db, `founderProfile/${user.uid}`), { isVerified: false });
                 }
                 
-                // ⭐ START 30-SECOND TIMER IF NOT VERIFIED
+                // ⭐ 2. Handle Verification UI Logic
                 if (cachedFounderData.isVerified === false) {
-                    console.log("⚠️ User is unverified. Starting 30-second timer...");
+                    // Show the top banner immediately
+                    showVerificationBanner();
+                    
+                    console.log("⚠️ Unverified: Blocking popup will trigger in 30 seconds.");
                     setTimeout(() => {
                         checkAndBlockUnverifiedUser(user.uid);
-                    }, 30000); // ⭐ CHANGED TO 30 SECONDS (30000ms)
+                    }, 30000); 
+                } else {
+                    // Remove banner if they are already verified
+                    const banner = document.getElementById('verificationBanner');
+                    if (banner) {
+                        banner.remove();
+                        document.body.style.paddingTop = '0';
+                    }
                 }
                 
                 if (!cachedFounderData.founderUsername) {
-                    console.log("⚠️ No founderUsername found. Triggering setup modal.");
                     document.getElementById('loadingScreen').classList.add('hidden');
                     showUsernameSetupModal(); 
                     return;
@@ -9630,7 +9638,6 @@ onAuthStateChanged(auth, async (user) => {
                 }
             }
             
-            // Cache startup data
             if (startupSnapshot.exists()) {
                 cachedStartupData = startupSnapshot.val();
             } else {
@@ -9638,17 +9645,11 @@ onAuthStateChanged(auth, async (user) => {
             }
             
             isNewUser = !vestsSnapshot.exists();
-            
             document.getElementById('loadingScreen').classList.add('hidden');
             
             const hash = window.location.hash.slice(1);
-            
             if (!hash) {
-                if (isNewUser) {
-                    window.location.hash = 'vest_step1';
-                } else {
-                    window.location.hash = 'founder_dashboard';
-                }
+                window.location.hash = isNewUser ? 'vest_step1' : 'founder_dashboard';
             } else {
                 handleHashChange();
             }
@@ -10776,7 +10777,89 @@ function showVerificationBanner() {
     min-width: unset;
     white-space: nowrap;
 }
+/* --- Professional Fixed Banner --- */
+.v-banner-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 45px;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(255, 0, 110, 0.3);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
+.v-banner-container {
+    width: 100%;
+    max-width: 1000px;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.v-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Pulsing Status Dot */
+.v-banner-status-dot {
+    width: 8px;
+    height: 8px;
+    background: #ff006e;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ff006e;
+    animation: pulseRed 2s infinite;
+}
+
+.v-banner-message {
+    color: #eee;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+}
+
+.v-banner-message strong {
+    color: #fff;
+    margin-left: 4px;
+}
+
+/* Tiny Professional Button */
+.v-banner-btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+.v-banner-btn:hover {
+    background: #ff006e;
+    color: #fff;
+    transform: scale(1.03);
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+@keyframes pulseRed {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
 /* Hover – NO SCALE (scale causes stretch feeling) */
 .banner-verify-btn:hover {
     background: #fef2f2;
@@ -10785,25 +10868,26 @@ function showVerificationBanner() {
 
         </style>
         
-        <div class="verification-banner">
-            <div class="banner-content">
-                <div class="banner-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                        <line x1="12" y1="9" x2="12" y2="13"></line>
-                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                </div>
-                <span class="banner-text">⚠️ Not Verified - Please verify to continue using ScaleVest</span>
+window.showVerificationBanner = function() {
+    // Check if banner already exists
+    if (document.getElementById('verificationBanner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'verificationBanner';
+    banner.className = 'v-banner-fixed';
+    banner.innerHTML = `
+        <div class="v-banner-container">
+            <div class="v-banner-left">
+                <div class="v-banner-status-dot"></div>
+                <span class="v-banner-message">Account Restricted — <strong>Verification Required</strong></span>
             </div>
-            <button class="banner-verify-btn" onclick="startVerification()">Verify Now</button>
+            <button class="v-banner-btn" onclick="startVideoVerification()">Verify Now</button>
         </div>
     `;
     
     document.body.prepend(banner);
-    
-    // Adjust body padding to account for banner
-    document.body.style.paddingTop = '70px';
+    // Add space for the banner so it doesn't overlap content
+    document.body.style.paddingTop = '50px'; 
 }
 // Block unverified users from browsing vests
 window.checkVerificationForBrowse = async function() {
