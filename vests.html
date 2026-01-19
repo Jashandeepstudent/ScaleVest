@@ -55,7 +55,111 @@
     max-width: 550px;
     padding: 0;
 }
+/* Overlay Background */
+.verify-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: modalFadeIn 0.3s ease;
+}
 
+/* Modal Container */
+.verify-modal-container {
+    background: #111;
+    border: 1px solid #333;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 20px;
+    position: relative;
+    padding: 40px 30px 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* Close Button Top Right */
+.verify-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.verify-modal-close:hover { color: #fff; }
+
+/* Content Alignment */
+.verify-modal-content {
+    text-align: center;
+}
+
+.verify-icon-wrapper {
+    margin-bottom: 20px;
+    display: inline-flex;
+    padding: 15px;
+    background: rgba(255, 0, 110, 0.1);
+    border-radius: 50%;
+}
+
+.verify-modal-content h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #fff;
+}
+
+.verify-modal-content p {
+    color: #aaa;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+/* Buttons Styling */
+.verify-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.verify-modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-secondary {
+    background: #222;
+    border: 1px solid #333;
+    color: #eee;
+}
+.btn-secondary:hover { background: #333; }
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff006e, #8338ec);
+    border: none;
+    color: #fff;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.3);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
 .edit-modal-header {
     padding: 24px 30px;
     background: #000;
@@ -283,7 +387,111 @@
         height: 70px !important;
         font-size: 2rem !important;
     }
-    
+   /* Overlay Background */
+.verify-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: modalFadeIn 0.3s ease;
+}
+
+/* Modal Container */
+.verify-modal-container {
+    background: #111;
+    border: 1px solid #333;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 20px;
+    position: relative;
+    padding: 40px 30px 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* Close Button Top Right */
+.verify-modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.verify-modal-close:hover { color: #fff; }
+
+/* Content Alignment */
+.verify-modal-content {
+    text-align: center;
+}
+
+.verify-icon-wrapper {
+    margin-bottom: 20px;
+    display: inline-flex;
+    padding: 15px;
+    background: rgba(255, 0, 110, 0.1);
+    border-radius: 50%;
+}
+
+.verify-modal-content h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #fff;
+}
+
+.verify-modal-content p {
+    color: #aaa;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+/* Buttons Styling */
+.verify-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.verify-modal-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-secondary {
+    background: #222;
+    border: 1px solid #333;
+    color: #eee;
+}
+.btn-secondary:hover { background: #333; }
+
+.btn-primary {
+    background: linear-gradient(135deg, #ff006e, #8338ec);
+    border: none;
+    color: #fff;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.3);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+} 
     .card-title {
         font-size: 1rem !important;
     }
@@ -10740,28 +10948,38 @@ window.checkVerificationForApplications = async function() {
 
 function showVerificationBlockPopup(feature) {
     const popup = document.createElement('div');
-    popup.className = 'edit-modal show';
+    popup.id = 'verifyBlockModal';
+    popup.className = 'verify-modal-overlay';
     popup.innerHTML = `
-        <div class="edit-modal-content">
-            <div class="edit-modal-header">
-                <h3>Verification Required</h3>
-                <button class="modal-close" onclick="this.closest('.edit-modal').remove()">×</button>
-            </div>
-            <div class="edit-modal-body" style="text-align: center; padding: 2rem;">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#ff006e" stroke-width="2" style="margin-bottom: 1.5rem;">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    <path d="M9 12l2 2 4-4"></path>
+        <div class="verify-modal-container">
+            <button class="verify-modal-close" onclick="this.closest('.verify-modal-overlay').remove()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
+            </button>
+            
+            <div class="verify-modal-content">
+                <div class="verify-icon-wrapper">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="url(#gradient)" stroke-width="2">
+                        <defs>
+                            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#ff006e" />
+                                <stop offset="100%" stop-color="#8338ec" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="M9 12l2 2 4-4"></path>
+                    </svg>
+                </div>
                 
-                <h3 style="margin-bottom: 1rem; font-size: 1.5rem;">You can't ${feature} until you verify</h3>
+                <h3>Verification Required</h3>
+                <p>To <strong>${feature}</strong>, we need to confirm you're a real founder. This keeps ScaleVest secure for everyone.</p>
                 
-                <p style="color: #888; line-height: 1.6; margin-bottom: 2rem;">
-                    Founder verification is required to access this feature. Complete the quick video verification process to continue.
-                </p>
-            </div>
-            <div class="edit-modal-footer">
-                <button class="modal-btn-cancel" onclick="this.closest('.edit-modal').remove()">Cancel</button>
-                <button class="modal-btn-save" onclick="this.closest('.edit-modal').remove(); startVerification();">Verify Now</button>
+                <div class="verify-modal-actions">
+                    <button class="btn-secondary" onclick="this.closest('.verify-modal-overlay').remove()">Maybe Later</button>
+                    <button class="btn-primary" onclick="this.closest('.verify-modal-overlay').remove(); startVerification();">Verify Now</button>
+                </div>
             </div>
         </div>
     `;
