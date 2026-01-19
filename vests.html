@@ -109,52 +109,7 @@
     height: 8px;
     border-radius: 50%;
 }
-/* Container for positioning */
-.profile-dropdown {
-    position: relative;
-    display: inline-block;
-}
 
-/* The Dropdown Box */
-.simple-back-dropdown {
-    display: none; /* Hidden by default */
-    position: absolute;
-    right: 0;
-    top: 110%;
-    background-color: #1a1a1a; /* Simple dark background */
-    min-width: 160px;
-    border-radius: 8px;
-    padding: 8px 0;
-    box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-    z-index: 9999;
-}
-
-/* Show class */
-.simple-back-dropdown.show {
-    display: block;
-}
-
-/* The Buttons */
-.drop-btn {
-    width: 100%;
-    padding: 12px 20px;
-    background: none;
-    border: none;
-    color: white; /* White text */
-    text-align: left;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.drop-btn:hover {
-    background-color: #333; /* Slight highlight on hover */
-}
-
-.drop-btn.logout {
-    color: #ff4d4d; /* Reddish color for Sign Out */
-    border-top: 1px solid #333;
-}
 .active .dot-indicator { 
     background: #fff; 
     box-shadow: 0 0 8px #fff; 
@@ -3869,21 +3824,12 @@ function createNavBar() {
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                 </div>
-return `
-    <div class="profile-dropdown">
-        <div class="icon-btn" onclick="toggleDashProfileDropdown(event)">
-            ${founderData?.photoURL 
-                ? `<img src="${founderData.photoURL}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-                : `<div style="font-size:1.2rem;font-weight:600;">${founderData?.founderImage || 'U'}</div>`}
-        </div>
-
-        <div class="simple-back-dropdown" id="dashProfileDropdown">
-            <button class="drop-btn" onclick="window.location.hash='#referrals'">Referrals</button>
-            <button class="drop-btn" onclick="window.location.hash='#vests'">Vests</button>
-            <button class="drop-btn logout" onclick="auth.signOut(); return false;">Sign Out</button>
-        </div>
-    </div>
-`;
+                <div class="profile-dropdown">
+<div class="icon-btn" onclick="toggleDashProfileDropdown(event)">
+    ${founderData?.photoURL 
+        ? `<img src="${founderData.photoURL}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+        : `<div style="font-size:1.2rem;font-weight:600;">${founderData.founderImage || 'U'}</div>`}
+</div>
                     </div>
                     <div class="profile-dropdown-content" id="dashProfileDropdown">
                         <div class="profile-info">
@@ -3902,24 +3848,7 @@ return `
         </nav>
     `;
 }
-window.toggleDashProfileDropdown = function(e) {
-    if (e) e.stopPropagation(); // Prevents the click from closing the menu immediately
-    
-    const dropdown = document.getElementById('dashProfileDropdown');
-    
-    // Toggle the 'show' class
-    if (dropdown) {
-        dropdown.classList.toggle('show');
-    }
-};
 
-// Close the dropdown if the user clicks outside of it
-document.addEventListener('click', (e) => {
-    const dropdown = document.getElementById('dashProfileDropdown');
-    if (dropdown && !e.target.closest('.profile-dropdown')) {
-        dropdown.classList.remove('show');
-    }
-});
 // Toggle dropdown function
 // Toggle general dropdowns
 window.toggleDropdown = function(e, id) {
@@ -9681,25 +9610,6 @@ document.addEventListener('click', (e) => {
         if (dropdown) {
             dropdown.classList.remove('show');
         }
-    }
-});
-
-window.toggleDashProfileDropdown = function(e) {
-    if (e) e.stopPropagation(); // Prevents the click from closing the menu immediately
-    
-    const dropdown = document.getElementById('dashProfileDropdown');
-    
-    // Toggle the 'show' class
-    if (dropdown) {
-        dropdown.classList.toggle('show');
-    }
-};
-
-// Close the dropdown if the user clicks outside of it
-document.addEventListener('click', (e) => {
-    const dropdown = document.getElementById('dashProfileDropdown');
-    if (dropdown && !e.target.closest('.profile-dropdown')) {
-        dropdown.classList.remove('show');
     }
 });
 window.showVestAnalytics = showVestAnalytics;
