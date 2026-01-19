@@ -4385,7 +4385,7 @@ async function showManageVests() {
 
     // 1. Fetch Data
     const vestsRef = ref(db, `Vests/${currentUser.uid}`);
-    const snapshot = await get(vestsRef);
+
     const vestsData = snapshot.val() || {};
 
     // 2. Count Stats
