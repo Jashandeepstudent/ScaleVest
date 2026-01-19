@@ -8679,11 +8679,26 @@ window.submitVideoVerification = async function() {
 };
 
 // Helper: Convert file to base64
-function fileToBase64(file) {
+async function fileToBase64(file) {
     return new Promise((resolve, reject) => {
+        const video = document.createElement('video');
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
+
+        reader.onload = (e) => {
+            video.src = e.target.result;
+            video.onloadedmetadata = () => {
+                // If file is already small (< 4MB), don't compress
+                if (file.size < 4 * 1024 * 1024) {
+                    resolve(e.target.result.split(',')[1]);
+                    return;
+                }
+                
+                // If it's large, we alert the user for now 
+                // because browser-side video transcoding is complex.
+                alert("Video is too large. Please record a shorter video (under 5 seconds) or use lower resolution.");
+                reject("File too large");
+            };
+        };
         reader.readAsDataURL(file);
     });
 }
