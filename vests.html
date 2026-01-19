@@ -10710,27 +10710,26 @@ function showVerificationBanner() {
             left: 0;
             width: 100%;
             background: #ef4444;
-            color: #fff;
             z-index: 10000;
-            padding: 14px 24px;              /* ✅ WIDER / TALLER */
+            padding: 18px 32px;           /* ✅ MUCH WIDER */
             display: flex;
             align-items: center;
             justify-content: space-between;
             font-family: Inter, system-ui, sans-serif;
-            box-shadow: 0 4px 12px rgba(239,68,68,0.35);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25);
         }
 
         .verify-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
 
         .verify-icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -10738,34 +10737,38 @@ function showVerificationBanner() {
         }
 
         .verify-text {
-            font-size: 0.95rem;
-            font-weight: 600;
-            line-height: 1.3;
+            color: #000;                 /* ✅ BLACK TEXT */
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.2;
         }
 
         .verify-text span {
             display: block;
-            font-size: 0.8rem;
-            font-weight: 400;
+            margin-top: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #111;                 /* ✅ BLACK / DARK */
             opacity: 0.9;
         }
 
-        /* ✅ SMALL – SEND BUTTON SIZE (NOT STRETCHED) */
+        /* ✅ FORCE SMALL BUTTON (NO STRETCH) */
         .banner-verify-btn {
             background: #ffffff;
             color: #ef4444;
             border: none;
-            height: 30px;                  /* 🔥 SMALL */
-            padding: 0 12px;               /* 🔥 NOT WIDE */
-            border-radius: 6px;
-            font-size: 0.75rem;
+            height: 34px;
+            padding: 0 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            flex: 0 0 auto;              /* 🔥 KEY FIX */
+            width: auto;                 /* 🔥 KEY FIX */
             white-space: nowrap;
-            transition: background 0.2s ease;
         }
 
         .banner-verify-btn:hover {
@@ -10782,8 +10785,7 @@ function showVerificationBanner() {
     <div class="verification-banner">
         <div class="verify-left">
             <div class="verify-icon">
-                <!-- ⚠️ DANGER SVG -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                     <line x1="12" y1="9" x2="12" y2="13"></line>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -10796,14 +10798,12 @@ function showVerificationBanner() {
             </div>
         </div>
 
-        <button class="banner-verify-btn" onclick="startVerification()">
-            Verify
-        </button>
+        <button class="banner-verify-btn" onclick="startVerification()">Verify</button>
     </div>
     `;
 
     document.body.prepend(banner);
-    document.body.style.paddingTop = '64px';   // ✅ matches taller banner
+    document.body.style.paddingTop = '72px';   /* ✅ matches height */
 }
 
 // Block unverified users from browsing vests
