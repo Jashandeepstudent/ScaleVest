@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1071,36 +1072,36 @@ const firebaseConfig = {
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Function to handle referral click
-  async function checkAndCreditReferral() {
+ async function checkAndCreditReferral() {
     const urlParams = new URLSearchParams(window.location.search);
     const referrerUid = urlParams.get('uid');
     const refCode = urlParams.get('ref');
 
-    // 1. Check if UID exists in URL
-    if (referrerUid) {
-      // 2. Prevent infinite refreshing abuse (Simple LocalStorage check)
-      const hasClickedKey = `clicked_ref_${refCode}`;
-      if (localStorage.getItem(hasClickedKey)) {
-        console.log("Referral already credited for this session.");
-        return; 
-      }
+    if (referrerUid && refCode) {
+        // Use a more specific key to track unique referrals
+        const storageKey = `ref_processed_${refCode}`;
+        if (localStorage.getItem(storageKey)) {
+            console.log("Referral already processed for this session.");
+            return; 
+        }
 
-      try {
-        // 3. Transactional Update to ensure accuracy
-        await runTransaction(ref(db, `founderProfile/${referrerUid}/scaleTokens`), (currentTokens) => {
-          return (currentTokens || 0) + 10;
-        });
+        try {
+            // Use the database reference to the referrer's profile
+            const tokenRef = ref(db, `founderProfile/${referrerUid}/scaleTokens`);
+            
+            // Use runTransaction to safely increment the tokens
+            await runTransaction(tokenRef, (currentTokens) => {
+                return (currentTokens || 0) + 10;
+            });
 
-        // 4. Mark locally as credited
-        localStorage.setItem(hasClickedKey, 'true');
-        console.log(`✅ Success! User ${referrerUid} credited +10 tokens.`);
-
-      } catch (error) {
-        console.error("Referral Credit Error:", error);
-      }
+            // Mark as processed only AFTER successful transaction
+            localStorage.setItem(storageKey, "true");
+            console.log("Success: 10 ScaleTokens credited to referrer.");
+        } catch (error) {
+            console.error("Referral credit failed:", error);
+        }
     }
-  }
+}
 
   // Run immediately on page load
   checkAndCreditReferral();
