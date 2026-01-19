@@ -3800,9 +3800,6 @@ function loadFromLocalStorage() {
 let cachedFounderData = null;
 let cachedStartupData = null;
 window.nextStep = function() {
-    console.log("Next step clicked. Current:", currentStep);
-
-    // Step 1 Validation
     if (currentStep === 1) {
         const hook = document.getElementById('vestHook').value;
         if (!hook) { 
@@ -3812,13 +3809,19 @@ window.nextStep = function() {
         }
     }
 
-    // Move to next step
     if (currentStep < 6) {
         currentStep++;
         updateStepDisplay();
-        // Update URL hash without reloading
-        window.history.pushState(null, null, `#vest_step${currentStep}`);
+        
+        // Use correct hash based on mode
+        const hashPrefix = isEditMode ? 'vest_edit_step' : 'vest_step';
+        window.history.pushState(null, null, `#${hashPrefix}${currentStep}`);
         window.scrollTo(0, 0);
+        
+        // Update buttons if in edit mode
+        if (isEditMode) {
+            updateButtonsForEditMode();
+        }
     }
 };
 
@@ -3826,8 +3829,14 @@ window.previousStep = function() {
     if (currentStep > 1) {
         currentStep--;
         updateStepDisplay();
-        window.history.pushState(null, null, `#vest_step${currentStep}`);
+        
+        const hashPrefix = isEditMode ? 'vest_edit_step' : 'vest_step';
+        window.history.pushState(null, null, `#${hashPrefix}${currentStep}`);
         window.scrollTo(0, 0);
+        
+        if (isEditMode) {
+            updateButtonsForEditMode();
+        }
     }
 };
 function updateStepDisplay() {
@@ -4362,7 +4371,6 @@ async function showManageVests() {
             <div class="vest-cards-grid">
                 ${Object.keys(vestsData).length > 0 ? 
                     Object.entries(vestsData).map(([id, vest]) => {
-                        // Determine Status Logic
                         let statusClass = 'status-draft';
                         let statusText = 'Draft';
                         let toggleBtnText = 'Activate';
@@ -4398,6 +4406,12 @@ async function showManageVests() {
                                 </div>
 
                                 <div class="card-actions">
+                                    <!-- ⭐ NEW EDIT BUTTON -->
+                                    <button class="action-btn btn-edit" 
+                                        onclick="window.editVest('${id}', '${vest.status}')">
+                                        Edit
+                                    </button>
+                                    
                                     <button class="action-btn ${toggleBtnClass}" 
                                         onclick="window.toggleVestStatus('${id}', '${vest.status}')">
                                         ${toggleBtnText}
@@ -4418,6 +4432,117 @@ async function showManageVests() {
             </div>
         </div>
     `;
+}
+// Global variable to track if we're in edit mode
+let isEditMode = false;
+let currentEditVestId = null;
+
+window.editVest = async function(vestId, vestStatus) {
+    // Set edit mode flags
+    isEditMode = true;
+    currentEditVestId = vestId;
+    
+    try {
+        // Fetch the vest data
+        const vestRef = ref(db, `Vests/${currentUser.uid}/${vestId}`);
+        const snapshot = await get(vestRef);
+        
+        if (!snapshot.exists()) {
+            alert("Vest not found!");
+            return;
+        }
+        
+        const vestData = snapshot.val();
+        
+        // Store vest status for button logic
+        sessionStorage.setItem('editVestStatus', vestStatus);
+        sessionStorage.setItem('editVestId', vestId);
+        sessionStorage.setItem('editVestData', JSON.stringify(vestData));
+        
+        // Navigate to step 1
+        window.location.hash = 'vest_edit_step1';
+        
+        // Load the vest data into form
+        setTimeout(() => loadVestDataIntoForm(vestData), 100);
+        
+    } catch (error) {
+        console.error("Error loading vest:", error);
+        alert("Failed to load vest data");
+    }
+};
+
+// Load vest data into form inputs
+function loadVestDataIntoForm(vestData) {
+    // Step 1 - Main Vest
+    if (vestData.MainVest) {
+        document.getElementById('vestHook').value = vestData.MainVest.hook || '';
+        document.getElementById('vestDesc').value = vestData.MainVest.description || '';
+        document.getElementById('vestProblem').value = vestData.MainVest.problem || '';
+        document.getElementById('vestSolution').value = vestData.MainVest.solution || '';
+        document.getElementById('vestAdvantage').value = vestData.MainVest.advantage || '';
+        document.getElementById('vestEquity').value = vestData.MainVest.equityOffered || '';
+        document.getElementById('vestAsk').value = vestData.MainVest.fundAsk || '';
+        
+        // Show thumbnail preview if exists
+        if (vestData.MainVest.thumbnailUrl) {
+            document.getElementById('imgPreview').src = vestData.MainVest.thumbnailUrl;
+            document.getElementById('thumbPreview').style.display = 'block';
+            document.getElementById('uploadPlaceholder').style.opacity = '0.3';
+            document.getElementById('thumbFileName').textContent = '✓ Current thumbnail';
+        }
+    }
+    
+    // Step 2 - Startup Details
+    if (vestData.StartupDetails) {
+        document.getElementById('stName').value = vestData.StartupDetails.name || '';
+        document.getElementById('stDesc').value = vestData.StartupDetails.description || '';
+        document.getElementById('stCategory').value = vestData.StartupDetails.category || '';
+        document.getElementById('stStage').value = vestData.StartupDetails.stage || '';
+        document.getElementById('stRevenue').value = vestData.StartupDetails.revenue || '';
+        document.getElementById('stValuation').value = vestData.StartupDetails.valuation || '';
+        
+        if (vestData.StartupDetails.pitchDeckUrl) {
+            document.getElementById('newPitchDeckName').textContent = '✓ Pitch deck uploaded';
+        }
+    }
+    
+    // Step 3 - Audit
+    if (vestData.Audit) {
+        document.getElementById('auditScale').value = vestData.Audit.scalability || '';
+        document.getElementById('auditMarket').value = vestData.Audit.marketShare || '';
+        document.getElementById('auditCompetitors').value = vestData.Audit.competitors || '';
+        document.getElementById('auditDifferent').value = vestData.Audit.differentiation || '';
+        document.getElementById('auditMoney').value = vestData.Audit.monetization || '';
+    }
+    
+    // Step 4 - Roadmap
+    if (vestData.Roadmap) {
+        document.getElementById('roadFundUsage').value = vestData.Roadmap.fundUsage || '';
+        document.getElementById('roadYearGoal').value = vestData.Roadmap.yearGoal || '';
+        document.getElementById('roadVision').value = vestData.Roadmap.threeYearVision || '';
+        document.getElementById('roadStrategy').value = vestData.Roadmap.strategy || '';
+    }
+    
+    // Step 5 - Founder Presence
+    if (vestData.FounderPresence) {
+        document.getElementById('fpName').value = vestData.FounderPresence.founderName || '';
+        document.getElementById('fpWork').value = vestData.FounderPresence.responsibilities || '';
+        
+        // Handle co-founders
+        const coFounders = vestData.FounderPresence.coFounders || '';
+        if (coFounders && coFounders !== 'Solo Founder') {
+            const match = coFounders.match(/^(\d+) Co-Founders: (.+)$/);
+            if (match) {
+                document.getElementById('fpCoFounderCount').value = match[1];
+                document.getElementById('fpCoFoundersDetails').value = match[2];
+                toggleCoFounders(true);
+            }
+        }
+        
+        if (vestData.FounderPresence.demoVideoUrl) {
+            document.getElementById('newDemoVideoName').textContent = '✓ Demo video uploaded';
+        }
+    }
 }
 // --- DELETE VEST ---
 window.deleteVest = async function(vestId) {
@@ -9068,6 +9193,184 @@ window.handleBrowseAngels = async function() {
     // If verified, allow access
     window.location.href = 'angelbrowse.html';
 };
+
+function updateButtonsForEditMode() {
+    const vestStatus = sessionStorage.getItem('editVestStatus');
+    const isActive = vestStatus === 'active';
+    
+    // Update all step content buttons
+    document.querySelectorAll('.step-content').forEach((stepEl, index) => {
+        const stepNum = index + 1;
+        const buttonsDiv = stepEl.querySelector('.buttons');
+        
+        if (!buttonsDiv) return;
+        
+        // Clear existing buttons
+        buttonsDiv.innerHTML = '';
+        
+        // Add Back button (except step 1)
+        if (stepNum > 1) {
+            const backBtn = document.createElement('button');
+            backBtn.className = 'btn-back';
+            backBtn.textContent = 'Previous';
+            backBtn.onclick = previousStep;
+            buttonsDiv.appendChild(backBtn);
+        }
+        
+        // Add Cancel button
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn-draft';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.onclick = () => {
+            if (confirm('Cancel editing? Unsaved changes will be lost.')) {
+                isEditMode = false;
+                currentEditVestId = null;
+                sessionStorage.removeItem('editVestStatus');
+                sessionStorage.removeItem('editVestId');
+                sessionStorage.removeItem('editVestData');
+                window.location.hash = 'manage_vests';
+            }
+        };
+        buttonsDiv.appendChild(cancelBtn);
+        
+        // Different buttons for last step
+        if (stepNum === 6) {
+            if (isActive) {
+                // Active vest: only Save Changes
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'btn-launch';
+                saveBtn.textContent = 'Save Changes';
+                saveBtn.onclick = saveVestChanges;
+                buttonsDiv.appendChild(saveBtn);
+            } else {
+                // Draft vest: Save as Draft + Launch
+                const draftBtn = document.createElement('button');
+                draftBtn.className = 'btn-draft';
+                draftBtn.textContent = 'Save as Draft';
+                draftBtn.onclick = saveVestChanges;
+                buttonsDiv.appendChild(draftBtn);
+                
+                const launchBtn = document.createElement('button');
+                launchBtn.className = 'btn-launch';
+                launchBtn.textContent = 'Launch Vest';
+                launchBtn.onclick = launchEditedVest;
+                buttonsDiv.appendChild(launchBtn);
+            }
+        } else {
+            // Middle steps: Save Changes + Next
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn-draft';
+            saveBtn.textContent = 'Save Changes';
+            saveBtn.onclick = saveVestChanges;
+            buttonsDiv.appendChild(saveBtn);
+            
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'btn-next';
+            nextBtn.textContent = 'Next Step';
+            nextBtn.onclick = nextStep;
+            buttonsDiv.appendChild(nextBtn);
+        }
+    });
+}
+
+window.saveVestChanges = async function() {
+    if (!currentEditVestId) return;
+    
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Saving...';
+    btn.disabled = true;
+    
+    try {
+        // Upload new files if changed
+        const { deckUrl, videoUrl, thumbUrl } = await processNewFiles();
+        
+        // Collect current form data
+        const vestData = collectNewVestData(deckUrl, videoUrl, thumbUrl);
+        
+        // Keep existing URLs if no new files uploaded
+        const existingData = JSON.parse(sessionStorage.getItem('editVestData'));
+        if (!thumbUrl && existingData.MainVest?.thumbnailUrl) {
+            vestData.MainVest.thumbnailUrl = existingData.MainVest.thumbnailUrl;
+        }
+        if (!deckUrl && existingData.StartupDetails?.pitchDeckUrl) {
+            vestData.StartupDetails.pitchDeckUrl = existingData.StartupDetails.pitchDeckUrl;
+        }
+        if (!videoUrl && existingData.FounderPresence?.demoVideoUrl) {
+            vestData.FounderPresence.demoVideoUrl = existingData.FounderPresence.demoVideoUrl;
+        }
+        
+        // Keep the original status
+        vestData.status = sessionStorage.getItem('editVestStatus');
+        vestData.updatedAt = new Date().toISOString();
+        
+        // Update in Firebase
+        await update(ref(db, `Vests/${currentUser.uid}/${currentEditVestId}`), vestData);
+        
+        // Update session storage
+        sessionStorage.setItem('editVestData', JSON.stringify(vestData));
+        
+        alert('✅ Changes saved successfully!');
+        btn.innerHTML = '✓ Saved';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 1500);
+        
+    } catch (error) {
+        console.error("Save error:", error);
+        alert("❌ Failed to save changes");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+};
+
+window.launchEditedVest = async function() {
+    if (!currentEditVestId) return;
+    
+    const btn = event.currentTarget;
+    btn.innerHTML = 'Launching...';
+    btn.disabled = true;
+    
+    try {
+        // Save changes first
+        const { deckUrl, videoUrl, thumbUrl } = await processNewFiles();
+        const vestData = collectNewVestData(deckUrl, videoUrl, thumbUrl);
+        
+        // Set status to active
+        vestData.status = 'active';
+        vestData.updatedAt = new Date().toISOString();
+        
+        // Update in Firebase
+        await update(ref(db, `Vests/${currentUser.uid}/${currentEditVestId}`), vestData);
+        
+        // Update profile active count
+        const profileRef = ref(db, `founderProfile/${currentUser.uid}`);
+        const snapshot = await get(profileRef);
+        let currentCount = 0;
+        if (snapshot.exists()) {
+            currentCount = parseInt(snapshot.val().activeVestsCount) || 0;
+        }
+        await update(profileRef, { activeVestsCount: currentCount + 1 });
+        
+        // Clear edit mode
+        isEditMode = false;
+        currentEditVestId = null;
+        sessionStorage.removeItem('editVestStatus');
+        sessionStorage.removeItem('editVestId');
+        sessionStorage.removeItem('editVestData');
+        
+        alert('🚀 Vest launched successfully!');
+        window.location.hash = 'manage_vests';
+        
+    } catch (error) {
+        console.error("Launch error:", error);
+        alert("❌ Failed to launch vest");
+        btn.innerHTML = 'Launch Vest';
+        btn.disabled = false;
+    }
+};
 window.showVestAnalytics = showVestAnalytics;
 
 
@@ -9947,14 +10250,30 @@ window.saveWorkExperience = async function() {
     document.getElementById('loadingScreen').classList.add('hidden');
 
     // 4. ROUTING LOGIC
-    if (hash.startsWith('vest_step')) {
-        // --- MULTI-STEP VEST FORM VIEW ---
+ if (hash.startsWith('vest_edit_step')) {
+        // EDIT MODE
+        if (container) container.style.display = 'none';
+        if (vestStepContainer) {
+            vestStepContainer.style.display = 'block';
+            const stepNum = parseInt(hash.replace('vest_edit_step', '')) || 1;
+            currentStep = stepNum;
+            updateStepDisplay();
+            
+            // Update buttons for edit mode
+            updateButtonsForEditMode();
+        }
+    } else if (hash.startsWith('vest_step')) {
+        // CREATE MODE (existing logic)
         if (container) container.style.display = 'none';
         if (vestStepContainer) {
             vestStepContainer.style.display = 'block';
             const stepNum = parseInt(hash.replace('vest_step', '')) || 1;
             currentStep = stepNum;
             updateStepDisplay();
+            
+            // Reset edit mode
+            isEditMode = false;
+            currentEditVestId = null;
         }
     } else {
         // --- DYNAMIC DASHBOARD VIEWS ---
