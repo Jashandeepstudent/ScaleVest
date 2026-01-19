@@ -103,7 +103,48 @@
             margin-bottom: 20px;
             padding-left: 10px;
         }
+/* Verification Overlay */
+.verification-lock {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.98); /* Nearly solid white */
+    z-index: 9999; /* Highest priority */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
 
+.lock-content {
+    max-width: 450px;
+    padding: 40px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.lock-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.lock-title {
+    font-size: 1.8rem;
+    color: #1a1a1a;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.lock-text {
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
         .row-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -852,6 +893,16 @@
     </style>
 </head>
 <body>
+<div id="verificationLock" class="verification-lock">
+    <div class="lock-content">
+        <div class="lock-icon">🔒</div>
+        <h2 class="lock-title">Verification Required</h2>
+        <p class="lock-text">You cannot access the Angel Directory until your account is verified. Please complete your verification process in the Founder Dashboard.</p>
+        <button class="submit-pitch-btn" onclick="window.location.href='dashboard.html'">
+            Return to Dashboard
+        </button>
+    </div>
+</div>
    <div class="container">
    <button class="back-dashboard-btn" onclick="history.back()">← Back</button>
     
@@ -1380,19 +1431,43 @@ searchBox.addEventListener('input', (e) => {
     displayRows();
 });
         onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = 'login2.html';
+    if (!user) {
+        window.location.href = 'login2.html';
+    } else {
+        currentUser = user;
+
+        // --- START VERIFICATION CHECK ---
+        try {
+            const userRef = ref(database, `users/${user.uid}`);
+            const userSnap = await get(userRef);
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.val();
+                
+                // If isVerified is false OR doesn't exist yet
+                if (userData.isVerified === false) {
+                    document.getElementById('verificationLock').style.display = 'flex';
+                    return; // Stop further execution
+                }
             } else {
-                currentUser = user;
-                await loadUserCategory();
-                 await loadFounderBehavior(); 
-                loadAngelProfiles();
-                 loadOnlineStatus();
-                 setUserPresence(user);
-                 startBrowseTimeTracking();
-                autoOpenProfile();
+                // If user node doesn't exist, safety lock it
+                document.getElementById('verificationLock').style.display = 'flex';
+                return;
             }
-        });
+        } catch (error) {
+            console.error("Verification check failed:", error);
+        }
+        // --- END VERIFICATION CHECK ---
+
+        await loadUserCategory();
+        await loadFounderBehavior(); 
+        loadAngelProfiles();
+        loadOnlineStatus();
+        setUserPresence(user);
+        startBrowseTimeTracking();
+        autoOpenProfile();
+    }
+});
 
         async function loadUserCategory() {
             try {
