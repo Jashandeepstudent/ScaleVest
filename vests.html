@@ -55,108 +55,113 @@
     max-width: 550px;
     padding: 0;
 }
-/* Overlay Background */
+/* Professional Verification Block Modal */
 .verify-modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
-    animation: modalFadeIn 0.3s ease;
+    z-index: 2000000;
+    animation: verifyFadeIn 0.3s ease;
 }
 
-/* Modal Container */
 .verify-modal-container {
-    background: #111;
-    border: 1px solid #333;
-    width: 90%;
-    max-width: 400px;
+    background: #0a0a0a;
+    border: 1px solid #222;
     border-radius: 20px;
-    position: relative;
+    width: 90%;
+    max-width: 400px; /* Small and balanced */
     padding: 40px 30px 30px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    position: relative;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+    text-align: center;
 }
 
-/* Close Button Top Right */
+/* Close Button: Absolute Top Right */
 .verify-modal-close {
     position: absolute;
     top: 15px;
     right: 15px;
-    background: transparent;
+    background: none;
     border: none;
     color: #666;
     cursor: pointer;
-    transition: 0.2s;
+    padding: 5px;
+    transition: color 0.2s, transform 0.2s;
 }
-.verify-modal-close:hover { color: #fff; }
 
-/* Content Alignment */
-.verify-modal-content {
-    text-align: center;
+.verify-modal-close:hover {
+    color: #fff;
+    transform: scale(1.1);
 }
 
 .verify-icon-wrapper {
-    margin-bottom: 20px;
-    display: inline-flex;
-    padding: 15px;
+    width: 60px; height: 60px;
     background: rgba(255, 0, 110, 0.1);
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
 }
 
-.verify-modal-content h3 {
+.verify-title {
     font-size: 1.4rem;
-    font-weight: 700;
+    font-weight: 800;
     margin-bottom: 12px;
     color: #fff;
+    letter-spacing: -0.5px;
 }
 
-.verify-modal-content p {
-    color: #aaa;
+.verify-text {
+    color: #888;
     font-size: 0.95rem;
     line-height: 1.5;
     margin-bottom: 30px;
 }
 
-/* Buttons Styling */
 .verify-modal-actions {
     display: flex;
     gap: 12px;
 }
 
-.verify-modal-actions button {
+.btn-verify-cancel {
     flex: 1;
+    background: #1a1a1a;
+    color: #888;
+    border: 1px solid #333;
     padding: 12px;
     border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.2s;
 }
 
-.btn-secondary {
-    background: #222;
-    border: 1px solid #333;
-    color: #eee;
-}
-.btn-secondary:hover { background: #333; }
-
-.btn-primary {
+.btn-verify-now {
+    flex: 1.5;
     background: linear-gradient(135deg, #ff006e, #8338ec);
-    border: none;
     color: #fff;
-}
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.3);
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
-@keyframes modalFadeIn {
+.btn-verify-now:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(255, 0, 110, 0.3);
+}
+
+@keyframes verifyFadeIn {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
@@ -387,111 +392,7 @@
         height: 70px !important;
         font-size: 2rem !important;
     }
-   /* Overlay Background */
-.verify-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    animation: modalFadeIn 0.3s ease;
-}
-
-/* Modal Container */
-.verify-modal-container {
-    background: #111;
-    border: 1px solid #333;
-    width: 90%;
-    max-width: 400px;
-    border-radius: 20px;
-    position: relative;
-    padding: 40px 30px 30px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
-
-/* Close Button Top Right */
-.verify-modal-close {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: transparent;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.verify-modal-close:hover { color: #fff; }
-
-/* Content Alignment */
-.verify-modal-content {
-    text-align: center;
-}
-
-.verify-icon-wrapper {
-    margin-bottom: 20px;
-    display: inline-flex;
-    padding: 15px;
-    background: rgba(255, 0, 110, 0.1);
-    border-radius: 50%;
-}
-
-.verify-modal-content h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 12px;
-    color: #fff;
-}
-
-.verify-modal-content p {
-    color: #aaa;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin-bottom: 30px;
-}
-
-/* Buttons Styling */
-.verify-modal-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.verify-modal-actions button {
-    flex: 1;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.btn-secondary {
-    background: #222;
-    border: 1px solid #333;
-    color: #eee;
-}
-.btn-secondary:hover { background: #333; }
-
-.btn-primary {
-    background: linear-gradient(135deg, #ff006e, #8338ec);
-    border: none;
-    color: #fff;
-}
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 0, 110, 0.3);
-}
-
-@keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-} 
+    
     .card-title {
         font-size: 1rem !important;
     }
@@ -10952,7 +10853,7 @@ function showVerificationBlockPopup(feature) {
     popup.className = 'verify-modal-overlay';
     popup.innerHTML = `
         <div class="verify-modal-container">
-            <button class="verify-modal-close" onclick="this.closest('.verify-modal-overlay').remove()">
+            <button class="verify-modal-close" onclick="handleCancelVerification(this)">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -10977,7 +10878,7 @@ function showVerificationBlockPopup(feature) {
                 <p>To <strong>${feature}</strong>, we need to confirm you're a real founder. This keeps ScaleVest secure for everyone.</p>
                 
                 <div class="verify-modal-actions">
-                    <button class="btn-secondary" onclick="this.closest('.verify-modal-overlay').remove()">Maybe Later</button>
+                    <button class="btn-secondary" onclick="handleCancelVerification(this)">Maybe Later</button>
                     <button class="btn-primary" onclick="this.closest('.verify-modal-overlay').remove(); startVerification();">Verify Now</button>
                 </div>
             </div>
@@ -10986,6 +10887,13 @@ function showVerificationBlockPopup(feature) {
     
     document.body.appendChild(popup);
 }
+
+// ✅ Added: Navigation Handler
+window.handleCancelVerification = function(element) {
+    element.closest('.verify-modal-overlay').remove();
+    // Redirects user back to the founder dashboard hash
+    window.location.hash = 'founder_dashboard';
+};
 // ==========================================
 // 2. SAVE CUSTOM ID
 // ==========================================
