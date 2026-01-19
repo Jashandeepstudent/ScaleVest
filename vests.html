@@ -9555,6 +9555,64 @@ window.launchEditedVest = async function() {
         btn.disabled = false;
     }
 };
+// Function to check and show verification steps directly
+async function checkVerificationStatus() {
+    if (!currentUser) return;
+
+    const profileRef = ref(db, `founderProfile/${currentUser.uid}`);
+    const snapshot = await get(profileRef);
+
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        if (data.verificationLine) {
+            // If the verification line exists, trigger the direct popup
+            showDirectVerificationPopup(data.verificationLine);
+        }
+    }
+}
+
+// Function to render the single-step popup
+function showDirectVerificationPopup(code) {
+    // Hide the standard verification button if it exists
+    const verifyBtn = document.getElementById('videoVerifyBtn');
+    if (verifyBtn) verifyBtn.style.display = 'none';
+
+    // Create the specialized one-step popup
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal show';
+    modal.id = 'directVerificationModal';
+    modal.innerHTML = `
+        <div class="special-app-popup">
+            <button class="close-x" onclick="this.closest('.edit-modal').remove()">×</button>
+            <div class="app-popup-header">
+                <div class="logo-mini">SV</div>
+            </div>
+            <div class="app-popup-content">
+                <h2>Video Verification</h2>
+                <p>Please record a short video speaking the code below clearly to verify your identity.</p>
+                
+                <div style="background: #f4f4f4; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
+                    <label style="font-size: 0.7rem; color: #666; letter-spacing: 1px;">VERIFICATION CODE</label>
+                    <h3 style="color: #000; font-size: 1.2rem; font-weight: 800; margin-top: 10px;">${code}</h3>
+                </div>
+
+                <div class="form-group-white">
+                    <label>UPLOAD RECORDED VIDEO</label>
+                    <div class="file-upload" onclick="document.getElementById('verifyVideoInput').click()" style="border-color: #000; color: #000;">
+                        <p id="videoUploadStatus">Click to Upload Video</p>
+                        <input type="file" id="verifyVideoInput" accept="video/*" hidden onchange="document.getElementById('videoUploadStatus').innerText = '✓ ' + this.files[0].name">
+                    </div>
+                </div>
+            </div>
+            <div class="app-popup-footer">
+                <button class="btn-confirm-op" onclick="window.submitVerificationVideo()">
+                    Submit Verification
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
 window.showVestAnalytics = showVestAnalytics;
 
 
