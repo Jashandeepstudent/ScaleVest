@@ -5249,33 +5249,133 @@ async function checkEmergenceCooldown() {
 // Show cooldown modal
 function showCooldownModal(timeLeft) {
     const modal = document.createElement('div');
-    modal.className = 'edit-modal show';
+    modal.className = 'sv-modal-overlay';
+    
+    // Using a template literal for the style to keep it self-contained
     modal.innerHTML = `
-        <div class="edit-modal-content">
-            <div class="edit-modal-header">
-                <h3>⏰ Emergence Cooldown Active</h3>
-                <button class="modal-close" onclick="this.closest('.edit-modal').remove()">×</button>
-            </div>
-            <div class="edit-modal-body" style="text-align: center; padding: 2rem;">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">⏳</div>
-                <p style="color: #aaa; font-size: 1.1rem; line-height: 1.8;">
-                    You've already launched an Emergence today. 
-                    <br>You can launch again in:
-                </p>
-                <div style="font-size: 2rem; font-weight: 800; color: #ff006e; margin: 1.5rem 0;">
+        <style>
+            .sv-modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4);
+                backdrop-filter: blur(4px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: svFadeIn 0.2s ease-out;
+            }
+
+            .sv-cooldown-card {
+                background: #ffffff;
+                width: 90%;
+                max-width: 400px;
+                border-radius: 12px;
+                position: relative;
+                padding: 24px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                color: #1a1a1a;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            }
+
+            .sv-close-btn {
+                position: absolute;
+                top: 16px;
+                right: 16px;
+                background: none;
+                border: none;
+                font-size: 20px;
+                color: #999;
+                cursor: pointer;
+                padding: 4px;
+                line-height: 1;
+                transition: color 0.2s;
+            }
+
+            .sv-close-btn:hover {
+                color: #000;
+            }
+
+            .sv-content {
+                text-align: center;
+                padding-top: 10px;
+            }
+
+            .sv-content h3 {
+                font-size: 1.25rem;
+                font-weight: 700;
+                margin-bottom: 8px;
+                color: #000;
+            }
+
+            .sv-content p {
+                font-size: 0.95rem;
+                color: #666;
+                line-height: 1.5;
+                margin-bottom: 20px;
+            }
+
+            .sv-timer-badge {
+                display: inline-block;
+                background: #f4f4f4;
+                color: #000;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-family: monospace;
+                font-size: 1.5rem;
+                font-weight: 700;
+                border: 1px solid #eee;
+                margin-bottom: 24px;
+            }
+
+            .sv-footer-btn {
+                width: 100%;
+                background: #000;
+                color: #fff;
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .sv-footer-btn:hover {
+                background: #333;
+            }
+
+            @keyframes svFadeIn {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+            }
+        </style>
+
+        <div class="sv-cooldown-card">
+            <button class="sv-close-btn" onclick="this.closest('.sv-modal-overlay').remove()">×</button>
+            
+            <div class="sv-content">
+                <h3>Cooldown Active</h3>
+                <p>You’ve reached your daily limit. You can launch your next Emergence in:</p>
+                
+                <div class="sv-timer-badge">
                     ${timeLeft}
                 </div>
-                <p style="color: #666; font-size: 0.9rem;">
-                    Pro tip: Use this time to refine your application or engage with investors who received your last emergence!
+
+                <p style="font-size: 0.8rem; color: #999; margin-bottom: 24px;">
+ Pro tip: Use this time to refine your application or engage with investors who received your last emergence!
                 </p>
-            </div>
-            <div class="edit-modal-footer">
-                <button class="modal-btn-save" onclick="this.closest('.edit-modal').remove()" style="width: 100%;">
-                    Got It
+
+                <button class="sv-footer-btn" onclick="this.closest('.sv-modal-overlay').remove()">
+                    Dismiss
                 </button>
             </div>
         </div>
     `;
+
     document.body.appendChild(modal);
 }
 // --- UI HEADER HELPER ---
