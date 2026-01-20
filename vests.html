@@ -10163,9 +10163,12 @@ window.launchEmergence = async function(planType, investorCount, paymentMethod) 
         return;
     }
     
+    // ✅ FIX: Check if the button exists before trying to modify it
     const launchBtn = document.getElementById('launchEmergenceBtn');
-    launchBtn.innerHTML = 'Launching... 🚀';
-    launchBtn.disabled = true;
+    if (launchBtn) {
+        launchBtn.innerHTML = 'Launching... 🚀';
+        launchBtn.disabled = true;
+    }
     
     try {
         // 1. Get user's startup category
@@ -10234,14 +10237,21 @@ window.launchEmergence = async function(planType, investorCount, paymentMethod) 
         await update(ref(db), updates);
         
         // 9. Show success animation
-        document.querySelector('.edit-modal').remove();
+        // ✅ FIX: Use optional chaining or check if the modal exists before removing
+        const editModal = document.querySelector('.edit-modal');
+        if (editModal) editModal.remove();
+        
         showRocketLaunchAnimation(matchedInvestors.length);
         
     } catch (error) {
         console.error("Launch error:", error);
         alert("❌ Launch failed. Please try again.");
-        launchBtn.innerHTML = 'Launch Emergence 🚀';
-        launchBtn.disabled = false;
+        
+        // ✅ FIX: Check if the button exists before resetting it
+        if (launchBtn) {
+            launchBtn.innerHTML = 'Launch Emergence 🚀';
+            launchBtn.disabled = false;
+        }
     }
 };
 // ==========================================
