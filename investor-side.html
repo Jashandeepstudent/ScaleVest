@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScaleVest | Investor Command Center</title>
+    <title>ScaleVest | Investor-Side</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -174,7 +174,18 @@ table {
     border-collapse: collapse;
 }
 
+/* -------- DESKTOP SCALE UP -------- */
+@media (min-width: 768px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
+@media (min-width: 1024px) {
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
 
 #invType {
     width: 100%;
@@ -452,7 +463,17 @@ table {
             border-color: var(--accent-green);
             box-shadow: 0 10px 30px rgba(0, 255, 170, 0.15);
         }
-        
+        .logo-image {
+    height: 40px;    /* Adjust height to fit your navbar design */
+    width: auto;     /* Maintains the aspect ratio */
+    display: block;  /* Removes extra whitespace below the image */
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;       /* Adds space between the logo and the text */
+}
         .step-card:hover video { opacity: 0.5; }
 
         .step-content {
@@ -589,10 +610,10 @@ table {
     </div>
 
     <nav>
-        <div class="nav-logo">
-            <div class="logo-icon">SV</div>
-            <div>ScaleVest</div>
-        </div>
+   <div class="nav-logo">
+    <img src="ScaleVestLogo.png" alt="ScaleVest Logo" class="logo-image">
+    <div>ScaleVest</div>
+</div>
            </nav>
 
 <section class="hero">
@@ -930,4 +951,3 @@ table {
 </script>
 </body>
 </html>
-
