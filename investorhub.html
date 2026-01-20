@@ -1553,6 +1553,125 @@ function updateProgress(percent, status) {
     if (bar) bar.style.width = percent + "%";
     if (text) text.innerText = status;
 }
+/**
+ * Checks verification status and blocks access if unverified.
+ * Automatically initializes isVerified: false if not present.
+ */
+async function checkInvestorVerification(featureName) {
+    if (!currentUser) return false;
+
+    const investorRef = ref(db, `investorProfiles/${currentUser.uid}`);
+    const snapshot = await get(investorRef);
+
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+
+        // AUTO-CREATION LOGIC: If field is missing, create it as false
+        if (data.isVerified === undefined) {
+            await update(investorRef, { isVerified: false });
+            showVerificationBlockPopup(featureName);
+            return false;
+        }
+
+        // If explicitly unverified, block access
+        if (data.isVerified === false) {
+            showVerificationBlockPopup(featureName);
+            return false;
+        }
+    }
+    return true; // User is verified
+}
+
+window.submitInvestorVideoVerification = async function(videoUrl, verificationLine) {
+    try {
+        const response = await fetch('https://gemini-sigma-plum.vercel.app/api/videogemini', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                action: 'verifyVideo', 
+                data: { videoUrl: videoUrl, expectedLine: verificationLine } 
+            })
+        });
+
+        const result = await response.json();
+        
+        // Check if the AI confirmed the video contains the spoken verification line
+        if (result.containsVerificationLine && result.matchPercentage >= 80) {
+            await update(ref(db, `investorProfiles/${currentUser.uid}`), { 
+                isVerified: true, 
+                verifiedAt: Date.now() 
+            });
+            alert("Verification Successful! Investor account activated.");
+            window.location.hash = 'investor_dashboard';
+        } else {
+            alert("Verification failed. Please ensure the line is clearly spoken.");
+        }
+    } catch (error) {
+        console.error("Verification Error:", error);
+    }
+};
+function showInvestorVerificationAlert() {
+    const alert = document.createElement('div');
+    alert.id = 'investorMegaAlert';
+    alert.innerHTML = `
+        <div class="verification-mega-alert">
+            <div class="verification-alert-box" style="border-color: #ef4444; box-shadow: 0 0 50px rgba(239, 68, 68, 0.5);">
+                <h2 style="color: #ef4444;">Investor Account Restricted!</h2>
+                <p>You must verify your identity to engage with startups or view pitch decks.</p>
+                <div class="verification-alert-buttons">
+                    <button class="verification-btn btn-verify-now" onclick="startInvestorVerification()">
+                        Verify Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(alert);
+}
+window.generateInvestorVerificationLine = async function() {
+    const response = await fetch('https://gemini-sigma-plum.vercel.app/api/videogemini', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'generateLine' })
+    });
+    const result = await response.json();
+    
+    // Save generated line to the investor's profile
+    await update(ref(db, `investorProfiles/${currentUser.uid}`), {
+        activeVerificationLine: result.verificationLine
+    });
+    
+    return result.verificationLine;
+};
+window.showVerificationPage = function() {
+    const container = document.getElementById('dashboardContainer');
+    container.innerHTML = `
+        <div class="verify-page" style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+            <h1 class="verify-title" style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Verify Identity</h1>
+            <p style="color: #888; margin-bottom: 30px;">Record a short video of yourself speaking the line below.</p>
+            
+            <div class="verify-card" style="background: #0a0a0a; border: 1px solid #222; padding: 30px; border-radius: 16px;">
+                <div id="lineDisplay" class="verification-line-text" style="font-family: monospace; font-size: 1.2rem; padding: 20px; border: 1px dashed #555; text-align: center; margin-bottom: 20px;">
+                    Click "Generate" to get your code...
+                </div>
+                
+                <button class="buy-btn-premium" onclick="generateVerificationLine()" style="margin-bottom: 20px;">
+                    Generate Verification Line
+                </button>
+
+                <div class="file-upload" onclick="document.getElementById('videoUpload').click()" style="border-style: dashed; padding: 40px; text-align: center; cursor: pointer;">
+                    <p style="color: #aaa;">Click to Upload Verification Video</p>
+                    <input type="file" id="videoUpload" accept="video/*" hidden>
+                </div>
+                <div id="videoFileName" style="color: #10b981; margin-top: 10px; text-align: center;"></div>
+                
+                <button id="submitVerifyBtn" class="buy-btn-premium" style="margin-top: 30px; background: #fff; color: #000;" onclick="submitVerification()" disabled>
+                    Submit for Review
+                </button>
+            </div>
+        </div>
+    `;
+};
+
 
 onAuthStateChanged(auth, async (user) => {
     updateProgress(20, "Authenticating...");
@@ -1561,25 +1680,70 @@ onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         currentUserUID = user.uid;
         setUserPresence(user);
-         checkAngelStatus()
+        checkAngelStatus();
         startNotificationListener(); 
         startDashboardInboxListener();
-         startApplicationInboxListener();
-        window.addEventListener('hashchange', () => {
-            if (window.location.hash === '#founder_chatlist') {
-                window.showInvestorChatList();
-            } else if (window.location.hash === '#dashboard' || window.location.hash === '') {
-                location.reload(); 
-            }
-        });
+        startApplicationInboxListener();
 
-        if (window.location.hash === '#founder_chatlist') {
-            window.showInvestorChatList();
+        // --- NEW: VERIFICATION & PROFILE INITIALIZATION ---
+        try {
+            updateProgress(50, "Checking Account Status...");
+            
+            // Check if user is an Investor and handle isVerified auto-creation
+            const investorRef = ref(db, `investorProfiles/${user.uid}`);
+            const snapshot = await get(investorRef);
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                
+                // Auto-create isVerified: false if it doesn't exist
+                if (data.isVerified === undefined) {
+                    await update(investorRef, { isVerified: false });
+                }
+
+                // If unverified, trigger the Blocked UI after a short delay
+                if (data.isVerified === false || data.isVerified === undefined) {
+                    setTimeout(() => {
+                        // showInvestorVerificationAlert() defined in previous response
+                        if (typeof showInvestorVerificationAlert === 'function') {
+                            showInvestorVerificationAlert();
+                        }
+                    }, 2000); 
+                }
+            }
+        } catch (err) {
+            console.error("Verification check failed:", err);
+        }
+
+        // --- HASH CHANGE ROUTING ---
+        const handleRouting = () => {
+            const hash = window.location.hash;
+
+            if (hash === '#founder_chatlist') {
+                window.showInvestorChatList();
+            } 
+            else if (hash === '#investor_verify') {
+                // Function to render the verification UI
+                if (typeof showVerificationPage === 'function') {
+                    showVerificationPage();
+                }
+            }
+            else if (hash === '#dashboard' || hash === '') {
+                // Instead of reload, consider re-rendering the main view 
+                // location.reload(); 
+            }
+        };
+
+        window.addEventListener('hashchange', handleRouting);
+        
+        // Handle initial load routing
+        if (window.location.hash === '#founder_chatlist' || window.location.hash === '#investor_verify') {
+            handleRouting();
             const loader = document.getElementById("loadingScreen");
             if(loader) loader.style.display = 'none';
         } else {
             try {
-                updateProgress(50, "Fetching Profile...");
+                updateProgress(70, "Fetching Profile...");
                 await loadUserProfile(user.uid);
                 updateProgress(100, "Ready");
                 setTimeout(() => {
@@ -1597,7 +1761,6 @@ onAuthStateChanged(auth, async (user) => {
         window.location.href = "login3.html";
     }
 });
-
 window.toggleDropdown = (id) => document.getElementById(id)?.classList.toggle('show');
 window.toggleProfileDropdown = () => document.getElementById('profileDropdown')?.classList.toggle('show');
 window.openEditIdentity = () => document.getElementById('editIdentityModal').style.display = 'flex';
