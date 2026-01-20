@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <title>ScaleVest CFO</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
@@ -680,6 +679,7 @@
             }
         }
     </style>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 <script type="module">
@@ -877,100 +877,24 @@ function updateProductUI(analytics) {
             `Momentum: ${analytics.trendingSelling.name} is the current trending product!`;
     }
 }
-// --- Subscription & Trial Logic ---
-async function checkSubscriptionStatus(userId) {
-    const cfoRef = ref(db, `BusinessOwners/${userId}/CFO`);
-    const snapshot = await get(cfoRef);
-    if (!snapshot.exists()) return;
-    
-    const data = snapshot.val();
-    if (!data.expiryDate) return;
-
-    const now = new Date();
-    const expiryDate = new Date(data.expiryDate);
-
-    if (now > expiryDate) {
-        if (data.cfopaid !== false) {
-            await update(cfoRef, { cfopaid: false });
-        }
-        showSubscriptionOverlay(data.plan);
-    }
-}
-
-function showSubscriptionOverlay(expiredPlan) {
-    if (document.getElementById('subscription-wall')) return;
-    const overlay = document.createElement('div');
-    overlay.id = "subscription-wall";
-    overlay.style.cssText = `position: fixed; inset: 0; z-index: 20000; background: rgba(10, 14, 39, 0.98); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center;`;
-
-    const message = expiredPlan === "freeTrial" 
-        ? "Your 40-second free trial has ended! Upgrade to keep using ScaleVest CFO." 
-        : `Your ${expiredPlan} plan has expired.`;
-
-    overlay.innerHTML = `
-        <div class="card" style="max-width: 900px; border: 1px solid #3b82f6;">
-            <h2 style="color: #fff;">Access Blocked</h2>
-            <p style="color: rgba(255,255,255,0.7); margin-bottom: 30px;">${message}</p>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: left;">
-                <div class="card" style="border: 1px solid rgba(255,255,255,0.1);">
-                    <h3>Monthly</h3>
-                    <p>₹199 <del>₹399</del></p>
-                    <button onclick="processPayment('monthly', 30)" class="launch-btn">Upgrade</button>
-                </div>
-                <div class="card" style="border: 1px solid #3b82f6;">
-                    <h3>6 Months</h3>
-                    <p>₹499 <del>₹999</del></p>
-                    <button onclick="processPayment('halfYearly', 180)" class="launch-btn">Upgrade</button>
-                </div>
-                <div class="card" style="border: 1px solid #fb923c;">
-                    <h3>Yearly</h3>
-                    <p>₹999 <del>₹2000</del></p>
-                    <button onclick="processPayment('yearly', 365)" class="launch-btn">Upgrade</button>
-                </div>
-            </div>
-        </div>`;
-    document.body.appendChild(overlay);
-}
-
-window.processPayment = async (planName, days) => {
-    const user = auth.currentUser;
-    if (!user) return alert("Please log in.");
-
-    const prices = { 'monthly': 19900, 'halfYearly': 49900, 'yearly': 99900 };
-    const options = {
-        "key": "rzp_test_1DP5mmOlF5G5ag", 
-        "amount": prices[planName],
-        "currency": "INR",
-        "name": "ScaleVest CFO",
-        "handler": async function (response) {
-            const newExpiry = new Date();
-            newExpiry.setDate(newExpiry.getDate() + days);
-            await update(ref(db, `BusinessOwners/${user.uid}/CFO`), {
-                cfopaid: true,
-                plan: planName,
-                expiryDate: newExpiry.toISOString()
-            });
-            alert("Payment Successful!");
-            location.reload();
-        },
-        "theme": { "color": "#3b82f6" }
-    };
-    new Razorpay(options).open();
-};
 // --- Auth State Logic ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        checkSubscriptionStatus(user.uid);
-        setInterval(() => checkSubscriptionStatus(user.uid), 5000); // Check every 5s for trial end
-        
         runOnboarding(user.uid);
         fetchAnalytics(user.uid); 
         fetchRevenuePulse(user.uid);
         setupProductAnalysisNavigation(user.uid);
-        setupFinanceReportNavigation(user.uid);
+setupFinanceReportNavigation(user.uid);
         fetchExpiryAlerts(user.uid);
         fetchPricingAnalysis(user.uid);
-        fetchStockRadar(user.uid);
+        fetchStockRadar(user.uid); 
+        
+        // Refresh all alerts every hour
+        setInterval(() => {
+            fetchExpiryAlerts(user.uid);
+            fetchPricingAnalysis(user.uid);
+            fetchStockRadar(user.uid); 
+        }, 3600000); // 1 hour
     } else {
         window.location.href = "login.html";
     }
@@ -1033,7 +957,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(trendCard) trendCard.onclick = () => { overlay.style.display = 'flex'; loadTrends(); };
 });
-async function runOnboarding(userId) {
+ async function runOnboarding(userId) {
     const nameSpan = document.getElementById('user-name-display');
     const welcomeOverlay = document.getElementById('onboarding-overlay');
     const welcomeText = document.getElementById('welcome-text');
@@ -1042,67 +966,117 @@ async function runOnboarding(userId) {
     const startBtn = document.getElementById('start-cfo-btn');
     const checkbox = document.getElementById('terms-check');
 
-    const snap = await get(ref(db, `BusinessOwners/${userId}/name`));
-    nameSpan.innerText = snap.exists() ? snap.val() : "Partner";
+    // Reference to the CFO node
+    const cfoRef = ref(db, `BusinessOwners/${userId}/CFO`);
 
-    const cfoSnap = await get(ref(db, `BusinessOwners/${userId}/CFO/name`));
-    if (cfoSnap.exists()) {
-        welcomeOverlay.style.display = "none";
-        displayCFOName(cfoSnap.val());
-    } else {
-        startIntroSequence(welcomeText, welcomeOverlay, cfoPopup);
+    try {
+        // 1. Fetch User Name
+        const nameSnapshot = await get(ref(db, `BusinessOwners/${userId}/name`));
+        nameSpan.innerText = nameSnapshot.exists() ? nameSnapshot.val() : "Partner";
+
+        // 2. Check CFO Data & Subscription Status
+        const cfoSnapshot = await get(cfoRef);
+        
+        if (cfoSnapshot.exists()) {
+            const cfoData = cfoSnapshot.val();
+            welcomeOverlay.style.display = "none";
+            displayCFOName(cfoData.name);
+            
+            // Trigger Subscription Check immediately
+            checkSubscriptionStatus(userId, cfoData);
+            
+            // Continuous check for the 40-second trial end
+            setInterval(() => checkSubscriptionStatus(userId, cfoData), 5000);
+        } else {
+            // Start Cinematic Sequence for new users
+            startIntroSequence(welcomeText, welcomeOverlay, cfoPopup);
+        }
+    } catch (error) {
+        console.error("Initialization Error:", error);
     }
 
+    // 3. Save Logic (First Time Setup)
     startBtn.addEventListener('click', async () => {
-        if (!checkbox.checked) return;
+        if (!checkbox.checked || startBtn.disabled) return;
+        
         const cfoName = cfoInput.value.trim() || "Mark";
-        const trialExpiry = new Date();
-        trialExpiry.setSeconds(trialExpiry.getSeconds() + 40); // 40 Seconds Trial
+        const now = new Date().getTime();
+        const trialExpiry = now + (40 * 1000); // 40 Seconds for Testing
+
+        const initialData = {
+            name: cfoName,
+            cfoppaid: true,         // Active during trial
+            plan: "freeTrial",
+            trialStarted: now,
+            expiryDate: trialExpiry,
+            countdown: "40 Seconds"
+        };
 
         try {
-            await set(ref(db, `BusinessOwners/${userId}/CFO`), {
-                name: cfoName,
-                trialStarted: new Date().toISOString(),
-                expiryDate: trialExpiry.toISOString(),
-                cfopaid: true,
-                plan: "freeTrial"
-            });
+            const { set } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+            await set(cfoRef, initialData);
+
             displayCFOName(cfoName);
             cfoPopup.style.display = "none";
             welcomeOverlay.style.display = "none";
-        } catch (e) { console.error(e); }
-    });
-}
-            displayCFOName(cfoName);
-            cfoPopup.style.display = "none";
-            welcomeOverlay.style.display = "none";
-        catch (error) {
+            
+            // Start checking for expiry
+            checkSubscriptionStatus(userId, initialData);
+        } catch (error) {
             console.error("Error saving CFO:", error);
             alert("Failed to save CFO.");
         }
     });
+}
 
+/** * Checks if the trial/plan has expired. 
+ * If expired and unpaid, locks the screen with the pricing overlay.
+ */
+async function checkSubscriptionStatus(userId, cfoData) {
+    const now = new Date().getTime();
+    const paywall = document.getElementById('subscription-overlay');
+    
+    // Check if current time has passed the expiry date
+    if (now > cfoData.expiryDate && cfoData.plan === "freeTrial") {
+        // Only update DB if it wasn't already marked unpaid
+        if (cfoData.cfoppaid !== false) {
+            const { update } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+            await update(ref(db, `BusinessOwners/${userId}/CFO`), { 
+                cfoppaid: false,
+                countdown: "Expired" 
+            });
+        }
+        
+        // Show Paywall
+        paywall.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; 
+    } else if (cfoData.cfoppaid === false) {
+        // If already marked unpaid in DB
+        paywall.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
 
-  function startIntroSequence(textEl, overlayEl, popupEl) {
-      setTimeout(() => {
-          textEl.style.transition = "opacity 0.8s";
-          textEl.style.opacity = "0";
-          
-          setTimeout(() => {
-              textEl.innerText = "Let's customize your CFO";
-              textEl.style.opacity = "1";
-              
-              setTimeout(() => {
-                  overlayEl.style.opacity = "0";
-                  setTimeout(() => {
-                      overlayEl.style.display = "none";
-                      popupEl.style.display = "flex";
-                  }, 1000);
-              }, 2000);
-          }, 1000);
-      }, 2000);
-  }
-
+function startIntroSequence(textEl, overlayEl, popupEl) {
+    setTimeout(() => {
+        textEl.style.transition = "opacity 0.8s";
+        textEl.style.opacity = "0";
+        
+        setTimeout(() => {
+            textEl.innerText = "Let's customize your CFO";
+            textEl.style.opacity = "1";
+            
+            setTimeout(() => {
+                overlayEl.style.transition = "opacity 1s";
+                overlayEl.style.opacity = "0";
+                setTimeout(() => {
+                    overlayEl.style.display = "none";
+                    popupEl.style.display = "flex";
+                }, 1000);
+            }, 2000);
+        }, 1000);
+    }, 2000);
+}
   function displayCFOName(name) {
       const header = document.querySelector('.header');
       const existingLabel = document.getElementById('cfo-display-label');
@@ -2266,7 +2240,6 @@ async function askCFO(userInput) {
         adviceTextEl.innerText = "Error connecting to ScaleVest CFO.";
     }
 }
-}
 </script>
 
 <div id="onboarding-overlay" style="position: fixed; inset: 0; z-index: 9999; background: #0a0e27; display: flex; align-items: center; justify-content: center; transition: opacity 1s ease;">
@@ -2719,6 +2692,56 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 </div>
 
+<div id="subscription-overlay" style="display: none; position: fixed; inset: 0; background: rgba(10, 14, 39, 0.98); z-index: 20000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px);">
+    <div style="text-align: center; max-width: 900px;">
+        <h1 style="color: #f87171; font-size: 32px; margin-bottom: 10px;">Trial Period Ended</h1>
+        <p style="color: rgba(255,255,255,0.7); margin-bottom: 40px;">Your 14-day free trial of ScaleVest CFO has concluded. We hope your "Mark" helped you scale! Upgrade now to keep the intelligence running.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%;">
+            
+            <div class="card" style="border: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                <div style="background: #ef4444; font-size: 10px; padding: 4px; border-radius: 4px; display: inline-block; margin-bottom: 10px;">50% OFF</div>
+                <h3>Monthly</h3>
+                <div style="margin: 15px 0;">
+                    <span style="text-decoration: line-through; opacity: 0.5;">₹399</span>
+                    <span style="font-size: 24px; color: #4ade80; font-weight: 800;">₹199</span>
+                </div>
+                <ul style="text-align: left; font-size: 12px; opacity: 0.8; list-style: none; padding: 0; margin-bottom: 20px;">
+                    <li>✓ Unlimited CFO Access</li>
+                    <li>✓ 1 Month Duration</li>
+                    <li>✓ Full Finance Reports</li>
+                </ul>
+                <button onclick="payForCFO('Monthly', 199)" class="launch-btn">Upgrade Now</button>
+            </div>
 
+            <div class="card" style="border: 2px solid #3b82f6; text-align: center; transform: scale(1.05); background: rgba(59, 130, 246, 0.05);">
+                <div style="background: #3b82f6; font-size: 10px; padding: 4px; border-radius: 4px; display: inline-block; margin-bottom: 10px;">BEST VALUE</div>
+                <h3>6 Months</h3>
+                <div style="margin: 15px 0;">
+                    <span style="text-decoration: line-through; opacity: 0.5;">₹999</span>
+                    <span style="font-size: 24px; color: #4ade80; font-weight: 800;">₹499</span>
+                </div>
+                <ul style="text-align: left; font-size: 12px; opacity: 0.8; list-style: none; padding: 0; margin-bottom: 20px;">
+                    <li>✓ Save ₹500 vs Monthly</li>
+                    <li>✓ Unlimited CFO Access</li>
+                    <li>✓ Priority AI Responses</li>
+                </ul>
+                <button onclick="payForCFO('Half-Yearly', 499)" class="launch-btn" style="background: #3b82f6;">Upgrade Now</button>
+            </div>
+
+            <div class="card" style="border: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                <div style="background: #10b981; font-size: 10px; padding: 4px; border-radius: 4px; display: inline-block; margin-bottom: 10px;">MAX SAVINGS</div>
+                <h3>Yearly</h3>
+                <div style="margin: 15px 0;">
+                    <span style="text-decoration: line-through; opacity: 0.5;">₹2000</span>
+                    <span style="font-size: 24px; color: #4ade80; font-weight: 800;">₹999</span>
+                </div>
+                <p style="font-size: 10px; color: #3b82f6;">Save ₹200 more than Monthly</p>
+                <button onclick="payForCFO('Yearly', 999)" class="launch-btn">Upgrade Now</button>
+            </div>
+
+        </div>
+    </div>
+</div>
 </body>
 </html>
