@@ -229,7 +229,14 @@
             border-color: transparent;
             box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
         }
-
+.brand-icon {
+    width: 80px; /* Adjust size as needed */
+    height: auto;
+    display: block;
+    margin: 0 auto 1.5rem auto;
+    /* Optional: adds a slight glow effect to match the 'Next-Gen' theme */
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+}
         /* Loading Overlay */
         .loading-overlay {
             position: absolute;
@@ -264,19 +271,18 @@
 
     <div class="container">
         
-        <div class="welcome-screen" id="welcomeScreen">
-            <svg class="brand-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-            </svg>
-            <h1>ScaleVest</h1>
-            <p class="subtitle">Next-Gen Investor Command Center</p>
-            <button class="btn-primary" onclick="showForm()">
-                Initialize Configuration
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                </svg>
-            </button>
-        </div>
+<div class="welcome-screen" id="welcomeScreen">
+    <img src="ScaleVestLogo.png" alt="ScaleVest Logo" class="brand-icon" style="width: 64px; height: 64px; object-fit: contain; margin-bottom: 1.5rem;">
+    
+    <h1>ScaleVest</h1>
+    <p class="subtitle">Next-Gen Investor Command Center</p>
+    <button class="btn-primary" onclick="showForm()">
+        Initialize Configuration
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+        </svg>
+    </button>
+</div>
 
         <div class="form-container" id="formContainer">
             <div class="form-header">
@@ -527,3 +533,4 @@
     </script>
 </body>
 </html>
+
