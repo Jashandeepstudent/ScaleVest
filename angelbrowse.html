@@ -1576,39 +1576,54 @@ const impressionObserver = new IntersectionObserver((entries) => {
 async function recordImpression(investorId) {
     try {
         const impressionRef = ref(database, `angelProfiles/${investorId}/impressions/${currentUser.uid}`);
-        await set(impressionRef, {
-            timestamp: serverTimestamp(),
-            viewed: true
-        });
         
-        // Increment total impression count
-        const profileRef = ref(database, `angelProfiles/${investorId}`);
-        await update(profileRef, {
-            totalImpressions: increment(1)
-        });
+        // 1. Check if this specific user already has a record for this investor
+        const snapshot = await get(impressionRef);
         
-        console.log(`📊 Impression recorded for ${investorId}`);
+        if (!snapshot.exists()) {
+            // 2. ONLY if they don't exist, record the view and increment the total
+            await set(impressionRef, {
+                timestamp: serverTimestamp(),
+                viewed: true
+            });
+            
+            const profileRef = ref(database, `angelProfiles/${investorId}`);
+            await update(profileRef, {
+                totalImpressions: increment(1)
+            });
+            
+            console.log(`📊 Unique Impression recorded for ${investorId}`);
+        } else {
+            console.log(`ℹ️ Impression already exists for ${investorId}, skipping increment.`);
+        }
     } catch (error) {
         console.error('Error recording impression:', error);
     }
 }
-
 // Record click to Firebase
 async function recordClick(investorId) {
     try {
         const clickRef = ref(database, `angelProfiles/${investorId}/clicks/${currentUser.uid}`);
-        await set(clickRef, {
-            timestamp: serverTimestamp(),
-            clicked: true
-        });
         
-        // Increment total click count
-        const profileRef = ref(database, `angelProfiles/${investorId}`);
-        await update(profileRef, {
-            totalClicks: increment(1)
-        });
+        // 1. Check if this user already clicked this profile
+        const snapshot = await get(clickRef);
         
-        console.log(`🖱️ Click recorded for ${investorId}`);
+        if (!snapshot.exists()) {
+            // 2. Record the click and increment total only if first time
+            await set(clickRef, {
+                timestamp: serverTimestamp(),
+                clicked: true
+            });
+            
+            const profileRef = ref(database, `angelProfiles/${investorId}`);
+            await update(profileRef, {
+                totalClicks: increment(1)
+            });
+            
+            console.log(`🖱️ Unique Click recorded for ${investorId}`);
+        } else {
+            console.log(`ℹ️ Click already exists for ${investorId}.`);
+        }
     } catch (error) {
         console.error('Error recording click:', error);
     }
