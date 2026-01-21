@@ -42,48 +42,8 @@
             transition: all 0.3s;
             text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
         }
-.quick-actions-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-        gap: 1rem;
-        padding: 0.5rem;
-    }
 
-    .action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 1.2rem;
-        /* Green Background */
-        background: #22c55e; 
-        border: 1px solid #16a34a;
-        border-radius: 12px;
-        text-decoration: none;
-        /* Blue Text */
-        color: #1e3a8a; 
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-        text-align: center;
-    }
-
-    .action-btn:hover {
-        /* Slightly lighter green on hover */
-        background: #4ade80;
-        /* Darker blue on hover */
-        color: #1d4ed8; 
-        transform: translateY(-3px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-
-    .action-btn svg {
-        width: 28px;
-        height: 28px;
-        margin-bottom: 0.75rem;
-        /* This makes the SVG match the blue text color automatically */
-        stroke: currentColor; 
-    }        .logo:hover {
+        .logo:hover {
             transform: scale(1.05);
             text-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
         }
@@ -126,7 +86,111 @@
         .dropdown {
             position: relative;
         }
+/* =================== ANALYTICS PAGE STYLES =================== */
+.analytics-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
 
+.analytics-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.analytics-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.analytics-subtitle {
+    color: #6ee7b7;
+    font-size: 1.1rem;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.analytics-stat-card {
+    background: rgba(16, 185, 129, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+}
+
+.analytics-stat-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.stat-icon svg {
+    width: 30px;
+    height: 30px;
+    stroke: #10b981;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.stat-change {
+    font-size: 0.85rem;
+    color: #6ee7b7;
+}
+
+.back-to-dash-analytics {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #10b981;
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.back-to-dash-analytics:hover {
+    color: #34d399;
+    transform: translateX(-5px);
+}
         .dropdown-content {
             display: none;
             position: absolute;
@@ -290,7 +354,6 @@
     max-width: 1800px;
     margin: 0 auto;
     padding: 3rem;
-    flex: 1
 }
 
 
@@ -748,7 +811,6 @@
             border-top: 1px solid rgba(16, 185, 129, 0.2);
             padding: 3rem;
             margin-top: 4rem;
-            margin-top: auto
         }
 /* Enhanced Avatar Styles */
 .profile-avatar {
@@ -1054,9 +1116,9 @@
                 <button class="switch-btn">Switch Account</button>
 
                 <div class="profile-section">
-                    <a href="#profile" class="profile-link">My Profile</a>
-                    <a href="#settings" class="profile-link">Settings</a>
-                    <a href="#logout" class="profile-link">Log Out</a>
+                  <a href="javascript:void(0)" onclick="enterEditMode()" class="profile-link">My Profile</a>
+                   <a href="javascript:void(0)" onclick="openSettings()" class="profile-link">Settings</a>
+                   <a href="javascript:void(0)" onclick="handleLogout()" class="profile-link">Log Out</a>
                 </div>
             </div>
         </div>
@@ -1115,37 +1177,19 @@
         </div>
     </div>
 
-   <div class="card">
-    <div class="card-title" style="text-align: left; margin-bottom: 1.5rem;">
-        Quick Actions
+    <div class="card">
+        <div class="card-title" style="text-align: left; margin-bottom: 1.5rem;">
+            Quick Links
+        </div>
+        <ul class="quick-links">
+            <li><a href="#dashboard">Dashboard</a></li>
+            <li><a href="#projects">My Projects</a></li>
+            <li><a href="#analytics">Analytics</a></li>
+            <li><a href="#settings">Settings</a></li>
+            <li><a href="#notifications">Notifications</a></li>
+            <li><a href="#help">Help Center</a></li>
+        </ul>
     </div>
-    <div class="quick-actions-grid">
-        <a href="iinvestorhub.html#dashboard" class="action-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            Dashboard
-        </a>
-
-        <a href="investorhub.html#analytics" class="action-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-            Analytics
-        </a>
-
-        <a href="https://upscalevest.site/applications-inbox.html" class="action-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-            Applications
-        </a>
-
-        <a href="investorhub.html#founder_chatlist" class="action-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            Messages
-        </a>
-
-        <a href="https://upscalevest.site/vestbrowse.html" class="action-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            Browse Vests
-        </a>
-    </div>
-</div>
 
 </div>
 
@@ -1181,34 +1225,47 @@
         <h3>Track Your Progress</h3>
         <p>Monitor your performance with real-time analytics and detailed insights.</p>
     </div>
+    <div class="banner-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+        </svg>
+    </div>
+</div>
+
+            <div class="banner">
+                <div class="banner-content">
+                    <h3>Connect With Team</h3>
+                    <p>Collaborate seamlessly with your team members and stay in sync with updates.</p>
+                </div>
                 <div class="banner-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-                        <line x1="12" y1="20" x2="12" y2="10"></line>
-                        <line x1="18" y1="20" x2="18" y2="4"></line>
-                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                     </svg>
                 </div>
             </div>
-                </div>
-            </div>
-    <!-- Footer -->
-<footer class="footer">
-    <div class="footer-content">
-        <div class="footer-logo">
-            <div class="footer-logo-text">ScaleVest</div>
-            <div class="footer-company">UnioraX Private Limited</div>
-        </div>
-        <div class="footer-links">
-            <a href="Scalevest-documentation.html" class="footer-link">About</a>
-            
-            <a href="javascript:void(0)" onclick="alert('Contact us at: scalevestofficial@gmail.com')" class="footer-link">Contact</a>
-            
-            <a href="privacyandpolicy.html" class="footer-link">Privacy</a>
-            
-            <a href="termsandservice.html" class="footer-link">Terms</a>
         </div>
     </div>
-</footer>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="footer-logo-text">ScaleVest</div>
+                <div class="footer-company">UnioraX Private Limited</div>
+            </div>
+            <div class="footer-links">
+                <a href="#about" class="footer-link">About</a>
+                <a href="#contact" class="footer-link">Contact</a>
+                <a href="#privacy" class="footer-link">Privacy</a>
+                <a href="#terms" class="footer-link">Terms</a>
+            </div>
+        </div>
+    </footer>
 
     <script>
         function toggleDropdown(id) {
@@ -2956,17 +3013,15 @@ window.retryVerification = function() {
     // Scroll to upload section
     document.getElementById('uploadSection').scrollIntoView({ behavior: 'smooth' });
 };
-
-// =========================================================
-// ANALYTICS PAGE
-// =========================================================
-
+// =================== ANALYTICS PAGE FUNCTION ===================
 async function showAnalyticsPage() {
     const container = document.querySelector('.right-section');
     const leftSection = document.querySelector('.left-section');
     const footer = document.querySelector('.footer');
 
-    // Hide sidebar & footer
+    // Reset background & hide elements
+    document.body.style.background = "linear-gradient(135deg, #0a4d3c 0%, #1a5f7a 50%, #2e8b9e 100%)";
+    
     if (leftSection) leftSection.style.display = 'none';
     if (footer) footer.style.display = 'none';
     
@@ -2975,219 +3030,93 @@ async function showAnalyticsPage() {
         container.style.margin = '0 auto';   
     }
     
-    document.querySelector('.welcome-section').style.display = 'none';
+    // Hide dashboard elements
+    const welcomeSection = document.querySelector('.welcome-section');
+    if (welcomeSection) welcomeSection.style.display = 'none';
     document.querySelectorAll('.banner').forEach(el => el.style.display = 'none');
     
     document.title = "Analytics | ScaleVest";
     
-    // Show loading state
+    // Show loading
     container.innerHTML = `
-        <div style="text-align:center; padding: 100px;">
-            <p style="color:#10b981; font-weight:bold; font-size:1.2rem;">Loading Analytics...</p>
+        <div style="text-align:center; padding: 50px;">
+            <p style="color:#10b981; font-weight:bold;">Loading Analytics...</p>
         </div>
     `;
 
     try {
-        // Fetch angelProfile data
-        const angelRef = ref(db, `angelProfiles/${currentUser.uid}`);
+        // Fetch angel profile data
+        const angelRef = ref(db, `angelProfiles/${currentUserUID}`);
         const snapshot = await get(angelRef);
         
-        let stats = {
-            replyReputation: 0,
-            totalImpressions: 0,
-            totalClicks: 0,
-            PitchedCount: 0
-        };
+        let replyReputation = 0;
+        let impressions = 0;
+        let totalClicks = 0;
+        let pitchCount = 0;
         
         if (snapshot.exists()) {
             const data = snapshot.val();
-            stats = {
-                replyReputation: data.replyReputation || 0,
-                impressions: data.totalImpressions || 0,
-                totalClicks: data.totalClicks || 0,
-                pitchedCount: data.PitchedCount || 0
-            };
-        }
-
-        // Render analytics page
-        container.innerHTML = `
-            <style>
-                .analytics-page {
-                    padding: 2rem;
-                    min-height: 100vh;
-                }
-                
-                .analytics-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    margin-bottom: 3rem;
-                    padding-bottom: 2rem;
-                    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
-                }
-                
-                .analytics-title {
-                    font-size: 2.5rem;
-                    font-weight: 800;
-                    background: linear-gradient(90deg, #10b981, #3b82f6);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                
-                .analytics-subtitle {
-                    color: #6ee7b7;
-                    font-size: 1rem;
-                    margin-top: 0.5rem;
-                }
-                
-                .back-btn-analytics {
-                    background: transparent;
-                    border: 2px solid #10b981;
-                    color: #10b981;
-                    padding: 12px 30px;
-                    border-radius: 10px;
-                    font-weight: 700;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                
-                .back-btn-analytics:hover {
-                    background: #10b981;
-                    color: #fff;
-                    transform: translateX(-5px);
-                }
-                
-                .stats-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                    gap: 2rem;
-                    margin-bottom: 3rem;
-                }
-                
-                .stat-card {
-                    background: rgba(16, 185, 129, 0.05);
-                    backdrop-filter: blur(10px);
-                    border: 1px solid rgba(16, 185, 129, 0.2);
-                    border-radius: 16px;
-                    padding: 2.5rem;
-                    transition: all 0.3s;
-                    position: relative;
-                    overflow: hidden;
-                }
-                
-                .stat-card::before {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 4px;
-                    background: linear-gradient(90deg, #10b981, #3b82f6);
-                    transform: scaleX(0);
-                    transition: transform 0.4s;
-                }
-                
-                .stat-card:hover::before {
-                    transform: scaleX(1);
-                }
-                
-                .stat-card:hover {
-                    border-color: rgba(16, 185, 129, 0.5);
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.2);
-                }
-                
-                .stat-icon {
-                    width: 60px;
-                    height: 60px;
-                    background: rgba(16, 185, 129, 0.1);
-                    border-radius: 12px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin-bottom: 1.5rem;
-                }
-                
-                .stat-icon svg {
-                    width: 30px;
-                    height: 30px;
-                    stroke: #10b981;
-                }
-                
-                .stat-label {
-                    color: #a7f3d0;
-                    font-size: 0.9rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 1px;
-                    margin-bottom: 0.8rem;
-                }
-                
-                .stat-value {
-                    font-size: 3rem;
-                    font-weight: 800;
-                    color: #fff;
-                    line-height: 1;
-                    margin-bottom: 0.5rem;
-                    background: linear-gradient(135deg, #10b981, #3b82f6);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                
-                .stat-change {
-                    font-size: 0.85rem;
-                    color: #6ee7b7;
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                }
-                
-                .stat-change.positive {
-                    color: #10b981;
-                }
-                
-                .stat-change.negative {
-                    color: #ef4444;
-                }
-            </style>
-            
-            <div class="analytics-page">
-                <div class="analytics-header">
-                    <div>
-                        <h1 class="analytics-title">Performance Analytics</h1>
-                        <p class="analytics-subtitle">Track your angel investor metrics</p>
-                    </div>
-                    <button class="back-btn-analytics" onclick="window.location.hash='dashboard'">
+            replyReputation = data.replyReputation || 0;
+            impressions = data.Impressions || 0;
+            totalClicks = data.TotalClicks || 0;
+            pitchCount = data.pitchedCount || 0;
+        } else {
+            // No angel profile exists
+            container.innerHTML = `
+                <div class="analytics-page">
+                    <a onclick="window.location.hash='dashboard'" class="back-to-dash-analytics">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M19 12H5M12 19l-7-7 7-7"/>
                         </svg>
                         Back to Dashboard
-                    </button>
+                    </a>
+                    
+                    <div class="analytics-header">
+                        <h1 class="analytics-title">Analytics Dashboard</h1>
+                        <p class="analytics-subtitle">Launch your Angel Profile to see analytics</p>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 3rem;">
+                        <p style="color: #a7f3d0; margin-bottom: 2rem;">You need to launch your Angel Profile first to track your performance metrics.</p>
+                        <button class="card-btn" onclick="window.location.hash='dashboard'" style="max-width: 300px; margin: 0 auto;">
+                            Go to Dashboard
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        // Render analytics page
+        container.innerHTML = `
+            <div class="analytics-page">
+                <a onclick="window.location.hash='dashboard'" class="back-to-dash-analytics">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Dashboard
+                </a>
+                
+                <div class="analytics-header">
+                    <h1 class="analytics-title">Analytics Dashboard</h1>
+                    <p class="analytics-subtitle">Track your Angel Profile performance</p>
                 </div>
                 
-                <div class="stats-grid">
-                    <!-- Reply Reputation Card -->
-                    <div class="stat-card">
+                <div class="analytics-grid">
+                    <!-- Reply Reputation -->
+                    <div class="analytics-stat-card">
                         <div class="stat-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
                             </svg>
                         </div>
                         <div class="stat-label">Reply Reputation</div>
-                        <div class="stat-value">${stats.replyReputation}</div>
-                        <div class="stat-change positive">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="18 15 12 9 6 15"></polyline>
-                            </svg>
-                            Response Quality Score
-                        </div>
+                        <div class="stat-value">${replyReputation}</div>
+                        <div class="stat-change">Quality responses</div>
                     </div>
                     
-                    <!-- Impressions Card -->
-                    <div class="stat-card">
+                    <!-- Impressions -->
+                    <div class="analytics-stat-card">
                         <div class="stat-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -3195,76 +3124,65 @@ async function showAnalyticsPage() {
                             </svg>
                         </div>
                         <div class="stat-label">Impressions</div>
-                        <div class="stat-value">${stats.impressions.toLocaleString()}</div>
-                        <div class="stat-change">
-                            Profile Views
-                        </div>
+                        <div class="stat-value">${impressions.toLocaleString()}</div>
+                        <div class="stat-change">Profile views</div>
                     </div>
                     
-                    <!-- Total Clicks Card -->
-                    <div class="stat-card">
+                    <!-- Total Clicks -->
+                    <div class="analytics-stat-card">
                         <div class="stat-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 11l3 3L22 4"></path>
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10 17 15 12 10 7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
                             </svg>
                         </div>
                         <div class="stat-label">Total Clicks</div>
-                        <div class="stat-value">${stats.totalClicks.toLocaleString()}</div>
-                        <div class="stat-change">
-                            Engagement Actions
-                        </div>
+                        <div class="stat-value">${totalClicks.toLocaleString()}</div>
+                        <div class="stat-change">Profile interactions</div>
                     </div>
                     
-                    <!-- Pitch Count Card -->
-                    <div class="stat-card">
+                    <!-- Pitch Count -->
+                    <div class="analytics-stat-card">
                         <div class="stat-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="9" y1="9" x2="15" y2="9"></line>
+                                <line x1="9" y1="15" x2="15" y2="15"></line>
                             </svg>
                         </div>
                         <div class="stat-label">Pitch Count</div>
-                        <div class="stat-value">${stats.pitchedCount}</div>
-                        <div class="stat-change">
-                            Requests Received
-                        </div>
+                        <div class="stat-value">${pitchCount}</div>
+                        <div class="stat-change">Received applications</div>
                     </div>
                 </div>
                 
-                <!-- Additional Info Section -->
-                <div class="card" style="padding: 2rem;">
-                    <h3 style="color: #10b981; margin-bottom: 1rem; font-size: 1.5rem;">About Your Metrics</h3>
-                    <div style="color: #a7f3d0; line-height: 1.8;">
-                        <p style="margin-bottom: 1rem;">
-                            <strong style="color: #fff;">Reply Reputation:</strong> A score based on your response quality and engagement with founders. Higher scores indicate better interaction.
-                        </p>
-                        <p style="margin-bottom: 1rem;">
-                            <strong style="color: #fff;">Impressions:</strong> The number of times your angel profile has been viewed by founders browsing the platform.
-                        </p>
-                        <p style="margin-bottom: 1rem;">
-                            <strong style="color: #fff;">Total Clicks:</strong> Total engagement actions taken on your profile, including message opens and profile interactions.
-                        </p>
-                        <p>
-                            <strong style="color: #fff;">Pitch Count:</strong> The total number of funding requests you've received from founders.
-                        </p>
+                <div class="card">
+                    <div class="card-title" style="text-align: left; margin-bottom: 1rem;">
+                        Performance Insights
                     </div>
+                    <p style="color: #a7f3d0; line-height: 1.8;">
+                        Your Angel Profile has been viewed <strong style="color: #10b981;">${impressions} times</strong> 
+                        and received <strong style="color: #10b981;">${totalClicks} clicks</strong>. 
+                        You've received <strong style="color: #10b981;">${pitchCount} funding requests</strong> 
+                        with a reply reputation score of <strong style="color: #10b981;">${replyReputation}</strong>.
+                    </p>
                 </div>
             </div>
         `;
         
     } catch (error) {
-        console.error("Analytics load error:", error);
+        console.error("Analytics error:", error);
         container.innerHTML = `
-            <div style="text-align:center; padding: 100px;">
+            <div style="text-align:center; padding: 50px;">
                 <p style="color:#ef4444; font-weight:bold;">Failed to load analytics</p>
-                <button class="card-btn" onclick="window.location.hash='dashboard'" style="margin-top: 20px;">
+                <button class="card-btn" onclick="window.location.hash='dashboard'" style="max-width: 200px; margin: 20px auto;">
                     Back to Dashboard
                 </button>
             </div>
         `;
     }
 }
-
 onAuthStateChanged(auth, async (user) => {
     updateProgress(20, "Authenticating...");
     
@@ -3277,7 +3195,25 @@ onAuthStateChanged(auth, async (user) => {
         startDashboardInboxListener();
         startApplicationInboxListener();
 
-        // ⭐ CHECK INVESTOR PROFILE & VERIFICATION STATUS
+        // ⭐ FIX: Handle hash BEFORE investor profile checks
+        const hash = window.location.hash;
+        
+        // Handle verification page immediately
+        if (hash === '#scalevest_verify') {
+            document.body.style.background = "#000";
+            await showVerificationPage();
+            document.getElementById("loadingScreen").style.display = 'none';
+            return; // Exit early
+        }
+        
+        // Handle chat list immediately
+        if (hash === '#founder_chatlist') {
+            await window.showInvestorChatList();
+            document.getElementById("loadingScreen").style.display = 'none';
+            return; // Exit early
+        }
+
+        // ⭐ NOW check investor profile for dashboard
         const investorRef = ref(db, `investorProfiles/${user.uid}`);
         const investorSnapshot = await get(investorRef);
 
@@ -3329,6 +3265,7 @@ onAuthStateChanged(auth, async (user) => {
             }
         }
 
+// Handle hash routing
 window.addEventListener('hashchange', () => {
     if (window.location.hash === '#founder_chatlist') {
         window.showInvestorChatList();
@@ -3341,20 +3278,15 @@ window.addEventListener('hashchange', () => {
         location.reload(); 
     }
 });
-
-const hash = window.location.hash;
-
-if (hash === '#founder_chatlist') {
-    window.showInvestorChatList();
-    document.getElementById("loadingScreen").style.display = 'none';
-} else if (hash === '#scalevest_verify') {
-    document.body.style.background = "#000";
-    showVerificationPage();
-    document.getElementById("loadingScreen").style.display = 'none'; 
-} else if (hash === '#analytics') {
-    showAnalyticsPage();
-    document.getElementById("loadingScreen").style.display = 'none'; 
-} else {
+        const hash = window.location.hash;
+        
+        if (hash === '#founder_chatlist') {
+            window.showInvestorChatList();
+            document.getElementById("loadingScreen").style.display = 'none';
+        } else if (hash === '#scalevest_verify') {
+            document.body.style.background = "#000";
+            showVerificationPage();
+        } else {
             try {
                 updateProgress(50, "Fetching Profile...");
                 await loadUserProfile(user.uid);
@@ -3468,6 +3400,7 @@ function startDashboardInboxListener() {
     const inboxDiv = document.getElementById('dashInboxContent');
     const dot = document.getElementById('dashInboxDot');
     
+    // Listen to all chats to find the latest one
     onValue(ref(db, 'Chats'), async (snapshot) => {
         if (!snapshot.exists()) {
             inboxDiv.innerHTML = `<p style="color:#666; font-size:0.9rem;">No messages yet.</p>`;
@@ -3499,6 +3432,7 @@ function startDashboardInboxListener() {
         // 2. Determine Sender Name
         let senderName = "You";
         if (latestMsg.sender !== currentUser.uid) {
+            // Check cache or fetch
             try {
                 let snap = await get(ref(db, `founderProfile/${latestMsg.sender}`));
                 if (!snap.exists()) snap = await get(ref(db, `investorProfiles/${latestMsg.sender}`));
@@ -3519,15 +3453,10 @@ function startDashboardInboxListener() {
                          seconds < 86400 ? `${Math.floor(seconds/3600)}h ago` :
                          `${Math.floor(seconds/86400)}d ago`;
 
-        // 4. PREPARE THE TEXT (Handle Attachments)
-        // If text is empty or missing, show "Sent an attachment"
-        const displayBody = (latestMsg.text && latestMsg.text.trim() !== "") 
-                            ? latestMsg.text 
-                            : "Sent an attachment 📎";
-
-        // 5. Update UI
+        // 4. Update UI
         const isUnread = (latestMsg.recipient === currentUser.uid && latestMsg.read !== true);
         
+        // Show/Hide Red Dot on Card Header
         if(dot) dot.style.display = isUnread ? 'block' : 'none';
 
         inboxDiv.innerHTML = `
@@ -3545,7 +3474,7 @@ function startDashboardInboxListener() {
                 -webkit-box-orient: vertical;
                 overflow: hidden;
             ">
-                ${isUnread ? '<span style="color:#ef4444;">●</span> ' : ''}${displayBody}
+                ${isUnread ? '<span style="color:#ef4444;">●</span> ' : ''}${latestMsg.text}
             </div>
         `;
     });
@@ -3822,34 +3751,34 @@ window.savePitchPreferences = async () => {
     launchBtn.disabled = true;
     launchBtn.innerText = "Launching...";
     
-try {
-    const snap = await get(ref(db, `investorProfiles/${currentUserUID}`));
-    
-    if (snap.exists()) {
-        const angelData = { 
-            ...snap.val(), 
-            status: "Live", 
-            launchedAt: new Date().toISOString(),
-            dailyPitchReceive: dailyPitch,
-            pitchCooldown: {
-                value: cooldownValue,
-                unit: cooldownUnit
-            },
-            replyReputation: 0,
-            totalImpressions: 0,
-            totalClicks: 0,
-            PitchedCount: 0
-        };
+    try {
+        const snap = await get(ref(db, `investorProfiles/${currentUserUID}`));
         
-        await update(ref(db, `angelProfiles/${currentUserUID}`), angelData);
-        
-        // Close modal
-        document.getElementById('pitchPreferencesModal').style.display = 'none';
-        
-        alert("✅ Your Angel Profile is LIVE!");
-        convertToViewButton(launchBtn);
-    }
-}catch (e) { 
+        if (snap.exists()) {
+            const angelData = { 
+                ...snap.val(), 
+                status: "Live", 
+                launchedAt: new Date().toISOString(),
+                dailyPitchReceive: dailyPitch,
+                pitchCooldown: {
+                    value: cooldownValue,
+                    unit: cooldownUnit
+                },
+                replyReputation: 0,
+                Impressions: 0,
+                TotalClicks: 0,
+                pitchedCount: 0
+            };
+            
+            await update(ref(db, `angelProfiles/${currentUserUID}`), angelData);
+            
+            // Close modal
+            document.getElementById('pitchPreferencesModal').style.display = 'none';
+            
+            alert("✅ Your Angel Profile is LIVE!");
+            convertToViewButton(launchBtn);
+        }
+    } catch (e) { 
         console.error(e); 
         launchBtn.disabled = false;
         launchBtn.innerText = "Launch Angel Profile";
@@ -3872,10 +3801,66 @@ window.saveUserID = async () => {
 window.startVerification = function() {
     window.location.hash = 'scalevest_verify';
 };
+// --- THEME SWITCHER LOGIC ---
+window.toggleTheme = function() {
+    const btn = document.getElementById('themeSwitcherBtn');
+    const actionButtons = document.querySelectorAll('.action-btn');
+    const isBlueMode = btn.innerText.includes('BLUE');
+
+    if (isBlueMode) {
+        // Change to Blue Mode (Blue background, Green text)
+        actionButtons.forEach(btn => {
+            btn.style.background = '#1e3a8a'; // Deep Blue
+            btn.style.borderColor = '#1d4ed8';
+            btn.style.color = '#22c55e';      // Green Text
+        });
+        btn.innerText = "SWITCH TO ORIGINAL THEME";
+        btn.style.background = "linear-gradient(135deg, #3b82f6, #1d4ed8)";
+    } else {
+        // Change back to Original (Green background, Blue text)
+        actionButtons.forEach(btn => {
+            btn.style.background = '#22c55e'; // Green
+            btn.style.borderColor = '#16a34a';
+            btn.style.color = '#1e3a8a';      // Blue Text
+        });
+        btn.innerText = "SWITCH TO BLUE THEME";
+        btn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+    }
+};
+
+// --- SETTINGS POPUP ---
+window.openSettings = function() {
+    document.getElementById('settingsModal').style.display = 'flex';
+};
+
+// --- LOGOUT LOGIC ---
+window.handleLogout = async function() {
+    if(confirm("Are you sure you want to log out?")) {
+        try {
+            await auth.signOut();
+            localStorage.removeItem('investorProfileCreated');
+            window.location.href = "login3.html";
+        } catch (error) {
+            console.error("Logout failed", error);
+        }
+    }
+};
+
 
 
 </script>
-
+<div id="settingsModal" class="modal-overlay">
+    <div class="modal-box">
+        <h2>System Settings</h2>
+        <p>Customize your terminal experience</p>
+        
+        <button class="modal-btn" id="themeSwitcherBtn" onclick="toggleTheme()" style="margin-bottom: 10px;">
+            SWITCH TO BLUE THEME
+        </button>
+        
+        <button class="modal-btn" style="background:transparent;" onclick="closeModal('settingsModal')">CLOSE</button>
+    </div>
+</div>
 
 </body>
 </html>
