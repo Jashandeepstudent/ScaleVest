@@ -12,16 +12,19 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a4d3c 0%, #1a5f7a 50%, #2e8b9e 100%);
-            color: #fff;
-            min-height: 100vh;
-        }
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background 0.5s ease;
+}
 
         /* Top Navigation */
         .top-nav {
-            background: linear-gradient(90deg, #0a2f23, #134e4a, #0f766e);
+            background: linear-gradient(90deg, #020617, #1e3a8a, #1e40af);
             padding: 1.2rem 3rem;
             display: flex;
             justify-content: space-between;
@@ -29,6 +32,7 @@
             border-bottom: 1px solid rgba(16, 185, 129, 0.3);
             position: sticky;
             top: 0;
+            transition: background 0.5s ease;
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
@@ -50,23 +54,20 @@
     }
 
     .action-btn {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 1.2rem;
-        /* Green Background */
-        background: #22c55e; 
-        border: 1px solid #16a34a;
-        border-radius: 12px;
-        text-decoration: none;
-        /* Blue Text */
-        color: #1e3a8a; 
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-        text-align: center;
-    }
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem;
+    background: #1e3a8a; /* Blue Background */
+    border: 1px solid #3b82f6;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #22c55e;      /* Green Text/Icons */
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
 
     .action-btn:hover {
         /* Slightly lighter green on hover */
@@ -3879,51 +3880,38 @@ window.toggleTheme = function() {
     const body = document.body;
     const topNav = document.querySelector('.top-nav');
     
-    // Check current state based on button text
-    const isBlueMode = btn.innerText.includes('BLUE');
+    // Check if we are currently in Blue Mode to decide the switch
+    const isGreenSwitch = btn.innerText.includes('GREEN');
 
-    if (isBlueMode) {
-        // --- APPLY BLUE THEME ---
-        
-        // 1. Change Global Background Gradient
-        body.style.background = "linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%)";
-        
-        // 2. Change Top Nav Background
-        if(topNav) topNav.style.background = "linear-gradient(90deg, #020617, #1e3a8a, #1e40af)";
-        
-        // 3. Update Quick Action Buttons (Blue BG, Green Text)
-        actionButtons.forEach(button => {
-            button.style.background = '#1e3a8a'; 
-            button.style.borderColor = '#3b82f6';
-            button.style.color = '#22c55e'; // Green text/icons
-        });
-
-        // 4. Update Modal Button
-        btn.innerText = "SWITCH TO ORIGINAL THEME";
-        btn.style.background = "linear-gradient(135deg, #3b82f6, #1d4ed8)";
-        
-    } else {
-        // --- APPLY ORIGINAL GREEN THEME ---
-        
-        // 1. Restore Original Background Gradient
+    if (isGreenSwitch) {
+        // --- SWITCH TO GREEN THEME ---
         body.style.background = "linear-gradient(135deg, #0a4d3c 0%, #1a5f7a 50%, #2e8b9e 100%)";
-        
-        // 2. Restore Top Nav Background
         if(topNav) topNav.style.background = "linear-gradient(90deg, #0a2f23, #134e4a, #0f766e)";
         
-        // 3. Restore Quick Action Buttons (Green BG, Blue Text)
         actionButtons.forEach(button => {
             button.style.background = '#22c55e'; 
             button.style.borderColor = '#16a34a';
-            button.style.color = '#1e3a8a'; // Blue text/icons
+            button.style.color = '#1e3a8a'; 
         });
 
-        // 4. Update Modal Button
         btn.innerText = "SWITCH TO BLUE THEME";
         btn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+        
+    } else {
+        // --- SWITCH TO BLUE THEME ---
+        body.style.background = "linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%)";
+        if(topNav) topNav.style.background = "linear-gradient(90deg, #020617, #1e3a8a, #1e40af)";
+        
+        actionButtons.forEach(button => {
+            button.style.background = '#1e3a8a'; 
+            button.style.borderColor = '#3b82f6';
+            button.style.color = '#22c55e'; 
+        });
+
+        btn.innerText = "SWITCH TO GREEN THEME";
+        btn.style.background = "linear-gradient(135deg, #3b82f6, #1d4ed8)";
     }
 };
-
 // --- SETTINGS POPUP ---
 window.openSettings = function() {
     document.getElementById('settingsModal').style.display = 'flex';
@@ -3949,9 +3937,9 @@ window.handleLogout = async function() {
         <h2>System Settings</h2>
         <p>Customize your terminal experience</p>
         
-        <button class="modal-btn" id="themeSwitcherBtn" onclick="toggleTheme()" style="margin-bottom: 10px;">
-            SWITCH TO BLUE THEME
-        </button>
+<button class="modal-btn" id="themeSwitcherBtn" onclick="toggleTheme()" style="margin-bottom: 10px;">
+    SWITCH TO GREEN THEME
+</button>
         
         <button class="modal-btn" style="background:transparent;" onclick="closeModal('settingsModal')">CLOSE</button>
     </div>
