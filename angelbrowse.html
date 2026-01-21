@@ -61,60 +61,7 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,206,209,0.2);
         }
-/* Enhanced Loading Container */
-#loadingMessage {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-    gap: 20px;
-}
 
-/* Geometric Spinner */
-.loader-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(0, 206, 209, 0.1);
-    border-left-color: #00CED1;
-    border-radius: 50%;
-    animation: loaderSpin 1s linear infinite;
-    position: relative;
-}
-
-.loader-spinner::after {
-    content: '';
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    right: 5px;
-    bottom: 5px;
-    border: 4px solid rgba(0, 0, 139, 0.1);
-    border-left-color: #00008B;
-    border-radius: 50%;
-    animation: loaderSpin 0.5s linear infinite reverse;
-}
-
-/* Pulse Text Effect */
-.loading-text {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #333;
-    letter-spacing: 1px;
-    background: linear-gradient(90deg, #333, #00CED1, #333);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmerText 2s linear infinite;
-}
-
-@keyframes loaderSpin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes shimmerText {
-    to { background-position: 200% center; }
-}
         .category-pill.active {
             background: linear-gradient(135deg, #00CED1 0%, #008B8B 100%);
             color: white;
@@ -1043,10 +990,9 @@
             <input type="text" id="searchBox" class="search-box" placeholder="Search by name or User ID...">
         </div>
         
-<div id="loadingMessage" class="loading">
-    <div class="loader-spinner"></div>
-    <div class="loading-text">LOADING...</div>
-</div>
+        <div id="loadingMessage" class="loading">Loading angel profiles...</div>
+        <div id="rowsContainer"></div>
+    </div>
 
     <div id="profileModal" class="modal">
         <div class="modal-content">
