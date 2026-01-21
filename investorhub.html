@@ -1188,23 +1188,6 @@
                 </div>
             </div>
 
-            <div class="banner">
-                <div class="banner-content">
-                    <h3>Connect With Team</h3>
-                    <p>Collaborate seamlessly with your team members and stay in sync with updates.</p>
-                </div>
-                <div class="banner-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
@@ -3479,7 +3462,6 @@ function startDashboardInboxListener() {
     const inboxDiv = document.getElementById('dashInboxContent');
     const dot = document.getElementById('dashInboxDot');
     
-    // Listen to all chats to find the latest one
     onValue(ref(db, 'Chats'), async (snapshot) => {
         if (!snapshot.exists()) {
             inboxDiv.innerHTML = `<p style="color:#666; font-size:0.9rem;">No messages yet.</p>`;
@@ -3511,7 +3493,6 @@ function startDashboardInboxListener() {
         // 2. Determine Sender Name
         let senderName = "You";
         if (latestMsg.sender !== currentUser.uid) {
-            // Check cache or fetch
             try {
                 let snap = await get(ref(db, `founderProfile/${latestMsg.sender}`));
                 if (!snap.exists()) snap = await get(ref(db, `investorProfiles/${latestMsg.sender}`));
@@ -3532,10 +3513,15 @@ function startDashboardInboxListener() {
                          seconds < 86400 ? `${Math.floor(seconds/3600)}h ago` :
                          `${Math.floor(seconds/86400)}d ago`;
 
-        // 4. Update UI
+        // 4. PREPARE THE TEXT (Handle Attachments)
+        // If text is empty or missing, show "Sent an attachment"
+        const displayBody = (latestMsg.text && latestMsg.text.trim() !== "") 
+                            ? latestMsg.text 
+                            : "Sent an attachment 📎";
+
+        // 5. Update UI
         const isUnread = (latestMsg.recipient === currentUser.uid && latestMsg.read !== true);
         
-        // Show/Hide Red Dot on Card Header
         if(dot) dot.style.display = isUnread ? 'block' : 'none';
 
         inboxDiv.innerHTML = `
@@ -3553,7 +3539,7 @@ function startDashboardInboxListener() {
                 -webkit-box-orient: vertical;
                 overflow: hidden;
             ">
-                ${isUnread ? '<span style="color:#ef4444;">●</span> ' : ''}${latestMsg.text}
+                ${isUnread ? '<span style="color:#ef4444;">●</span> ' : ''}${displayBody}
             </div>
         `;
     });
