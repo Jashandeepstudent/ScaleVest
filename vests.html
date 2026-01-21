@@ -10293,19 +10293,24 @@ window.launchEmergence = async function(planType, investorCount, paymentMethod) 
         const timestamp = Date.now();
         const updates = {};
         
-        matchedInvestors.forEach(investorId => {
-            const messageId = push(ref(db, `investorInbox/${investorId}`)).key;
-            updates[`investorInbox/${investorId}/${messageId}`] = {
-                applicationId: window.selectedApplicationId,
-                founderId: currentUser.uid,
-                appName: appData.appName,
-                appHook: appData.appHook,
-                vestId: appData.vestId,
-                timestamp: timestamp,
-                read: false,
-                emergenceType: planType
-            };
-        });
+matchedInvestors.forEach(investorId => {
+    const messageId = push(ref(db, `investorInbox/${investorId}`)).key;
+
+    updates[`investorInbox/${investorId}/${messageId}`] = {
+        applicationId: window.selectedApplicationId,
+        founderId: currentUser.uid,
+        appName: appData.appName,
+        appHook: appData.appHook,
+        vestId: appData.vestId,
+        timestamp: timestamp,
+        read: false,
+        emergenceType: planType,
+        appId: window.selectedApplicationId || "-OjVJWsE9CSj26UZDpc3", 
+        founderName: appData.founderName || "CEOJashan",
+        startupName: appData.startupName || "Unnamed Startup",
+        vestHook: appData.vestHook || "GOKU"
+    };
+});
         
         // 5. Deduct tokens if token payment
         if (paymentMethod === 'tokens') {
