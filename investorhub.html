@@ -3278,7 +3278,8 @@ window.addEventListener('hashchange', () => {
         location.reload(); 
     }
 });
-   
+        const hash = window.location.hash;
+        
         if (hash === '#founder_chatlist') {
             window.showInvestorChatList();
             document.getElementById("loadingScreen").style.display = 'none';
@@ -3838,7 +3839,7 @@ window.handleLogout = async function() {
         try {
             await auth.signOut();
             localStorage.removeItem('investorProfileCreated');
-            window.location.href = "investor-side.html";
+            window.location.href = "login3.html";
         } catch (error) {
             console.error("Logout failed", error);
         }
