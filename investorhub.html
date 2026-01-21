@@ -42,7 +42,44 @@
             transition: all 0.3s;
             text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
         }
+.quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem;
+    }
 
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #334155;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+
+    .action-btn:hover {
+        background: #f8fafc;
+        border-color: #3b82f6;
+        color: #3b82f6;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .action-btn svg {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 0.75rem;
+        stroke: currentColor;
+    }
         .logo:hover {
             transform: scale(1.05);
             text-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
@@ -1073,19 +1110,37 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-title" style="text-align: left; margin-bottom: 1.5rem;">
-            Quick Links
-        </div>
-        <ul class="quick-links">
-            <li><a href="#dashboard">Dashboard</a></li>
-            <li><a href="#projects">My Projects</a></li>
-            <li><a href="#analytics">Analytics</a></li>
-            <li><a href="#settings">Settings</a></li>
-            <li><a href="#notifications">Notifications</a></li>
-            <li><a href="#help">Help Center</a></li>
-        </ul>
+   <div class="card">
+    <div class="card-title" style="text-align: left; margin-bottom: 1.5rem;">
+        Quick Actions
     </div>
+    <div class="quick-actions-grid">
+        <a href="iinvestorhub.html#dashboard" class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Dashboard
+        </a>
+
+        <a href="investorhub.html#analytics" class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Analytics
+        </a>
+
+        <a href="https://upscalevest.site/applications-inbox.html" class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            Applications
+        </a>
+
+        <a href="investorhub.html#founder_chatlist" class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            Messages
+        </a>
+
+        <a href="https://upscalevest.site/vestbrowse.html" class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Browse Vests
+        </a>
+    </div>
+</div>
 
 </div>
 
