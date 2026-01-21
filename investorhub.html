@@ -1054,9 +1054,9 @@
                 <button class="switch-btn">Switch Account</button>
 
                 <div class="profile-section">
-                    <a href="#profile" class="profile-link">My Profile</a>
-                    <a href="#settings" class="profile-link">Settings</a>
-                    <a href="#logout" class="profile-link">Log Out</a>
+                   <a href="javascript:void(0)" onclick="enterEditMode()" class="profile-link">My Profile</a>
+                    <a href="javascript:void(0)" onclick="openSettings()" class="profile-link">Settings</a>
+                    <a href="javascript:void(0)" onclick="handleLogout()" class="profile-link">Log Out</a>
                 </div>
             </div>
         </div>
@@ -3872,10 +3872,64 @@ window.saveUserID = async () => {
 window.startVerification = function() {
     window.location.hash = 'scalevest_verify';
 };
+// --- THEME SWITCHER LOGIC ---
+window.toggleTheme = function() {
+    const btn = document.getElementById('themeSwitcherBtn');
+    const actionButtons = document.querySelectorAll('.action-btn');
+    const isBlueMode = btn.innerText.includes('BLUE');
 
+    if (isBlueMode) {
+        // Change to Blue Mode (Blue background, Green text)
+        actionButtons.forEach(btn => {
+            btn.style.background = '#1e3a8a'; // Deep Blue
+            btn.style.borderColor = '#1d4ed8';
+            btn.style.color = '#22c55e';      // Green Text
+        });
+        btn.innerText = "SWITCH TO ORIGINAL THEME";
+        btn.style.background = "linear-gradient(135deg, #3b82f6, #1d4ed8)";
+    } else {
+        // Change back to Original (Green background, Blue text)
+        actionButtons.forEach(btn => {
+            btn.style.background = '#22c55e'; // Green
+            btn.style.borderColor = '#16a34a';
+            btn.style.color = '#1e3a8a';      // Blue Text
+        });
+        btn.innerText = "SWITCH TO BLUE THEME";
+        btn.style.background = "linear-gradient(135deg, #10b981, #059669)";
+    }
+};
+
+// --- SETTINGS POPUP ---
+window.openSettings = function() {
+    document.getElementById('settingsModal').style.display = 'flex';
+};
+
+// --- LOGOUT LOGIC ---
+window.handleLogout = async function() {
+    if(confirm("Are you sure you want to log out?")) {
+        try {
+            await auth.signOut();
+            localStorage.removeItem('investorProfileCreated');
+            window.location.href = "login3.html";
+        } catch (error) {
+            console.error("Logout failed", error);
+        }
+    }
+};
 
 </script>
 
-
+<div id="settingsModal" class="modal-overlay">
+    <div class="modal-box">
+        <h2>System Settings</h2>
+        <p>Customize your terminal experience</p>
+        
+        <button class="modal-btn" id="themeSwitcherBtn" onclick="toggleTheme()" style="margin-bottom: 10px;">
+            SWITCH TO BLUE THEME
+        </button>
+        
+        <button class="modal-btn" style="background:transparent;" onclick="closeModal('settingsModal')">CLOSE</button>
+    </div>
+</div>
 </body>
 </html>
