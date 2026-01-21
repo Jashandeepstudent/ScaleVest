@@ -4008,66 +4008,69 @@ import {
 let globalUnreadCount = 0;
 const STORAGE_KEY = 'vestFormData';
 // Helper function to create reusable navbar
-// REPLACE YOUR EXISTING createNavBar FUNCTION WITH THIS:
 function createNavBar() {
     const founderData = cachedFounderData || {};
     return `
-    <nav class="top-nav">
-        <div class="logo" onclick="window.location.hash='founder_dashboard'" 
-             style="cursor: pointer; display: flex; align-items: center; gap: 12px;">
-            <div class="circular-logo-container">
-                <img src="ScaleVestLogo.png" alt="ScaleVest Logo" class="circular-logo-img">
-            </div>
-            ScaleVest
-        </div>  
+<nav class="top-nav">
+            <div class="logo" onclick="window.location.hash='founder_dashboard'" 
+                 style="cursor: pointer; display: flex; align-items: center; gap: 12px;">
+                <div class="circular-logo-container">
+                    <img src="ScaleVestLogo.png" alt="ScaleVest Logo" class="circular-logo-img">
+                </div>
+                ScaleVest
+            </div>  
 
-        <div class="nav-links">
-            <a href="#founder_dashboard" class="nav-link">Dashboard</a>
-            <a href="vests.html#edit_startup" class="nav-link">My Startup</a>
-            <div class="dropdown">
-                <span class="nav-link" onclick="toggleDropdown(event, 'scaleDropdown')">Scale and Elevate ▾</span>
-                <div class="dropdown-content" id="scaleDropdown">
-                   <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
-                    <a href="#ScaleVEST_Refers" class="dropdown-item">Referrals</a>
-                    <a href="#applications" class="dropdown-item">My Applications</a>
-                </div>
-            </div>
-        </div>
-        <div class="top-nav-right">
-            <div class="icon-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-            </div>
-            <div class="icon-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-            </div>
-            <div class="profile-dropdown">
-                <div class="icon-btn" onclick="toggleDashProfileDropdown(event)">
-                    ${founderData?.photoURL 
-                        ? `<img src="${founderData.photoURL}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
-                        : `<div style="font-size:1.2rem;font-weight:600;">${founderData.founderImage || 'U'}</div>`}
-                </div>
-                <div class="profile-dropdown-content" id="dashProfileDropdown">
-                    <div class="profile-info">
-                        <div class="profile-username">${founderData.founderUsername || 'Username'}</div>
-                        <div class="profile-userid">${founderData.userId || 'USER_ID'}</div>
-                    </div>
-                    <button class="switch-btn">Switch to Browse</button>
-                    <div class="profile-section">
-                        <a href="#" class="profile-link">Refer a Friend</a>
-                        <a href="#edit_founderprofile" class="profile-link">Profile</a>
-                        <a href="#" class="profile-link" onclick="auth.signOut();return false;">Log Out</a>
+
+            <div class="nav-links">
+                <a href="#founder_dashboard" class="nav-link">Dashboard</a>
+             <a href="vests.html#edit_startup" class="nav-link">My Startup</a>
+                <div class="dropdown">
+                    <span class="nav-link" onclick="toggleDropdown('scaleDropdown')">Scale and Elevate ▾</span>
+                    <div class="dropdown-content" id="scaleDropdown">
+                       <a href="#founder_emergence" class="dropdown-item">Founder Emergence</a>
+                        <a href="#ScaleVEST_Refers" class="dropdown-item">Referrals</a>
+                       
+                        <a href="#applications" class="dropdown-item">My Applications</a>
                     </div>
                 </div>
             </div>
-        </div>
-    </nav>
+            <div class="top-nav-right">
+                <div class="icon-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                </div>
+                <div class="icon-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <div class="profile-dropdown">
+<div class="icon-btn" onclick="toggleDashProfileDropdown(event)">
+    ${founderData?.photoURL 
+        ? `<img src="${founderData.photoURL}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` 
+        : `<div style="font-size:1.2rem;font-weight:600;">${founderData.founderImage || 'U'}</div>`}
+</div>
+                    </div>
+                    <div class="profile-dropdown-content" id="dashProfileDropdown">
+                        <div class="profile-info">
+                            <div class="profile-username">${founderData.founderUsername || 'Username'}</div>
+                            <div class="profile-userid">${founderData.userId || 'USER_ID'}</div>
+                        </div>
+                        <button class="switch-btn">Switch to Browse</button>
+                        <div class="profile-section">
+                            <a href="#" class="profile-link">Refer a Friend</a>
+                            <a href="#edit_founderprofile" class="profile-link">Profile</a>
+                            <a href="#" class="profile-link" onclick="auth.signOut();return false;">Log Out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
     `;
 }
+
 // Toggle dropdown function
 // Toggle general dropdowns
 window.toggleDropdown = function(e, id) {
@@ -10727,7 +10730,6 @@ window.showVestAnalytics = showVestAnalytics;
 
 
 
-// REPLACE YOUR EXISTING onAuthStateChanged BLOCK WITH THIS:
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -10736,19 +10738,19 @@ onAuthStateChanged(auth, async (user) => {
         startNotificationListener();
         startApplicationReplyListener();
         document.getElementById('loadingScreen').classList.remove('hidden');
-
+        
         try {
             const [vestsSnapshot, founderSnapshot, startupSnapshot] = await Promise.all([
                 get(ref(db, `Vests/${user.uid}`)),
                 get(ref(db, `founderProfile/${user.uid}`)),
                 get(ref(db, `startupProfile/${user.uid}`))
             ]);
-
+            
             if (!founderSnapshot.exists()) {
                 const email = user.email || 'user@scalevest.com';
                 const username = email.split('@')[0];
                 const firstLetter = email.charAt(0).toUpperCase();
-
+                
                 cachedFounderData = {
                     founderUsername: username,
                     founderImage: firstLetter,
@@ -10756,61 +10758,90 @@ onAuthStateChanged(auth, async (user) => {
                     title: '',
                     about: '',
                     createdAt: new Date().toISOString(),
-                    // REMOVED isVerified: false from here so it doesn't create immediately
-                    scaleTokens: 0,
-                    lastEmergenceDate: null,
-                    emergenceCount: 0,
-                    tokenPurchaseHistory: {}
+                    isVerified: false,
+                     scaleTokens: 0,              
+                    lastEmergenceDate: null,     
+                     emergenceCount: 0,            
+                     tokenPurchaseHistory: {} 
                 };
-
+                
                 await update(ref(db, `founderProfile/${user.uid}`), cachedFounderData);
+                
                 // Show Banner immediately for new user
                 showVerificationBanner();
+
                 document.getElementById('loadingScreen').classList.add('hidden');
                 showUserIdSetupModal();
                 return;
-
             } else {
                 cachedFounderData = founderSnapshot.val();
-
-                // ⭐ FIXED: Only create isVerified node if user has at least one vest
-                if (cachedFounderData.isVerified === undefined && vestsSnapshot.exists()) {
+                
+                // ⭐ 1. Ensure isVerified exists
+                if (cachedFounderData.isVerified === undefined) {
                     cachedFounderData.isVerified = false;
-                    await update(ref(db, `founderProfile/${user.uid}`), cachedFounderData);
+                    await update(ref(db, `founderProfile/${user.uid}`), { isVerified: false });
                 }
-
-                // Ensure other fields exist
-                if (cachedFounderData.scaleTokens === undefined) {
-                    cachedFounderData.scaleTokens = 0;
-                    await update(ref(db, `founderProfile/${user.uid}`), { scaleTokens: 0 });
+                
+                // ⭐ 2. Handle Verification UI Logic
+                if (cachedFounderData.isVerified === false) {
+                    // Show the top banner immediately
+                    showVerificationBanner();
+                    
+                    console.log("⚠️ Unverified: Blocking popup will trigger in 10 seconds.");
+                    setTimeout(() => {
+                        checkAndBlockUnverifiedUser(user.uid);
+                    }, 1000); 
+                } else {
+                    // Remove banner if they are already verified
+                    const banner = document.getElementById('verificationBanner');
+                    if (banner) {
+                        banner.remove();
+                        document.body.style.paddingTop = '0';
+                    }
+                }
+                
+                if (!cachedFounderData.founderUsername) {
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    showUsernameSetupModal(); 
+                    return;
+                }
+                
+                if (!cachedFounderData.userId) {
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    showUserIdSetupModal();
+                    return;
                 }
             }
-
-            // Load Startup Data
+            
             if (startupSnapshot.exists()) {
                 cachedStartupData = startupSnapshot.val();
             } else {
                 cachedStartupData = null;
             }
-
-            // Route to correct page
-            handleHashChange();
-
-            // Verification Checks
-            checkAndBlockUnverifiedUser(user.uid);
-            checkScheduledAvailability();
-
+            
+            isNewUser = !vestsSnapshot.exists();
+            document.getElementById('loadingScreen').classList.add('hidden');
+            
+            const hash = window.location.hash.slice(1);
+            if (!hash) {
+                window.location.hash = isNewUser ? 'vest_step1' : 'founder_dashboard';
+            } else {
+                handleHashChange();
+            }
+            
         } catch (error) {
-            console.error("Auth Data Load Error", error);
-            alert("Error loading profile data. Please refresh.");
-        } finally {
+            console.error('Data loading error:', error);
             document.getElementById('loadingScreen').classList.add('hidden');
         }
-
     } else {
-        // No user is signed in
-        currentUser = null;
-        window.location.href = 'login2.html';
+        if (!isInitialLoad) {
+            window.location.href = 'login2.html';
+        } else {
+            setTimeout(() => {
+                if (!auth.currentUser) window.location.href = 'login2.html';
+            }, 2000);
+            isInitialLoad = false;
+        }
     }
 });
 async function globalScheduleChecker() {
