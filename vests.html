@@ -10690,8 +10690,12 @@ window.initRazorpay = function(planType, investorCount, amount, paymentFor) {
 };
 
 // ⭐ IMPROVED TOGGLE FUNCTIONS
-window.toggleDropdown = function(e, id) {
-    if (e) e.stopPropagation();
+// ⭐ FIXED TOGGLE FUNCTIONS
+window.toggleDropdown = function(event, id) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    }
+    
     const dropdown = document.getElementById(id);
     
     // Close all other dropdowns first
@@ -10708,8 +10712,11 @@ window.toggleDropdown = function(e, id) {
     }
 };
 
-window.toggleDashProfileDropdown = function(e) {
-    if (e) e.stopPropagation();
+window.toggleDashProfileDropdown = function(event) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    }
+    
     const dropdown = document.getElementById('dashProfileDropdown');
     
     // Close all general dropdowns
@@ -10735,6 +10742,7 @@ document.addEventListener('click', (e) => {
         });
     }
 });
+
 window.showVestAnalytics = showVestAnalytics;
 
 
