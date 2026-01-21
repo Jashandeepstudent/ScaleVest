@@ -4072,52 +4072,7 @@ function createNavBar() {
 </nav>
     `;
 }
-// ⭐ IMPROVED TOGGLE FUNCTIONS
-window.toggleDropdown = function(e, id) {
-    if (e) e.stopPropagation();
-    const dropdown = document.getElementById(id);
-    
-    // Close all other dropdowns first
-    document.querySelectorAll('.dropdown-content').forEach(dd => {
-        if (dd.id !== id) dd.style.display = 'none';
-    });
-    document.querySelectorAll('.profile-dropdown-content').forEach(dd => {
-        dd.classList.remove('show');
-    });
-    
-    // Toggle the clicked dropdown
-    if (dropdown) {
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    }
-};
 
-window.toggleDashProfileDropdown = function(e) {
-    if (e) e.stopPropagation();
-    const dropdown = document.getElementById('dashProfileDropdown');
-    
-    // Close all general dropdowns
-    document.querySelectorAll('.dropdown-content').forEach(dd => {
-        dd.style.display = 'none';
-    });
-
-    if (dropdown) {
-        dropdown.classList.toggle('show');
-    }
-};
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', (e) => {
-    const isClickInside = e.target.closest('.profile-dropdown') || e.target.closest('.dropdown');
-    
-    if (!isClickInside) {
-        document.querySelectorAll('.dropdown-content').forEach(dd => {
-            dd.style.display = 'none';
-        });
-        document.querySelectorAll('.profile-dropdown-content').forEach(dd => {
-            dd.classList.remove('show');
-        });
-    }
-});
 // Save form data to localStorage
 function saveToLocalStorage() {
     const formData = {
@@ -4404,7 +4359,7 @@ window.launchNewVest = async function() {
         const { deckUrl, videoUrl, thumbUrl } = await processNewFiles();
 
         // 2. Collect Data
-        const vestData = collectNewVestData(deckUrl, videoUrl, thumbUrl);
+      const vestData = collectNewVestData(deckUrl, videoUrl, thumbUrl);
         vestData.status = 'active'; // Mark as active
 
         // 3. Save to Vests Node
@@ -4418,23 +4373,14 @@ window.launchNewVest = async function() {
         
         if (snapshot.exists()) {
             const data = snapshot.val();
+            // Handle case where activeVestscount might not exist yet
             currentCount = data.activeVestsCount ? parseInt(data.activeVestsCount) : 0;
         }
 
-        // ⭐ NEW: Set isVerified to false ONLY on first vest
-        const updates = {
+        await update(profileRef, {
             activeVestsCount: currentCount + 1
-        };
-        
-        // If this is their FIRST vest, initialize isVerified
-        if (currentCount === 0) {
-            updates.isVerified = false;
-        }
-
-        await update(profileRef, updates);
-        
-        clearFormStorage();
-        
+        });
+         clearFormStorage();
         // 5. Redirect to Dashboard
         alert("Vest Launched Successfully!");
         window.location.hash = 'founder_dashboard';
@@ -10742,6 +10688,53 @@ window.initRazorpay = function(planType, investorCount, amount, paymentFor) {
 
     rzp.open();
 };
+
+// ⭐ IMPROVED TOGGLE FUNCTIONS
+window.toggleDropdown = function(e, id) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById(id);
+    
+    // Close all other dropdowns first
+    document.querySelectorAll('.dropdown-content').forEach(dd => {
+        if (dd.id !== id) dd.style.display = 'none';
+    });
+    document.querySelectorAll('.profile-dropdown-content').forEach(dd => {
+        dd.classList.remove('show');
+    });
+    
+    // Toggle the clicked dropdown
+    if (dropdown) {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    }
+};
+
+window.toggleDashProfileDropdown = function(e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('dashProfileDropdown');
+    
+    // Close all general dropdowns
+    document.querySelectorAll('.dropdown-content').forEach(dd => {
+        dd.style.display = 'none';
+    });
+
+    if (dropdown) {
+        dropdown.classList.toggle('show');
+    }
+};
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+    const isClickInside = e.target.closest('.profile-dropdown') || e.target.closest('.dropdown');
+    
+    if (!isClickInside) {
+        document.querySelectorAll('.dropdown-content').forEach(dd => {
+            dd.style.display = 'none';
+        });
+        document.querySelectorAll('.profile-dropdown-content').forEach(dd => {
+            dd.classList.remove('show');
+        });
+    }
+});
 window.showVestAnalytics = showVestAnalytics;
 
 
