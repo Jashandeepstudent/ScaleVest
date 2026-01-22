@@ -1,17 +1,17 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>ScaleVest – The Infrastructure of Scale</title>
   <link rel="icon" type="image/png" href="ScaleVestLogo.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@studio-freight/lenis@1.0.29/dist/lenis.min.js"></script>
+  
   <script>
     (function() {
-      // Check for different user types
       const isBusiness = localStorage.getItem("businessProfileCreated");
-      const isStartup = localStorage.getItem("startupProfileCreated");
+      const isStartup = localStorage.getItem("founderProfileCreated");
       const isInvestor = localStorage.getItem("investorProfileCreated");
 
       if (isBusiness === "true") {
@@ -19,352 +19,184 @@
       } else if (isStartup === "true") {
         window.location.replace("vests.html"); 
       } else if (isInvestor === "true") {
-        window.location.replace("maininvestorhub.html");
+        window.location.replace("investorhub.html");
       }
     })();
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
 
+    :root {
+      --investor-primary: #1e3a8a;
+      --investor-secondary: #10b981;
+      --investor-bg: #0f172a;
+      --founder-primary: #000000;
+      --founder-secondary: #ffffff;
+      --business-primary: #ffffff;
+      --business-secondary: #000000;
+    }
+
     body {
-      margin: 0;
-      font-family: Inter, Arial, sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
       background: #0e1117;
       color: #ffffff;
+      overflow-x: hidden;
     }
-:root { 
-    --accent: #2563eb; 
-    --bg-dark: #0e1117; 
-    --footer-bg: #05070a;
-    --text-muted: #94a3b8;
-  }
-   /* HEADER / NAVBAR */
-header {
-  position: relative;
-  width: 100%;
-  background: #ffffff;
-  padding: 16px 60px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-header .left {
+/* The Black Box Container */
+.icon-box {
+  width: 56px;
+  height: 56px;
+  background-color: #000000;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-}
-.enterprise-footer {
-    background: var(--footer-bg);
-    padding: 60px 40px 30px;
-    border-top: 1px solid #1f2933;
-    margin-top: 80px;
-  }
-
-  .footer-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 40px;
-  }
-
-  .footer-brand {
-    flex: 1;
-    min-width: 250px;
-  }
-
-  .footer-brand h2 {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0;
-    color: #ffffff;
-    letter-spacing: -0.5px;
-  }
-
-  .company-info {
-    margin-top: 10px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .company-info p {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin: 0;
-  }
-
-  .company-logo-img {
-    height: 24px;
-    opacity: 0.8;
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 30px;
-  }
-
-  .footer-link-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .footer-link-group a {
-    color: var(--text-muted);
-    text-decoration: none;
-    font-size: 14px;
-    transition: color 0.2s ease;
-  }
-
-  .footer-link-group a:hover {
-    color: var(--accent);
-  }
-
-  .footer-bottom {
-    max-width: 1100px;
-    margin: 40px auto 0;
-    padding-top: 20px;
-    border-top: 1px solid #1f2933;
-    text-align: center;
-    font-size: 12px;
-    color: #475569;
-  }
-
-  @media (max-width: 768px) {
-    .footer-container { flex-direction: column; text-align: center; align-items: center; }
-    .company-info { justify-content: center; }
-  }
-header img {
-  height: 34px;
-}
-.investor-icon img {
-  width: 40px;
-  height: 40px;
-  display: block;
-}
-.purpose-card:hover .investor-icon img {
-  transform: scale(1.08);
-}
-
-/* RIGHT NAV */
-header .right {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-/* RIGHT NAV */
-header .right {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-/* MODAL OVERLAY */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  display: none;
   justify-content: center;
-  align-items: center;
-  z-index: 100;
+  margin: 0 auto 20px auto;
+  overflow: hidden; /* Prevents oversized SVGs from leaking out */
+  transition: all 0.3s ease;
 }
 
-/* MODAL CONTAINER */
-.modal {
-  width: 900px;
-  height: 520px;
-  background: white;
-  border-radius: 14px;
-  display: flex;
-  overflow: hidden;
+/* Force your .svg images to stay small */
+.modal-svg-img {
+  width: 30px;  /* Adjust this to make the icon look right inside the box */
+  height: 30px;
+  object-fit: contain;
+  filter: brightness(0) invert(1); /* Optional: This turns colored SVGs into white icons */
 }
 
-/* LEFT SIDE */
-.modal-left {
-  width: 50%;
-  background: url("join-bg.jpg") center/cover no-repeat;
-  position: relative;
+/* Hover effect */
+.purpose-card:hover .icon-box {
+  transform: translateY(-5px);
+  background-color: #2563eb; /* Box turns blue on hover */
 }
+    /* HEADER */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 18px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
 
-.modal-left::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-}
+    header.scrolled {
+      padding: 14px 60px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
 
-.overlay-text {
-  position: relative;
-  z-index: 2;
-  padding: 40px;
-  color: white;
-}
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
 
-.overlay-text h2 {
-  font-size: 32px;
-  margin-bottom: 20px;
-}
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
-.overlay-text ul {
-  list-style: none;
-  padding: 0;
-}
+    .main-logo {
+      height: 42px;
+      transition: transform 0.3s ease;
+    }
 
-.overlay-text li {
-  margin-bottom: 12px;
-  font-size: 16px;
-}
+    .main-logo:hover {
+      transform: scale(1.05);
+    }
 
-.overlay-text li::before {
-  content: "✓";
-  margin-right: 10px;
-  color: white;
-  font-weight: bold;
-}
+    .company-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 14px;
+      background: #f8fafc;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+    }
 
-/* RIGHT SIDE */
-.modal-right {
-  width: 50%;
-  padding: 40px;
-  position: relative;
-}
+    .company-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
 
-.close-btn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  cursor: pointer;
-  font-size: 18px;
-}
+    .company-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
 
-.modal-right h3 {
-  font-size: 26px;
-  margin-bottom: 10px;
-}
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
 
-.small-text {
-  font-size: 14px;
-  color: #475569;
-  margin-bottom: 20px;
-}
+    .nav-link {
+      font-size: 15px;
+      font-weight: 500;
+      color: #1e293b;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      position: relative;
+    }
 
-.link {
-  color: #2563eb;
-  cursor: pointer;
-  font-weight: 500;
-}
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: #2563eb;
+      transition: width 0.3s ease;
+    }
 
-/* AUTH BUTTONS */
-.auth-btn {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid #e5e7eb;
-  background: white;
-}
+    .nav-link:hover::after {
+      width: 100%;
+    }
 
-.auth-btn:hover {
-  background: #f8fafc;
-}
+    .join-btn {
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
 
-.google { }
-.email { }
-.apple { }
-.facebook { }
-
-.terms {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 20px;
-}
-
-/* TEXT LINKS */
-.nav-link {
-  font-family: 'Inter', sans-serif;
-  font-size: 14.5px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: #0f172a;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.nav-link:hover {
-  color: #2563eb;
-}
-
-/* JOIN BUTTON */
-.join-btn {
-  font-family: 'Inter', sans-serif;
-  padding: 8px 18px;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.join-btn:hover {
-  background: #1e4fd8;
-}
-.nav-link {
-  font-weight: 400;
-}
-
-/* TEXT LINKS */
-.nav-link {
-  font-size: 15px;
-  font-weight: 500;
-  color: #0e1117;
-  cursor: pointer;
-}
-
-.nav-link:hover {
-  text-decoration: underline;
-}
-
-/* JOIN BUTTON */
-.join-btn {
-  padding: 8px 18px;
-  background: #2563eb;
-  color: #ffffff;
-  border: none;
-  border-radius: 999px; /* pill style */
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.join-btn:hover {
-  background: #1e4fd8;
-}
-
+    .join-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    }
 
     /* HERO SECTION */
     .hero {
       position: relative;
-      height: 70vh;
-      min-height: 600px;
-      overflow: hidden;
+      height: 100vh;
+      min-height: 700px;
       display: flex;
       align-items: center;
+      overflow: hidden;
+      margin-top: 0;
     }
 
     .hero video {
@@ -382,7 +214,7 @@ header .right {
       content: "";
       position: absolute;
       inset: 0;
-      background: rgba(8, 12, 20, 0.75);
+      background: linear-gradient(135deg, rgba(8, 12, 20, 0.85) 0%, rgba(15, 23, 42, 0.75) 100%);
       z-index: 2;
     }
 
@@ -390,835 +222,1054 @@ header .right {
       position: relative;
       z-index: 3;
       padding: 0 60px;
-      max-width: 900px;
+      max-width: 1000px;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .hero-content h1 {
-      font-size: 48px;
-      line-height: 1.2;
-      margin-bottom: 16px;
+      font-size: 64px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .hero-content p {
-      font-size: 18px;
+      font-size: 20px;
       color: #cbd5e1;
-      max-width: 650px;
-      line-height: 1.6;
+      max-width: 700px;
+      line-height: 1.7;
+      font-weight: 400;
     }
 
     .hero-buttons {
-      margin-top: 30px;
+      margin-top: 40px;
+      display: flex;
+      gap: 16px;
     }
 
     .hero-buttons button {
-      padding: 14px 26px;
-      margin-right: 12px;
-      border-radius: 8px;
+      padding: 16px 32px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       border: none;
+      transition: all 0.3s ease;
     }
 
     .primary {
-      background: #2563eb;
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
       color: white;
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
     }
-.icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.icon img {
-  width: 40px;
-  height: 40px;
-  display: block;
-}
+    .primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.5);
+    }
 
     .secondary {
-      background: transparent;
+      background: rgba(255, 255, 255, 0.1);
       color: #e5e7eb;
-      border: 1px solid #334155;
-    }
-@media (max-width: 768px) {
-  header {
-    padding: 14px 24px;
-  }
-
-  .nav-link {
-    display: none; /* hides text links on mobile */
-  }
-
-  .join-btn {
-    padding: 8px 14px;
-  }
-}
-
-    /* CONTENT SECTION */
-    .sections {
-      background: #0b0f14;
-      padding: 80px 60px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
     }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 24px;
-      max-width: 1100px;
-      margin: auto;
+    .secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-3px);
     }
 
-    .card {
-      background: #0e1117;
-      border: 1px solid #1f2933;
-      border-radius: 12px;
-      padding: 28px;
+    /* SECTION STYLING */
+    .feature-section {
+      padding: 120px 60px;
+      position: relative;
+      overflow: hidden;
     }
 
-    .card h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-
-    .card p {
-      color: #9ca3af;
-      line-height: 1.5;
-    }
-.modal-left {
-  width: 50%;
-  background: url("scalevestauth.jpg") center/cover no-repeat;
-  position: relative;
-}
-.modal-right h3 {
-  font-size: 24px;
-  margin-bottom: 22px;
-}
-/* RIGHT PANEL BASE */
-.modal-right {
-  background: #ffffff;
-  color: #0f172a;
-}
-/* PURPOSE MODAL */
-.purpose-modal {
-  width: 720px;
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 40px;
-  position: relative;
-  text-align: center;
-}
-
-.purpose-modal h2 {
-  font-size: 28px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.purpose-sub {
-  color: #64748b;
-  font-size: 15px;
-  margin-top: 8px;
-}
-
-.purpose-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
-  margin-top: 36px;
-}
-
-.purpose-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 28px 20px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  background: #ffffff;
-}
-
-.purpose-card:hover {
-  transform: translateY(-6px);
-  border-color: #2563eb;
-  box-shadow: 0 20px 40px rgba(37,99,235,0.15);
-}
-
-.purpose-card h3 {
-  margin-top: 16px;
-  font-size: 18px;
-  color: #0f172a;
-}
-
-.purpose-card p {
-  font-size: 14px;
-  color: #6b7280;
-  margin-top: 8px;
-  line-height: 1.5;
-}
-
-.purpose-card .icon {
-  font-size: 36px;
-}
-
-/* MOBILE */
-@media (max-width: 768px) {
-  .purpose-modal {
-    width: 92%;
-  }
-
-  .purpose-cards {
-    grid-template-columns: 1fr;
-  }
-}
-/* CARD ROW */
-.purpose-cards {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-top: 24px;
-}
-
-/* CARD STYLE */
-.purpose-card {
-  width: 220px;
-  padding: 20px 16px;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.purpose-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
-}
-
-/* ICON */
-.purpose-card .icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 12px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 14px;
-  background: #f1f5f9;
-}
-
-.purpose-card .icon img {
-  width: 36px;
-  height: 36px;
-}
-
-/* TEXT */
-.purpose-card h3 {
-  margin: 8px 0 6px;
-  font-size: 16px;
-}
-
-.purpose-card p {
-  margin: 0;
-  font-size: 13px;
-  color: #6b7280;
-}
-@media (max-width: 768px) {
-  .purpose-cards {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-/* CLOSE BUTTON */
-.close-btn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  font-size: 18px;
-  color: #000;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* HEADING */
-.auth-heading {
-  font-size: 24px;
-  font-weight: 700;
-  color: #000;
-  margin-bottom: 22px;
-}
-
-.sub-heading {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-top: 6px;
-}
-
-/* AUTH BUTTONS – CLEAN BLACK STYLE */
-.auth-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 13px 14px;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  background: #ffffff;
-  color: #000;
-  border: 1px solid #d1d5db;
-}
-
-.auth-btn:hover {
-  background: #f9fafb;
-}
-
-/* ICONS */
-.auth-btn img {
-  width: 18px;
-  height: 18px;
-}
-
-/* DIVIDER */
-.divider {
-  text-align: center;
-  margin: 20px 0;
-  position: relative;
-}
-
-.divider span {
-  background: #fff;
-  padding: 0 10px;
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.divider::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #e5e7eb;
-  z-index: -1;
-}
-/* VIDEO CARDS */
-.video-card {
-  position: relative;
-  height: 320px;
-  border-radius: 16px;
-  overflow: hidden;
-  border: none;
-}
-
-/* VIDEO */
-.video-card video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-}
-
-/* DARK OVERLAY */
-.card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(0,0,0,0.65),
-    rgba(0,0,0,0.85)
-  );
-  z-index: 2;
-}
-
-/* CONTENT */
-.card-content {
-  position: relative;
-  z-index: 3;
-  padding: 28px;
-  color: #ffffff;
-}
-
-.card-content h3 {
-  margin-top: 0;
-  font-size: 22px;
-  font-weight: 700;
-}
-
-.card-content p {
-  color: #e5e7eb;
-  line-height: 1.6;
-  margin-top: 10px;
-}
-
-/* HOVER EFFECT (OPTIONAL BUT 🔥) */
-.video-card:hover video {
-  transform: scale(1.05);
-  transition: transform 0.6s ease;
-}
-
-/* TERMS */
-.terms {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 16px;
-  text-align: center;
-}
-
-.terms .link {
-  color: #2563eb;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.sub-heading {
-  display: block;
-  font-size: 14px;
-  font-weight: 400;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-/* AUTH BUTTONS WITH LOGOS */
-.auth-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 12px 14px;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid #e5e7eb;
-  background: white;
-}
-
-.auth-btn img {
-  width: 18px;
-  height: 18px;
-}
-
-/* DIVIDER */
-.divider {
-  text-align: center;
-  margin: 18px 0;
-  position: relative;
-}
-
-.divider span {
-  background: white;
-  padding: 0 10px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.divider::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #e5e7eb;
-  z-index: -1;
-}
-
-/* LOGO BOTTOM */
-.auth-logo {
-  margin-top: 24px;
-  text-align: center;
-}
-
-.auth-logo img {
-  height: 28px;
-  opacity: 0.9;
-}
-/* DESCRIPTION UNDER HEADING */
-.auth-desc {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 24px;
-}
-
-.auth-link {
-  color: #2563eb;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.auth-link:hover {
-  text-decoration: underline;
-}
-
-    footer {
-      padding: 40px;
+    .section-header {
       text-align: center;
+      margin-bottom: 80px;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .section-tag {
+      display: inline-block;
+      padding: 8px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .section-title {
+      font-size: 48px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .section-subtitle {
+      font-size: 18px;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* INVESTOR SECTION */
+    .investor-section {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    }
+
+    .investor-section .section-tag {
+      background: linear-gradient(135deg, #1e3a8a 0%, #10b981 100%);
+      color: white;
+    }
+
+    .investor-section .section-title {
+      color: #ffffff;
+    }
+
+    .investor-section .section-subtitle {
+      color: #94a3b8;
+    }
+
+    /* FOUNDER SECTION */
+    .founder-section {
+      background: linear-gradient(135deg, #000000 0%, #18181b 100%);
+    }
+
+    .founder-section .section-tag {
+      background: linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%);
+      color: #000000;
+    }
+
+    .founder-section .section-title {
+      color: #ffffff;
+    }
+
+    .founder-section .section-subtitle {
+      color: #a1a1aa;
+    }
+
+    /* BUSINESS SECTION */
+    .business-section {
+      background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .business-section .section-tag {
+      background: linear-gradient(135deg, #000000 0%, #334155 100%);
+      color: #ffffff;
+    }
+
+    .business-section .section-title {
+      color: #000000;
+    }
+
+    .business-section .section-subtitle {
+      color: #475569;
+    }
+
+    /* CARDS GRID */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 28px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      padding: 32px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .feature-card:hover::before {
+      transform: translateX(100%);
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .investor-section .feature-card {
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .investor-section .feature-card:hover {
+      background: linear-gradient(135deg, rgba(30, 58, 138, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .founder-section .feature-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .founder-section .feature-card:hover {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .business-section .feature-card {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .business-section .feature-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .card-icon svg {
+      width: 28px;
+      height: 28px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .feature-card:hover .card-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-card:hover .card-icon svg {
+      transform: scale(1.15);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .feature-card:hover .card-icon {
+      animation: float 2s ease-in-out infinite;
+    }
+
+    .investor-section .card-icon {
+      background: linear-gradient(135deg, #1e3a8a 0%, #10b981 100%);
+    }
+
+    .investor-section .card-icon svg {
+      stroke: white;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .founder-section .card-icon {
+      background: linear-gradient(135deg, #ffffff 0%, #e5e7eb 100%);
+    }
+
+    .founder-section .card-icon svg {
+      stroke: #000000;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .business-section .card-icon {
+      background: linear-gradient(135deg, #000000 0%, #334155 100%);
+    }
+
+    .business-section .card-icon svg {
+      stroke: #ffffff;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .investor-section .card-title {
+      color: #ffffff;
+    }
+
+    .founder-section .card-title {
+      color: #ffffff;
+    }
+
+    .business-section .card-title {
+      color: #000000;
+    }
+
+    .card-description {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .investor-section .card-description {
+      color: #cbd5e1;
+    }
+
+    .founder-section .card-description {
+      color: #a1a1aa;
+    }
+
+    .business-section .card-description {
       color: #64748b;
+    }
+
+    /* FOOTER */
+    .enterprise-footer {
+      background: #05070a;
+      padding: 80px 60px 40px;
       border-top: 1px solid #1f2933;
     }
 
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 60px;
+      margin-bottom: 60px;
+    }
+
+    .footer-brand {
+      flex: 1;
+    }
+
+    .footer-brand h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .company-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .company-info p {
+      font-size: 15px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .footer-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #1f2933;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 60px;
+    }
+
+    .footer-link-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .footer-link-group a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+
+    .footer-link-group a:hover {
+      color: #2563eb;
+      transform: translateX(4px);
+    }
+
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-top: 30px;
+      border-top: 1px solid #1f2933;
+      text-align: center;
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .purpose-modal {
+      width: 90%;
+      max-width: 800px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 50px;
+      position: relative;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      font-size: 24px;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+
+    .close-btn:hover {
+      background: #f1f5f9;
+      color: #000000;
+    }
+
+    .purpose-modal h2 {
+      font-size: 32px;
+      font-weight: 800;
+      color: #000000;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+
+    .purpose-sub {
+      text-align: center;
+      color: #64748b;
+      font-size: 16px;
+      margin-bottom: 40px;
+    }
+
+    .purpose-cards {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+    }
+
+    .purpose-card {
+      flex: 1;
+      max-width: 220px;
+      padding: 28px 20px;
+      border-radius: 18px;
+      border: 2px solid #e5e7eb;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #ffffff;
+    }
+
+    .purpose-card:hover {
+      transform: translateY(-8px);
+      border-color: #2563eb;
+      box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
+    }
+
+    .purpose-card .icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      transition: transform 0.3s ease;
+    }
+
+    .purpose-card:hover .icon {
+      transform: scale(1.1);
+    }
+
+    .purpose-card .icon svg {
+      width: 36px;
+      height: 36px;
+      stroke: #2563eb;
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .purpose-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 10px;
+    }
+
+    .purpose-card p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
     @media (max-width: 768px) {
-      header, .hero-content, .sections {
-        padding: 24px;
+      header {
+        padding: 14px 24px;
+      }
+
+      .nav-link {
+        display: none;
       }
 
       .hero-content h1 {
-        font-size: 34px;
+        font-size: 42px;
+      }
+
+      .section-title {
+        font-size: 36px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .purpose-cards {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .purpose-card {
+        max-width: 100%;
+      }
+
+      .footer-container {
+        flex-direction: column;
       }
     }
   </style>
 </head>
-<script>
-if (localStorage.getItem("businessProfileCreated") === "true") {
-  window.location.replace("mainbusinesshub.html");
-}
-</script>
+
 <body>
+  <header id="mainHeader">
+    <div class="header-left">
+      <div class="logo-container">
+        <img src="ScaleVestLogo.png" alt="ScaleVest" class="main-logo" onerror="this.src='https://dummyimage.com/140x42/2563eb/fff&text=ScaleVest'">
+        <div class="company-badge">
+          <img src="uniorax.png" alt="UnioraX" class="company-logo" onerror="this.src='https://dummyimage.com/32x32/000/fff&text=U'">
+          <span class="company-name">UnioraX Private Limited</span>
+        </div>
+      </div>
+    </div>
 
-<header>
-  <div class="left">
-    <!-- TEMP LOGO -->
-    <img src="https://dummyimage.com/120x40/000/fff&text=ScaleVest "ScaleVest Logo">
+    <div class="header-right">
+      <button class="join-btn" onclick="openPurposeModal()">Join</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <video id="bgVideo" autoplay muted loop playsinline>
+      <source src="hero1.mp4" type="video/mp4">
+    </video>
+
+    <div class="hero-content">
+      <h1>Where real business data becomes clear decisions</h1>
+      <p>
+        ScaleVest connects small businesses, startups, and investors through
+        verified operational data — not assumptions or pitch decks.
+      </p>
+
+      <div class="hero-buttons">
+        <button class="primary" onclick="openPurposeModal()">Get Started</button>
+        <button class="secondary" onclick="window.location.href='Scalevest-documentation.html'">
+          See how it works
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- INVESTOR SECTION -->
+  <section class="feature-section investor-section">
+    <div class="section-header">
+      <span class="section-tag">For Investors</span>
+      <h2 class="section-title">Discover Real Opportunities</h2>
+      <p class="section-subtitle">Access verified startups with real data, not just pitch decks. Make informed decisions with transparency.</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3 class="card-title">Find Verified Founders</h3>
+        <p class="card-description">Browse real founders and their startup vests with verified operational data and traction metrics.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3 class="card-title">In-App Meetings & Chat</h3>
+        <p class="card-description">Connect directly with founders through secure in-app messaging and schedule video meetings seamlessly.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <h3 class="card-title">Funding Applications with Vests</h3>
+        <p class="card-description">Receive comprehensive funding applications with attached startup vests showing real performance data.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 class="card-title">Angel's Angel AI</h3>
+        <p class="card-description">Use AI to summarize founder applications and vests instantly, saving hours of due diligence time.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <h3 class="card-title">Launch Angel Profile</h3>
+        <p class="card-description">Let founders discover you. Browse applications sent directly to your investor profile.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <h3 class="card-title">Reply Reputation System</h3>
+        <p class="card-description">Earn reply reputation by engaging with founders. Unlock elite angel card designs as you level up.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        </div>
+        <h3 class="card-title">Pitched Count & Analytics</h3>
+        <p class="card-description">Track how many pitches you've received and view detailed analytics on founder engagement.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h3 class="card-title">Elite Investor Category</h3>
+        <p class="card-description">Hit reputation milestones to join elite investors with exclusive card designs and priority access.</p>
+      </div>
+
+      <div class="feature-card">
+<div class="card-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+</div>
+        <h3 class="card-title">Clear Analytics Dashboard</h3>
+        <p class="card-description">View comprehensive analytics on your investment pipeline, response rates, and portfolio insights.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOUNDER SECTION -->
+  <section class="feature-section founder-section">
+    <div class="section-header">
+      <span class="section-tag">For Founders</span>
+      <h2 class="section-title">Break Traditional Pitching</h2>
+      <p class="section-subtitle">No more cold emails. Create startup vests with real data and let investors contact you directly.</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="feature-card">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.71-2.13.09-2.91a2.18 2.18 0 0 0-3.09-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.5-1 1-4c2 0 3 .5 3 .5z"/><path d="M15 9s.5 1 3.5 3c.5 3 0 4 0 4l-3-3z"/></svg>
+        <h3 class="card-title">Create Startup Vests</h3>
+        <p class="card-description">Build comprehensive vests showcasing your traction, metrics, and growth. Let interested investors reach out to you.</p>
+      </div>
+
+      <div class="feature-card">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        <h3 class="card-title">Direct Investor Pitching</h3>
+        <p class="card-description">Pitch investors directly through applications with your vests attached, eliminating cold outreach.</p>
+      </div>
+
+      <div class="feature-card">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>
+        <h3 class="card-title">Daily Login Vest Boost</h3>
+        <p class="card-description">Stay active and earn vest boosts by logging in daily, increasing your visibility to investors.</p>
+      </div>
+
+      <div class="feature-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-1.9a8.5 8.5 0 1 1 3.4 3.4L3 21Z"/></svg>
+        <h3 class="card-title">In-App Meetings & Chat</h3>
+        <p class="card-description">Schedule meetings and chat with interested investors directly within the platform.</p>
+      </div>
+
+      <div class="feature-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <h3 class="card-title">Founder Emergence</h3>
+        <p class="card-description">Use Founder Emergence to send your application to 12+ investors in your startup category instantly.</p>
+      </div>
+
+      <div class="feature-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></svg>
+        <h3 class="card-title">Refer & Earn Scale Tokens</h3>
+        <p class="card-description">Invite friends and earn Scale Tokens to unlock premium features like Founder Emergence.</p>
+      </div>
+
+      <div class="feature-card">
+     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+        <h3 class="card-title">Auto-Reply for Investors</h3>
+        <p class="card-description">Set custom auto-replies to manage investor inquiries efficiently when you're unavailable.</p>
+      </div>
+
+      <div class="feature-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+        <h3 class="card-title">Set Your Availability</h3>
+        <p class="card-description">Control when you're open to meetings and pitches with smart availability management.</p>
+      </div>
+
+      <div class="feature-card">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <h3 class="card-title">Browse Verified Investors Only</h3>
+        <p class="card-description">Connect only with verified, legitimate investors. No spam, no fake accounts—just real opportunities.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUSINESS OWNER SECTION -->
+  <section class="feature-section business-section">
+  <div class="section-header">
+    <span class="section-tag">For Business Owners</span>
+    <h2 class="section-title">Your Complete Business Command Center</h2>
+    <p class="section-subtitle">Track, analyze, and optimize every aspect of your business with AI-powered tools designed for growth.</p>
   </div>
 
-  <div class="right">
-    <span class="nav-link">English</span>
-    <span class="nav-link">Sign in</span>
-    <span class="nav-link">Explore</span>
-    <button class="join-btn" onclick="openModal()">Join</button>
+  <div class="cards-grid">
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </div>
+      <h3 class="card-title">Smart Pro Inventory</h3>
+      <p class="card-description">Track products by voice, AI photo scan, or bulk upload. Get detailed PDF reports and set expiry alerts automatically.</p>
+    </div>
 
-  </div>
-</header>
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      </div>
+      <h3 class="card-title">Sales Flow Tracking</h3>
+      <p class="card-description">Monitor revenue, gross profit/loss in real-time. Compare today vs yesterday, week vs week, month vs month, year vs year.</p>
+    </div>
 
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 10v4"/><path d="M11 7v7"/><path d="M15 12v2"/></svg>
+      </div>
+      <h3 class="card-title">Revenue Comparison Reports</h3>
+      <p class="card-description">Understand why revenue changed with detailed analysis. Get complete product sales reports as PDFs.</p>
+    </div>
 
-<section class="hero">
-  <video id="bgVideo" autoplay muted playsinline></video>
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      </div>
+      <h3 class="card-title">Digital Command Centre</h3>
+      <p class="card-description">Visualize your shop as a digital twin with 3D product tiles. See your business layout in an immersive view.</p>
+    </div>
 
-  <div class="hero-content">
-    <h1>Where real business data becomes clear decisions</h1>
-    <p>
-      ScaleVest connects small businesses, startups, and investors through
-      verified operational data — not assumptions or pitch decks.
-    </p>
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+      </div>
+      <h3 class="card-title">24-Hour Time Travel</h3>
+      <p class="card-description">AI predicts how your shop will look in the next 24 hours based on current trends and historical data.</p>
+    </div>
 
-    <div class="hero-buttons">
-      <button class="primary" onclick="openPurposeModal()">Get Started</button>
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h3 class="card-title">Business Vault</h3>
+      <p class="card-description">Securely store legal documents, notes, and transaction records. Everything organized in one encrypted space.</p>
+    </div>
 
-      <button class="secondary" onclick="window.location.href='Scalevest-documentation.html'">
-  See how it works
-</button>
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+      </div>
+      <h3 class="card-title">Staff Job Management</h3>
+      <p class="card-description">Assign jobs to staff, track progress, and get alerts before deadlines. Never miss important tasks.</p>
+    </div>
 
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <h3 class="card-title">Personal CFO</h3>
+      <p class="card-description">Get AI-powered CFO advice on products, finance, salary payroll, profits/losses, and trend analysis.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+      </div>
+      <h3 class="card-title">Comprehensive Analytics</h3>
+      <p class="card-description">Deep insights into product performance, customer behavior, seasonal trends, and growth opportunities.</p>
+    </div>
+
+    <div class="feature-card">
+      <div class="card-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M15 3v6"/><path d="M9 3v6"/><path d="m10 14 2 2 4-4"/></svg>
+      </div>
+      <h3 class="card-title">14-Day Free Trial</h3>
+      <p class="card-description">Experience all premium features risk-free for 14 days. No credit card required to start.</p>
     </div>
   </div>
 </section>
-<!-- JOIN MODAL -->
-<div class="modal-overlay" id="joinModal">
-  <div class="modal">
 
+  <!-- FOOTER -->
+  <footer class="enterprise-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h2>ScaleVest</h2>
+        <div class="company-info">
+          <img src="uniorax.png" alt="UnioraX Logo" class="footer-logo" onerror="this.src='https://dummyimage.com/48x48/000/fff&text=U'">
+          <p>UnioraX Private Limited</p>
+        </div>
+      </div>
 
-<div class="modal-left">
-  <div class="overlay-text">
-    <h2>Your business grows here</h2>
-    <ul>
-      <li>All-in-one business setup</li>
-      <li>Scale and grow</li>
-      <li>Analyze from here</li>
-    </ul>
-  </div>
-</div>
-
-
-<!-- RIGHT SIDE (FORM) -->
-<div class="modal-right">
-  <span class="close-btn" onclick="closeModal()">✕</span>
-
-<h3 class="auth-heading">
-  New to ScaleVest?
-  <span class="sub-heading">Create a new account</span>
-</h3>
-
-<p class="auth-desc">
-  Already have an account?
-  <span class="auth-link" onclick="openSignIn()">Sign in</span>
-</p>
-
-  <!-- PRIMARY AUTH -->
-  <button class="auth-btn google">
-    <img src="google.svg"> Continue with Google
-  </button>
-
-  <button class="auth-btn email">
-    <img src="email.svg"> Continue with Email
-  </button>
-
-  <div class="divider">
-    <span>or</span>
-  </div>
-
-  <!-- SECONDARY AUTH -->
-  <button class="auth-btn apple">
-    <img src="apple.svg"> Continue with Apple
-  </button>
-
-  <button class="auth-btn facebook">
-    <img src="facebook.svg"> Continue with Facebook
-  </button>
-
-
-
-  <p class="terms">
-    By registering, you agree to
-    <span class="link">ScaleVest Terms & Conditions</span>
-  </p>
-</div>
-
-
-  </div>
-</div>
-
-<section class="sections">
-  <div class="cards">
-
-    <!-- SMALL BUSINESS -->
-    <div class="card video-card">
-      <video autoplay muted loop playsinline>
-        <source src="business.mp4" type="video/mp4">
-      </video>
-      <div class="card-overlay"></div>
-      <div class="card-content">
-        <h3>For Small Businesses</h3>
-        <p>
-          Track inventory, sales,records,cashflow, and growth etc. in one place.
-          Understand what truly drives profit.
-        </p>
+      <div class="footer-links">
+        <div class="footer-link-group">
+          <a href="privacyandpolicy.html">Privacy Policy</a>
+          <a href="termsandservices.html">Terms & Services</a>
+        </div>
+        <div class="footer-link-group">
+          <a href="Scalevest-documentation.html">Documentation</a>
+          <a href="mailto:scalevestoffcial@gmail.com">Contact Support</a>
+        </div>
       </div>
     </div>
 
-    <!-- STARTUPS -->
-    <div class="card video-card">
-      <video autoplay muted loop playsinline>
-        <source src="startup.mp4" type="video/mp4">
-      </video>
-      <div class="card-overlay"></div>
-      <div class="card-content">
-        <h3>For Startups</h3>
-        <p>
-          Show real traction, not slides.
-          Let investors see verified performance , pitch for direct answer or meeting.
-        </p>
-      </div>
+    <div class="footer-bottom">
+      © 2026 UnioraX Private Limited. All rights reserved. 
     </div>
+  </footer>
 
-    <!-- INVESTORS -->
-    <div class="card video-card">
-      <video autoplay muted loop playsinline>
-        <source src="investor.mp4" type="video/mp4">
-      </video>
-      <div class="card-overlay"></div>
-      <div class="card-content">
-        <h3>For Investors</h3>
-        <p>
-          Discover promising companies early through real data signals and pitches,
-          not cold outreach.
-        </p>
-      </div>
-    </div>
+  <!-- PURPOSE MODAL -->
+  <div class="modal-overlay" id="purposeModal">
+    <div class="purpose-modal">
+      <span class="close-btn" onclick="closePurposeModal()">✕</span>
 
-  </div>
-</section>
+      <h2>What brings you to ScaleVest?</h2>
+      <p class="purpose-sub">Choose one to personalize your experience</p>
 
-
-<footer class="enterprise-footer">
-  <div class="footer-container">
-    <div class="footer-brand">
-      <h2>ScaleVest</h2>
-      <div class="company-info">
-        <p>UnioraX Private Limited</p>
-        <img src="uniorax.png" alt="UnioraX Logo" class="company-logo-img" onerror="this.style.display='none'">
-      </div>
-    </div>
-
-    <div class="footer-links">
-      <div class="footer-link-group">
-        <a href="privacyandpolicy.html">Privacy Policy</a>
-        <a href="termsandservices.html">Terms & Services</a>
-      </div>
-      <div class="footer-link-group">
-        <a href="Scalevest-documentation.html">Documentation</a>
-        <a href="mailto:scalevestoffcial@gmail.com">Contact Support</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    © 2026 ScaleVest. All rights reserved. Registered in India.
-  </div>
-</footer>
-<script>
-  const modal = document.getElementById("joinModal");
-
-  function openModal() {
-    modal.style.display = "flex";
-  }
-
-  function closeModal() {
-    modal.style.display = "none";
-  }
-</script>
-
-<script>
-  const videos = [
-    "hero1.mp4"
-  ];
-
-  const video = document.getElementById("bgVideo");
-  let index = 0;
-
-  function setVideo(src) {
-    video.src = src;
-    video.muted = true;
-    video.playsInline = true;
-
-    const playPromise = video.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        // Autoplay fallback (mobile safety)
-        video.setAttribute("controls", "controls");
-      });
-    }
-  }
-
-  video.addEventListener("ended", () => {
-    index = (index + 1) % videos.length;
-    setVideo(videos[index]);
-  });
-
-  // Start first video after page load
-  window.addEventListener("load", () => {
-    setVideo(videos[index]);
-  });
-</script>
-<!-- PURPOSE MODAL -->
-<div class="modal-overlay" id="purposeModal" style="z-index:200">
-  <div class="purpose-modal">
-
-    <span class="close-btn" onclick="closePurposeModal()">✕</span>
-
-    <h2>What brings you to ScaleVest?</h2>
-    <p class="purpose-sub">
-      Choose one to personalize your experience
-    </p>
-
-    <div class="purpose-cards">
-  <!-- INVESTOR -->
+<div class="purpose-cards">
   <div class="purpose-card" onclick="goTo('investor-side.html')">
-    <div class="icon">
-      <img src="investor.svg" alt="Investor">
+    <div class="icon-box">
+      <img src="investor.svg" alt="Investor" class="modal-svg-img">
     </div>
     <h3>Investor</h3>
     <p>Discover verified businesses & data-backed opportunities</p>
   </div>
 
-  <!-- STARTUP -->
   <div class="purpose-card" onclick="goTo('startup-side.html')">
-    <div class="icon">
-      <img src="startup.svg" alt="Startup Founder">
+    <div class="icon-box">
+      <img src="startup.svg" alt="Startup Founder" class="modal-svg-img">
     </div>
     <h3>Startup Founder</h3>
     <p>Show traction, raise capital & grow faster</p>
   </div>
 
-  <!-- BUSINESS -->
   <div class="purpose-card" onclick="goTo('business-side.html')">
-    <div class="icon">
-      <img src="shop.svg" alt="Business Owner">
+    <div class="icon-box">
+      <img src="shop.svg" alt="Business Owner" class="modal-svg-img">
     </div>
     <h3>Business Owner</h3>
     <p>Track operations, profit & performance clearly</p>
   </div>
 </div>
 
-</div>
-<script>
-  function openPurposeModal() {
-    document.getElementById("purposeModal").style.display = "flex";
-  }
+  </div>
 
-  function closePurposeModal() {
-    document.getElementById("purposeModal").style.display = "none";
-  }
-</script>
+  <script>
+    // Lenis Smooth Scroll
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smooth: true,
+    });
 
-<script>
-  function goTo(page) {
-    window.location.href = page;
-  }
-</script>
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-  import { getDatabase, ref, runTransaction } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
-    authDomain: "scalevest-163a0.firebaseapp.com",
-    databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
-    projectId: "scalevest-163a0",
-    storageBucket: "scalevest-163a0.firebasestorage.app",
-    messagingSenderId: "938358950124",
-    appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
-    measurementId: "G-QD3TWBZHR0"
-  };
+    requestAnimationFrame(raf);
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  async function checkAndCreditReferral() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const referrerUid = urlParams.get('uid'); 
-    const refCode = urlParams.get('ref');
-
-    console.log("Checking referral for UID:", referrerUid); // Debug log
-
-    if (referrerUid) {
-      // Use a unique key based on the referrer UID to prevent double-claiming
-      const uniqueStorageKey = `ref_claimed_${referrerUid}`;
-      
-      if (localStorage.getItem(uniqueStorageKey)) {
-        console.log("Referral already credited in this browser.");
-        return;
+    // Header Scroll Effect
+    const header = document.getElementById('mainHeader');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
       }
+    });
 
-      try {
-        const tokenRef = ref(db, `founderProfile/${referrerUid}/scaleTokens`);
+    // Modal Functions
+    function openPurposeModal() {
+      document.getElementById('purposeModal').style.display = 'flex';
+    }
+
+    function closePurposeModal() {
+      document.getElementById('purposeModal').style.display = 'none';
+    }
+
+    function goTo(page) {
+      window.location.href = page;
+    }
+
+    // Card Animations on Scroll
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }, index * 100);
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.feature-card').forEach((card) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px)';
+      card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+      observer.observe(card);
+    });
+  </script>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, runTransaction } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+      authDomain: "scalevest-163a0.firebaseapp.com",
+      databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
+      projectId: "scalevest-163a0",
+      storageBucket: "scalevest-163a0.firebasestorage.app",
+      messagingSenderId: "938358950124",
+      appId: "1:938358950124:web:043506aeaacea2a96bfdc9",
+      measurementId: "G-QD3TWBZHR0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    async function checkAndCreditReferral() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const referrerUid = urlParams.get('uid'); 
+
+      if (referrerUid) {
+        const uniqueStorageKey = `ref_claimed_${referrerUid}`;
         
-        await runTransaction(tokenRef, (currentTokens) => {
-          // If null or undefined, start at 0 and add 10
-          return (currentTokens || 0) + 10;
-        });
+        if (localStorage.getItem(uniqueStorageKey)) {
+          return;
+        }
 
-        localStorage.setItem(uniqueStorageKey, "true");
-        console.log("SUCCESS: 10 ScaleTokens rewarded to:", referrerUid);
-      } catch (error) {
-        console.error("Referral Error:", error);
+        try {
+          const tokenRef = ref(db, `founderProfile/${referrerUid}/scaleTokens`);
+          
+          await runTransaction(tokenRef, (currentTokens) => {
+            return (currentTokens || 0) + 10;
+          });
+
+          localStorage.setItem(uniqueStorageKey, "true");
+        } catch (error) {
+          console.error("Referral Error:", error);
+        }
       }
     }
-  }
 
-  // EXECUTE
-  checkAndCreditReferral();
-</script>
+    checkAndCreditReferral();
+  </script>
 </body>
 </html>
-
-
