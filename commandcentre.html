@@ -1727,7 +1727,31 @@ box-sizing: border-box;
         <button class="exit-time-travel" onclick="exitTimeTravel()">EXIT</button>
     </div>
 <div class="header-row" style="display: flex !important; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 20px; width: 100%;">
-    
+    <div style="max-width: 900px; margin: 20px auto 10px auto; padding: 0 20px;">
+    <button onclick="window.location.href='mainbusinesshub.html'" style="
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        color: #1a1a1a;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+        font-family: 'Inter', sans-serif;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 1px;
+    " onmouseover="this.style.borderColor='#00CED1'; this.style.color='#00CED1'; this.style.transform='translateX(-5px)';" 
+       onmouseout="this.style.borderColor='#e0e0e0'; this.style.color='#1a1a1a'; this.style.transform='translateX(0)';"
+       title="Return to Business Hub">
+        <span style="font-size: 1.4rem; line-height: 1;">←</span> 
+        <span>Back to Hub</span>
+    </button>
+</div>
 <!-- Digital Controls Toggle Button -->
 <button class="control-toggle-btn" onclick="toggleControls()">
     <i class="fas fa-cog"></i> Digital Controls
