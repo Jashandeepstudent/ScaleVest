@@ -55,7 +55,80 @@
     display: block; /* Removes the "baseline" gap below images */
     object-fit: contain; /* Prevents distortion */
 }
+/* New Logout Button Styles */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
+.logout-btn {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #fecaca;
+    transform: translateY(-1px);
+}
+/* Logout Modal Specific Styles */
+#logoutModal { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(15, 23, 42, 0.6); 
+    backdrop-filter: blur(8px); 
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 2000; 
+}
+
+.confirm-box { 
+    width: 90%; 
+    max-width: 350px; 
+    background: white; 
+    padding: 30px; 
+    border-radius: 30px; 
+    text-align: center; 
+    box-shadow: var(--shadow);
+}
+
+.confirm-box h3 { margin-top: 0; color: #1e293b; }
+.confirm-box p { color: var(--text-sub); font-size: 14px; margin-bottom: 25px; }
+
+.modal-btns { display: flex; gap: 12px; }
+
+.btn-cancel { 
+    flex: 1; 
+    padding: 14px; 
+    border-radius: 14px; 
+    border: 1px solid #e2e8f0; 
+    background: #f8fafc; 
+    font-weight: 600; 
+    cursor: pointer; 
+}
+
+.btn-confirm { 
+    flex: 1; 
+    padding: 14px; 
+    border-radius: 14px; 
+    border: none; 
+    background: #ef4444; 
+    color: white; 
+    font-weight: 700; 
+    cursor: pointer; 
+}
+.logout-btn.confirming {
+    background: #dc2626;
+    color: white;
+}
     #createHubCard {
     display: flex;
     flex-direction: column; /* Stacks items vertically */
@@ -137,7 +210,10 @@
 
 <header id="headerUI">
     <h1 id="displayBizName">Control Panel</h1>
-    <div class="status">System Online</div>
+    <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+        <div class="status">System Online</div>
+        <button onclick="toggleLogoutModal(true)" style="background:none; border:none; color:#dc2626; font-weight:600; cursor:pointer;">Log Out</button>
+    </div>
 </header>
 
 <div id="createHubCard">
@@ -220,7 +296,16 @@
 
     </div>
 </div>
-
+<div id="logoutModal">
+    <div class="confirm-box">
+        <h3>Sign Out?</h3>
+        <p>Are you sure you want to log out of your ScaleVest account?</p>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="toggleLogoutModal(false)">Cancel</button>
+            <button class="btn-confirm" onclick="executeLogout()">Yes, Sign Out</button>
+        </div>
+    </div>
+</div>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -245,7 +330,19 @@ function showDashboard(name) {
     dashboard.style.display = "block"; headerUI.style.display = "flex";
     if(name) bizNameDisplay.textContent = name;
 }
+function toggleLogoutModal(show) {
+    document.getElementById("logoutModal").style.display = show ? "flex" : "none";
+}
 
+function executeLogout() {
+    auth.signOut().then(() => {
+        localStorage.clear(); // Clears business name and session
+        window.location.href = "index.html";
+    }).catch(err => {
+        console.error("Logout failed", err);
+        alert("Error signing out.");
+    });
+}
 function showCreateCard() { dashboard.style.display = "none"; headerUI.style.display = "none"; createCard.style.display = "flex"; }
 
 createCard.onclick = () => modal.style.display = "flex";
@@ -273,6 +370,7 @@ auth.onAuthStateChanged(user => {
 
 </body>
 </html>
+
 
 
 
