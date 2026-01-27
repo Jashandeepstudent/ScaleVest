@@ -2,296 +2,313 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Insupra Documentation</title>
+<title>ScaleVest | The Infrastructure of Scale</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
-* {
-  box-sizing: border-box;
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  background: #0e1117;
-  color: #e5e7eb;
-}
-
-/* HEADER */
-header {
-  padding: 24px 60px;
-  border-bottom: 1px solid #1f2933;
-  background: #0b0f14;
-}
-
-header h1 {
-  margin: 0;
-  font-size: 26px;
-  color: #ffffff;
-}
-
-/* CONTAINER */
-.container {
-  padding: 70px 60px;
-  max-width: 1200px;
-  margin: auto;
-}
-
-/* INTRO */
-.intro {
-  text-align: center;
-  margin-bottom: 60px;
-}
-
-.intro h2 {
-  font-size: 40px;
-  margin-bottom: 16px;
-  color: #ffffff;
-}
-
-.intro p {
-  font-size: 18px;
-  color: #cbd5e1;
-  max-width: 700px;
-  margin: auto;
-}
-
-/* OPTION BOXES */
-.option-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 28px;
-  margin-top: 50px;
-}
-
-.option-card {
-  background: #0b0f14;
-  border: 1px solid #1f2933;
-  border-radius: 16px;
-  padding: 36px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.option-card:hover {
-  transform: translateY(-6px);
-  border-color: #2563eb;
-}
-
-.option-card svg {
-  width: 42px;
-  height: 42px;
-  stroke: #2563eb;
-  margin-bottom: 18px;
-}
-
-.option-card h3 {
-  margin: 0 0 10px;
-  font-size: 22px;
-  color: #ffffff;
-}
-
-.option-card p {
-  font-size: 15px;
-  color: #cbd5e1;
-  line-height: 1.6;
-}
-
-/* SECTIONS */
-.section {
-  margin-top: 100px;
-}
-
-.section h2 {
-  font-size: 32px;
-  margin-bottom: 16px;
-  color: #ffffff;
-}
-
-.section p {
-  font-size: 16px;
-  color: #cbd5e1;
-  line-height: 1.7;
-}
-
-.info-boxes {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-top: 30px;
-}
-
-.info-box {
-  background: #0b0f14;
-  border: 1px solid #1f2933;
-  border-radius: 14px;
-  padding: 26px;
-}
-
-.info-box h4 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #ffffff;
-}
-
-.info-box ul {
-  padding-left: 18px;
-}
-
-.info-box li {
-  margin-bottom: 10px;
-  color: #cbd5e1;
-}
-
-/* FOOTER */
-footer {
-  margin-top: 120px;
-  padding: 40px;
-  border-top: 1px solid #1f2933;
-  text-align: center;
-  color: #64748b;
-  font-size: 14px;
-}
-
-/* MOBILE */
-@media (max-width: 768px) {
-  header, .container {
-    padding: 30px 24px;
+  * {
+    box-sizing: border-box;
+    scroll-behavior: smooth;
   }
-}
+
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: #05070a;
+    color: #94a3b8;
+  }
+
+  h1, h2, h3, .logo-text {
+    font-family: 'Space Grotesk', sans-serif;
+    color: #ffffff;
+  }
+
+  /* HEADER */
+  header {
+    padding: 20px 60px;
+    border-bottom: 1px solid #1e293b;
+    background: rgba(11, 15, 20, 0.8);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-text {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -1px;
+  }
+
+  .logo-text span {
+    color: #3b82f6; /* ScaleVest Blue */
+  }
+
+  /* CONTAINER */
+  .container {
+    padding: 80px 60px;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  /* INTRO */
+  .intro {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+
+  .intro h2 {
+    font-size: 48px;
+    margin-bottom: 16px;
+    background: linear-gradient(90deg, #fff, #64748b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .intro p {
+    font-size: 20px;
+    max-width: 750px;
+    margin: auto;
+  }
+
+  /* OPTION BOXES */
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+  }
+
+  .option-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 20px;
+    padding: 40px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .option-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 4px;
+    background: #3b82f6;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .option-card:hover {
+    transform: translateY(-10px);
+    border-color: #3b82f6;
+    background: #111a2e;
+  }
+
+  .option-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .option-card svg {
+    width: 48px;
+    height: 48px;
+    stroke: #3b82f6;
+    margin-bottom: 24px;
+  }
+
+  .option-card h3 {
+    margin: 0 0 12px;
+    font-size: 24px;
+  }
+
+  .option-card p {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* SECTIONS */
+  .section {
+    margin-top: 120px;
+    padding: 60px;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 24px;
+    border: 1px solid #1e293b;
+  }
+
+  .section-tag {
+    color: #3b82f6;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .section h2 {
+    font-size: 36px;
+    margin-bottom: 24px;
+  }
+
+  .info-boxes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    margin-top: 40px;
+  }
+
+  .info-box {
+    background: #05070a;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 30px;
+  }
+
+  .info-box h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #ffffff;
+    font-size: 18px;
+  }
+
+  .info-box ul {
+    padding-left: 20px;
+    margin: 0;
+  }
+
+  .info-box li {
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 120px;
+    padding: 60px;
+    border-top: 1px solid #1e293b;
+    text-align: center;
+    color: #64748b;
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    header, .container { padding: 30px 24px; }
+    .intro h2 { font-size: 32px; }
+    .section { padding: 30px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Insupra Documentation</h1>
+  <div class="logo-text">Scale<span>Vest</span></div>
 </header>
 
 <div class="container">
 
-  <!-- INTRO -->
   <div class="intro">
-    <h2>Choose what describes you</h2>
+    <h2>The Infrastructure of Scale</h2>
     <p>
-      Insupra adapts to your role. Select your path to understand
-      how the platform works for you.
+      Whether you are building a local legacy or a global unicorn, ScaleVest provides the data rails to connect growth with capital.
     </p>
   </div>
 
-  <!-- OPTION BOXES -->
   <div class="option-grid">
 
-    <!-- BUSINESS -->
-    <div class="option-card" onclick="location.href='#business'">
-      <!-- BUSINESS SVG -->
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.6">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M3 21h18M4 21V7a2 2 0 012-2h12a2 2 0 012 2v14M9 21V9h6v12" />
+    <div class="option-card" onclick="location.href='#local'">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-15 0V10.5a.75.75 0 01.75-.75h7.5a.75.75 0 01.75.75V21m-9 0h10.5M21 21h-3M3 10.5L12 3l9 7.5" />
       </svg>
-      <h3>Small Business</h3>
-      <p>Track operations, cashflow, and growth in one trusted system.</p>
+      <h3>Local Business</h3>
+      <p>Automate your operations and build a credit-ready history for local expansion.</p>
     </div>
 
-    <!-- STARTUP -->
     <div class="option-card" onclick="location.href='#startup'">
-      <!-- STARTUP SVG -->
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.6">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L6 20l2-7L2 9h7z" />
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.96 14.96 0 01-5.96 5.96m0 0a14.96 14.96 0 01-5.96-5.96m5.96 5.96V21m0-2.25L9.63 8.41m0 0l2.25 2.25" />
       </svg>
-      <h3>Startup</h3>
-      <p>Replace pitch decks with verified traction and real metrics.</p>
+      <h3>Startup Founder</h3>
+      <p>Verify your traction signals and bypass the pitch deck fatigue with live metrics.</p>
     </div>
 
-    <!-- INVESTOR -->
     <div class="option-card" onclick="location.href='#investor'">
-      <!-- INVESTOR SVG -->
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.6">
-        <path stroke-linecap="round" stroke-linejoin="round"
-          d="M12 1v22M5 6l7-5 7 5M5 18l7 5 7-5" />
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.5 4.5L21.75 7M21.75 7h-5.25M21.75 7v5.25" />
       </svg>
-      <h3>Investor</h3>
-      <p>Discover companies early using real performance signals.</p>
+      <h3>Capital Allocator</h3>
+      <p>Deploy capital into verified performers using real-time data instead of projections.</p>
     </div>
 
   </div>
 
-  <!-- BUSINESS SECTION -->
-  <div class="section" id="business">
-    <h2>For Small Businesses</h2>
-    <p>Insupra becomes your single source of operational truth.</p>
-
+  <div class="section" id="local">
+    <span class="section-tag">Empower</span>
+    <h2>Local Business Growth</h2>
+    <p>We provide the tools to turn your day-to-day work into financial leverage.</p>
     <div class="info-boxes">
       <div class="info-box">
-        <h4>Operational Tracking</h4>
+        <h4>The Dashboard</h4>
         <ul>
-          <li>Revenue & expenses</li>
-          <li>Inventory & cashflow</li>
-          <li>Growth trends</li>
+          <li>Real-time Cashflow Monitoring</li>
+          <li>Inventory & Barcode Integration</li>
+          <li>Automated Profit/Loss Reporting</li>
         </ul>
       </div>
-
       <div class="info-box">
-        <h4>Scale Ready</h4>
+        <h4>The Leverage</h4>
         <ul>
-          <li>Clean historical data</li>
-          <li>Credibility</li>
-          <li>Ai Partner as Business Partner</li>
+          <li>Bank-Ready Financial History</li>
+          <li>AI-Driven Efficiency Insights</li>
+          <li>Local Market Benchmarking</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <!-- STARTUP SECTION -->
   <div class="section" id="startup">
-    <h2>For Startups</h2>
-    <p>Show traction, not promises.</p>
-
+    <span class="section-tag">Accelerate</span>
+    <h2>Unicorn Infrastructure</h2>
+    <p>Eliminate the "trust gap" between founders and investors with the ScaleVest Data Rail.</p>
     <div class="info-boxes">
       <div class="info-box">
-        <h4>Verified Metrics</h4>
+        <h4>Verified Traction</h4>
         <ul>
-          <li>Live performance data</li>
-          <li>No inflated numbers</li>
-          <li>Standardized metrics</li>
+          <li>API-connected Revenue Growth</li>
+          <li>Cohort Retention Analysis</li>
+          <li>Burn Rate & Runway Transparency</li>
         </ul>
       </div>
-
       <div class="info-box">
-        <h4>Investor Access</h4>
+        <h4>The Scale Vault</h4>
         <ul>
-          <li>Signal-based discovery</li>
-          <li>Direct questions</li>
-          <li>Faster decisions</li>
+          <li>Automated Due Diligence Rooms</li>
+          <li>Direct Investor Signal Matching</li>
+          <li>Cap Table Readiness</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <!-- INVESTOR SECTION -->
   <div class="section" id="investor">
-    <h2>For Investors</h2>
-    <p>Invest using reality, not storytelling.</p>
-
+    <span class="section-tag">Deploy</span>
+    <h2>Precision Investing</h2>
+    <p>Filter through the noise. Invest in businesses that are already winning.</p>
     <div class="info-boxes">
       <div class="info-box">
-        <h4>Early Discovery</h4>
+        <h4>Signal Discovery</h4>
         <ul>
-          <li>Pre-round visibility</li>
-          <li>Real traction signals</li>
-          <li>Comparable metrics</li>
+          <li>Pre-Seed Traction Alerts</li>
+          <li>Comparative Sector Analytics</li>
+          <li>Verified KPI Tracking</li>
         </ul>
       </div>
-
       <div class="info-box">
-        <h4>Lower Risk</h4>
+        <h4>Risk Mitigation</h4>
         <ul>
-          <li>Verified data</li>
-          <li>Reduced diligence time</li>
-          <li>Founder accountability</li>
+          <li>Real-time Post-Investment Monitoring</li>
+          <li>Zero-Hype Performance Audits</li>
+          <li>Seamless Reporting Pipeline</li>
         </ul>
       </div>
     </div>
@@ -300,7 +317,9 @@ footer {
 </div>
 
 <footer>
-  © 2025 Insupra — Building clarity between business and capital.
+  <div class="logo-text" style="font-size: 18px; margin-bottom: 10px;">Scale<span>Vest</span></div>
+  © 2026 ScaleVest — The Infrastructure of Scale.<br>
+  Jammu & Kashmir | Global Reach
 </footer>
 
 </body>
