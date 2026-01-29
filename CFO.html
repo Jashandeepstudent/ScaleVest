@@ -980,22 +980,17 @@ function updateProductUI(analytics) {
       cfoLabel.innerHTML = `<span style="color: #3b82f6; font-weight: 700;">${name}</span> - Your CFO`;
       header.appendChild(cfoLabel);
   }
-// scalevestcfo.js - AI CFO Intelligence Engine v2.0
-
-// COMPLETE INTEGRATION EXAMPLE - ScaleVest Business King
-// This shows how to use the upgraded API with multiple image support and Hindi translation
-
 class ScaleVestBusinessKing {
     constructor() {
         this.apiUrl = 'https://gemini-sigma-plum.vercel.app/api/cfoscalevest';
         this.userData = null;
         this.analysisHistory = [];
         this.isAnalyzing = false;
-        this.shelfImages = []; // Store multiple shelf images
+        this.shelfImages = [];
         this.currentLanguage = 'en'; // 'en' or 'hi'
         this.currentAnalysis = null;
-        this.maxImages = 10; // Maximum number of images allowed
-        this.maxImageSizeMB = 5; // Max size per image in MB
+        this.maxImages = 10;
+        this.maxImageSizeMB = 5;
     }
 
     // Initialize with user business data
@@ -1011,30 +1006,26 @@ class ScaleVestBusinessKing {
 
     // Setup UI elements
     setupUI() {
-        // Setup analyze button
         const analyzeBtn = document.getElementById('analyze-business-btn');
         if (analyzeBtn) {
             analyzeBtn.onclick = () => this.analyzeBusinessData();
         }
 
-        // Setup shelf upload for multiple images
         const uploadBtn = document.getElementById('upload-shelf-btn');
         const fileInput = document.getElementById('shelf-images-input');
         
         if (uploadBtn && fileInput) {
             uploadBtn.onclick = () => fileInput.click();
-            fileInput.multiple = true; // Allow multiple files
+            fileInput.multiple = true;
             fileInput.accept = 'image/jpeg,image/jpg,image/png,image/webp';
             fileInput.onchange = (e) => this.handleMultipleImageUploads(e);
         }
 
-        // Setup shelf analyze button (separate from business analysis)
         const analyzeShelvesBtn = document.getElementById('analyze-shelves-btn');
         if (analyzeShelvesBtn) {
             analyzeShelvesBtn.onclick = () => this.analyzeAllShelves();
         }
 
-        // Setup language toggle
         const langToggle = document.getElementById('language-toggle');
         if (langToggle) {
             langToggle.onclick = () => this.toggleLanguage();
@@ -1045,7 +1036,6 @@ class ScaleVestBusinessKing {
     async handleMultipleImageUploads(event) {
         const files = Array.from(event.target.files);
         
-        // Validate number of images
         if (this.shelfImages.length + files.length > this.maxImages) {
             this.showAlert(
                 this.currentLanguage === 'hi' 
@@ -1056,7 +1046,6 @@ class ScaleVestBusinessKing {
             return;
         }
 
-        // Show loading indicator
         this.showLoadingToast(
             this.currentLanguage === 'hi' 
                 ? 'फोटो अपलोड हो रही हैं...'
@@ -1067,7 +1056,6 @@ class ScaleVestBusinessKing {
         let failedCount = 0;
 
         for (const file of files) {
-            // Validate file size
             const fileSizeMB = file.size / (1024 * 1024);
             if (fileSizeMB > this.maxImageSizeMB) {
                 failedCount++;
@@ -1075,7 +1063,6 @@ class ScaleVestBusinessKing {
                 continue;
             }
 
-            // Validate file type
             if (!file.type.startsWith('image/')) {
                 failedCount++;
                 console.warn(`File ${file.name} is not an image`);
@@ -1089,7 +1076,7 @@ class ScaleVestBusinessKing {
                 reader.onload = (e) => {
                     this.shelfImages.push({
                         name: file.name,
-                        data: e.target.result.split(',')[1], // Base64 without prefix
+                        data: e.target.result.split(',')[1],
                         timestamp: new Date().toISOString(),
                         size: fileSizeMB.toFixed(2) + 'MB'
                     });
@@ -1108,7 +1095,6 @@ class ScaleVestBusinessKing {
             }
         }
 
-        // Wait a bit for all files to process
         setTimeout(() => {
             this.hideLoadingToast();
             
@@ -1121,12 +1107,12 @@ class ScaleVestBusinessKing {
                 );
             }
 
-            // Enable analyze button if images uploaded
             if (this.shelfImages.length > 0) {
                 const analyzeBtn = document.getElementById('analyze-shelves-btn');
                 if (analyzeBtn) {
                     analyzeBtn.disabled = false;
                     analyzeBtn.style.opacity = '1';
+                    analyzeBtn.style.display = 'block';
                 }
             }
         }, 1000);
@@ -1145,7 +1131,6 @@ class ScaleVestBusinessKing {
                     let width = img.width;
                     let height = img.height;
 
-                    // Resize if too large
                     if (width > maxWidth) {
                         height = (height * maxWidth) / width;
                         width = maxWidth;
@@ -1223,7 +1208,6 @@ class ScaleVestBusinessKing {
         this.shelfImages.splice(index, 1);
         this.updateShelfPreview();
 
-        // Disable analyze button if no images
         if (this.shelfImages.length === 0) {
             const analyzeBtn = document.getElementById('analyze-shelves-btn');
             if (analyzeBtn) {
@@ -1243,148 +1227,345 @@ class ScaleVestBusinessKing {
         }
     }
 
-    // Analyze business data (without images)
-   async analyzeBusinessData() {
-    if (this.isAnalyzing) return;
-
-    this.isAnalyzing = true;
-    const loadingEl = document.getElementById('ai-loading');
-    const suggestionsEl = document.getElementById('ai-suggestions');
-
-    try {
-        const prompt = this.buildBusinessPrompt();
-
-        if (loadingEl) {
-            loadingEl.style.display = 'block';
-            loadingEl.innerHTML = this.getLoadingHTML();
-        }
-
-        // USE THE NEW HELPER METHOD
-        const data = await this.makeAPIRequest(prompt);
-
-        this.currentAnalysis = data;
-        this.analysisHistory.push({
-            timestamp: new Date().toISOString(),
-            type: 'business-data',
-            data: data
-        });
-
-        if (loadingEl) loadingEl.style.display = 'none';
-        if (suggestionsEl) {
-            suggestionsEl.style.display = 'block';
-            this.displayBusinessInsights(data);
-        }
-
-    } catch (error) {
-        console.error('Business Analysis Error:', error);
-        this.showError(error);
-    } finally {
-        this.isAnalyzing = false;
-    }
-}
-// Add this method after parseResponse()
-async makeAPIRequest(prompt, images = null) {
-    const maxRetries = 2;
-    let lastError = null;
+    // ============ ENHANCED ANALYSIS WITH SMART PROMPTING ============
     
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
+    async analyzeBusinessData() {
+        if (this.isAnalyzing) {
+            console.log('⏳ Analysis already in progress...');
+            return;
+        }
+
+        this.isAnalyzing = true;
+        const loadingEl = document.getElementById('ai-loading');
+        const suggestionsEl = document.getElementById('ai-suggestions');
+
         try {
-            const payload = {
-                prompt: prompt,
-                language: this.currentLanguage || 'en'
-            };
-            
-            if (images && images.length > 0) {
-                payload.images = images;
+            const prompt = this.buildIntelligentBusinessPrompt();
+
+            if (loadingEl) {
+                loadingEl.style.display = 'block';
+                loadingEl.innerHTML = this.getLoadingHTML();
             }
-            
-            console.log(`🔄 API Request attempt ${attempt + 1}/${maxRetries}`);
-            
-            const response = await fetch(this.apiUrl, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(payload)
+
+            const data = await this.makeAPIRequest(prompt);
+
+            this.currentAnalysis = data;
+            this.analysisHistory.push({
+                timestamp: new Date().toISOString(),
+                type: 'business-data',
+                data: data
             });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`API returned ${response.status}: ${errorText}`);
+
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (suggestionsEl) {
+                suggestionsEl.style.display = 'block';
+                this.displayBusinessInsights(data);
             }
-            
-            return await response.json();
-            
+
         } catch (error) {
-            lastError = error;
-            console.error(`Attempt ${attempt + 1} failed:`, error.message);
-            
-            if (attempt < maxRetries - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-            }
+            console.error('💥 Business Analysis Error:', error);
+            this.showError(error);
+        } finally {
+            this.isAnalyzing = false;
         }
     }
+
+    // Analyze all shelf images
+    async analyzeAllShelves() {
+        if (this.shelfImages.length === 0) {
+            this.showAlert(
+                this.currentLanguage === 'hi'
+                    ? 'कृपया पहले शेल्फ की फोटो अपलोड करें'
+                    : 'Please upload shelf photos first',
+                'warning'
+            );
+            return;
+        }
+
+        if (this.isAnalyzing) return;
+
+        this.isAnalyzing = true;
+        const modal = this.createAnalyzingModal();
+        document.body.appendChild(modal);
+
+        try {
+            const prompt = this.buildIntelligentShelfPrompt();
+            const imageDataArray = this.shelfImages.map(img => img.data);
+
+            console.log(`📸 Sending ${imageDataArray.length} images for analysis...`);
+
+            const data = await this.makeAPIRequest(prompt, imageDataArray);
+
+            this.analysisHistory.push({
+                timestamp: new Date().toISOString(),
+                type: 'shelf-analysis',
+                imageCount: this.shelfImages.length,
+                data: data
+            });
+
+            modal.remove();
+            this.displayShelfAnalysis(data);
+
+        } catch (error) {
+            console.error('💥 Shelf Analysis Error:', error);
+            modal.remove();
+            this.showAlert(
+                this.currentLanguage === 'hi'
+                    ? `विश्लेषण विफल: ${error.message}`
+                    : `Analysis failed: ${error.message}`,
+                'error'
+            );
+        } finally {
+            this.isAnalyzing = false;
+        }
+    }
+
+    // ============ SMART API REQUEST WITH RETRY LOGIC ============
     
-    throw lastError;
-}
-    // Build business analysis prompt (simple language)
-    buildBusinessPrompt() {
+    async makeAPIRequest(prompt, images = null) {
+        const maxRetries = 2;
+        let lastError = null;
+        
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                const payload = {
+                    prompt: prompt,
+                    language: this.currentLanguage || 'en'
+                };
+                
+                if (images && images.length > 0) {
+                    payload.images = images;
+                    payload.type = 'shelf-analysis';
+                } else {
+                    payload.type = 'business-analysis';
+                }
+                
+                console.log(`🔄 API Request attempt ${attempt + 1}/${maxRetries}`);
+                
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('🔴 API Error Response:', errorText);
+                    throw new Error(`API returned ${response.status}: ${errorText.substring(0, 100)}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ API Request successful');
+                return result;
+                
+            } catch (error) {
+                lastError = error;
+                console.error(`❌ Attempt ${attempt + 1} failed:`, error.message);
+                
+                if (attempt < maxRetries - 1) {
+                    const waitTime = 1000 * (attempt + 1);
+                    console.log(`⏳ Retrying in ${waitTime}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                }
+            }
+        }
+        
+        throw lastError;
+    }
+
+    // ============ INTELLIGENT PROMPT BUILDING ============
+    
+    buildIntelligentBusinessPrompt() {
         const { totalRevenue, totalCosts, netProfit, profitMargin, weeklyGrowth, products, lowStockItems, expiringProducts } = this.userData;
 
         const isProfit = netProfit >= 0;
-
-        return `Analyze this business. Use VERY SIMPLE WORDS.
-
-Business Numbers:
-- Money Coming In: ₹${totalRevenue || 0}
-- Money Going Out: ₹${totalCosts || 0}
-- Profit/Loss: ₹${Math.abs(netProfit || 0)} (${isProfit ? 'PROFIT' : 'LOSS'})
-- Profit Percentage: ${profitMargin || 0}%
-- Growth This Week: ${weeklyGrowth || 0}%
-- Products Sold: ${products?.length || 0}
-- Low Stock Items: ${lowStockItems?.length || 0}
-- Products Expiring Soon: ${expiringProducts?.length || 0}
-
-Tell me:
-1. What is the BIGGEST problem?
-2. WHY is this happening?
-3. EXACTLY what to do (step by step)
-4. How much money can be saved/made?
-
-Use ${this.currentLanguage === 'hi' ? 'सरल हिंदी (simple Hindi like talking to a friend)' : 'simple English (like explaining to a child)'}.`;
-    }
-
-    // Build shelf analysis prompt
-    buildShelfAnalysisPrompt() {
         const isHindi = this.currentLanguage === 'hi';
 
-        return isHindi ? `
-मैंने ${this.shelfImages.length} शेल्फ की फोटो भेजी हैं। हर एक को ध्यान से देखें।
+        // Calculate actual numbers for context
+        const avgProductRevenue = products && products.length > 0 ? totalRevenue / products.length : 0;
+        const costToRevenueRatio = totalRevenue > 0 ? ((totalCosts / totalRevenue) * 100).toFixed(1) : 0;
 
-मुझे बताएं:
-1. कौन सी शेल्फ सबसे खराब है? (सबसे ज्यादा पैसा खो रही है)
-2. कौन सी शेल्फ सबसे अच्छी है? (बाकियों के लिए उदाहरण)
-3. हर शेल्फ में क्या गलत है?
-4. कैसे ठीक करें? (आसान स्टेप)
-5. कितने पैसे बढ़ेंगे अगर सब ठीक करें?
+        if (isHindi) {
+            return `आप एक EXPERT Business CFO हैं जो INDIAN छोटे व्यापारियों की मदद करते हैं। मेरा व्यापार डेटा है:
 
-बहुत सरल हिंदी में जवाब दें। ऐसे समझाएं जैसे किसी दोस्त को समझा रहे हों।
-        `.trim() : `
-I'm sending ${this.shelfImages.length} shelf photos. Look at each one carefully.
+**मेरा बिज़नेस का हाल:**
+📊 कुल बिक्री: ₹${totalRevenue?.toLocaleString('en-IN') || 0}
+💸 कुल खर्च: ₹${totalCosts?.toLocaleString('en-IN') || 0}
+${isProfit ? '✅' : '❌'} नेट ${isProfit ? 'मुनाफा' : 'नुकसान'}: ₹${Math.abs(netProfit || 0).toLocaleString('en-IN')}
+📈 मार्जिन: ${profitMargin || 0}% | इस हफ्ते ग्रोथ: ${weeklyGrowth || 0}%
+📦 प्रोडक्ट्स: ${products?.length || 0} | कम स्टॉक: ${lowStockItems?.length || 0} | एक्सपायर होने वाले: ${expiringProducts?.length || 0}
 
-Tell me:
-1. Which shelf is WORST? (losing most money)
-2. Which shelf is BEST? (example for others)
-3. What's wrong with each shelf?
-4. How to fix? (easy steps)
-5. How much money can I make if I fix everything?
+**महत्वपूर्ण संदर्भ:**
+- खर्च का प्रतिशत: ${costToRevenueRatio}% (70% से कम अच्छा है)
+- प्रति प्रोडक्ट औसत बिक्री: ₹${avgProductRevenue.toFixed(0)}
 
-Use VERY SIMPLE English. Explain like talking to a friend who doesn't know business.
-        `.trim();
+अब मुझे JSON format में जवाब दें (बिना markdown के):
+
+{
+  "simpleStatus": "एक लाइन में स्थिति (जैसे: 'बढ़िया! आप मुनाफे में हैं' या 'ध्यान दें! नुकसान हो रहा है')",
+  "biggestProblem": "सबसे बड़ी समस्या क्या है? SPECIFIC बताएं (जैसे: 'खर्च 85% है - बहुत ज्यादा!' नहीं 'खर्च ज्यादा है')",
+  "whyHappening": "यह क्यों हो रहा है? 2-3 असली कारण",
+  "immediateActions": [
+    {
+      "number": 1,
+      "action": "क्या करें (SPECIFIC - 'कीमत बढ़ाएं' नहीं, बल्कि 'सेब की कीमत ₹10 से ₹12 करें')",
+      "reason": "क्यों करें?",
+      "moneyImpact": "कितना पैसा बचेगा/बनेगा? (जैसे: '₹500/दिन बचत')",
+      "difficulty": "easy/medium/hard",
+      "timeToImplement": "कितना समय? (जैसे: '30 मिनट')"
+    }
+  ],
+  "hiddenOpportunity": "कोई छुपा मौका? (optional)",
+  "warnings": ["चेतावनी 1", "चेतावनी 2"],
+  "encouragement": "हौसला बढ़ाने वाली बात",
+  "nextSteps": "अगले 7 दिनों में क्या करें?"
+}
+
+**RULES:**
+1. सभी नंबर INDIAN RUPEES (₹) में दें
+2. हर ACTION में SPECIFIC numbers दें (जैसे: "कीमत ₹10 से ₹12 करें" - सिर्फ "कीमत बढ़ाएं" मत लिखें)
+3. हर ACTION में पैसे का EXACT impact दें
+4. सरल हिंदी में लिखें जैसे दोस्त से बात कर रहे हों
+5. कोई भी ACTION जो काम का ना हो वो मत दें`;
+        }
+
+        // English version
+        return `You are an EXPERT Business CFO helping small business owners in India. Here's my business data:
+
+**My Business Status:**
+📊 Total Revenue: ₹${totalRevenue?.toLocaleString('en-IN') || 0}
+💸 Total Costs: ₹${totalCosts?.toLocaleString('en-IN') || 0}
+${isProfit ? '✅' : '❌'} Net ${isProfit ? 'Profit' : 'Loss'}: ₹${Math.abs(netProfit || 0).toLocaleString('en-IN')}
+📈 Margin: ${profitMargin || 0}% | Weekly Growth: ${weeklyGrowth || 0}%
+📦 Products: ${products?.length || 0} | Low Stock: ${lowStockItems?.length || 0} | Expiring Soon: ${expiringProducts?.length || 0}
+
+**Important Context:**
+- Cost to Revenue Ratio: ${costToRevenueRatio}% (below 70% is good)
+- Average Revenue per Product: ₹${avgProductRevenue.toFixed(0)}
+
+Respond in JSON format (no markdown):
+
+{
+  "simpleStatus": "One-line status (e.g., 'Great! You're profitable' or 'Warning! Operating at loss')",
+  "biggestProblem": "What's the BIGGEST problem? Be SPECIFIC (e.g., 'Costs are 85% - too high!' not just 'Costs are high')",
+  "whyHappening": "Why is this happening? Give 2-3 real reasons",
+  "immediateActions": [
+    {
+      "number": 1,
+      "action": "What to do (SPECIFIC - not 'increase price' but 'Increase Apple price from ₹10 to ₹12')",
+      "reason": "Why do this?",
+      "moneyImpact": "How much money saved/earned? (e.g., '₹500/day savings')",
+      "difficulty": "easy/medium/hard",
+      "timeToImplement": "How long? (e.g., '30 minutes')"
+    }
+  ],
+  "hiddenOpportunity": "Any hidden opportunity? (optional)",
+  "warnings": ["Warning 1", "Warning 2"],
+  "encouragement": "Encouraging message",
+  "nextSteps": "What to do in next 7 days?"
+}
+
+**RULES:**
+1. All numbers in INDIAN RUPEES (₹)
+2. Every ACTION must have SPECIFIC numbers (e.g., "Increase price from ₹10 to ₹12" - not just "increase price")
+3. Every ACTION must show EXACT money impact
+4. Write in simple English like talking to a friend
+5. Don't give useless generic advice`;
     }
 
-    // Display business insights
+    buildIntelligentShelfPrompt() {
+        const isHindi = this.currentLanguage === 'hi';
+
+        if (isHindi) {
+            return `आप एक EXPERT Retail Merchandising Specialist हैं। मैंने ${this.shelfImages.length} शेल्फ की फोटो भेजी है।
+
+हर फोटो को ध्यान से देखें और JSON में जवाब दें:
+
+{
+  "overallScore": "1 से 10 (कुल स्कोर)",
+  "totalPotentialIncrease": "₹X/महीना (कुल कमाई अगर सब ठीक करें)",
+  "criticalIssues": [
+    "सबसे जरूरी समस्या 1",
+    "सबसे जरूरी समस्या 2"
+  ],
+  "shelfAnalysis": [
+    {
+      "shelfNumber": 1,
+      "score": "1-10",
+      "moneyLost": "₹X/दिन (इस शेल्फ से)",
+      "biggestMistake": "SPECIFIC गलती (जैसे: 'महंगे प्रोडक्ट निचे रखे हैं - कोई नहीं देख पाएगा')",
+      "quickFix": "सबसे आसान तरीका (5 मिनट में)",
+      "recommendations": [
+        {
+          "action": "क्या करें? (SPECIFIC)",
+          "where": "कहाँ करें?",
+          "why": "क्यों करें?",
+          "moneyGain": "₹X/महीना बढ़ेगा"
+        }
+      ]
+    }
+  ],
+  "psychologyTricks": [
+    "ग्राहक मनोविज्ञान ट्रिक 1",
+    "ग्राहक मनोविज्ञान ट्रिक 2"
+  ],
+  "priorityActions": "आज ही करें (TOP 3)"
+}
+
+**RULES:**
+1. हर MISTAKE में बताएं - यह कैसे पैसा खो रहा है
+2. हर RECOMMENDATION में EXACT money impact दें
+3. सिर्फ काम की बातें बताएं - बेकार की सलाह नहीं
+4. सरल हिंदी में लिखें`;
+        }
+
+        return `You are an EXPERT Retail Merchandising Specialist. I've sent ${this.shelfImages.length} shelf photos.
+
+Analyze each photo carefully and respond in JSON:
+
+{
+  "overallScore": "1 to 10 (overall score)",
+  "totalPotentialIncrease": "₹X/month (total earnings if all fixed)",
+  "criticalIssues": [
+    "Most urgent issue 1",
+    "Most urgent issue 2"
+  ],
+  "shelfAnalysis": [
+    {
+      "shelfNumber": 1,
+      "score": "1-10",
+      "moneyLost": "₹X/day (from this shelf)",
+      "biggestMistake": "SPECIFIC mistake (e.g., 'Premium products at bottom - nobody sees them')",
+      "quickFix": "Easiest fix (5 minutes)",
+      "recommendations": [
+        {
+          "action": "What to do? (SPECIFIC)",
+          "where": "Where to do it?",
+          "why": "Why do it?",
+          "moneyGain": "₹X/month increase"
+        }
+      ]
+    }
+  ],
+  "psychologyTricks": [
+    "Customer psychology trick 1",
+    "Customer psychology trick 2"
+  ],
+  "priorityActions": "Do TODAY (TOP 3)"
+}
+
+**RULES:**
+1. Every MISTAKE must explain how it's losing money
+2. Every RECOMMENDATION must show EXACT money impact
+3. Only give useful advice - no generic stuff
+4. Write in simple English`;
+    }
+
+    // ============ ENHANCED DISPLAY FUNCTIONS ============
+    
     displayBusinessInsights(data) {
         const suggestionsEl = document.getElementById('ai-suggestions');
         if (!suggestionsEl) return;
@@ -1392,7 +1573,19 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
         const isHindi = this.currentLanguage === 'hi';
         let insights = this.parseResponse(data);
 
-        const isGood = insights.status === 'profitable' || insights.status === 'good';
+        // Handle raw text responses by creating structure
+        if (insights.raw || typeof insights === 'string') {
+            insights = {
+                simpleStatus: isHindi ? 'विश्लेषण पूरा हुआ' : 'Analysis Complete',
+                biggestProblem: insights.text || insights,
+                immediateActions: [],
+                warnings: [],
+                encouragement: isHindi ? 'आप सही दिशा में हैं!' : 'You\'re on the right track!'
+            };
+        }
+
+        const isGood = insights.simpleStatus?.includes(isHindi ? 'बढ़िया' : 'Great') || 
+                       insights.simpleStatus?.includes(isHindi ? 'मुनाफे' : 'profit');
         const statusColor = isGood ? '#4ade80' : '#f87171';
         const statusIcon = isGood ? '✅' : '⚠️';
 
@@ -1407,8 +1600,13 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
             <!-- Main Status -->
             <div style="padding: 20px; background: ${isGood ? 'rgba(74, 222, 128, 0.1)' : 'rgba(248, 113, 113, 0.1)'}; border-radius: 12px; border-left: 4px solid ${statusColor}; margin-bottom: 20px;">
                 <div style="font-size: 22px; font-weight: 700; color: ${statusColor}; margin-bottom: 10px;">
-                    ${statusIcon} ${insights.simpleExplanation || insights.simpleStatus || (isHindi ? 'आपका व्यापार' : 'Your Business')}
+                    ${statusIcon} ${insights.simpleStatus || (isHindi ? 'आपका व्यापार' : 'Your Business')}
                 </div>
+                ${insights.whyHappening ? `
+                    <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <strong>${isHindi ? 'क्यों:' : 'Why:'}</strong> ${insights.whyHappening}
+                    </div>
+                ` : ''}
             </div>
 
             <!-- Biggest Problem -->
@@ -1512,7 +1710,7 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
             ${insights.nextSteps ? `
                 <div style="padding: 15px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
                     <div style="font-size: 13px; font-weight: 700; color: #3b82f6; margin-bottom: 8px;">
-                        ${isHindi ? '🎯 अगला कदम' : '🎯 NEXT STEPS'}
+                        ${isHindi ? '🎯 अगले 7 दिन में करें' : '🎯 NEXT 7 DAYS'}
                     </div>
                     <div style="font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6;">
                         ${insights.nextSteps}
@@ -1527,7 +1725,6 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
         `;
     }
 
-    // Display shelf analysis results
     displayShelfAnalysis(data) {
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -1538,6 +1735,19 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
 
         const isHindi = this.currentLanguage === 'hi';
         let analysis = this.parseResponse(data);
+
+        // Handle raw text responses
+        if (analysis.raw || typeof analysis === 'string') {
+            analysis = {
+                overallScore: '?',
+                shelfAnalysis: [{
+                    shelfNumber: 1,
+                    score: '?',
+                    biggestMistake: analysis.text || analysis,
+                    recommendations: []
+                }]
+            };
+        }
 
         const scoreColor = analysis.overallScore && parseInt(analysis.overallScore) >= 7 ? '#4ade80' : 
                           parseInt(analysis.overallScore) >= 5 ? '#fb923c' : '#f87171';
@@ -1563,14 +1773,14 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
                                     ${isHindi ? 'कुल स्कोर' : 'Overall Score'}
                                 </div>
                                 <div style="font-size: 56px; font-weight: 700; color: ${scoreColor};">
-                                    ${analysis.overallScore}
+                                    ${analysis.overallScore}/10
                                 </div>
                             </div>
                         ` : ''}
                         ${analysis.totalPotentialIncrease ? `
                             <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, rgba(74, 222, 128, 0.1), rgba(59, 130, 246, 0.1)); border-radius: 16px; border: 2px solid #4ade80;">
                                 <div style="font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
-                                    ${isHindi ? 'संभावित कमाई' : 'Potential Increase'}
+                                    ${isHindi ? 'संभावित कमाई/महीना' : 'Potential/Month'}
                                 </div>
                                 <div style="font-size: 32px; font-weight: 700; color: #4ade80;">
                                     ${analysis.totalPotentialIncrease}
@@ -1612,7 +1822,7 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
                                             </span>
                                         </h4>
                                         <div style="font-size: 32px; font-weight: 700; color: ${shelfScoreColor};">
-                                            ${shelf.score || 'N/A'}
+                                            ${shelf.score}/10
                                         </div>
                                     </div>
 
@@ -1641,7 +1851,7 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
                                     ${shelf.quickFix ? `
                                         <div style="margin-bottom: 12px; padding: 12px; background: rgba(74, 222, 128, 0.1); border-radius: 8px;">
                                             <div style="font-size: 13px; color: #4ade80; font-weight: 700; margin-bottom: 6px;">
-                                                ${isHindi ? '⚡ तुरंत ठीक करें (सबसे आसान)' : '⚡ Quick Fix (Easiest Change)'}
+                                                ${isHindi ? '⚡ तुरंत ठीक करें (5 मिनट)' : '⚡ Quick Fix (5 mins)'}
                                             </div>
                                             <div style="font-size: 14px; color: rgba(255,255,255,0.9); line-height: 1.5;">
                                                 ${shelf.quickFix}
@@ -1702,7 +1912,7 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
                 ${analysis.priorityActions ? `
                     <div style="padding: 20px; background: rgba(74, 222, 128, 0.1); border-radius: 12px; border: 2px solid #4ade80; text-align: center;">
                         <div style="font-size: 14px; color: rgba(74, 222, 128, 0.8); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
-                            ${isHindi ? '🎯 आज ही करें' : '🎯 DO THESE TODAY'}
+                            ${isHindi ? '🎯 आज ही करें (TOP 3)' : '🎯 DO THESE TODAY (TOP 3)'}
                         </div>
                         <div style="font-size: 18px; color: white; font-weight: 600; line-height: 1.6;">
                             ${analysis.priorityActions}
@@ -1721,14 +1931,19 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
 
         if (typeof data === 'string') {
             try {
-                parsed = JSON.parse(data.replace(/```json|```/g, '').trim());
+                // Remove markdown code blocks
+                const cleaned = data.replace(/```json\n?|\n?```/g, '').trim();
+                parsed = JSON.parse(cleaned);
             } catch (e) {
+                console.warn('Failed to parse JSON, treating as raw text:', e);
                 parsed = { text: data, raw: true };
             }
         } else if (data.text && typeof data.text === 'string') {
             try {
-                parsed = JSON.parse(data.text.replace(/```json|```/g, '').trim());
+                const cleaned = data.text.replace(/```json\n?|\n?```/g, '').trim();
+                parsed = JSON.parse(cleaned);
             } catch (e) {
+                console.warn('Failed to parse JSON from data.text:', e);
                 parsed = { text: data.text, raw: true };
             }
         }
@@ -1740,9 +1955,15 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
     toggleLanguage() {
         this.currentLanguage = this.currentLanguage === 'en' ? 'hi' : 'en';
         
-        // Re-display current analysis in new language
+        // Update language toggle button text
+        const langToggle = document.getElementById('language-toggle');
+        if (langToggle) {
+            langToggle.innerHTML = this.currentLanguage === 'en' ? '🌐 हिंदी' : '🌐 English';
+        }
+        
+        // Re-analyze if there's existing data
         if (this.currentAnalysis) {
-            this.displayBusinessInsights(this.currentAnalysis);
+            this.analyzeBusinessData();
         }
     }
 
@@ -1840,7 +2061,7 @@ Use VERY SIMPLE English. Explain like talking to a friend who doesn't know busin
             <div style="text-align: center; padding: 40px;">
                 <div class="pulse-loader" style="font-size: 32px; margin-bottom: 15px;">🧠</div>
                 <div style="font-size: 14px; color: rgba(255,255,255,0.6);">
-                    ${isHindi ? 'विश्लेषण हो रहा है...' : 'Analyzing your business...'}
+                    ${isHindi ? 'आपके बिज़नेस का विश्लेषण हो रहा है...' : 'Analyzing your business...'}
                 </div>
                 <div style="margin-top: 10px; font-size: 12px; color: rgba(255,255,255,0.4);">
                     ${isHindi ? 'कृपया प्रतीक्षा करें' : 'Please wait'}
@@ -1900,6 +2121,8 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+console.log('✅ ScaleVest CFO Enhanced - v2.0 Initialized');
 window.businessKing = new ScaleVestBusinessKing();
 
 
