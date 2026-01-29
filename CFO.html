@@ -1937,43 +1937,6 @@ style.textContent = `
 document.head.appendChild(style);
 window.businessKing = new ScaleVestBusinessKing();
 
-// ✅ FIX: Fetch financial data for AI CFO
-async function fetchFinancialDataForAI(userId) {
-    const dbRef = ref(getDatabase());
-    
-    try {
-        const salesSnapshot = await get(child(dbRef, `Businesses/${userId}/sales`));
-        const pricesSnapshot = await get(child(dbRef, `Businesses/${userId}/prices`));
-        const inventorySnapshot = await get(child(dbRef, `Businesses/${userId}/inventory`));
-        
-        const salesData = salesSnapshot.exists() ? salesSnapshot.val() : {};
-        const pricesData = pricesSnapshot.exists() ? pricesSnapshot.val() : {};
-        const inventoryData = inventorySnapshot.exists() ? inventorySnapshot.val() : {};
-        
-        // Process financial data (reuse existing function)
-        const financials = processFinancialData(salesData, pricesData, inventoryData);
-        
-        // Get product list
-        const products = [];
-        for (const [id, data] of Object.entries(inventoryData)) {
-            products.push({
-                name: data.name,
-                totalSold: 0,
-                revenue: 0
-            });
-        }
-        
-        return {
-            ...financials,
-            products,
-            lowStockItems: window.lowStockAlerts || [],
-            expiringProducts: window.expiringProducts || []
-        };
-    } catch (error) {
-        console.error("Error fetching AI data:", error);
-        return null;
-    }
-}
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -3854,6 +3817,5 @@ console.log('✅ ScaleVest CFO initialized');
 
 </body>
 </html>
-
 
 
