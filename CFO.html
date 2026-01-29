@@ -980,9 +980,623 @@ function updateProductUI(analytics) {
       cfoLabel.innerHTML = `<span style="color: #3b82f6; font-weight: 700;">${name}</span> - Your CFO`;
       header.appendChild(cfoLabel);
   }
-window.ScaleVestCFO = ScaleVestCFO; // Export the class
-window.scaleVestCFO = new ScaleVestCFO(); // Export the instance
-console.log("ScaleVestCFO is now globally accessible.");
+class ScaleVestCFO {
+    constructor() {
+        this.apiUrl = 'https://gemini-sigma-plum.vercel.app/api/cfoscalevest'; // Updated endpoint
+        this.userData = null;
+        this.analysisHistory = [];
+        this.isAnalyzing = false;
+    }
+
+    // Initialize CFO with user business data
+    async initialize(userId, businessData) {
+        this.userData = {
+            userId,
+            timestamp: new Date().toISOString(),
+            ...businessData
+        };
+        
+        await this.generateInsights();
+    }
+
+    // Generate AI business insights with retry logic
+    async generateInsights(retryCount = 0) {
+        if (this.isAnalyzing) return; // Prevent duplicate requests
+        
+        this.isAnalyzing = true;
+        const loadingEl = document.getElementById('ai-loading');
+        const suggestionsEl = document.getElementById('ai-suggestions');
+        
+        try {
+            const prompt = this.buildAnalysisPrompt();
+            
+            // Show loading animation
+            if (loadingEl) {
+                loadingEl.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div class="pulse-loader" style="font-size: 32px; margin-bottom: 15px;">🧠</div>
+                        <div style="font-size: 14px; color: rgba(255,255,255,0.6);">
+                            Analyzing your business data...
+                        </div>
+                        <div style="margin-top: 10px; font-size: 12px; color: rgba(255,255,255,0.4);">
+                            This may take a few seconds
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt }),
+                timeout: 30000 // 30 second timeout
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            
+            // Store in history
+            this.analysisHistory.push({
+                timestamp: new Date().toISOString(),
+                data: data
+            });
+            
+            // Hide loading, show suggestions
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (suggestionsEl) {
+                suggestionsEl.style.display = 'block';
+                this.displayInsights(data);
+            }
+            
+            // Check if CFO needs shelf photo
+            this.checkShelfPhotoRequest(data);
+            
+            // Enable refresh button
+            this.enableRefreshButton();
+            
+        } catch (error) {
+            console.error('CFO Analysis Error:', error);
+            
+            // Retry logic (max 2 retries)
+            if (retryCount < 2) {
+                console.log(`Retrying... Attempt ${retryCount + 1}`);
+                setTimeout(() => {
+                    this.isAnalyzing = false;
+                    this.generateInsights(retryCount + 1);
+                }, 2000);
+                return;
+            }
+            
+            // Show error message
+            if (loadingEl) {
+                loadingEl.innerHTML = `
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">⚠️</div>
+                        <div style="font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 10px;">
+                            AI CFO temporarily unavailable
+                        </div>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.4);">
+                            ${error.message}
+                        </div>
+                        <button onclick="window.scaleVestCFO.generateInsights()" style="margin-top: 15px; padding: 8px 16px; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; color: #3b82f6; cursor: pointer;">
+                            🔄 Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        } finally {
+            this.isAnalyzing = false;
+        }
+    }
+
+    // Build detailed analysis prompt with enhanced context
+    buildAnalysisPrompt() {
+        const { totalRevenue, totalCosts, netProfit, profitMargin, weeklyGrowth, monthlyRevenue, products, lowStockItems, expiringProducts } = this.userData;
+        
+        const isProfit = netProfit >= 0;
+        const status = isProfit ? 'PROFIT' : 'LOSS';
+        
+        // Build product summary
+        let productSummary = 'N/A';
+        if (products && products.length > 0) {
+            productSummary = products.slice(0, 5).map(p => 
+                `${p.name} (Sold: ${p.totalSold || 0}, Revenue: $${p.revenue || 0})`
+            ).join(', ');
+        }
+
+        // Build alert summary
+        const alerts = [];
+        if (lowStockItems && lowStockItems.length > 0) {
+            alerts.push(`Low Stock: ${lowStockItems.length} items`);
+        }
+        if (expiringProducts && expiringProducts.length > 0) {
+            alerts.push(`Expiring Soon: ${expiringProducts.length} products`);
+        }
+        
+        return `You are an elite CFO analyzing a business. Provide SPECIFIC, ACTIONABLE advice in JSON format.
+
+Business Financial Data:
+- Total Revenue: $${totalRevenue || 0}
+- Total Costs: $${totalCosts || 0}
+- Net ${status}: $${Math.abs(netProfit || 0)}
+- Profit Margin: ${profitMargin || 0}%
+- Weekly Growth: ${weeklyGrowth || 0}%
+- Monthly Revenue: $${monthlyRevenue || 0}
+- Top Products: ${productSummary}
+- Active Alerts: ${alerts.length > 0 ? alerts.join(', ') : 'None'}
+
+CRITICAL ANALYSIS RULES:
+1. If in LOSS, identify the ROOT CAUSE (high costs, low sales, pricing issues, etc.)
+2. If in PROFIT but margin < 15%, explain why margins are thin
+3. If declining growth, identify what changed
+4. If inventory issues (low stock/expiring), factor this into recommendations
+5. Request shelf photo ONLY if product placement/visibility seems like the issue
+
+Respond with VALID JSON ONLY (no markdown, no code blocks):
+{
+  "status": "${isProfit ? 'profitable' : 'loss'}",
+  "mainReason": "1-2 sentence explanation why they are in ${status}. Be specific with numbers.",
+  "keyIssues": [
+    "Specific issue 1 with data (e.g., 'Costs are 120% of revenue')",
+    "Specific issue 2 with data",
+    "Specific issue 3 with data"
+  ],
+  "actionSteps": [
+    {
+      "priority": "HIGH",
+      "action": "Specific action (not generic advice)",
+      "expectedImpact": "Concrete result (e.g., 'Could increase profit margin by 10%')",
+      "timeframe": "How long to implement (e.g., '1 week', 'immediate')"
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Another specific action",
+      "expectedImpact": "Measurable outcome",
+      "timeframe": "Implementation time"
+    }
+  ],
+  "needsShelfPhoto": ${!isProfit && Math.abs(netProfit || 0) > 100 ? 'true' : 'false'},
+  "shelfPhotoReason": "Explain why visual analysis would help (if needed)",
+  "urgencyLevel": "low/medium/high/critical",
+  "estimatedTimeToProfit": "X days/weeks (if in loss)"
+}`;
+    }
+
+    // Display AI insights with enhanced UI
+    displayInsights(data) {
+        const suggestionsEl = document.getElementById('ai-suggestions');
+        if (!suggestionsEl) return;
+        
+        let insights = data;
+        
+        // Parse if it's a string or has 'text' property
+        if (typeof data === 'string') {
+            try {
+                insights = JSON.parse(data.replace(/```json|```/g, '').trim());
+            } catch (e) {
+                insights = this.parseTextResponse(data);
+            }
+        } else if (data.text) {
+            try {
+                insights = JSON.parse(data.text.replace(/```json|```/g, '').trim());
+            } catch (e) {
+                insights = this.parseTextResponse(data.text);
+            }
+        }
+
+        const statusColor = insights.status === 'profitable' ? '#4ade80' : '#f87171';
+        const statusIcon = insights.status === 'profitable' ? '📈' : '📉';
+        
+        // Urgency color mapping
+        const urgencyColors = {
+            low: '#3b82f6',
+            medium: '#fb923c',
+            high: '#f87171',
+            critical: '#dc2626'
+        };
+        const urgencyColor = urgencyColors[insights.urgencyLevel] || '#3b82f6';
+
+        suggestionsEl.innerHTML = `
+            <!-- Status Banner with Urgency -->
+            <div style="padding: 15px; background: ${insights.status === 'profitable' ? 'rgba(74, 222, 128, 0.1)' : 'rgba(248, 113, 113, 0.1)'}; border-radius: 12px; border-left: 4px solid ${statusColor}; margin-bottom: 20px; position: relative;">
+                ${insights.urgencyLevel && insights.urgencyLevel !== 'low' ? `
+                    <div style="position: absolute; top: 10px; right: 10px; padding: 4px 10px; background: ${urgencyColor}; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                        ${insights.urgencyLevel} URGENCY
+                    </div>
+                ` : ''}
+                
+                <div style="font-size: 18px; font-weight: 700; color: ${statusColor}; margin-bottom: 8px;">
+                    ${statusIcon} ${insights.status === 'profitable' ? 'BUSINESS HEALTH: POSITIVE' : 'BUSINESS HEALTH: NEEDS ATTENTION'}
+                </div>
+                <div style="font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6;">
+                    ${insights.mainReason}
+                </div>
+                
+                ${insights.estimatedTimeToProfit ? `
+                    <div style="margin-top: 10px; padding: 8px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; font-size: 12px; color: #3b82f6;">
+                        ⏱️ <strong>Est. Time to Profitability:</strong> ${insights.estimatedTimeToProfit}
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- Key Issues -->
+            ${insights.keyIssues && insights.keyIssues.length > 0 ? `
+                <div style="margin-bottom: 20px;">
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">⚠️ Key Issues Identified</div>
+                    ${insights.keyIssues.map((issue, index) => `
+                        <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 8px; font-size: 13px; color: rgba(255,255,255,0.8); display: flex; gap: 10px;">
+                            <span style="color: #fb923c; font-weight: 700; flex-shrink: 0;">${index + 1}.</span>
+                            <span>${issue}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            <!-- Action Steps with Timeline -->
+            <div style="margin-bottom: 15px;">
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">🎯 Recommended Action Plan</div>
+                ${insights.actionSteps && insights.actionSteps.length > 0 ? insights.actionSteps.map((step, index) => {
+                    const priorityColor = step.priority === 'HIGH' ? '#f87171' : step.priority === 'MEDIUM' ? '#fb923c' : '#3b82f6';
+                    return `
+                        <div style="padding: 14px; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 12px; border-left: 3px solid ${priorityColor};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                                <span style="font-size: 10px; font-weight: 700; color: ${priorityColor}; text-transform: uppercase; letter-spacing: 1px;">
+                                    ${step.priority} PRIORITY
+                                </span>
+                                ${step.timeframe ? `
+                                    <span style="font-size: 10px; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;">
+                                        ⏱️ ${step.timeframe}
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <div style="font-size: 14px; font-weight: 600; color: white; margin-bottom: 8px;">
+                                ${index + 1}. ${step.action}
+                            </div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.6); padding-left: 15px; border-left: 2px solid rgba(255,255,255,0.1);">
+                                💡 ${step.expectedImpact}
+                            </div>
+                        </div>
+                    `;
+                }).join('') : '<div style="color: rgba(255,255,255,0.6); text-align: center; padding: 20px;">No action steps available</div>'}
+            </div>
+
+            <!-- Timestamp -->
+            <div style="text-align: center; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 15px;">
+                Last updated: ${new Date().toLocaleString()}
+            </div>
+        `;
+    }
+
+    // Check if CFO needs shelf photo with enhanced messaging
+    checkShelfPhotoRequest(data) {
+        const promptEl = document.getElementById('shelf-analysis-prompt');
+        if (!promptEl) return;
+        
+        let insights = data;
+        if (typeof data === 'string') {
+            try {
+                insights = JSON.parse(data.replace(/```json|```/g, '').trim());
+            } catch (e) {
+                return;
+            }
+        } else if (data.text) {
+            try {
+                insights = JSON.parse(data.text.replace(/```json|```/g, '').trim());
+            } catch (e) {
+                return;
+            }
+        }
+
+        if (insights.needsShelfPhoto) {
+            promptEl.style.display = 'block';
+            
+            const reasonText = insights.shelfPhotoReason || 'I need to visually assess your product placement and shelf organization to provide better recommendations';
+            
+            promptEl.innerHTML = `
+                <div style="font-size: 13px; color: #fb923c; margin-bottom: 12px; line-height: 1.6;">
+                    📸 <strong>CFO Visual Analysis Request:</strong><br>
+                    <span style="font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 5px; display: block;">
+                        ${reasonText}
+                    </span>
+                </div>
+                <input type="file" id="shelf-image-upload" accept="image/*" style="display: none;">
+                <button onclick="document.getElementById('shelf-image-upload').click()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #fb923c, #f97316); border: none; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; transition: transform 0.2s;">
+                    📷 Upload Shelf Photo for Analysis
+                </button>
+            `;
+            
+            // Attach event listener
+            const fileInput = document.getElementById('shelf-image-upload');
+            if (fileInput) {
+                fileInput.onchange = (e) => {
+                    if (e.target.files && e.target.files[0]) {
+                        this.analyzeShelfImage(e.target.files[0]);
+                    }
+                };
+            }
+        } else {
+            promptEl.style.display = 'none';
+        }
+    }
+
+    // Analyze shelf image with progress indicator
+    async analyzeShelfImage(imageFile) {
+        // Show loading modal
+        const loadingModal = this.createLoadingModal('Analyzing shelf photo...');
+        document.body.appendChild(loadingModal);
+        
+        const reader = new FileReader();
+        
+        reader.onload = async (e) => {
+            const base64Image = e.target.result.split(',')[1];
+            
+            const prompt = `You are a CFO analyzing a product shelf/display. Provide detailed, actionable feedback.
+
+Analyze this image for:
+1. Product placement and organization (Is it neat? Accessible? Eye-catching?)
+2. Stock visibility issues (Can customers easily see products? Any hidden items?)
+3. Pricing display effectiveness (Are prices clear? Any missing price tags?)
+4. Space utilization (Is shelf space optimized? Any wasted space?)
+5. Product grouping logic (Are related items together?)
+6. Recommendations to improve sales (Specific changes to boost revenue)
+
+Respond in JSON format:
+{
+  "overallScore": "X/10",
+  "strengths": ["strength 1", "strength 2"],
+  "weaknesses": ["weakness 1", "weakness 2"],
+  "urgentIssues": ["critical issue 1"],
+  "suggestions": [
+    {"action": "specific change", "expectedImpact": "result", "priority": "HIGH/MEDIUM/LOW"}
+  ],
+  "estimatedSalesImpact": "e.g., +15% if implemented"
+}`;
+
+            try {
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt,
+                        image: base64Image
+                    })
+                });
+
+                loadingModal.remove();
+
+                if (response.ok) {
+                    const result = await response.json();
+                    this.displayShelfAnalysis(result);
+                } else {
+                    throw new Error('Analysis failed');
+                }
+            } catch (error) {
+                console.error('Shelf analysis failed:', error);
+                loadingModal.remove();
+                alert('Failed to analyze image. Please ensure the image is clear and try again.');
+            }
+        };
+
+        reader.readAsDataURL(imageFile);
+    }
+
+    // Create loading modal
+    createLoadingModal(message) {
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 39, 0.95);
+            z-index: 25000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        `;
+        
+        modal.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(139, 92, 246, 0.3);">
+                <div class="pulse-loader" style="font-size: 48px; margin-bottom: 20px;">📸</div>
+                <div style="font-size: 16px; color: white; margin-bottom: 10px;">${message}</div>
+                <div style="font-size: 13px; color: rgba(255,255,255,0.5);">This may take a few moments</div>
+            </div>
+        `;
+        
+        return modal;
+    }
+
+    // Display shelf analysis results with enhanced UI
+    displayShelfAnalysis(data) {
+        let analysis = data;
+        
+        // Parse if needed
+        if (typeof data === 'string') {
+            try {
+                analysis = JSON.parse(data.replace(/```json|```/g, '').trim());
+            } catch (e) {
+                analysis = { raw: data };
+            }
+        } else if (data.text) {
+            try {
+                analysis = JSON.parse(data.text.replace(/```json|```/g, '').trim());
+            } catch (e) {
+                analysis = { raw: data.text };
+            }
+        }
+
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 39, 0.95);
+            z-index: 20000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        `;
+
+        const scoreColor = analysis.overallScore && parseInt(analysis.overallScore) >= 7 ? '#4ade80' : parseInt(analysis.overallScore) >= 5 ? '#fb923c' : '#f87171';
+
+        modal.innerHTML = `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 24px; padding: 30px; max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <h3 style="font-size: 24px; color: #a855f7; display: flex; align-items: center; gap: 10px;">
+                        📸 Shelf Analysis Results
+                    </h3>
+                    <button onclick="this.closest('div[style*=fixed]').remove()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); width: 36px; height: 36px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center;">×</button>
+                </div>
+
+                ${analysis.overallScore ? `
+                    <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.03); border-radius: 16px; margin-bottom: 25px;">
+                        <div style="font-size: 48px; font-weight: 700; color: ${scoreColor}; margin-bottom: 8px;">
+                            ${analysis.overallScore}
+                        </div>
+                        <div style="font-size: 14px; color: rgba(255,255,255,0.6);">Overall Shelf Score</div>
+                    </div>
+                ` : ''}
+
+                ${analysis.urgentIssues && analysis.urgentIssues.length > 0 ? `
+                    <div style="margin-bottom: 20px; padding: 15px; background: rgba(248, 113, 113, 0.1); border-radius: 12px; border-left: 4px solid #f87171;">
+                        <div style="font-size: 13px; font-weight: 700; color: #f87171; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                            🚨 Urgent Issues
+                        </div>
+                        ${analysis.urgentIssues.map(issue => `
+                            <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 6px;">
+                                • ${issue}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${analysis.strengths && analysis.strengths.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(74, 222, 128, 0.8); margin-bottom: 10px;">
+                            ✅ Strengths
+                        </div>
+                        ${analysis.strengths.map(strength => `
+                            <div style="padding: 10px; background: rgba(74, 222, 128, 0.05); border-radius: 8px; margin-bottom: 8px; font-size: 13px; color: rgba(255,255,255,0.8);">
+                                • ${strength}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${analysis.weaknesses && analysis.weaknesses.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(251, 146, 60, 0.8); margin-bottom: 10px;">
+                            ⚠️ Areas for Improvement
+                        </div>
+                        ${analysis.weaknesses.map(weakness => `
+                            <div style="padding: 10px; background: rgba(251, 146, 60, 0.05); border-radius: 8px; margin-bottom: 8px; font-size: 13px; color: rgba(255,255,255,0.8);">
+                                • ${weakness}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                ${analysis.suggestions && analysis.suggestions.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(139, 92, 246, 0.8); margin-bottom: 10px;">
+                            💡 Actionable Recommendations
+                        </div>
+                        ${analysis.suggestions.map(sugg => {
+                            const priorityColor = sugg.priority === 'HIGH' ? '#f87171' : sugg.priority === 'MEDIUM' ? '#fb923c' : '#3b82f6';
+                            return `
+                                <div style="padding: 12px; background: rgba(255,255,255,0.03); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid ${priorityColor};">
+                                    <div style="font-size: 10px; color: ${priorityColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+                                        ${sugg.priority} PRIORITY
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: 600; color: white; margin-bottom: 6px;">
+                                        ${sugg.action}
+                                    </div>
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.6);">
+                                        📊 ${sugg.expectedImpact}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                ` : ''}
+
+                ${analysis.estimatedSalesImpact ? `
+                    <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 6px;">
+                            Estimated Sales Impact
+                        </div>
+                        <div style="font-size: 24px; font-weight: 700; color: #3b82f6;">
+                            ${analysis.estimatedSalesImpact}
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${analysis.raw ? `
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size: 14px; line-height: 1.8; color: rgba(255,255,255,0.7); white-space: pre-wrap;">
+                            ${analysis.raw}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    // Enable refresh button
+    enableRefreshButton() {
+        const refreshBtn = document.getElementById('refresh-ai-btn');
+        if (refreshBtn) {
+            refreshBtn.onclick = () => this.generateInsights();
+            refreshBtn.style.opacity = '1';
+            refreshBtn.style.cursor = 'pointer';
+        }
+    }
+
+    // Parse text response if JSON parsing fails
+    parseTextResponse(text) {
+        return {
+            status: text.toLowerCase().includes('profit') ? 'profitable' : 'loss',
+            mainReason: text.substring(0, 250) + '...',
+            keyIssues: ['Unable to parse detailed analysis. Please refresh.'],
+            actionSteps: [],
+            urgencyLevel: 'medium'
+        };
+    }
+
+    // Get analysis history
+    getHistory() {
+        return this.analysisHistory;
+    }
+
+    // Clear history
+    clearHistory() {
+        this.analysisHistory = [];
+    }
+}
+
+// Add pulse animation CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.7; transform: scale(1.05); }
+    }
+    .pulse-loader {
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+`;
+document.head.appendChild(style);
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         runOnboarding(user.uid);
@@ -3304,6 +3918,8 @@ if (user) {
         }
     });
 });
+window.scaleVestCFO = new ScaleVestCFO();
+console.log('✅ ScaleVest CFO initialized');
 
 </script>
 <!-- Product Analysis Page -->
