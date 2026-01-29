@@ -980,7 +980,9 @@ function updateProductUI(analytics) {
       cfoLabel.innerHTML = `<span style="color: #3b82f6; font-weight: 700;">${name}</span> - Your CFO`;
       header.appendChild(cfoLabel);
   }
-
+window.ScaleVestCFO = ScaleVestCFO; // Export the class
+window.scaleVestCFO = new ScaleVestCFO(); // Export the instance
+console.log("ScaleVestCFO is now globally accessible.");
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         runOnboarding(user.uid);
@@ -3302,9 +3304,7 @@ if (user) {
         }
     });
 });
-// Initialize CFO when page loads
-window.scaleVestCFO = new ScaleVestCFO();
-console.log('✅ ScaleVest CFO initialized');
+
 </script>
 <!-- Product Analysis Page -->
 <div id="product-analysis-page" style="display: none; position: fixed; inset: 0; background: #0a0e27; z-index: 10000; overflow-y: auto; padding: 30px;">
