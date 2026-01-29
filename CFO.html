@@ -1244,125 +1244,90 @@ class ScaleVestBusinessKing {
     }
 
     // Analyze business data (without images)
-    async analyzeBusinessData() {
-        if (this.isAnalyzing) return;
+   async analyzeBusinessData() {
+    if (this.isAnalyzing) return;
 
-        this.isAnalyzing = true;
-        const loadingEl = document.getElementById('ai-loading');
-        const suggestionsEl = document.getElementById('ai-suggestions');
+    this.isAnalyzing = true;
+    const loadingEl = document.getElementById('ai-loading');
+    const suggestionsEl = document.getElementById('ai-suggestions');
 
+    try {
+        const prompt = this.buildBusinessPrompt();
+
+        if (loadingEl) {
+            loadingEl.style.display = 'block';
+            loadingEl.innerHTML = this.getLoadingHTML();
+        }
+
+        // USE THE NEW HELPER METHOD
+        const data = await this.makeAPIRequest(prompt);
+
+        this.currentAnalysis = data;
+        this.analysisHistory.push({
+            timestamp: new Date().toISOString(),
+            type: 'business-data',
+            data: data
+        });
+
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (suggestionsEl) {
+            suggestionsEl.style.display = 'block';
+            this.displayBusinessInsights(data);
+        }
+
+    } catch (error) {
+        console.error('Business Analysis Error:', error);
+        this.showError(error);
+    } finally {
+        this.isAnalyzing = false;
+    }
+}
+// Add this method after parseResponse()
+async makeAPIRequest(prompt, images = null) {
+    const maxRetries = 2;
+    let lastError = null;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-            const prompt = this.buildBusinessPrompt();
-
-            // Show loading
-            if (loadingEl) {
-                loadingEl.style.display = 'block';
-                loadingEl.innerHTML = this.getLoadingHTML();
+            const payload = {
+                prompt: prompt,
+                language: this.currentLanguage || 'en'
+            };
+            
+            if (images && images.length > 0) {
+                payload.images = images;
             }
-
+            
+            console.log(`🔄 API Request attempt ${attempt + 1}/${maxRetries}`);
+            
             const response = await fetch(this.apiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    prompt,
-                    language: this.currentLanguage
-                })
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
-
+            
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const errorText = await response.text();
+                throw new Error(`API returned ${response.status}: ${errorText}`);
             }
-
-            const data = await response.json();
-
-            // Store analysis
-            this.currentAnalysis = data;
-            this.analysisHistory.push({
-                timestamp: new Date().toISOString(),
-                type: 'business-data',
-                data: data
-            });
-
-            // Display results
-            if (loadingEl) loadingEl.style.display = 'none';
-            if (suggestionsEl) {
-                suggestionsEl.style.display = 'block';
-                this.displayBusinessInsights(data);
-            }
-
+            
+            return await response.json();
+            
         } catch (error) {
-            console.error('Business Analysis Error:', error);
-            this.showError(error);
-        } finally {
-            this.isAnalyzing = false;
+            lastError = error;
+            console.error(`Attempt ${attempt + 1} failed:`, error.message);
+            
+            if (attempt < maxRetries - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+            }
         }
     }
-
-    // Analyze all shelf images
-    async analyzeAllShelves() {
-        if (this.shelfImages.length === 0) {
-            this.showAlert(
-                this.currentLanguage === 'hi'
-                    ? 'कृपया पहले शेल्फ की फोटो अपलोड करें'
-                    : 'Please upload shelf photos first',
-                'warning'
-            );
-            return;
-        }
-
-        if (this.isAnalyzing) return;
-
-        this.isAnalyzing = true;
-        const modal = this.createAnalyzingModal();
-        document.body.appendChild(modal);
-
-        try {
-            const prompt = this.buildShelfAnalysisPrompt();
-            const imageDataArray = this.shelfImages.map(img => img.data);
-
-            console.log(`📸 Sending ${imageDataArray.length} images for analysis...`);
-
-            const response = await fetch(this.apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    prompt,
-                    images: imageDataArray, // Send multiple images
-                    language: this.currentLanguage
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-
-            // Store analysis
-            this.analysisHistory.push({
-                timestamp: new Date().toISOString(),
-                type: 'shelf-analysis',
-                imageCount: this.shelfImages.length,
-                data: data
-            });
-
-            modal.remove();
-            this.displayShelfAnalysis(data);
-
-        } catch (error) {
-            console.error('Shelf Analysis Error:', error);
-            modal.remove();
-            this.showAlert(
-                this.currentLanguage === 'hi'
-                    ? `विश्लेषण विफल: ${error.message}`
-                    : `Analysis failed: ${error.message}`,
-                'error'
-            );
-        } finally {
-            this.isAnalyzing = false;
-        }
-    }
-
+    
+    throw lastError;
+}
     // Build business analysis prompt (simple language)
     buildBusinessPrompt() {
         const { totalRevenue, totalCosts, netProfit, profitMargin, weeklyGrowth, products, lowStockItems, expiringProducts } = this.userData;
