@@ -981,17 +981,25 @@ function updateProductUI(analytics) {
       header.appendChild(cfoLabel);
   }
 
-// --- Auth State Logic ---
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         runOnboarding(user.uid);
         fetchAnalytics(user.uid); 
         fetchRevenuePulse(user.uid);
         setupProductAnalysisNavigation(user.uid);
-setupFinanceReportNavigation(user.uid);
+        setupFinanceReportNavigation(user.uid);
         fetchExpiryAlerts(user.uid);
         fetchPricingAnalysis(user.uid);
         fetchStockRadar(user.uid);
+        
+        // ✅ ADD THIS: Initialize AI CFO after fetching financial data
+        setTimeout(async () => {
+            const financeData = await fetchFinancialDataForAI(user.uid);
+            if (financeData && window.scaleVestCFO) {
+                window.scaleVestCFO.initialize(user.uid, financeData);
+            }
+        }, 2000); // Wait 2 seconds for data to load
+        
         // Refresh all alerts every hour
         setInterval(() => {
             fetchExpiryAlerts(user.uid);
@@ -1003,6 +1011,42 @@ setupFinanceReportNavigation(user.uid);
     }
 });
 
+// ✅ ADD THIS NEW FUNCTION to fetch data for AI
+async function fetchFinancialDataForAI(userId) {
+    const dbRef = ref(getDatabase());
+    
+    try {
+        const salesSnapshot = await get(child(dbRef, `Businesses/${userId}/sales`));
+        const pricesSnapshot = await get(child(dbRef, `Businesses/${userId}/prices`));
+        const inventorySnapshot = await get(child(dbRef, `Businesses/${userId}/inventory`));
+        
+        const salesData = salesSnapshot.exists() ? salesSnapshot.val() : {};
+        const pricesData = pricesSnapshot.exists() ? pricesSnapshot.val() : {};
+        const inventoryData = inventorySnapshot.exists() ? inventorySnapshot.val() : {};
+        
+        const financials = processFinancialData(salesData, pricesData, inventoryData);
+        
+        // Get product list
+        const products = [];
+        for (const [id, data] of Object.entries(inventoryData)) {
+            products.push({
+                name: data.name,
+                totalSold: 0, // You can calculate this from sales
+                revenue: 0
+            });
+        }
+        
+        return {
+            ...financials,
+            products,
+            lowStockItems: window.lowStockAlerts || [],
+            expiringProducts: window.expiringProducts || []
+        };
+    } catch (error) {
+        console.error("Error fetching AI data:", error);
+        return null;
+    }
+}
 document.addEventListener('DOMContentLoaded', () => {
     const trendCard = document.getElementById('trend-analysis-card');
     const overlay = document.getElementById('trend-overlay');
@@ -1796,9 +1840,22 @@ async function fetchExpiryAlerts(userId) {
 
 function updateExpiryAlertCard(expiringProducts) {
     const alertCard = document.querySelector('.alert-card');
+    
+    // ADD NULL CHECK
+    if (!alertCard) {
+        console.warn('Alert card not found in DOM');
+        return;
+    }
+    
     const alertTitle = alertCard.querySelector('.alert-title');
     const alertText = alertCard.querySelector('.alert-text');
     const launchBtn = alertCard.querySelector('.launch-btn');
+    
+    // ADD NULL CHECKS FOR ALL ELEMENTS
+    if (!alertTitle || !alertText || !launchBtn) {
+        console.warn('Alert card elements not found');
+        return;
+    }
     
     if (expiringProducts.length === 0) {
         alertTitle.innerText = "ALL CLEAR ✓";
@@ -1831,28 +1888,9 @@ function updateExpiryAlertCard(expiringProducts) {
     alertCard.style.borderColor = "rgba(251, 146, 60, 0.4)";
     alertCard.style.animation = "alertPulse 3s infinite";
 }
-
  
     
-    let advice = "";
-    
-    if (daysLeft === 0) {
-        advice = `🚨 <strong>CRITICAL:</strong> ${productName} expires TODAY! Launch an immediate flash sale or donate to avoid loss. Consider bundling with popular items.`;
-    } else if (daysLeft === 1) {
-        advice = `⚠️ <strong>URGENT:</strong> ${productName} expires in 24 hours! Start a flash sale NOW with 30-50% discount to move inventory quickly.`;
-    } else if (daysLeft <= 2) {
-        advice = `⏰ <strong>ALERT:</strong> ${productName} expires in ${daysLeft} days. Recommend placing it at store front, offering bundle deals, or running a limited-time promotion.`;
-    } else {
-        advice = `📢 <strong>Notice:</strong> ${productName} is expiring in ${daysLeft} days. Consider strategic placement and promotional planning to ensure sales before expiry.`;
-    }
-    
-    if (expiringProducts.length > 1) {
-        advice += `<br><br><em>Note: ${expiringProducts.length} products need attention.</em>`;
-    }
-    
-    adviceCard.innerHTML = advice;
-
-
+   
 // Fetch and analyze pricing
 async function fetchPricingAnalysis(userId) {
     const dbRef = ref(getDatabase());
@@ -2946,12 +2984,12 @@ async function askCFO(userInput) {
             <div class="logo">SCALEVEST</div>
         </div>
 
-<div style="max-width: 900px; margin: 20px auto 0 auto; padding: 0 20px;">
+<div style="position: fixed; top: 20px; left: 20px; z-index: 1000;">
     <button onclick="window.location.href='business_hub.html'" style="
-        background: #ffffff;
+        background: rgba(255, 255, 255, 0.95);
         border: 1px solid #e0e0e0;
         color: #1a1a1a;
-        padding: 10px 18px;
+        padding: 12px 20px;
         border-radius: 12px;
         font-weight: 700;
         cursor: pointer;
@@ -2959,13 +2997,13 @@ async function askCFO(userInput) {
         align-items: center;
         gap: 8px;
         transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    " onmouseover="this.style.borderColor='#00CED1'; this.style.transform='translateX(-3px)'" 
-       onmouseout="this.style.borderColor='#e0e0e0'; this.style.transform='translateX(0)'">
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        font-size: 14px;
+    " onmouseover="this.style.borderColor='#00CED1'; this.style.transform='scale(1.05)'" 
+       onmouseout="this.style.borderColor='#e0e0e0'; this.style.transform='scale(1)'">
         <span style="font-size: 1.2rem;">←</span> Back to Hub
     </button>
 </div>
-
         <div class="dashboard">
 <div class="card profit-card">
     <div class="card-title">Weekly Reports</div>
@@ -3252,15 +3290,21 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // 2. Fetch User Data (Assuming you are logged in)
-            const user = auth.currentUser;
-            if (user) {
-                fetchAnalytics(user.uid);
-                fetchRevenuePulse(user.uid);
-            }
+const currentAuth = getAuth();
+const user = currentAuth.currentUser;
+
+if (user) {
+    fetchAnalytics(user.uid);
+    fetchRevenuePulse(user.uid);
+} else {
+    console.warn('No user logged in');
+}
         }
     });
 });
-
+// Initialize CFO when page loads
+window.scaleVestCFO = new ScaleVestCFO();
+console.log('✅ ScaleVest CFO initialized');
 </script>
 <!-- Product Analysis Page -->
 <div id="product-analysis-page" style="display: none; position: fixed; inset: 0; background: #0a0e27; z-index: 10000; overflow-y: auto; padding: 30px;">
@@ -3401,10 +3445,9 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
 </div>
 
-window.scaleVestCFO = new ScaleVestCFO();
+
 
 </body>
 </html>
-
 
 
