@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ScaleVest | Powered by UnioraX</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<meta name="apple-mobile-web-app-title" content="ScaleVest" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="theme-color" content="#000000" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #05070a;
+      --card-bg: #0f172a;
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --accent-purple: #8b5cf6;
+      --text-main: #94a3b8;
+      --text-bright: #ffffff;
+      --border: #1e293b;
+      --glow: rgba(59, 130, 246, 0.3);
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      scroll-behavior: smooth; 
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+      animation: gradientShift 15s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.6; }
+    }
+
+    h1, h2, h3, h4, .logo-text { 
+      font-family: 'Space Grotesk', sans-serif; 
+      color: var(--text-bright); 
+    }
+
+    /* Header Styles */
+    header {
+      padding: 15px 5%;
+      border-bottom: 1px solid var(--border);
+      background: rgba(11, 15, 20, 0.95);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-group { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+    }
+
+    .main-logo { 
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .main-logo:hover {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .logo-text { 
+      font-size: clamp(18px, 4vw, 24px); 
+      font-weight: 700; 
+      letter-spacing: -1px; 
+    }
+
+    .logo-text span { 
+      color: var(--accent); 
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    .logo-text:hover span {
+      transform: translateY(-2px);
+    }
+
+    .container { 
+      padding: 60px 5%; 
+      max-width: 1400px; 
+      margin: auto; 
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Intro Section */
+    .intro { 
+      text-align: center; 
+      margin-bottom: 80px; 
+    }
+
+    .intro h1 {
+      font-size: clamp(36px, 8vw, 72px);
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1.1;
+    }
+
+    .intro p {
+      font-size: clamp(16px, 3vw, 22px);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* Section Styles */
+    .section {
+      margin-top: 80px;
+      padding: 60px 40px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 32px;
+      border: 1px solid var(--border);
+      transition: all 0.4s ease;
+      opacity: 1;
+      transform: translateY(0);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .section:hover::before {
+      opacity: 1;
+    }
+
+    .section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 40px var(--glow);
+      transform: translateY(-5px);
+    }
+
+    .section-tag {
+      color: var(--accent);
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 3px;
+      margin-bottom: 15px;
+      display: inline-block;
+      padding: 6px 16px;
+      border: 1px solid var(--accent);
+      border-radius: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; box-shadow: 0 0 0 0 var(--glow); }
+      50% { opacity: 1; box-shadow: 0 0 20px var(--glow); }
+    }
+
+    .section h2 {
+      font-size: clamp(28px, 5vw, 48px);
+      margin: 15px 0 20px 0;
+      background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .section-intro {
+      font-size: 18px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+      color: var(--text-main);
+    }
+
+    /* Feature Card Styles */
+    .feature-card {
+      background: linear-gradient(135deg, rgba(5, 7, 10, 0.9) 0%, rgba(15, 23, 42, 0.6) 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      margin-bottom: 30px;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .section.visible .feature-card:nth-child(1) { opacity: 1; transform: translateY(0); }
+    .section.visible .feature-card:nth-child(2) { opacity: 1; transform: translateY(0); }
+    .section.visible .feature-card:nth-child(3) { opacity: 1; transform: translateY(0); }
+    .section.visible .feature-card:nth-child(4) { opacity: 1; transform: translateY(0); }
+    .section.visible .feature-card:nth-child(5) { opacity: 1; transform: translateY(0); }
+    .section.visible .feature-card:nth-child(6) { opacity: 1; transform: translateY(0); }
+
+    @keyframes fadeInStagger {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.01);
+      border-color: var(--accent);
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 0 30px var(--glow);
+    }
+
+    .feature-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+      transition: transform 0.3s ease;
+      filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
+    }
+
+    .feature-card:hover .feature-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-title-group {
+      flex: 1;
+    }
+
+    .feature-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin: 0 0 10px 0;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .feature-subtitle {
+      font-size: 16px;
+      color: var(--accent-light);
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .what-it-does {
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid var(--accent);
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .what-it-does h4 {
+      font-size: 14px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 10px 0;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .what-it-does p {
+      margin: 0;
+      color: var(--text-bright);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .feature-details {
+      position: relative;
+      z-index: 1;
+    }
+
+    .feature-details h5 {
+      font-size: 16px;
+      color: var(--accent-light);
+      margin: 20px 0 15px 0;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .feature-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .feature-list li {
+      padding: 12px 0 12px 35px;
+      position: relative;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+
+    .feature-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 24px;
+      height: 24px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-list li:hover {
+      color: var(--text-bright);
+      padding-left: 40px;
+    }
+
+    .feature-list li:hover::before {
+      transform: scale(1.2);
+      box-shadow: 0 0 15px var(--glow);
+    }
+
+    .feature-list strong {
+      color: var(--text-bright);
+      font-weight: 600;
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-purple) 100%);
+      z-index: 9999;
+      transition: width 0.1s ease;
+      box-shadow: 0 0 10px var(--glow);
+    }
+
+    /* Highlight Box */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+      border: 2px solid var(--accent);
+      border-radius: 20px;
+      padding: 40px;
+      margin: 50px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .highlight-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+      animation: rotate 10s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .highlight-box h3 {
+      font-size: 32px;
+      margin: 0 0 15px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .highlight-box p {
+      font-size: 18px;
+      line-height: 1.7;
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      color: var(--text-bright);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 120px;
+      padding: 60px 5%;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      background: #020408;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .parent-brand { 
+      margin-bottom: 20px; 
+      opacity: 0.8; 
+      transition: opacity 0.3s ease;
+    }
+
+    .parent-brand:hover {
+      opacity: 1;
+    }
+
+    .uniorax-logo { 
+      height: 40px;
+      width: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .uniorax-logo:hover {
+      transform: scale(1.1);
+    }
+
+    /* CTA Buttons */
+    .cta-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    .cta-button {
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      display: inline-block;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .cta-button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .cta-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .cta-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+    }
+
+    .cta-secondary {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+
+    .cta-secondary:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .cta-tertiary {
+      background: rgba(139, 92, 246, 0.2);
+      color: var(--accent-purple);
+      border: 2px solid var(--accent-purple);
+    }
+
+    .cta-tertiary:hover {
+      background: var(--accent-purple);
+      color: white;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .section { 
+        padding: 30px 20px; 
+        margin-top: 50px;
+      }
+      header { padding: 15px 20px; }
+      .intro { margin-bottom: 50px; }
+      .feature-card { padding: 25px; }
+      .feature-header { flex-direction: column; }
+      .feature-icon { width: 48px; height: 48px; }
+      .cta-container { flex-direction: column; align-items: stretch; }
+      .cta-button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Scroll Progress Indicator -->
+<div class="scroll-indicator" id="scrollIndicator"></div>
+
+<header>
+  <div class="brand-group">
+    <img src="ScaleVestLogo.png" alt="ScaleVest Logo" class="main-logo">
+    <div class="logo-text">Scale<span>Vest</span></div>
+  </div>
+  <div style="font-size: 10px; color: var(--text-main); font-weight: bold;">BY UNIORAX PRIVATE LIMITED</div>
+</header>
+
+<div class="container">
+
+  <div class="intro">
+    <h1>3 Modes. 1 Ecosystem.</h1>
+    <p>Bridging the gap between <strong>Bharat SMEs</strong>, <strong>Founders</strong>, and <strong>Investors</strong> through verified operational data rails and intelligent matching algorithms.</p>
+  </div>
+
+  <!-- BHARAT SME SECTION -->
+  <div class="section reveal" id="sme">
+    <span class="section-tag">🏪 Bharat SME / Business Owners</span>
+    <h2>Your Digital Command Centre</h2>
+    <p class="section-intro">Tired of spreadsheets and manual records? Don't know why you're making profits or losses? Struggle to remember critical business details? ScaleVest transforms your business with AI-powered insights and a personalized CFO who knows your business inside out.</p>
+    
+    <!-- Feature 1: Smart Inventory -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="inventoryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6"/>
+              <stop offset="100%" style="stop-color:#60a5fa"/>
+            </linearGradient>
+          </defs>
+          <rect x="15" y="20" width="70" height="60" rx="5" fill="none" stroke="url(#inventoryGrad)" stroke-width="3"/>
+          <line x1="15" y1="35" x2="85" y2="35" stroke="url(#inventoryGrad)" stroke-width="3"/>
+          <rect x="25" y="45" width="15" height="15" fill="url(#inventoryGrad)"/>
+          <rect x="45" y="45" width="15" height="15" fill="url(#inventoryGrad)"/>
+          <rect x="65" y="45" width="15" height="15" fill="url(#inventoryGrad)"/>
+          <circle cx="50" cy="67" r="3" fill="#fff"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">1. Smart Inventory Management</h3>
+          <p class="feature-subtitle">Never lose track of your stock again</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Smart Inventory eliminates manual stock tracking by offering four intelligent ways to add products (Manual, Bulk, Voice, AI Scan). It automatically tracks quantities as you make sales and alerts you about low stock, out of stock, and expiring items - so you never run out of bestsellers or waste money on expired inventory.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Manual Add:</strong> Quick traditional entry for single products with name, price, and quantity</li>
+          <li><strong>Bulk Add:</strong> Upload hundreds of products at once via CSV or spreadsheet import</li>
+          <li><strong>Voice Add:</strong> Simply speak product details and AI adds them to inventory instantly</li>
+          <li><strong>AI Scan:</strong> Take a photo of your shelf and watch AI identify and add all visible products automatically</li>
+          <li><strong>Auto Stock Deduction:</strong> Quantities automatically decrease when you record sales</li>
+          <li><strong>Smart Alerts:</strong> Real-time notifications for Out of Stock, Low Stock, and About to Expire items</li>
+          <li><strong>Visual Dashboard:</strong> Color-coded status indicators show inventory health at a glance</li>
+          <li><strong>Product Search:</strong> Find any product instantly with smart search and filters</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 2: Sales Flow -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="salesGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#10b981"/>
+              <stop offset="100%" style="stop-color:#34d399"/>
+            </linearGradient>
+          </defs>
+          <path d="M20 70 L35 50 L45 60 L60 35 L75 45 L85 25" fill="none" stroke="url(#salesGrad)" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="20" cy="70" r="4" fill="url(#salesGrad)"/>
+          <circle cx="35" cy="50" r="4" fill="url(#salesGrad)"/>
+          <circle cx="45" cy="60" r="4" fill="url(#salesGrad)"/>
+          <circle cx="60" cy="35" r="4" fill="url(#salesGrad)"/>
+          <circle cx="75" cy="45" r="4" fill="url(#salesGrad)"/>
+          <circle cx="85" cy="25" r="4" fill="url(#salesGrad)"/>
+          <line x1="15" y1="75" x2="90" y2="75" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="15" y1="20" x2="15" y2="75" stroke="#94a3b8" stroke-width="2"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">2. Sales Flow & Auto P&L</h3>
+          <p class="feature-subtitle">Understand your profits instantly</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Sales Flow automatically calculates your profit and loss on every single sale. Just set your cost price and selling price once, and the system does all the math - total spend, total revenue, gross profit, margins - everything. Compare your performance across time periods to understand what's working and what's not.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Simple Setup:</strong> Set cost price and selling price for each product just once</li>
+          <li><strong>Auto-Calculations:</strong> System instantly calculates Total Spend, Total Revenue, and Gross Profit/Loss on every sale</li>
+          <li><strong>Margin Tracking:</strong> See profit margins for each product and overall business</li>
+          <li><strong>Time Period Analysis:</strong> View detailed performance by day, week, month, quarter, and year</li>
+          <li><strong>Comparative Analytics:</strong> Compare today vs yesterday, this week vs last week, this month vs last month, this year vs last year</li>
+          <li><strong>Trend Visualization:</strong> Beautiful graphs and charts showing revenue and profit trends over time</li>
+          <li><strong>Product-Level Insights:</strong> Identify your most profitable products and money-losing items</li>
+          <li><strong>Automated Reports:</strong> Weekly and monthly P&L reports generated automatically</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 3: Digital Command Centre -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="3dGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#8b5cf6"/>
+              <stop offset="100%" style="stop-color:#a78bfa"/>
+            </linearGradient>
+          </defs>
+          <rect x="20" y="30" width="25" height="25" fill="url(#3dGrad)" opacity="0.8"/>
+          <rect x="50" y="30" width="25" height="25" fill="url(#3dGrad)" opacity="0.9"/>
+          <rect x="20" y="60" width="25" height="25" fill="url(#3dGrad)" opacity="0.7"/>
+          <rect x="50" y="60" width="25" height="25" fill="url(#3dGrad)" opacity="1"/>
+          <path d="M30 20 L60 10 L90 20 L90 50 L60 60 L30 50 Z" fill="none" stroke="url(#3dGrad)" stroke-width="2"/>
+          <circle cx="60" cy="35" r="8" fill="#fff" opacity="0.3"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">3. Digital Command Centre (3D Twin)</h3>
+          <p class="feature-subtitle">See your shop in stunning 3D</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Experience your shop like never before with a fully interactive 3D digital twin. Visualize your entire inventory as a 3D floor with product cards. The revolutionary "Time Travel" feature predicts exactly how your shop will look in 24 hours - showing future stock levels, upcoming expiries, and potential stockouts so you can plan ahead.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>3D Shop Visualization:</strong> Your entire shop rendered as an interactive 3D environment with tiles and shelves</li>
+          <li><strong>Product Cards:</strong> Each product displayed as a 3D card showing quantity, price, status, and expiry date</li>
+          <li><strong>Visual Stock Status:</strong> Color-coded 3D indicators - Green (healthy stock), Yellow (low stock), Red (out of stock), Orange (expiring soon)</li>
+          <li><strong>Time Travel Feature:</strong> Revolutionary prediction tool that shows exactly how your inventory will look in the next 24 hours</li>
+          <li><strong>Future Stock Levels:</strong> See which products will run low or go out of stock tomorrow</li>
+          <li><strong>Expiry Prediction:</strong> Visualize which items will hit their expiry warning period in 24 hours</li>
+          <li><strong>Interactive Analysis:</strong> Click any 3D product to see detailed analytics, sales history, and trends</li>
+          <li><strong>Spatial Intelligence:</strong> Understand optimal product placement and shop layout efficiency</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 4: Business Vault -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="vaultGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f59e0b"/>
+              <stop offset="100%" style="stop-color:#fbbf24"/>
+            </linearGradient>
+          </defs>
+          <rect x="25" y="30" width="50" height="50" rx="5" fill="url(#vaultGrad)"/>
+          <circle cx="50" cy="55" r="12" fill="#05070a"/>
+          <rect x="48" y="55" width="4" height="15" fill="url(#vaultGrad)"/>
+          <circle cx="50" cy="55" r="3" fill="url(#vaultGrad)"/>
+          <rect x="30" y="25" width="40" height="5" fill="url(#vaultGrad)"/>
+          <path d="M35 35 L45 35 M35 45 L45 45 M35 55 L40 55" stroke="#05070a" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">4. Business Vault</h3>
+          <p class="feature-subtitle">Your secure digital filing cabinet</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Business Vault is your centralized secure storage for all critical business documents, notes, transactions, and tasks. Set deadlines for renewals and important dates, and get automatic notifications so you never miss a license renewal, payment deadline, or important business milestone again.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Legal Documents Storage:</strong> Securely store licenses, permits, registrations, certificates, and tax documents</li>
+          <li><strong>Business Notes:</strong> Keep meeting minutes, ideas, supplier contacts, and important notes organized</li>
+          <li><strong>Transaction Records:</strong> Maintain complete history of major transactions, purchases, and contracts</li>
+          <li><strong>Task Management:</strong> Create tasks, assign deadlines, and track completion status</li>
+          <li><strong>Smart Notifications:</strong> Get reminded 7 days, 3 days, and 1 day before critical deadlines</li>
+          <li><strong>Auto-Categorization:</strong> Documents automatically organized by type, date, and importance level</li>
+          <li><strong>Quick Search:</strong> Find any document in seconds with powerful full-text search</li>
+          <li><strong>Cloud Backup:</strong> All documents securely backed up in the cloud with encryption</li>
+          <li><strong>Document Sharing:</strong> Share specific documents with accountants or partners securely</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 5: The CFO -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#ec4899"/>
+              <stop offset="100%" style="stop-color:#f472b6"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="35" r="18" fill="url(#aiGrad)"/>
+          <ellipse cx="50" cy="70" rx="25" ry="20" fill="url(#aiGrad)"/>
+          <circle cx="43" cy="32" r="3" fill="#fff"/>
+          <circle cx="57" cy="32" r="3" fill="#fff"/>
+          <path d="M42 42 Q50 48 58 42" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="30" cy="25" r="8" fill="none" stroke="url(#aiGrad)" stroke-width="2"/>
+          <circle cx="70" cy="25" r="8" fill="none" stroke="url(#aiGrad)" stroke-width="2"/>
+          <path d="M30 25 L25 20 M30 25 L25 30" stroke="url(#aiGrad)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M70 25 L75 20 M70 25 L75 30" stroke="url(#aiGrad)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">5. The Personalized CFO (AI)</h3>
+          <p class="feature-subtitle">Your 24/7 business advisor</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Think of having a Chief Financial Officer who knows every detail of your business - every sale, every product, every trend. The AI CFO analyzes your entire business operation and gives you actionable insights: which products are trending, what you're doing wrong, how to increase profits, market trends affecting you, and even manages employee payroll. It's like having a business consultant in your pocket.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Complete Business Knowledge:</strong> AI trained on your entire business - every product, sale, customer interaction, and trend</li>
+          <li><strong>Performance Diagnostics:</strong> Tells you exactly what's wrong with your business and how to fix it</li>
+          <li><strong>Trending Products Analysis:</strong> Identifies which products are gaining popularity and which are declining</li>
+          <li><strong>Sales Intelligence:</strong> Deep analysis of Most Sold and Least Sold products with reasons why</li>
+          <li><strong>Weekly P&L Reports:</strong> Automated weekly profit and loss summaries with insights and recommendations</li>
+          <li><strong>Product-Level Analysis:</strong> Detailed breakdown of each product's performance - margins, sales velocity, seasonal patterns</li>
+          <li><strong>Market Trend Intelligence:</strong> AI analyzes broader market trends affecting your product categories</li>
+          <li><strong>Employee Payroll Management:</strong> Track and manage employee salaries with performance correlation</li>
+          <li><strong>Predictive Insights:</strong> Forecast future sales and suggest optimal stock levels for each product</li>
+          <li><strong>Action Recommendations:</strong> Get specific, actionable steps to improve revenue and reduce costs</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h3>🎯 Why Bharat SMEs/BusinessOwners Love ScaleVest</h3>
+      <p>No more guessing games. No more manual spreadsheets. No more wondering why you're losing money. ScaleVest gives you the clarity, control, and intelligence that only large corporations had access to - now available for small business owners. Make data-driven decisions, never miss deadlines, and understand your business like never before.</p>
+    </div>
+  </div>
+
+  <!-- FOUNDER SECTION -->
+  <div class="section reveal" id="founder">
+    <span class="section-tag">🚀 Founder Side</span>
+    <h2>Vests Over Pitch Decks</h2>
+    <p class="section-intro">Tired of sending pitch decks into the void? Struggling to find investors who actually invest in your category? Getting ghosted after cold emails? ScaleVest eliminates "Pitch Fatigue" by connecting you directly with verified investors through comprehensive Vests and intelligent category matching.</p>
+    
+    <!-- Feature 1: Apex Verification -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="verifyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#10b981"/>
+              <stop offset="100%" style="stop-color:#34d399"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="url(#verifyGrad)" stroke-width="4"/>
+          <path d="M35 50 L45 60 L65 40" fill="none" stroke="url(#verifyGrad)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="50" cy="50" r="28" fill="none" stroke="url(#verifyGrad)" stroke-width="1" opacity="0.3"/>
+          <path d="M50 15 L55 25 L50 22 L45 25 Z" fill="url(#verifyGrad)"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">1. Apex Verification (Anti-Scam)</h3>
+          <p class="feature-subtitle">Prove you're real, build instant credibility</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Apex Verification eliminates scam founders and builds instant trust. You record a 30-second video at your startup location speaking a random verification line that ScaleVest generates. Our AI analyzes the video for authenticity, and once approved, you get an "Apex Verified" badge that dramatically increases your visibility to investors. You cannot pitch anyone until you're verified.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Random Verification Line:</strong> ScaleVest generates a unique random phrase that changes with each verification attempt</li>
+          <li><strong>30-Second Video Requirement:</strong> Record yourself at your startup location speaking the verification line clearly</li>
+          <li><strong>AI Video Analysis:</strong> Advanced AI checks voice authenticity, real environment, consistency, and legitimacy markers</li>
+          <li><strong>Verified Badge:</strong> Receive prestigious "Apex Verified" badge displayed prominently on your profile</li>
+          <li><strong>Trust Score Boost:</strong> Verification dramatically increases your profile visibility to investors by 10x</li>
+          <li><strong>Mandatory for Pitching:</strong> You cannot send funding applications or contact investors until verified</li>
+          <li><strong>Re-verification Protocol:</strong> Periodic re-verification (every 6 months) ensures ongoing legitimacy</li>
+          <li><strong>Fraud Prevention:</strong> Protects the ecosystem from scammers and maintains platform quality</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 2: Create Vest -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="vestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6"/>
+              <stop offset="100%" style="stop-color:#60a5fa"/>
+            </linearGradient>
+          </defs>
+          <rect x="25" y="15" width="50" height="70" rx="3" fill="none" stroke="url(#vestGrad)" stroke-width="3"/>
+          <line x1="35" y1="25" x2="65" y2="25" stroke="url(#vestGrad)" stroke-width="2"/>
+          <line x1="35" y1="35" x2="65" y2="35" stroke="url(#vestGrad)" stroke-width="2"/>
+          <line x1="35" y1="45" x2="55" y2="45" stroke="url(#vestGrad)" stroke-width="2"/>
+          <rect x="35" y="55" width="30" height="20" rx="2" fill="url(#vestGrad)" opacity="0.3"/>
+          <circle cx="50" cy="30" r="8" fill="url(#vestGrad)" opacity="0.5"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">2. Create Your "Vest"</h3>
+          <p class="feature-subtitle">Comprehensive startup profile replaces pitch decks</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>The Vest is a comprehensive, interactive profile that contains everything an investor needs to evaluate your startup - far superior to traditional pitch decks. It includes your team, product roadmap, financials, traction metrics, market analysis, and funding ask. Investors can browse your Vest at their own pace, and you can update it in real-time as your startup evolves.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Company Overview:</strong> Mission, vision, problem statement, solution, and unique value proposition</li>
+          <li><strong>Team Profiles:</strong> Detailed bios, credentials, LinkedIn profiles, and track records of all co-founders and key team members</li>
+          <li><strong>Product Roadmap:</strong> Current development stage, timeline, planned features, and future milestones</li>
+          <li><strong>Audit & Financials:</strong> Revenue, burn rate, runway, unit economics, CAC, LTV, and 3-year financial projections</li>
+          <li><strong>Traction Metrics:</strong> User count, MRR/ARR, growth rate, retention rate, churn, and all key KPIs</li>
+          <li><strong>Market Analysis:</strong> TAM/SAM/SOM calculations, competitive landscape, positioning, and go-to-market strategy</li>
+          <li><strong>Funding Ask:</strong> Amount raising, current valuation, use of funds breakdown, and expected milestones</li>
+          <li><strong>Rich Media Support:</strong> Embed product demos, customer testimonial videos, and press coverage</li>
+          <li><strong>Live Updates:</strong> Update your Vest anytime - changes reflect immediately for all investors viewing it</li>
+          <li><strong>Analytics Dashboard:</strong> See who viewed your Vest, how long they spent, and which sections they focused on</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 3: Browse & Pitch -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="pitchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#8b5cf6"/>
+              <stop offset="100%" style="stop-color:#a78bfa"/>
+            </linearGradient>
+          </defs>
+          <circle cx="35" cy="35" r="15" fill="url(#pitchGrad)" opacity="0.3"/>
+          <circle cx="35" cy="35" r="10" fill="url(#pitchGrad)"/>
+          <circle cx="65" cy="35" r="15" fill="url(#pitchGrad)" opacity="0.3"/>
+          <circle cx="65" cy="35" r="10" fill="url(#pitchGrad)"/>
+          <path d="M40 40 L60 40 M50 40 L50 70" stroke="url(#pitchGrad)" stroke-width="3"/>
+          <path d="M35 70 L50 85 L65 70" fill="url(#pitchGrad)"/>
+          <circle cx="50" cy="75" r="5" fill="#fff"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">3. Browse & Pitch Investors</h3>
+          <p class="feature-subtitle">Direct access to verified angels</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Browse detailed profiles of angel investors on the platform - see their investment thesis, portfolio, ticket sizes, and reply reputation. Send your funding application with Vest attached directly to their inbox (no more cold emails to generic addresses). Once an investor shows interest, communicate via in-app chat and schedule meetings natively without leaving the platform.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Investor Discovery:</strong> Browse comprehensive profiles of all active angel investors on the platform</li>
+          <li><strong>Investment Thesis Visibility:</strong> See exactly what each investor looks for - stage, sector, ticket size, geography preferences</li>
+          <li><strong>Reply Reputation Score:</strong> See which investors actually respond - Gold status investors have 80%+ response rates</li>
+          <li><strong>Portfolio Transparency:</strong> View their past investments to gauge fit and expertise in your domain</li>
+          <li><strong>Direct Pitching:</strong> Send funding application with your comprehensive Vest attached directly to investor's inbox</li>
+          <li><strong>Interest Notifications:</strong> Get notified immediately when an investor marks your Vest as "Interested"</li>
+          <li><strong>In-App Chat:</strong> Discuss details, answer questions, and negotiate via secure messaging</li>
+          <li><strong>Meeting Scheduler:</strong> Book video calls with integrated calendar and time zone handling</li>
+          <li><strong>Pitch Tracking:</strong> See who viewed your Vest, who's interested, who passed, and track all conversations</li>
+          <li><strong>Follow-up Reminders:</strong> System reminds you to follow up with interested investors at optimal intervals</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 4: Founder Emergence -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="emergeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f59e0b"/>
+              <stop offset="100%" style="stop-color:#fbbf24"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="8" fill="url(#emergeGrad)"/>
+          <circle cx="50" cy="50" r="16" fill="none" stroke="url(#emergeGrad)" stroke-width="2" opacity="0.6"/>
+          <circle cx="50" cy="50" r="24" fill="none" stroke="url(#emergeGrad)" stroke-width="2" opacity="0.4"/>
+          <circle cx="50" cy="50" r="32" fill="none" stroke="url(#emergeGrad)" stroke-width="2" opacity="0.2"/>
+          <path d="M50 18 L52 28 L50 26 L48 28 Z" fill="url(#emergeGrad)"/>
+          <path d="M82 50 L72 52 L74 50 L72 48 Z" fill="url(#emergeGrad)"/>
+          <path d="M50 82 L48 72 L50 74 L52 72 Z" fill="url(#emergeGrad)"/>
+          <path d="M18 50 L28 48 L26 50 L28 52 Z" fill="url(#emergeGrad)"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">4. Founder Emergence (Paid Plans)</h3>
+          <p class="feature-subtitle">Accelerate fundraising with smart matching</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Founder Emergence accelerates your fundraising by sending your Vest to multiple category-matched investors simultaneously. Choose Alpha (7 investors), Steady (12 investors), or Critical (18 investors) plans. Our SUI algorithm ensures your startup is only sent to investors who specifically invest in your category, stage, and geography - dramatically higher response rates than mass cold emails.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Alpha Plan:</strong> Send your funding application + Vest to 7 highly-matched investors in your category</li>
+          <li><strong>Steady Plan:</strong> Reach 12 category-matched investors who have invested in similar startups before</li>
+          <li><strong>Critical Plan:</strong> Maximum reach - 18 precisely matched investors receive your comprehensive pitch</li>
+          <li><strong>SUI Algorithm:</strong> Smart Universal Intelligence matches your startup to investors who specifically invest in your sector, stage, and region</li>
+          <li><strong>Behavioral Intelligence:</strong> System learns from investor behavior - which types of startups they engage with, fund, and pass on</li>
+          <li><strong>Category Precision:</strong> FinTech startups go to FinTech investors, HealthTech to HealthTech angels, etc.</li>
+          <li><strong>Anti-Spam Protection:</strong> Can only use Emergence once per day to ensure quality over quantity</li>
+          <li><strong>Priority Visibility:</strong> Your Vest appears at the top of matched investors' inboxes with "Emergence" badge</li>
+          <li><strong>Real-Time Analytics:</strong> See open rates, engagement time, and responses as they happen</li>
+          <li><strong>Higher Conversion:</strong> Targeted, category-matched outreach yields 8-10x better response rates than cold emails</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 5: Scale Tokens -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="tokenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#ec4899"/>
+              <stop offset="100%" style="stop-color:#f472b6"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="30" fill="url(#tokenGrad)"/>
+          <circle cx="50" cy="50" r="24" fill="none" stroke="#fff" stroke-width="2"/>
+          <text x="50" y="58" font-size="24" font-weight="bold" fill="#fff" text-anchor="middle">S</text>
+          <circle cx="30" cy="30" r="8" fill="url(#tokenGrad)" opacity="0.6"/>
+          <circle cx="70" cy="30" r="8" fill="url(#tokenGrad)" opacity="0.6"/>
+          <circle cx="30" cy="70" r="8" fill="url(#tokenGrad)" opacity="0.6"/>
+          <circle cx="70" cy="70" r="8" fill="url(#tokenGrad)" opacity="0.6"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">5. Scale Token Ecosystem</h3>
+          <p class="feature-subtitle">Earn or buy tokens for flexible visibility</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Scale Tokens provide a flexible alternative to paid plans. Earn tokens by referring other founders or investors to the platform, or purchase token bundles. Use tokens to activate Emergence campaigns (Small, Medium, or Large), unlock premium analytics, get priority support, and access advanced matching features. It's a gamified way to boost your fundraising efforts.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Earn by Referring:</strong> Get 50 tokens for each founder signup, 100 tokens for each investor signup you refer</li>
+          <li><strong>Token Bundles:</strong> Purchase Small (500 tokens), Medium (1200 tokens), or Large (2500 tokens) bundles</li>
+          <li><strong>Small Emergence:</strong> Use 200 tokens to reach 3-5 additional category-matched investors</li>
+          <li><strong>Medium Emergence:</strong> Spend 450 tokens to reach 8-10 investors in your sector</li>
+          <li><strong>Large Emergence:</strong> Premium 800 token spend for 15-20 highly-targeted investor reach</li>
+          <li><strong>Premium Analytics:</strong> Unlock advanced Vest analytics - heatmaps, engagement scoring, investor intent signals (100 tokens)</li>
+          <li><strong>Priority Support:</strong> Use tokens to get faster response times and dedicated support (150 tokens/month)</li>
+          <li><strong>Advanced Matching:</strong> Access premium SUI features for even more precise investor matching (200 tokens)</li>
+          <li><strong>Token Wallet:</strong> Track your token balance, transaction history, and expiration dates</li>
+          <li><strong>Gamification System:</strong> Level up as you earn tokens, unlock achievement badges, and climb leaderboards</li>
+          <li><strong>Token Rewards:</strong> Get bonus tokens for completing profile, getting verified, and achieving milestones</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h3>🚀 How Founders Win on ScaleVest</h3>
+      <p>Traditional pitching is broken - 100 cold emails, 2 responses, months wasted. ScaleVest flips the model: Apex Verification builds instant credibility, comprehensive Vests replace pitch decks, category-matched investors ensure relevance, built-in communication eliminates email chaos, and Emergence plans accelerate the entire process. It's the modern, efficient way to raise capital.</p>
+    </div>
+  </div>
+
+  <!-- INVESTOR SECTION -->
+  <div class="section reveal" id="investor">
+    <span class="section-tag">💎 Investor Side</span>
+    <h2>Data-Driven Deal Flow</h2>
+    <p class="section-intro">Tired of sorting through unqualified pitches? Worried about scam founders? Want to find startups that actually match your investment thesis? ScaleVest brings you only Apex-verified founders with comprehensive due diligence pre-packaged, AI-powered analysis, and behavioral matching that learns your preferences.</p>
+    
+    <!-- Feature 1: Investor Apex -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="invVerifyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#10b981"/>
+              <stop offset="100%" style="stop-color:#34d399"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 15 L60 35 L80 40 L65 55 L70 75 L50 65 L30 75 L35 55 L20 40 L40 35 Z" fill="url(#invVerifyGrad)"/>
+          <circle cx="50" cy="50" r="12" fill="#05070a"/>
+          <path d="M45 50 L48 53 L55 46" fill="none" stroke="url(#invVerifyGrad)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">1. Investor Apex Verification</h3>
+          <p class="feature-subtitle">Build trust, maintain ecosystem quality</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Investors also undergo verification to maintain platform quality and build trust with founders. Submit credentials, investment history, and complete video verification. Verified investors get a special badge that founders trust, unlocking priority access to top deal flow. This two-sided verification creates a fraud-free marketplace where both parties are authenticated.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Video Authentication:</strong> Similar verification process as founders - prove you're a real investor</li>
+          <li><strong>Identity Validation:</strong> Submit government ID and professional credentials for validation</li>
+          <li><strong>Investment History:</strong> Optional portfolio proof showing past investments and ticket sizes</li>
+          <li><strong>Verified Investor Badge:</strong> Special badge displayed on your profile that founders recognize and trust</li>
+          <li><strong>Premium Investor Status:</strong> Verified investors get higher visibility in founder searches and Emergence campaigns</li>
+          <li><strong>Annual Re-verification:</strong> Maintain verified status with yearly credential checks</li>
+          <li><strong>Trust Score:</strong> Build credibility score based on verification, activity, and founder ratings</li>
+          <li><strong>Fraud Prevention:</strong> Two-sided verification eliminates scams and maintains platform integrity</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 2: Angel's Angel AI -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="angelAIGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6"/>
+              <stop offset="100%" style="stop-color:#60a5fa"/>
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="40" r="20" fill="url(#angelAIGrad)"/>
+          <path d="M30 35 Q20 25 25 15" fill="none" stroke="url(#angelAIGrad)" stroke-width="3"/>
+          <path d="M70 35 Q80 25 75 15" fill="none" stroke="url(#angelAIGrad)" stroke-width="3"/>
+          <ellipse cx="50" cy="70" rx="20" ry="15" fill="url(#angelAIGrad)"/>
+          <circle cx="45" cy="37" r="3" fill="#fff"/>
+          <circle cx="55" cy="37" r="3" fill="#fff"/>
+          <path d="M30 80 L50 90 L70 80" fill="none" stroke="url(#angelAIGrad)" stroke-width="2"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">2. Angel's Angel AI</h3>
+          <p class="feature-subtitle">AI-powered due diligence assistant</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Angel's Angel AI is your personal due diligence assistant that analyzes complex startup Vests and distills them into 60-second summaries. It extracts key KPIs, flags risks (high burn, weak team, unclear monetization), highlights opportunities (strong traction, experienced founders), compares against similar startups, and even suggests smart questions to ask. It learns from your past decisions to prioritize deals matching your pattern.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Instant Vest Summaries:</strong> AI condenses 20-page comprehensive Vests into 1-minute readable executive summaries</li>
+          <li><strong>KPI Auto-Extraction:</strong> Automatically highlights critical metrics - MRR/ARR, burn rate, runway, growth rate, CAC, LTV</li>
+          <li><strong>Risk Flagging System:</strong> AI identifies red flags like excessive burn, unclear business model, weak founding team, or unrealistic projections</li>
+          <li><strong>Opportunity Signals:</strong> Highlights positive indicators - strong traction, proven team, large addressable market, competitive moat</li>
+          <li><strong>Competitive Analysis:</strong> AI compares the startup against similar companies and shows differentiation</li>
+          <li><strong>Smart Question Generation:</strong> AI suggests intelligent questions you should ask based on gaps or concerns in the Vest</li>
+          <li><strong>Behavioral Learning:</strong> AI learns from your viewing patterns, funding decisions, and passes to prioritize similar future deals</li>
+          <li><strong>Thesis Alignment Score:</strong> Shows how well each startup aligns with your stated investment preferences (0-100 score)</li>
+          <li><strong>Custom PDF Reports:</strong> Generate professional analysis reports to share with your syndicate or co-investors</li>
+          <li><strong>Trend Analysis:</strong> AI identifies market trends across multiple startups in your pipeline</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 3: Smart Discovery -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="discoveryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#8b5cf6"/>
+              <stop offset="100%" style="stop-color:#a78bfa"/>
+            </linearGradient>
+          </defs>
+          <circle cx="40" cy="40" r="25" fill="none" stroke="url(#discoveryGrad)" stroke-width="4"/>
+          <line x1="58" y1="58" x2="75" y2="75" stroke="url(#discoveryGrad)" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="40" cy="40" r="15" fill="url(#discoveryGrad)" opacity="0.3"/>
+          <path d="M30 35 L35 40 L45 30" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">3. Smart Discovery & Matching</h3>
+          <p class="feature-subtitle">Only see deals that fit your thesis</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Smart Discovery eliminates irrelevant pitches by using our SUI algorithm to match startups to your exact investment criteria. Set your preferred sectors, stages, ticket sizes, and geographies, and the system brings only matching, Apex-verified founders to you. It learns from your behavior - which Vests you engage with, what you fund, what you pass - and continuously refines the matches.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Investment Preferences Setup:</strong> Define preferred sectors, stages (pre-seed to Series A), ticket sizes, geographies</li>
+          <li><strong>SUI Algorithm Matching:</strong> Smart Universal Intelligence matches founders to your exact criteria automatically</li>
+          <li><strong>Behavioral Learning:</strong> System analyzes which types of startups you view, message, meet with, and fund</li>
+          <li><strong>Apex-Verified Only:</strong> All founders in your feed are verified - zero scammers or time-wasters</li>
+          <li><strong>Advanced Filtering:</strong> Filter by traction level (pre-revenue to profitable), funding raised, team size, business model</li>
+          <li><strong>Emergence Priority:</strong> Founders using Emergence plans appear first (they're serious and well-prepared)</li>
+          <li><strong>Saved Searches:</strong> Save complex filter combinations and get notifications when matching startups join</li>
+          <li><strong>Vest Quality Scoring:</strong> AI rates each Vest on completeness, clarity, and professionalism (0-100 score)</li>
+          <li><strong>Smart Notifications:</strong> Get alerted only about high-quality, high-match startups in your categories</li>
+          <li><strong>Discovery Feed:</strong> Personalized feed showing best matches first, updated in real-time</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 4: Deal Management -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="dealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#f59e0b"/>
+              <stop offset="100%" style="stop-color:#fbbf24"/>
+            </linearGradient>
+          </defs>
+          <rect x="20" y="20" width="60" height="45" rx="3" fill="none" stroke="url(#dealGrad)" stroke-width="3"/>
+          <line x1="30" y1="35" x2="70" y2="35" stroke="url(#dealGrad)" stroke-width="2"/>
+          <line x1="30" y1="45" x2="70" y2="45" stroke="url(#dealGrad)" stroke-width="2"/>
+          <line x1="30" y1="55" x2="60" y2="55" stroke="url(#dealGrad)" stroke-width="2"/>
+          <circle cx="50" cy="80" r="10" fill="url(#dealGrad)"/>
+          <path d="M45 80 L48 83 L55 76" fill="none" stroke="#05070a" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">4. Native Deal Management</h3>
+          <p class="feature-subtitle">Manage entire pipeline in one place</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>Manage your entire investment pipeline without leaving ScaleVest. Unified inbox for all funding applications, in-app secure messaging with founders, integrated video conferencing for due diligence calls, document sharing (NDAs, term sheets), private notes on each deal, and a visual pipeline dashboard showing all opportunities at various stages from first look to closed deal.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Unified Inbox:</strong> All funding applications, messages, and notifications organized in one central location</li>
+          <li><strong>In-App Secure Chat:</strong> Discuss details, ask questions, negotiate terms via encrypted messaging</li>
+          <li><strong>Video Conferencing:</strong> Schedule and conduct due diligence meetings with integrated HD video calls</li>
+          <li><strong>Interest Management:</strong> Mark startups as "Interested," "Maybe," "Need More Info," or "Pass" to organize pipeline</li>
+          <li><strong>Founder Communication:</strong> When you mark interest, founders can initiate chat or request meetings</li>
+          <li><strong>Document Exchange:</strong> Share and sign NDAs, term sheets, SAFEs, and other legal docs securely in-app</li>
+          <li><strong>Private Notes System:</strong> Add confidential notes to any Vest for your personal records and decision-making</li>
+          <li><strong>Pipeline Dashboard:</strong> Visual Kanban board showing all deals at stages: New, Reviewing, Due Diligence, Negotiating, Closed</li>
+          <li><strong>Calendar Integration:</strong> Sync meetings with Google/Outlook calendars with automatic time zone conversion</li>
+          <li><strong>Deal History:</strong> Complete audit trail of all interactions, documents, and decisions for each startup</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 5: Reputation System -->
+    <div class="feature-card">
+      <div class="feature-header">
+        <svg class="feature-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="repGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#ec4899"/>
+              <stop offset="100%" style="stop-color:#f472b6"/>
+            </linearGradient>
+          </defs>
+          <path d="M50 20 L55 40 L75 45 L60 60 L63 80 L50 70 L37 80 L40 60 L25 45 L45 40 Z" fill="url(#repGrad)"/>
+          <circle cx="50" cy="50" r="15" fill="#05070a"/>
+          <text x="50" y="58" font-size="20" font-weight="bold" fill="url(#repGrad)" text-anchor="middle">G</text>
+        </svg>
+        <div class="feature-title-group">
+          <h3 class="feature-title">5. Reply Reputation System</h3>
+          <p class="feature-subtitle">Build Gold status, get premium deal flow</p>
+        </div>
+      </div>
+      
+      <div class="what-it-does">
+        <h4>What It Does:</h4>
+        <p>The Reputation System rewards responsive, engaged investors with better deal flow. Every time you respond to a founder (even if it's a pass), you earn reputation points. High-reputation investors earn "Gold" status, which makes them appear first in founder searches and Emergence campaigns. Founders prefer pitching Gold investors because they know they'll get a response. It's a virtuous cycle - better engagement leads to better deals.</p>
+      </div>
+      
+      <div class="feature-details">
+        <h5>Key Features:</h5>
+        <ul class="feature-list">
+          <li><strong>Reputation Scoring:</strong> Earn points for every founder response - passes count too, ghosting loses points</li>
+          <li><strong>Gold Status Badge:</strong> Investors with 80%+ response rate get visible "Gold" badge on their profile</li>
+          <li><strong>Priority Visibility:</strong> Gold investors appear at the top of founder searches and Emergence distributions</li>
+          <li><strong>Response Time Tracking:</strong> Your average response time displayed publicly (24hrs, 48hrs, etc.)</li>
+          <li><strong>Engagement Metrics Dashboard:</strong> See your stats - applications viewed, meetings held, investments made, response rate</li>
+          <li><strong>Founder Ratings:</strong> Founders privately rate their experience with you - maintains quality feedback loop</li>
+          <li><strong>Monthly Leaderboard:</strong> Top responsive investors featured on platform leaderboard for recognition</li>
+          <li><strong>Reputation Benefits:</strong> Higher reputation unlocks premium matching, early access to top Vests, and beta features</li>
+          <li><strong>Profile Showcase:</strong> Reputation score and badges prominently displayed to attract quality founders</li>
+          <li><strong>Incentive System:</strong> Maintain high reputation to ensure continuous flow of best-matched deal opportunities</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight-box">
+      <h3>💎 Why Top Angels Choose ScaleVest</h3>
+      <p>Quality over quantity, every single time. Every founder is Apex-verified (zero fraud). Every Vest is comprehensive (no more incomplete pitch decks). Angel's Angel AI handles first-layer due diligence (save hours per deal). Behavioral matching brings only relevant deals (no more irrelevant spam). The reputation system rewards engagement (build your brand as a responsive investor). It's the professional, efficient way to source and close deals.</p>
+    </div>
+  </div>
+
+  <!-- Final CTA Section -->
+  <div class="section reveal" style="text-align: center; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);">
+    <h2 style="font-size: clamp(32px, 6vw, 56px); margin-bottom: 20px;">Ready to Scale Your Future?</h2>
+    <p style="font-size: clamp(16px, 3vw, 22px); max-width: 800px; margin: 0 auto 30px auto; color: var(--text-bright); line-height: 1.7;">
+      Join the ecosystem where <strong>Bharat SMEs/Business Owners</strong> get intelligent business tools, <strong>Founders</strong> connect with verified investors through comprehensive Vests, and <strong>Angels</strong> discover quality deal flow with AI-powered insights.
+    </p>
+    
+    <div class="cta-container">
+      <a href="business-side.html" class="cta-button cta-primary">
+        Join as Business Owner
+      </a>
+      <a href="startup-side.html" class="cta-button cta-secondary">
+        Join as Founder
+      </a>
+      <a href="investor-side.html" class="cta-button cta-tertiary">
+        Join as Investor
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="parent-brand">
+    <img src="UnioraXLogo.png" alt="UnioraX Logo" class="uniorax-logo">
+    <div style="font-size: 14px; margin-top: 5px; color: var(--text-main);">UnioraX Private Limited</div>
+  </div>
+  <div class="logo-text" style="font-size: 22px; margin-bottom: 10px;">Scale<span>Vest</span></div>
+  <p style="color: var(--text-main);">© 2026 ScaleVest — The Infrastructure of Scale.<br>
+  Jammu & Kashmir | Global Reach</p>
+</footer>
+
+<script>
+  // Scroll Progress Indicator
+  window.addEventListener('scroll', () => {
+    const scrollIndicator = document.getElementById('scrollIndicator');
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+    scrollIndicator.style.width = scrollPercent + '%';
+  });
+
+  // Intersection Observer for revealing sections
+  const observerOptions = {
+    threshold: 0.15,
+    rootMargin: '0px 0px -100px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, observerOptions);
+
+  // Observe all sections
+  document.querySelectorAll('.section').forEach(section => {
+    observer.observe(section);
+  });
+
+  // Observe reveal elements
+  document.querySelectorAll('.reveal').forEach(element => {
+    observer.observe(element);
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+
+  // CTA Button interactions
+  document.querySelectorAll('.cta-button').forEach(button => {
+    button.addEventListener('click', function(e) {
+      // Create ripple effect
+      const ripple = document.createElement('span');
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      ripple.style.position = 'absolute';
+      ripple.style.borderRadius = '50%';
+      ripple.style.background = 'rgba(255,255,255,0.5)';
+      ripple.style.transform = 'scale(0)';
+      ripple.style.animation = 'ripple 0.6s ease-out';
+      ripple.classList.add('ripple');
+      
+      this.appendChild(ripple);
+      
+      setTimeout(() => ripple.remove(), 600);
+    });
+  });
+
+  // Add ripple animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+
+</body>
+</html>
