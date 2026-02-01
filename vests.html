@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -3322,6 +3321,56 @@
 
         .required {
             color: #ff006e;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-left: 4px;
+        }
+        
+        /* Enhanced form input styling */
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: #ff006e !important;
+            box-shadow: 0 0 15px rgba(255, 0, 110, 0.2) !important;
+            outline: none;
+        }
+        
+        /* Validation error state */
+        .form-group input.error,
+        .form-group textarea.error,
+        .form-group select.error {
+            border: 2px solid #ff006e !important;
+            box-shadow: 0 0 10px rgba(255, 0, 110, 0.3) !important;
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        /* Optional field indicator */
+        .optional-tag {
+            display: inline-block;
+            background: #1a1a1a;
+            color: #888;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 8px;
+        }
+        
+        /* Improved label styling */
+        .form-group label {
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
         }
 
         .equity-suffix {
@@ -3882,7 +3931,7 @@
         </div>
 
         <div class="form-group">
-            <label>Pitch Deck (PDF)</label>
+            <label>Pitch Deck (PDF) <span class="optional-tag">Optional</span></label>
             <div class="file-upload" onclick="document.getElementById('newPitchDeck').click()">
                 <p>Click to Upload PDF</p>
                 <input type="file" id="newPitchDeck" accept=".pdf">
@@ -3982,18 +4031,18 @@
         
         <div id="coFounderSection" style="display: none; border-left: 2px solid #8338ec; padding-left: 15px; margin-left: 5px;">
             <div class="form-group">
-                <label>How many Co-Founders?</label>
+                <label>How many Co-Founders? <span class="optional-tag">Optional</span></label>
                 <input type="number" id="fpCoFounderCount" placeholder="e.g. 2">
             </div>
             <div class="form-group">
-                <label>Co-Founder Names & Roles</label>
+                <label>Co-Founder Names & Roles <span class="optional-tag">Optional</span></label>
                 <textarea id="fpCoFoundersDetails" placeholder="e.g. John Doe (CTO), Jane Smith (CMO)"></textarea>
             </div>
         </div>
     </div>
 
     <div class="form-group">
-        <label>Demo Video (Upload)</label>
+        <label>Demo Video (Upload) <span class="optional-tag">Optional</span></label>
         <div class="file-upload" onclick="document.getElementById('newDemoVideo').click()">
             <p>Click to Upload Video</p>
             <input type="file" id="newDemoVideo" accept="video/*">
@@ -4384,6 +4433,67 @@ async function processNewFiles() {
 }
 
     // 5. Data Collection & Saving
+// VALIDATION FUNCTION: Ensures all required fields are filled
+window.validateVestData = function() {
+    const requiredFields = [
+        { id: 'vestHook', name: 'Hook' },
+        { id: 'vestDesc', name: 'Description' },
+        { id: 'vestProblem', name: 'Problem' },
+        { id: 'vestSolution', name: 'Solution' },
+        { id: 'vestAdvantage', name: 'Advantage' },
+        { id: 'vestEquity', name: 'Equity Offered' },
+        { id: 'vestAsk', name: 'Fund Ask' },
+        { id: 'stName', name: 'Startup Name' },
+        { id: 'stDesc', name: 'Startup Description' },
+        { id: 'stCategory', name: 'Category' },
+        { id: 'stStage', name: 'Stage' },
+        { id: 'stRevenue', name: 'Revenue' },
+        { id: 'stValuation', name: 'Valuation' },
+        { id: 'auditScale', name: 'Scalability' },
+        { id: 'auditMarket', name: 'Market Share' },
+        { id: 'auditCompetitors', name: 'Competitors' },
+        { id: 'auditDifferent', name: 'Differentiation' },
+        { id: 'auditMoney', name: 'Monetization' },
+        { id: 'roadFundUsage', name: 'Fund Usage' },
+        { id: 'roadYearGoal', name: 'Year Goal' },
+        { id: 'roadVision', name: 'Three Year Vision' },
+        { id: 'roadStrategy', name: 'Strategy' },
+        { id: 'fpName', name: 'Founder Name' },
+        { id: 'fpWork', name: 'Responsibilities' }
+    ];
+    
+    // Optional fields (can be left blank): pitchDeckUrl, demoVideoUrl, coFounder fields
+    
+    const missingFields = [];
+    
+    for (const field of requiredFields) {
+        const element = document.getElementById(field.id);
+        const value = element?.value?.trim() || '';
+        
+        if (!value) {
+            missingFields.push(field.name);
+            // Add visual indicator
+            if (element) {
+                element.style.border = '2px solid #ff006e';
+                element.style.boxShadow = '0 0 10px rgba(255, 0, 110, 0.3)';
+            }
+        } else {
+            // Remove error styling if field is filled
+            if (element) {
+                element.style.border = '';
+                element.style.boxShadow = '';
+            }
+        }
+    }
+    
+    if (missingFields.length > 0) {
+        alert(`❌ Please fill in all required fields:\n\n${missingFields.join('\n')}\n\nNote: Pitch Deck, Founder Video, and Co-Founder details are optional.`);
+        return false;
+    }
+    
+    return true;
+};
+
 window.collectNewVestData = function(deckUrl, videoUrl, thumbUrl) {
     // Determine Co-Founder Data
     const cfCount = document.getElementById('fpCoFounderCount')?.value || '0';
@@ -4443,6 +4553,12 @@ window.collectNewVestData = function(deckUrl, videoUrl, thumbUrl) {
 // 4. Save Draft Function (New Structure)
 window.saveNewVestAsDraft = async function() {
     if (!currentUser) return;
+    
+    // VALIDATE ALL REQUIRED FIELDS
+    if (!validateVestData()) {
+        return; // Stop if validation fails
+    }
+    
     const btn = event.currentTarget;
     btn.innerHTML = 'Saving...';
     
@@ -4456,11 +4572,11 @@ window.saveNewVestAsDraft = async function() {
         await push(vestRef, vestData);
 
         // Redirect to Dashboard
-        alert("Draft Saved!");
+        alert("✅ Draft Saved Successfully!");
         window.location.hash = 'founder_dashboard';
     } catch (error) {
         console.error("Draft Save Error", error);
-        alert("Error saving draft.");
+        alert("❌ Error saving draft. Please try again.");
     } finally {
         btn.innerHTML = 'Save Draft';
     }
@@ -4469,6 +4585,12 @@ window.saveNewVestAsDraft = async function() {
 // 5. Launch Vest Function (New Structure + Profile Update)
 window.launchNewVest = async function() {
     if (!currentUser) return;
+    
+    // VALIDATE ALL REQUIRED FIELDS
+    if (!validateVestData()) {
+        return; // Stop if validation fails
+    }
+    
     const btn = event.currentTarget;
     btn.innerHTML = 'Launching...';
     btn.disabled = true;
@@ -4501,12 +4623,12 @@ window.launchNewVest = async function() {
         });
          clearFormStorage();
         // 5. Redirect to Dashboard
-        alert("Vest Launched Successfully!");
+        alert("🚀 Vest Launched Successfully!");
         window.location.hash = 'founder_dashboard';
 
     } catch (error) {
         console.error("Launch Error", error);
-        alert("Error launching vest.");
+        alert("❌ Error launching vest. Please try again.");
         btn.innerHTML = 'Launch Vest';
         btn.disabled = false;
     }
@@ -12316,6 +12438,21 @@ async function createDashboard() {
     
     const draftCount = Object.values(vestsData).filter(v => v.status === 'draft').length;
     const activeCount = Object.values(vestsData).filter(v => v.status === 'live').length;
+    
+    // AUTO-CREATE isVerified NODE IF NEEDED (only when vests exist with count >= 1)
+    const totalVests = draftCount + activeCount;
+    if (totalVests >= 1 && founderData && founderData.isVerified === undefined) {
+        try {
+            const founderProfileRef = ref(db, `founderProfile/${currentUser.uid}/isVerified`);
+            await set(founderProfileRef, false);
+            founderData.isVerified = false;
+            cachedFounderData = { ...cachedFounderData, isVerified: false };
+            console.log('✅ Auto-created isVerified node (set to false)');
+        } catch (error) {
+            console.error('Error creating isVerified node:', error);
+        }
+    }
+    
   const appRef = ref(db, `Applications/${currentUser.uid}`);
 onValue(appRef, (snapshot) => {
     if (!snapshot.exists()) return;
