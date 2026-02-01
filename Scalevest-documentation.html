@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ScaleVest | The Infrastructure of Scale</title>
+  <title>ScaleVest | Powered by UnioraX</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -21,10 +21,7 @@
       --border: #1e293b;
     }
 
-    * {
-      box-sizing: border-box;
-      scroll-behavior: smooth;
-    }
+    * { box-sizing: border-box; scroll-behavior: smooth; }
 
     body {
       margin: 0;
@@ -35,12 +32,8 @@
       overflow-x: hidden;
     }
 
-    h1, h2, h3, h4, .logo-text {
-      font-family: 'Space Grotesk', sans-serif;
-      color: var(--text-bright);
-    }
+    h1, h2, h3, h4, .logo-text { font-family: 'Space Grotesk', sans-serif; color: var(--text-bright); }
 
-    /* FIXED HEADER & NAVBAR */
     header {
       padding: 15px 5%;
       border-bottom: 1px solid var(--border);
@@ -54,78 +47,27 @@
       align-items: center;
     }
 
-    .logo-text {
-      font-size: clamp(20px, 4vw, 24px);
-      font-weight: 700;
-      letter-spacing: -1px;
-    }
+    .brand-group { display: flex; align-items: center; gap: 12px; }
+    .main-logo { height: 32px; width: auto; }
+    .logo-text { font-size: clamp(18px, 4vw, 24px); font-weight: 700; letter-spacing: -1px; }
+    .logo-text span { color: var(--accent); }
 
-    .logo-text span {
-      color: var(--accent);
-    }
+    .container { padding: 60px 5%; max-width: 1200px; margin: auto; }
 
-    /* HERO SECTION */
-    .container {
-      padding: 60px 5%;
-      max-width: 1200px;
-      margin: auto;
-    }
-
-    .intro {
-      text-align: center;
-      margin-bottom: 80px;
-    }
-
+    .intro { text-align: center; margin-bottom: 80px; }
     .intro h1 {
       font-size: clamp(32px, 8vw, 64px);
       margin-bottom: 20px;
-      background: linear-gradient(135deg, #fff 0%, #64748b 100%);
+      background: linear-gradient(135deg, #fff 0%, #3b82f6 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       line-height: 1.1;
     }
 
-    .intro p {
-      font-size: clamp(16px, 3vw, 20px);
-      max-width: 800px;
-      margin: auto;
-    }
-
-    /* 3-MODE GRID */
-    .option-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 25px;
-    }
-
-    .option-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 40px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-
-    .option-card:hover {
-      transform: translateY(-8px);
-      border-color: var(--accent);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
-
-    .option-card svg {
-      width: 40px;
-      height: 40px;
-      stroke: var(--accent);
-      margin-bottom: 20px;
-    }
-
-    /* SECTION STYLING */
     .section {
-      margin-top: 100px;
+      margin-top: 80px;
       padding: 60px 40px;
-      background: rgba(15, 23, 42, 0.3);
+      background: rgba(15, 23, 42, 0.4);
       border-radius: 32px;
       border: 1px solid var(--border);
     }
@@ -134,159 +76,175 @@
       color: var(--accent);
       text-transform: uppercase;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 11px;
       letter-spacing: 3px;
-      display: block;
       margin-bottom: 15px;
+      display: block;
     }
 
     .info-boxes {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 24px;
       margin-top: 40px;
     }
 
     .info-box {
-      background: var(--bg);
+      background: #05070a;
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 30px;
     }
 
-    .info-box h4 { margin: 0 0 15px; font-size: 18px; }
-    .info-box ul { padding-left: 18px; margin: 0; }
-    .info-box li { margin-bottom: 10px; font-size: 14px; }
+    .info-box h4 { color: var(--accent); margin-top: 0; font-size: 20px; }
     .info-box strong { color: #fff; }
+    .info-box ul { padding-left: 18px; }
+    .info-box li { margin-bottom: 12px; }
 
-    /* FOOTER */
     footer {
-      margin-top: 100px;
-      padding: 80px 5%;
+      margin-top: 120px;
+      padding: 60px 5%;
       border-top: 1px solid var(--border);
       text-align: center;
       background: #020408;
     }
 
-    /* RESPONSIVE FIXES */
+    .parent-brand { margin-bottom: 20px; opacity: 0.8; }
+    .uniorax-logo { height: 20px; filter: brightness(2); }
+
     @media (max-width: 768px) {
-      header { padding: 15px 20px; }
-      .container { padding: 40px 20px; }
       .section { padding: 30px 20px; }
-      .option-grid { grid-template-columns: 1fr; }
+      header { padding: 15px 20px; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo-text">Scale<span>Vest</span></div>
-  <div style="font-size: 12px; color: var(--accent); font-weight: bold;">v1.0 Hybrid B2B/SaaS</div>
+  <div class="brand-group">
+    <img src="sCALEvESTlOGO.PNG" alt="ScaleVest Logo" class="main-logo">
+    <div class="logo-text">Scale<span>Vest</span></div>
+  </div>
+  <div style="font-size: 10px; color: var(--text-main); font-weight: bold;">BY UNIORAX PRIVATE LIMITED</div>
 </header>
 
 <div class="container">
 
   <div class="intro">
-    <h1>The Infrastructure of Scale</h1>
-    <p>
-      Bridging the gap for <strong>Bharat SMEs</strong>, high-growth <strong>Founders</strong>, and <strong>Investors</strong> through a verified operational data rail.
-    </p>
-  </div>
-
-  <div class="option-grid">
-    <div class="option-card" onclick="document.getElementById('sme').scrollIntoView()">
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-15 0V10.5a.75.75 0 01.75-.75h7.5a.75.75 0 01.75.75V21m-9 0h10.5M21 21h-3M3 10.5L12 3l9 7.5" />
-      </svg>
-      <h3>SME Mode</h3>
-      <p>Automate shop inventory, track real-time P&L, and access your personal AI CFO.</p>
-    </div>
-
-    <div class="option-card" onclick="document.getElementById('founder').scrollIntoView()">
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 8.41m5.96 5.96a14.96 14.96 0 01-5.96 5.96m0 0a14.96 14.96 0 01-5.96-5.96m5.96 5.96V21m0-2.25L9.63 8.41m0 0l2.25 2.25" />
-      </svg>
-      <h3>Founder Mode</h3>
-      <p>Replace pitch decks with "Vests" and emerge to investors via Apex Verification.</p>
-    </div>
-
-    <div class="option-card" onclick="document.getElementById('investor').scrollIntoView()">
-      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.5 4.5L21.75 7M21.75 7h-5.25M21.75 7v5.25" />
-      </svg>
-      <h3>Investor Mode</h3>
-      <p>Deploy capital with precision using Angel’s Angel AI and behavioral matching.</p>
-    </div>
+    <h1>3 Modes. 1 Ecosystem.</h1>
+    <p>Bridging the gap between <strong>Bharat SMEs</strong>, <strong>Founders</strong>, and <strong>Investors</strong> through verified operational data rails.</p>
   </div>
 
   <div class="section" id="sme">
-    <span class="section-tag">Bharat SME / Business Owner</span>
-    <h2>The End of Spreadsheet Fatigue</h2>
-    <p>Stop guessing your margins. ScaleVest gives you a Digital Twin of your business with 5 core power features.</p>
+    <span class="section-tag">Bharat SME / Business Owners</span>
+    <h2>The Digital Command Centre</h2>
+    <p>Move beyond manual spreadsheets. Get a personalized partner that understands your business math.</p>
+    
     <div class="info-boxes">
       <div class="info-box">
-        <h4>Intelligence & Inventory</h4>
+        <h4>1. Smart Inventory</h4>
         <ul>
-          <li><strong>AI Scan:</strong> Photo-to-Inventory shelf scanning.</li>
-          <li><strong>Voice Add:</strong> Just speak to update your stock.</li>
-          <li><strong>Sales Flow:</strong> Automated daily/weekly P&L comparisons.</li>
+          <li><strong>Multi-Input:</strong> Add products via Bulk, Voice, or AI Scan.</li>
+          <li><strong>AI Scan:</strong> Take a photo of your shelf; AI identifies and adds stock.</li>
+          <li><strong>Stock Intelligence:</strong> Real-time alerts for Low Stock, Out of Stock, and Expiry.</li>
         </ul>
       </div>
       <div class="info-box">
-        <h4>Command & Control</h4>
+        <h4>2. Sales Flow & P&L</h4>
         <ul>
-          <li><strong>Digital Twin:</strong> 3D card-based shop visualization.</li>
-          <li><strong>Time Travel:</strong> Predict stock status 24 hours in advance.</li>
-          <li><strong>The CFO AI:</strong> Market trends, payroll, and growth audits.</li>
+          <li><strong>Auto-Calculations:</strong> Set cost vs. selling price for instant margin tracking.</li>
+          <li><strong>Performance Benchmarking:</strong> Compare revenue against yesterday, last week, or last year.</li>
+          <li><strong>Profit Logic:</strong> View automated Gross Profit/Loss reports by month or year.</li>
+        </ul>
+      </div>
+      <div class="info-box">
+        <h4>3. 3D Digital Twin</h4>
+        <ul>
+          <li><strong>Visual Floor:</strong> View your shop as a 3D tile floor with product cards.</li>
+          <li><strong>Time Travel:</strong> Predict exactly how your stock and expiries will look in the next 24 hours.</li>
+          <li><strong>Product Analysis:</strong> Interactive 3D visuals for quantity and health status.</li>
+        </ul>
+      </div>
+      <div class="info-box">
+        <h4>4. The Personalised CFO</h4>
+        <ul>
+          <li><strong>Market Analysis:</strong> AI insights on trending, most sold, and least sold products.</li>
+          <li><strong>HR & Payroll:</strong> Managed employee payroll integrated with business performance.</li>
+          <li><strong>Business Vault:</strong> Securely store Legal Docs, Notes, and Tasks with deadline notifications.</li>
         </ul>
       </div>
     </div>
   </div>
 
   <div class="section" id="founder">
-    <span class="section-tag">Founder Emergence</span>
-    <h2>Vests Over Pitches</h2>
-    <p>Traditional pitching is dead. ScaleVest Founders use "Vests" to show the full audit of their roadmap and team.</p>
+    <span class="section-tag">Founder Side</span>
+    <h2>Vests Over Pitch Decks</h2>
+    <p>ScaleVest eliminates "Pitch Fatigue" by providing investors with a deep-audit roadmap of your startup.</p>
+    
     <div class="info-boxes">
       <div class="info-box">
-        <h4>Apex Verification</h4>
+        <h4>1. Apex Verification</h4>
         <ul>
-          <li><strong>AI Video Audit:</strong> 30s video verification to prevent scams.</li>
-          <li><strong>Founder Emergence:</strong> Targeted outreach (Alpha, Steady, Critical).</li>
-          <li><strong>Scale Tokens:</strong> Referral-based tokens for boosting visibility.</li>
+          <li><strong>AI Video Proof:</strong> Record a 30s video with a random verification line to prove operational reality.</li>
+          <li><strong>Anti-Scam Guard:</strong> ScaleVest AI analyzes the video to grant your "Verified" badge.</li>
+          <li><strong>Trust Score:</strong> Build credibility before you even send your first pitch.</li>
         </ul>
       </div>
       <div class="info-box">
-        <h4>Vests & Vetting</h4>
+        <h4>2. The Startup "Vest"</h4>
         <ul>
-          <li><strong>The Vest:</strong> One link containing roadmap, team, and traction.</li>
-          <li><strong>Direct Pitching:</strong> Browse Angel profiles and pitch directly.</li>
-          <li><strong>In-App Convergence:</strong> Instant chat and meeting scheduling.</li>
+          <li><strong>Audit-Ready:</strong> A comprehensive profile covering Roadmap, Team, Audit, and Traction.</li>
+          <li><strong>Direct Pitching:</strong> Browse Angel profiles and send funding applications with your Vest attached.</li>
+          <li><strong>Communication:</strong> Native in-app Chat and Meeting scheduling once an investor shows interest.</li>
+        </ul>
+      </div>
+      <div class="info-box">
+        <h4>3. Founder Emergence</h4>
+        <ul>
+          <li><strong>Tiered Outreach:</strong> Choose between Alpha (7), Steady (12), or Critical (18) investor reach.</li>
+          <li><strong>Smart SUI Matching:</strong> Our algorithm matches your startup category to the specific interest of investors.</li>
+          <li><strong>Spam Protection:</strong> Limited usage (once per day) to ensure quality over quantity.</li>
+        </ul>
+      </div>
+      <div class="info-box">
+        <h4>4. Token Ecosystem</h4>
+        <ul>
+          <li><strong>Scale Tokens:</strong> Earn tokens by referring others or purchasing bundles.</li>
+          <li><strong>Token Emergence:</strong> Use tokens for Small, Medium, or Large visibility boosts.</li>
+          <li><strong>Gamified Growth:</strong> Use tokens to unlock premium platform features.</li>
         </ul>
       </div>
     </div>
   </div>
-  
 
   <div class="section" id="investor">
-    <span class="section-tag">Capital Allocator</span>
-    <h2>Precision Signal</h2>
-    <p>Access a curated flow of Apex-Verified founders matched to your specific investment thesis (SUI).</p>
+    <span class="section-tag">Investor Side</span>
+    <h2>Data-Driven Deployment</h2>
+    <p>Find the right startups through behavioral matching and AI-summarized due diligence.</p>
+    
     <div class="info-boxes">
       <div class="info-box">
-        <h4>Smart Diligence</h4>
+        <h4>1. Angel’s Angel AI</h4>
         <ul>
-          <li><strong>Angel’s Angel:</strong> AI-powered summaries of founder Vests.</li>
-          <li><strong>SUI Matching:</strong> Automated matching based on your category.</li>
-          <li><strong>Behavioral Analysis:</strong> Smart filtering of founder profiles.</li>
+          <li><strong>Vest Summarizer:</strong> AI breaks down complex founder Vests into 1-minute read summaries.</li>
+          <li><strong>KPI Analysis:</strong> Instant highlights of revenue, traction, and burn-rate signals.</li>
+          <li><strong>Decision Support:</strong> AI flags risks and opportunities based on your historical behavior.</li>
         </ul>
       </div>
       <div class="info-box">
-        <h4>Reputation Alpha</h4>
+        <h4>2. Behavioral Matching</h4>
         <ul>
-          <li><strong>Gold Status:</strong> Earn reputation through active engagement.</li>
-          <li><strong>Verified Flow:</strong> Only interact with Apex-Verified identities.</li>
-          <li><strong>Direct Meetings:</strong> Native meeting tools for fast decisions.</li>
+          <li><strong>Smart SUI:</strong> Set your categories and let the algo bring the founders to you.</li>
+          <li><strong>Discovery Engine:</strong> Browse Apex-Verified founders who match your investment thesis.</li>
+          <li><strong>Smart Filters:</strong> Filter by traction, industry, or "Emergence" status.</li>
+        </ul>
+      </div>
+      <div class="info-box">
+        <h4>3. Reputation Gold</h4>
+        <ul>
+          <li><strong>Reply Reputation:</strong> Earn "Gold" status for being a responsive and active investor.</li>
+          <li><strong>Investor Apex:</strong> Investors also undergo video verification to ensure a fraud-free ecosystem.</li>
+          <li><strong>Native Diligence:</strong> Host meetings and chat without leaving the ScaleVest environment.</li>
         </ul>
       </div>
     </div>
@@ -295,6 +253,10 @@
 </div>
 
 <footer>
+  <div class="parent-brand">
+    <img src="UnioraXLogo.png" alt="UnioraX Logo" class="uniorax-logo">
+    <div style="font-size: 14px; margin-top: 5px;">UnioraX Private Limited</div>
+  </div>
   <div class="logo-text" style="font-size: 20px; margin-bottom: 10px;">Scale<span>Vest</span></div>
   <p>© 2026 ScaleVest — The Infrastructure of Scale.<br>
   Jammu & Kashmir | Global Reach</p>
