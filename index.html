@@ -1572,10 +1572,23 @@
         </div>
         <div class="footer-link-group">
           <a href="Scalevest-documentation.html">Documentation</a>
-       <a href="javascript:void(0);" onclick="sendSupportEmail()" class="cta-button cta-secondary">
-  Contact Support
-</a>
-        </div>
+<div class="feature-card" style="max-width: 500px; margin: 20px auto; border: 1px solid var(--accent);">
+  <h3 style="margin-top: 0; font-size: 18px;">Send a Message</h3>
+  
+  <div style="margin-bottom: 15px;">
+    <input type="text" id="userSubject" placeholder="Subject" 
+           style="width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px;">
+  </div>
+  
+  <div style="margin-bottom: 15px;">
+    <textarea id="userMessage" placeholder="Write your message here..." rows="4" 
+              style="width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px; font-family: 'Inter', sans-serif; resize: none;"></textarea>
+  </div>
+
+  <a href="javascript:void(0);" onclick="sendSupportEmail()" class="cta-button cta-secondary" style="display: block; text-align: center;">
+    Contact Support
+  </a>
+</div>
       </nav>
     </div>
 
@@ -1768,19 +1781,5 @@ function sendSupportEmail() {
 }
     checkAndCreditReferral();
   </script>
-  <div class="feature-card" style="max-width: 500px; margin: 20px auto; border: 1px solid var(--accent);">
-  <h3 style="margin-top: 0; font-size: 18px;">Send a Message</h3>
-  
-  <div style="margin-bottom: 15px;">
-    <input type="text" id="userSubject" placeholder="Subject" 
-           style="width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px;">
-  </div>
-  
-  <div style="margin-bottom: 15px;">
-    <textarea id="userMessage" placeholder="Write your message here..." rows="4" 
-              style="width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px; font-family: 'Inter', sans-serif; resize: none;"></textarea>
-  </div>
 </body>
 </html>
-
-
