@@ -1619,6 +1619,37 @@
   </div>
 
   <script>
+    /* --- Move these OUTSIDE of the type="module" script --- */
+
+function openSupportModal() {
+    document.getElementById('supportModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSupportModal() {
+    document.getElementById('supportModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    document.getElementById('supportTopic').value = '';
+    document.getElementById('supportMessage').value = '';
+}
+
+function sendSupportEmail() {
+    const topic = document.getElementById('supportTopic').value;
+    const message = document.getElementById('supportMessage').value;
+    const supportEmail = "scalevestoffcial@gmail.com";
+
+    if (!topic || !message) {
+        alert("Please fill in both the topic and the message.");
+        return;
+    }
+
+    const subject = encodeURIComponent(`ScaleVest Support: ${topic}`);
+    const body = encodeURIComponent(message);
+    const mailtoLink = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
+
+    window.location.href = mailtoLink;
+    setTimeout(closeSupportModal, 500);
+}
     // Lenis Smooth Scroll
     const lenis = new Lenis({
       duration: 1.2,
@@ -1741,42 +1772,7 @@
         }
       }
     }
-function openSupportModal() {
-    document.getElementById('supportModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
 
-function closeSupportModal() {
-    document.getElementById('supportModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-    // Clear inputs for next time
-    document.getElementById('supportTopic').value = '';
-    document.getElementById('supportMessage').value = '';
-}
-
-function sendSupportEmail() {
-    const topic = document.getElementById('supportTopic').value;
-    const message = document.getElementById('supportMessage').value;
-    const supportEmail = "scalevestoffcial@gmail.com";
-
-    if (!topic || !message) {
-        alert("Please fill in both the topic and the message.");
-        return;
-    }
-
-    // Encoding characters for URL (spaces become %20, etc.)
-    const subject = encodeURIComponent(`ScaleVest Support: ${topic}`);
-    const body = encodeURIComponent(message);
-
-    // Construct the mailto link
-    const mailtoLink = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
-
-    // Trigger the system mail app
-    window.location.href = mailtoLink;
-
-    // Close modal after a short delay
-    setTimeout(closeSupportModal, 500);
-}
     checkAndCreditReferral();
   </script>
   <div class="modal-overlay" id="supportModal" role="dialog" aria-modal="true" aria-labelledby="support-title">
@@ -1806,4 +1802,5 @@ function sendSupportEmail() {
 </div>
 </body>
 </html>
+
 
