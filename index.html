@@ -1223,20 +1223,30 @@
       line-height: 1.5;
     }
 /* --- MOBILE FIXES FOR MODAL --- */
+/* --- MOBILE MODAL REPAIR --- */
 @media (max-width: 600px) {
   .purpose-modal {
-    width: 95%;
-    padding: 30px 20px; /* Reduced padding for more room */
-    margin: 10px;
+    width: 92%;
+    padding: 45px 20px 25px 20px; /* Top padding increased to clear the X */
+    position: relative;
+  }
+
+  .close-btn {
+    top: 12px;    /* Move it closer to the top edge */
+    right: 12px;  /* Move it closer to the right edge */
+    width: 32px;
+    height: 32px;
+    background: #f1f5f9; /* Add a slight background so it's easy to tap */
+    border-radius: 50%;
+    z-index: 10;   /* Ensure it stays above the text */
   }
 
   .purpose-modal h2 {
-    font-size: 22px; /* Smaller title */
+    font-size: 20px;
+    margin-top: 10px; /* Extra space to ensure no collision */
+    line-height: 1.3;
   }
-
-  .purpose-cards {
-    gap: 12px; /* Tighten space between cards */
-  }
+}
 
   .purpose-card {
     max-width: 100%;
@@ -1851,6 +1861,7 @@ function sendSupportEmail() {
 </div>
 </body>
 </html>
+
 
 
 
