@@ -1572,7 +1572,7 @@
         </div>
         <div class="footer-link-group">
           <a href="Scalevest-documentation.html">Documentation</a>
-          <a href="mailto:scalevestoffcial@gmail.com">Contact Support</a>
+         <a href="javascript:void(0)" onclick="openSupportModal()">Contact Support</a>
         </div>
       </nav>
     </div>
@@ -1741,8 +1741,69 @@
         }
       }
     }
+function openSupportModal() {
+    document.getElementById('supportModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
 
+function closeSupportModal() {
+    document.getElementById('supportModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    // Clear inputs for next time
+    document.getElementById('supportTopic').value = '';
+    document.getElementById('supportMessage').value = '';
+}
+
+function sendSupportEmail() {
+    const topic = document.getElementById('supportTopic').value;
+    const message = document.getElementById('supportMessage').value;
+    const supportEmail = "scalevestoffcial@gmail.com";
+
+    if (!topic || !message) {
+        alert("Please fill in both the topic and the message.");
+        return;
+    }
+
+    // Encoding characters for URL (spaces become %20, etc.)
+    const subject = encodeURIComponent(`ScaleVest Support: ${topic}`);
+    const body = encodeURIComponent(message);
+
+    // Construct the mailto link
+    const mailtoLink = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
+
+    // Trigger the system mail app
+    window.location.href = mailtoLink;
+
+    // Close modal after a short delay
+    setTimeout(closeSupportModal, 500);
+}
     checkAndCreditReferral();
   </script>
+  <div class="modal-overlay" id="supportModal" role="dialog" aria-modal="true" aria-labelledby="support-title">
+    <div class="purpose-modal" style="max-width: 500px;">
+        <span class="close-btn" onclick="closeSupportModal()">✕</span>
+        <h2 id="support-title" style="color: #000;">Contact Support</h2>
+        <p class="purpose-sub">How can we help you today?</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 15px; text-align: left;">
+            <div>
+                <label style="color: #334155; font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block;">Topic / Subject</label>
+                <input type="text" id="supportTopic" placeholder="e.g., Technical Issue, Partnership" 
+                       style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit;">
+            </div>
+            
+            <div>
+                <label style="color: #334155; font-weight: 600; font-size: 14px; margin-bottom: 5px; display: block;">Message / Problem</label>
+                <textarea id="supportMessage" rows="5" placeholder="Describe your issue in detail..." 
+                          style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit; resize: none;"></textarea>
+            </div>
+            
+            <button class="join-btn" onclick="sendSupportEmail()" style="width: 100%; margin-top: 10px;">
+                Send Message
+            </button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
