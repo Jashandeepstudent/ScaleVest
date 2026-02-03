@@ -731,7 +731,68 @@
       background: rgba(255, 255, 255, 0.15);
       transform: translateY(-3px);
     }
+/* --- ELITE DESKTOP & MOBILE FIXES --- */
 
+/* 1. Modal Container Polish */
+.purpose-modal {
+  width: 90%;
+  max-width: 900px; /* Slightly wider for better desktop spacing */
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 60px 40px; /* Consistent padding */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* 2. The Loop-Aligned Grid (The Fix) */
+.purpose-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Force 3 columns on desktop */
+  gap: 20px;
+  margin-top: 30px;
+}
+
+/* 3. Purpose Card Reset for Desktop */
+.purpose-card {
+  flex: none; /* Reset flex from previous version */
+  width: 100%;
+  max-width: none;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column; /* Vertical on Desktop */
+  align-items: center;
+  text-align: center;
+  background: #ffffff;
+  border: 2px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 4. Desktop Icon Positioning */
+.purpose-card .icon-box {
+  margin: 0 auto 20px auto;
+  width: 64px;
+  height: 64px;
+}
+
+/* --- MOBILE RESPONSIVENESS OVERRIDE --- */
+@media (max-width: 768px) {
+  .purpose-cards {
+    grid-template-columns: 1fr; /* Stack on mobile */
+    gap: 15px;
+  }
+
+  .purpose-card {
+    flex-direction: row; /* Horizontal for thumb-reach on mobile */
+    text-align: left;
+    padding: 20px;
+    align-items: center;
+  }
+
+  .purpose-card .icon-box {
+    margin: 0;
+    width: 50px;
+    height: 50px;
+  }
+}
     /* SECTION STYLING */
     .feature-section {
       padding: 120px 60px;
@@ -1862,6 +1923,7 @@ function sendSupportEmail() {
 </div>
 </body>
 </html>
+
 
 
 
