@@ -395,7 +395,34 @@ body::before{
 }
 .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 26px var(--accent-glow)}
 .btn-submit:active{transform:translateY(0)}
+/* ============================================================
+   WHITE FOOTER OVERRIDE
+   ============================================================ */
+footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid #e2e8f0; /* light gray border */
+  padding: 44px 22px 36px;
+  text-align: center;
+  background: #ffffff; /* pure white background */
+  color: #1e293b; /* dark slate text for readability */
+}
 
+footer .f-brand h3 {
+  color: #0f172a; /* dark heading */
+}
+
+footer .f-company span, 
+footer .f-secured span, 
+footer .f-copy {
+  color: #64748b; /* softer gray text */
+}
+
+footer .f-logo, 
+footer .f-co-logo {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
 /* ── success view ── */
 .suc{text-align:center;padding:12px 0}
 .suc-icon{
@@ -647,12 +674,15 @@ footer{
         <p>We <strong>strictly do not support</strong> refund demands for services or orders that were never purchased or do not exist. Filing a fake or dishonest refund request is a serious violation of our terms and <strong style="color:var(--red)">can result in a Permanent Ban</strong> from the ScaleVest platform. Every appeal is cross-verified before processing.</p>
       </div>
 
-      <div class="info-strip">
-        <div class="rp-seal">
-          <img src="razorpay.png" alt="RazorPay" onerror="this.style.display='none'">
-        </div>
-        <p><strong>ScaleVest does not store or handle any payment information directly.</strong> From the initial charge all the way to any refund transfer, everything is fully processed and secured through <strong>RazorPay</strong>.</p>
-      </div>
+      <div class="info-strip" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.2);">
+  <div class="rp-seal" style="background: #ffffff; border: 1px solid #e2e8f0;">
+    <img src="ScaleVestLogo.png" alt="ScaleVest" onerror="this.src='https://via.placeholder.com/48?text=SV'">
+  </div>
+  <p>
+    <strong>ScaleVest does not store or handle any payment information directly.</strong> 
+    From the initial charge all the way to any refund transfer, everything is fully processed and secured through <strong>RazorPay</strong>.
+  </p>
+</div>
 
     </div>
   </section>
@@ -737,7 +767,7 @@ footer{
 
   <!-- Secured by RazorPay -->
   <div class="f-secured">
-    <span>Secured by</span>
+    <span>Secured by RazorPay</span>
     <div class="rp-badge">
       <img src="razorpay-icon.png" alt="RazorPay" onerror="this.style.display='none'">
     </div>
