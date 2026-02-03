@@ -296,10 +296,27 @@ async function handleForgotPassword() {
 
 async function googleLogin() {
     const provider = new firebase.auth.GoogleAuthProvider();
-    await auth.signInWithPopup(provider);
-    window.location.href = "mainbusinesshub.html";
+    
+    try {
+        const result = await auth.signInWithPopup(provider);
+        
+        // This specifically checks the Firebase Auth List metadata
+        const isNewUser = result.additionalUserInfo.isNewUser;
+
+        if (isNewUser) {
+            // New account (just added to Auth List): Send to setup
+            window.location.href = "business-side.html";
+        } else {
+            // Existing account: Send to hub
+            window.location.href = "mainbusinesshub.html";
+        }
+
+    } catch (error) {
+        console.error("Login Error:", error);
+    }
 }
 </script>
 </body>
 </html>
+
 
