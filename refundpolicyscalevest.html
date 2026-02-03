@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ScaleVest · Refund Policy</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   TOKENS
+   ============================================================ */
+:root{
+  --bg:#06080f;
+  --glass:#0c0f1a;
+  --glass2:#111520;
+  --glass3:#161c2c;
+  --border:rgba(255,255,255,.06);
+  --border-hi:rgba(255,255,255,.12);
+  --txt:#dde2ec;
+  --txt-dim:#5a6478;
+  --accent:#38bdf8;          /* sky blue */
+  --accent-glow:rgba(56,189,248,.22);
+  --green:#34d399;
+  --green-glow:rgba(52,211,153,.18);
+  --amber:#fbbf24;
+  --amber-glow:rgba(251,191,36,.18);
+  --red:#fb7185;
+  --red-glow:rgba(251,113,133,.22);
+  --radius:18px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+  min-height:100vh;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ============================================================
+   GRAIN OVERLAY  (subtle noise texture)
+   ============================================================ */
+body::before{
+  content:'';
+  position:fixed;inset:0;z-index:0;
+  background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  pointer-events:none;
+  opacity:.6;
+}
+
+/* ============================================================
+   AMBIENT BLOBS
+   ============================================================ */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none}
+.ambient .blob{position:absolute;border-radius:50%;filter:blur(100px)}
+.blob-1{top:-18%;left:-12%;width:620px;height:620px;background:radial-gradient(circle,rgba(56,189,248,.11) 0%,transparent 70%);animation:float1 20s ease-in-out infinite alternate}
+.blob-2{bottom:-15%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(52,211,153,.08) 0%,transparent 70%);animation:float2 25s ease-in-out infinite alternate}
+.blob-3{top:40%;left:55%;width:340px;height:340px;background:radial-gradient(circle,rgba(251,113,133,.06) 0%,transparent 70%);animation:float3 18s ease-in-out infinite alternate}
+@keyframes float1{to{transform:translate(60px,50px)}}
+@keyframes float2{to{transform:translate(-55px,-45px)}}
+@keyframes float3{to{transform:translate(-40px,55px)}}
+
+/* ============================================================
+   BACK BUTTON (top-left)
+   ============================================================ */
+.back-btn{
+  position:fixed;
+  top:24px;
+  left:24px;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:var(--glass);
+  border:1px solid var(--border-hi);
+  border-radius:12px;
+  padding:10px 18px 10px 14px;
+  color:var(--txt);
+  font-size:14px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  text-decoration:none;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+}
+.back-btn:hover{
+  background:var(--glass2);
+  border-color:var(--accent);
+  transform:translateX(-4px);
+  box-shadow:0 6px 28px rgba(0,0,0,.3);
+}
+.back-btn svg{
+  width:18px;
+  height:18px;
+  transition:transform .3s;
+}
+.back-btn:hover svg{
+  transform:translateX(-2px);
+}
+
+/* ============================================================
+   LAYOUT WRAPPER
+   ============================================================ */
+.page{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:0 22px 100px}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero{text-align:center;padding:88px 0 56px;animation:heroIn .7s cubic-bezier(.4,0,.2,1) both}
+@keyframes heroIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+
+.hero-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--glass2);border:1px solid var(--border-hi);
+  border-radius:40px;padding:5px 18px 5px 7px;
+  font-size:12.5px;color:var(--txt-dim);
+  margin-bottom:24px;letter-spacing:.3px;
+}
+.hero-chip .pulse{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 8px var(--green);
+  animation:pulse 2.2s ease infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+
+.hero h1{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(42px,7vw,68px);
+  font-weight:700;
+  line-height:1.05;
+  letter-spacing:-1.5px;
+  background:linear-gradient(135deg,#fff 25%,var(--accent) 60%,var(--green));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:16px;
+}
+.hero p{font-size:15.5px;color:var(--txt-dim);max-width:500px;margin:0 auto;line-height:1.7}
+
+/* ============================================================
+   SECTION CARD
+   ============================================================ */
+.card{
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:20px;
+  overflow:hidden;
+  transition:border-color .3s,box-shadow .3s;
+  animation:cardIn .55s cubic-bezier(.4,0,.2,1) both;
+}
+.card:nth-child(2){animation-delay:.08s}
+.card:nth-child(3){animation-delay:.16s}
+.card:nth-child(4){animation-delay:.24s}
+.card:nth-child(5){animation-delay:.32s}
+@keyframes cardIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.card:hover{border-color:var(--border-hi);box-shadow:0 8px 40px rgba(0,0,0,.25)}
+
+/* header row */
+.card-header{
+  display:flex;align-items:center;gap:16px;
+  padding:22px 26px 18px;
+}
+.card-header .ch-icon{
+  width:44px;height:44px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ch-icon svg{width:22px;height:22px}
+.ch-icon.green{background:var(--green-glow)}
+.ch-icon.green svg{stroke:var(--green);fill:none}
+.ch-icon.red{background:var(--red-glow)}
+.ch-icon.red svg{stroke:var(--red);fill:none}
+.ch-icon.amber{background:var(--amber-glow)}
+.ch-icon.amber svg{stroke:var(--amber);fill:none}
+.ch-icon.sky{background:var(--accent-glow)}
+.ch-icon.sky svg{stroke:var(--accent);fill:none}
+
+.card-header h2{font-size:18px;font-weight:600;letter-spacing:-.3px}
+.card-header .ch-label{font-size:10.5px;text-transform:uppercase;letter-spacing:1.6px;color:var(--txt-dim);margin-top:2px}
+
+.card-body{padding:0 26px 26px}
+
+/* ---------- policy row ---------- */
+.policy-row{
+  display:flex;align-items:flex-start;gap:14px;
+  background:var(--glass2);
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:16px 18px;
+  margin-bottom:10px;
+  transition:border-color .25s,transform .25s;
+}
+.policy-row:last-child{margin-bottom:0}
+.policy-row:hover{border-color:var(--border-hi);transform:translateX(5px)}
+
+.pr-icon{
+  width:36px;height:36px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  background:var(--glass);
+}
+.pr-icon svg{width:18px;height:18px}
+.policy-row h4{font-size:14.5px;font-weight:600;margin-bottom:3px}
+.policy-row p{font-size:13px;color:var(--txt-dim);line-height:1.6}
+.policy-row .tag{
+  display:inline-block;font-size:11px;font-weight:600;
+  border-radius:20px;padding:2px 10px;margin-top:6px;
+}
+.tag.green{background:var(--green-glow);color:var(--green)}
+.tag.red{background:var(--red-glow);color:var(--red)}
+
+/* ---------- warning box ---------- */
+.warn-box{
+  background:var(--red-glow);
+  border:1px solid rgba(251,113,133,.28);
+  border-radius:13px;
+  padding:18px 20px;
+  margin-bottom:14px;
+}
+.warn-box h4{color:var(--red);font-size:14px;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.warn-box h4 svg{width:18px;height:18px;stroke:var(--red);fill:none}
+.warn-box p{font-size:13px;color:var(--txt-dim);line-height:1.6}
+
+.info-strip{
+  background:rgba(56,189,248,.05);
+  border:1px solid rgba(56,189,248,.18);
+  border-radius:13px;
+  padding:16px 20px;
+  display:flex;align-items:center;gap:14px;
+}
+.rp-seal{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#fff;border-radius:50%;
+  width:48px;height:48px;flex-shrink:0;
+  padding:8px;
+}
+.rp-seal img{width:100%;height:100%;object-fit:contain}
+.info-strip p{font-size:13px;color:var(--txt-dim);line-height:1.55}
+
+/* ============================================================
+   APPEAL CARDS
+   ============================================================ */
+.appeal-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:580px){.appeal-row{grid-template-columns:1fr}}
+
+.appeal-card{
+  background:var(--glass2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:28px 20px 22px;
+  text-align:center;
+  transition:border-color .3s,transform .3s,box-shadow .3s;
+}
+.appeal-card:hover{
+  border-color:var(--accent);
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px var(--accent-glow);
+}
+.ac-icon{
+  width:54px;height:54px;border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;
+  background:var(--glass);
+}
+.ac-icon svg{width:26px;height:26px}
+.appeal-card h4{font-size:15.5px;font-weight:600;margin-bottom:6px}
+.appeal-card p{font-size:12.8px;color:var(--txt-dim);line-height:1.6;margin-bottom:18px}
+
+/* ── buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  border:none;border-radius:11px;
+  padding:11px 22px;font-size:14px;font-weight:600;
+  cursor:pointer;width:100%;
+  font-family:inherit;
+  transition:transform .2s,box-shadow .2s,background .2s;
+}
+.btn:active{transform:translateY(1px)!important}
+
+.btn-sky{
+  background:linear-gradient(135deg,var(--accent),#0ea5e9);
+  color:#fff;
+  box-shadow:0 4px 18px var(--accent-glow);
+}
+.btn-sky:hover{transform:translateY(-2px);box-shadow:0 8px 28px var(--accent-glow)}
+
+.btn-outline{
+  background:transparent;
+  color:var(--accent);
+  border:1px solid rgba(56,189,248,.32);
+}
+.btn-outline:hover{background:rgba(56,189,248,.07);border-color:var(--accent)}
+
+/* ============================================================
+   MODAL OVERLAY + BOX
+   ============================================================ */
+.overlay{
+  position:fixed;inset:0;
+  background:rgba(6,8,15,.8);
+  backdrop-filter:blur(7px);
+  z-index:900;
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.overlay.open{display:flex}
+
+.modal{
+  background:var(--glass);
+  border:1px solid var(--border-hi);
+  border-radius:22px;
+  width:100%;max-width:440px;
+  padding:30px 26px 26px;
+  position:relative;
+  animation:mIn .28s cubic-bezier(.4,0,.2,1) both;
+}
+@keyframes mIn{from{opacity:0;transform:translateY(30px) scale(.96)}to{opacity:1;transform:none}}
+
+.m-close{
+  position:absolute;top:15px;right:18px;
+  background:none;border:none;
+  color:var(--txt-dim);font-size:22px;cursor:pointer;
+  transition:color .2s;line-height:1;
+}
+.m-close:hover{color:#fff}
+
+/* step bar */
+.step-bar{display:flex;gap:6px;margin-bottom:22px}
+.step-bar .s{flex:1;height:3px;border-radius:2px;background:var(--glass2);transition:background .35s}
+.step-bar .s.on{background:var(--accent)}
+
+.modal h3{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;margin-bottom:4px;letter-spacing:-.5px}
+.modal .msub{font-size:13px;color:var(--txt-dim);margin-bottom:20px}
+
+/* inputs */
+.modal label{display:block;font-size:13px;font-weight:600;color:var(--txt);margin-bottom:6px;margin-top:18px}
+.modal label:first-of-type{margin-top:0}
+.modal input,.modal select,.modal textarea{
+  width:100%;
+  background:var(--glass2);
+  border:1px solid var(--border-hi);
+  border-radius:11px;
+  padding:11px 14px;
+  color:#fff;font-size:14px;font-family:inherit;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.modal input:focus,.modal select:focus,.modal textarea:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px var(--accent-glow);
+}
+.modal select{
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%235a6478' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+  padding-right:38px;
+}
+.modal textarea{resize:vertical;min-height:68px}
+
+/* phone row */
+.ph-row{display:flex;gap:10px}
+.ph-row select{width:115px;flex-shrink:0}
+.ph-row input{flex:1}
+
+/* method pills */
+.method-pills{display:flex;gap:10px;margin-top:6px}
+.method-pill{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--glass2);border:1px solid var(--border-hi);
+  border-radius:12px;padding:14px 12px;
+  color:var(--txt);font-size:14px;font-weight:500;
+  cursor:pointer;transition:border-color .25s,background .25s,box-shadow .25s;
+}
+.method-pill svg{width:20px;height:20px;stroke:currentColor;fill:none}
+.method-pill:hover{border-color:var(--accent);background:rgba(56,189,248,.06)}
+.method-pill.active{border-color:var(--accent);background:rgba(56,189,248,.09);box-shadow:0 0 14px var(--accent-glow)}
+
+/* submit btn inside modal */
+.btn-submit{
+  margin-top:22px;width:100%;
+  background:linear-gradient(135deg,var(--accent),#0ea5e9);
+  color:#fff;border:none;border-radius:11px;
+  padding:13px;font-size:15px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .2s,box-shadow .2s;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 26px var(--accent-glow)}
+.btn-submit:active{transform:translateY(0)}
+
+/* ── success view ── */
+.suc{text-align:center;padding:12px 0}
+.suc-icon{
+  width:74px;height:74px;border-radius:50%;
+  border:2px solid var(--green);
+  background:var(--green-glow);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;
+  animation:pop .35s cubic-bezier(.4,0,.2,1);
+}
+.suc-icon svg{width:38px;height:38px;stroke:var(--green);fill:none;stroke-width:2.5}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.suc h4{font-size:19px;font-weight:600;margin-bottom:5px}
+.suc p{font-size:13px;color:var(--txt-dim)}
+.suc .ref{margin-top:10px;font-size:12.5px;font-weight:700;color:var(--accent);background:rgba(56,189,248,.1);display:inline-block;border-radius:8px;padding:4px 14px}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:44px 22px 36px;
+  text-align:center;
+  background:linear-gradient(to bottom,transparent,rgba(6,8,15,.6));
+}
+
+/* brand row */
+.f-brand{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:22px}
+.f-logo{
+  width:56px;height:56px;border-radius:50%;
+  border:2px solid var(--border-hi);
+  overflow:hidden;
+  background:var(--glass2);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 18px var(--accent-glow);
+}
+.f-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.f-logo .fallback{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:700;
+  background:linear-gradient(135deg,#fff,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.f-brand h3{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;letter-spacing:-.5px}
+
+/* company row */
+.f-company{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px}
+.f-co-logo{
+  width:34px;height:34px;border-radius:9px;
+  overflow:hidden;background:var(--glass2);
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border-hi);
+}
+.f-co-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.f-co-logo .fallback{font-size:11px;font-weight:700;color:var(--accent)}
+.f-company span{font-size:14px;color:var(--txt-dim);font-weight:500}
+
+/* secured by */
+.f-secured{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px}
+.f-secured span{font-size:12px;color:var(--txt-dim)}
+.rp-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#fff;border-radius:50%;
+  width:40px;height:40px;padding:8px;
+}
+.rp-badge img{width:100%;height:100%;object-fit:contain}
+
+.f-copy{font-size:12px;color:var(--txt-dim)}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast{
+  position:fixed;bottom:30px;left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:var(--glass);border:1px solid var(--green);
+  border-radius:12px;padding:13px 24px;
+  color:#fff;font-size:14px;font-weight:600;
+  z-index:1500;
+  transition:transform .38s cubic-bezier(.4,0,.2,1);
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 10px 36px rgba(0,0,0,.45);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ============================================================
+   SHAKE anim
+   ============================================================ */
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.shake{animation:shake .3s ease}
+</style>
+</head>
+<body>
+
+<!-- AMBIENT -->
+<div class="ambient">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- BACK BUTTON (top-left) -->
+<button class="back-btn" onclick="history.back()">
+  <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M19 12H5M12 19l-7-7 7-7"/>
+  </svg>
+  <span>Back</span>
+</button>
+
+<!-- ============================================================
+     PAGE
+     ============================================================ -->
+<div class="page">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-chip"><span class="pulse"></span> Last updated · January 2026</div>
+    <h1>Refund Policy</h1>
+    <p>We value transparency. Below you'll find exactly when refunds are guaranteed, when they are not, and how to raise an appeal if needed.</p>
+  </header>
+
+  <!-- ====== 1 · WHEN WE REFUND ====== -->
+  <section class="card">
+    <div class="card-header">
+      <div class="ch-icon green">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <div>
+        <h2 style="color:var(--green)">When We Refund</h2>
+        <div class="ch-label">Guaranteed refund cases</div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="policy-row">
+        <div class="pr-icon" style="background:var(--green-glow)">
+          <svg viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div>
+          <h4>Technical Issue – Payment Without Service</h4>
+          <p>You paid for <strong>Founder Emergence</strong>, <strong>CFO Plans</strong>, or <strong>Token Bundles</strong> but the service was never activated or credited to your account because of a technical failure on our end.</p>
+          <span class="tag green">Full Refund Guaranteed</span>
+        </div>
+      </div>
+
+      <div class="policy-row">
+        <div class="pr-icon" style="background:var(--green-glow)">
+          <svg viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <div>
+          <h4>CFO Plan – Failed Implementation</h4>
+          <p>You purchased a CFO plan but, due to a platform issue, the plan could not be properly set up or applied inside your account.</p>
+          <span class="tag green">Full Refund Guaranteed</span>
+        </div>
+      </div>
+
+      <div class="policy-row">
+        <div class="pr-icon" style="background:var(--green-glow)">
+          <svg viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </div>
+        <div>
+          <h4>Double Payment – Duplicate Charge</h4>
+          <p>A technical glitch caused your payment to be charged <strong>twice</strong> for the exact same order or service. The duplicate amount is fully refunded once verified.</p>
+          <span class="tag green">Duplicate Amount Refunded</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====== 2 · WHEN WE DO NOT REFUND ====== -->
+  <section class="card">
+    <div class="card-header">
+      <div class="ch-icon red">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      </div>
+      <div>
+        <h2 style="color:var(--red)">When We Do Not Refund</h2>
+        <div class="ch-label">Non-refundable cases</div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="policy-row">
+        <div class="pr-icon" style="background:var(--red-glow)">
+          <svg viewBox="0 0 24 24" stroke="var(--red)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line>
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+        <div>
+          <h4>Implemented Services</h4>
+          <p>Once any service — CFO Plan, Token Bundle, or any other product — has been successfully activated and is live on your account, it becomes <strong>non-refundable</strong>. We cannot process refunds on services that have already been delivered and used.</p>
+          <span class="tag red">No Refund</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====== 3 · CRITICAL WARNING ====== -->
+  <section class="card" style="border-color:rgba(251,113,133,.22)">
+    <div class="card-header">
+      <div class="ch-icon red">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+      <div>
+        <h2 style="color:var(--red)">Critical Warning</h2>
+        <div class="ch-label">Read before you appeal</div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="warn-box">
+        <h4>
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          Fraudulent Refund Requests
+        </h4>
+        <p>We <strong>strictly do not support</strong> refund demands for services or orders that were never purchased or do not exist. Filing a fake or dishonest refund request is a serious violation of our terms and <strong style="color:var(--red)">can result in a Permanent Ban</strong> from the ScaleVest platform. Every appeal is cross-verified before processing.</p>
+      </div>
+
+      <div class="info-strip">
+        <div class="rp-seal">
+          <img src="razorpay.png" alt="RazorPay" onerror="this.style.display='none'">
+        </div>
+        <p><strong>ScaleVest does not store or handle any payment information directly.</strong> From the initial charge all the way to any refund transfer, everything is fully processed and secured through <strong>RazorPay</strong>.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ====== 4 · HOW TO APPEAL ====== -->
+  <section class="card" style="border-color:rgba(56,189,248,.22)">
+    <div class="card-header">
+      <div class="ch-icon sky">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+      </div>
+      <div>
+        <h2 style="color:var(--accent)">How to Appeal for a Refund</h2>
+        <div class="ch-label">Two ways to reach us</div>
+      </div>
+    </div>
+    <div class="card-body">
+
+      <div class="appeal-row">
+
+        <!-- Option 1 – Email -->
+        <div class="appeal-card">
+          <div class="ac-icon" style="background:var(--green-glow)">
+            <svg viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </div>
+          <h4>Option 1 · Email Service</h4>
+          <p>Send a message to our official email <strong style="color:var(--accent)">scalvestofficial@gmail.com</strong>. Our team will reach out to you as soon as possible for inquiry and refund.</p>
+          <button class="btn btn-outline" onclick="openEmail()">
+            Send Email
+            <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Option 2 – Appeal -->
+        <div class="appeal-card" style="border-color:rgba(56,189,248,.28)">
+          <div class="ac-icon" style="background:var(--accent-glow)">
+            <svg viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </div>
+          <h4>Option 2 · Appeal Request</h4>
+          <p>Submit a direct appeal request right here. Our support team will reach you out very shortly and get it done.</p>
+          <button class="btn btn-sky" onclick="openAppeal()">Appeal Refund</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</div><!-- /page -->
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <!-- ScaleVest logo + name -->
+  <div class="f-brand">
+    <div class="f-logo">
+      <img src="ScaleVestLogo.png" alt="ScaleVest" onerror="this.replaceWith(document.querySelector('#fallback-sv').cloneNode(true))">
+    </div>
+    <h3>ScaleVest</h3>
+  </div>
+  <span class="fallback" style="display:none" id="fallback-sv">SV</span>
+
+  <!-- Company name + logo -->
+  <div class="f-company">
+    <div class="f-co-logo">
+      <img src="unioraxlogo.png" alt="UnioraX" onerror="this.replaceWith(document.querySelector('#fallback-ux').cloneNode(true))">
+    </div>
+    <span>UnioraX Private Limited</span>
+  </div>
+  <span style="display:none" id="fallback-ux" class="fallback">UX</span>
+
+  <!-- Secured by RazorPay -->
+  <div class="f-secured">
+    <span>Secured by</span>
+    <div class="rp-badge">
+      <img src="razorpay.png" alt="RazorPay" onerror="this.style.display='none'">
+    </div>
+  </div>
+
+  <!-- Copyright -->
+  <p class="f-copy">© 2026 UnioraX Private Limited · All rights reserved</p>
+</footer>
+
+<!-- ============================================================
+     MODAL — EMAIL POP-UP
+     ============================================================ -->
+<div class="overlay" id="emailOverlay">
+  <div class="modal">
+    <button class="m-close" onclick="closeEmail()">×</button>
+    <h3>
+      <svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+        <polyline points="22,6 12,13 2,6"></polyline>
+      </svg>
+      Send Us an Email
+    </h3>
+    <p class="msub">Copy the address below or click the button to open your mail app directly.</p>
+
+    <div style="background:var(--glass2);border:1px solid var(--border-hi);border-radius:12px;padding:14px 16px;text-align:center;margin-top:4px">
+      <p style="font-size:15px;font-weight:600;color:var(--accent);user-select:all;word-break:break-all">scalvestofficial@gmail.com</p>
+    </div>
+
+    <a href="mailto:scalvestofficial@gmail.com?subject=Refund%20Request%20–%20ScaleVest&body=Hi%20ScaleVest%20Team,%0A%0AI%20would%20like%20to%20request%20a%20refund.%0A%0AService:%0AIssue:%0A%0AThank%20you." target="_blank" class="btn btn-sky" style="margin-top:18px;text-decoration:none">
+      Open Email Client
+      <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL — APPEAL (3-step)
+     ============================================================ -->
+<div class="overlay" id="appealOverlay">
+  <div class="modal">
+    <button class="m-close" onclick="closeAppeal()">×</button>
+
+    <!-- step progress -->
+    <div class="step-bar" id="stepBar">
+      <div class="s on"></div>
+      <div class="s"></div>
+      <div class="s"></div>
+    </div>
+
+    <!-- ── STEP 1 – Issue + Service ── -->
+    <div id="step1">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        Appeal Refund
+      </h3>
+      <p class="msub">Tell us what went wrong and which service is involved.</p>
+
+      <label>Describe your issue</label>
+      <textarea id="inIssue" placeholder="What happened? Be as detailed as possible…"></textarea>
+
+      <label>On which service do you need a refund?</label>
+      <select id="inService">
+        <option value="" disabled selected>Choose a service…</option>
+        <option value="Founder Emergence">Founder Emergence</option>
+        <option value="CFO Plan">CFO Plan</option>
+        <option value="Token Bundle">Token Bundle</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <button class="btn-submit" onclick="goStep2()">
+        Continue
+        <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── STEP 2 – Choose support method ── -->
+    <div id="step2" style="display:none">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        </svg>
+        Support Method
+      </h3>
+      <p class="msub">How would you like our team to reach you?</p>
+
+      <div class="method-pills">
+        <div class="method-pill" id="pillMail" onclick="goStep3('email')">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          Email
+        </div>
+        <div class="method-pill" id="pillPhone" onclick="goStep3('phone')">
+          <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+          Phone
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 3a – Email input pop-up ── -->
+    <div id="step3Email" style="display:none">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        Your Email
+      </h3>
+      <p class="msub">We will send the refund status update here.</p>
+
+      <label>Email Address</label>
+      <input type="email" id="inEmail" placeholder="you@example.com">
+
+      <button class="btn-submit" onclick="submit('email')">
+        Submit Appeal
+        <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── STEP 3b – Phone input pop-up ── -->
+    <div id="step3Phone" style="display:none">
+      <h3>
+        <svg width="20" height="20" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+        </svg>
+        Your Phone Number
+      </h3>
+      <p class="msub">Include your country code so we can reach you.</p>
+
+      <label>Phone Number</label>
+      <div class="ph-row">
+        <select id="inCC">
+          <option value="+91">🇮🇳 +91</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+61">🇦🇺 +61</option>
+          <option value="+33">🇫🇷 +33</option>
+          <option value="+49">🇩🇪 +49</option>
+          <option value="+81">🇯🇵 +81</option>
+          <option value="+82">🇰🇷 +82</option>
+          <option value="+65">🇸🇬 +65</option>
+          <option value="+60">🇲🇾 +60</option>
+          <option value="+66">🇹🇭 +66</option>
+          <option value="+92">🇵🇰 +92</option>
+          <option value="+880">🇧🇩 +880</option>
+          <option value="+94">🇱🇰 +94</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+966">🇸🇦 +966</option>
+          <option value="+20">🇪🇬 +20</option>
+          <option value="+234">🇳🇬 +234</option>
+          <option value="+27">🇿🇦 +27</option>
+          <option value="+55">🇧🇷 +55</option>
+          <option value="+52">🇲🇽 +52</option>
+          <option value="+90">🇹🇷 +90</option>
+          <option value="+98">🇮🇷 +98</option>
+          <option value="+7">🇷🇺 +7</option>
+        </select>
+        <input type="tel" id="inPhone" placeholder="Enter number">
+      </div>
+
+      <button class="btn-submit" onclick="submit('phone')">
+        Submit Appeal
+        <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── SUCCESS ── -->
+    <div id="stepSuccess" style="display:none">
+      <div class="suc">
+        <div class="suc-icon">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <h4>Appeal Submitted!</h4>
+        <p>Our team will review your request and reach out shortly.</p>
+        <div class="ref" id="refId">Ref: —</div>
+      </div>
+      <button class="btn btn-outline" style="margin-top:22px" onclick="closeAppeal(); resetForm()">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg width="18" height="18" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+  Done
+</div>
+
+<!-- ============================================================
+     FIREBASE SDK  (ESM)
+     ============================================================ -->
+<script type="module">
+import { initializeApp }         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const cfg = {
+  apiKey:"AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
+  authDomain:"scalevest-163a0.firebaseapp.com",
+  databaseURL:"https://scalevest-163a0-default-rtdb.firebaseio.com",
+  projectId:"scalevest-163a0",
+  storageBucket:"scalevest-163a0.firebasestorage.app",
+  messagingSenderId:"938358950124",
+  appId:"1:938358950124:web:043506aeaacea2a96bfdc9"
+};
+
+const app = initializeApp(cfg);
+const db  = getDatabase(app);
+
+/* expose globally so classic script can call */
+window.__db  = db;
+window.__ref = ref;
+window.__set = set;
+</script>
+
+<!-- ============================================================
+     APPEAL LOGIC  (classic script – runs after DOM)
+     ============================================================ -->
+<script>
+// ── helpers ──────────────────────────────────
+function openEmail()  { document.getElementById('emailOverlay').classList.add('open'); }
+function closeEmail() { document.getElementById('emailOverlay').classList.remove('open'); }
+function openAppeal() { document.getElementById('appealOverlay').classList.add('open'); }
+function closeAppeal(){ document.getElementById('appealOverlay').classList.remove('open'); }
+
+// close on backdrop click
+['emailOverlay','appealOverlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click', e=>{
+    if(e.target===e.currentTarget){ e.currentTarget.classList.remove('open'); if(id==='appealOverlay') resetForm(); }
+  });
+});
+
+// ── step bar update ──
+function setStep(n){
+  document.querySelectorAll('#stepBar .s').forEach((s,i)=> s.classList.toggle('on', i<n));
+}
+
+// ── hide all inner panels ──
+function hideAll(){
+  ['step1','step2','step3Email','step3Phone','stepSuccess'].forEach(id=>{
+    document.getElementById(id).style.display='none';
+  });
+  // reset pills
+  document.getElementById('pillMail').classList.remove('active');
+  document.getElementById('pillPhone').classList.remove('active');
+}
+
+// ── Step 1 → 2 ──
+function goStep2(){
+  if(!document.getElementById('inIssue').value.trim()){ shake('inIssue'); return; }
+  if(!document.getElementById('inService').value)     { shake('inService'); return; }
+  hideAll();
+  document.getElementById('step2').style.display='block';
+  setStep(2);
+}
+
+// ── Step 2 → 3 ──
+function goStep3(method){
+  hideAll();
+  if(method==='email'){
+    document.getElementById('step3Email').style.display='block';
+    document.getElementById('pillMail').classList.add('active');
+  } else {
+    document.getElementById('step3Phone').style.display='block';
+    document.getElementById('pillPhone').classList.add('active');
+  }
+  setStep(3);
+}
+
+// ── generate unique appeal ID ──
+function uid(){
+  const c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let s='APL-'; for(let i=0;i<12;i++) s+=c[Math.random()*c.length|0]; return s;
+}
+
+// ── SUBMIT ──
+async function submit(method){
+  const issue   = document.getElementById('inIssue').value.trim();
+  const service = document.getElementById('inService').value;
+  let contact, cc;
+
+  if(method==='email'){
+    contact = document.getElementById('inEmail').value.trim();
+    if(!contact || !contact.includes('@')){ shake('inEmail'); return; }
+  } else {
+    cc      = document.getElementById('inCC').value;
+    contact = document.getElementById('inPhone').value.trim();
+    if(!contact || contact.replace(/\D/g,'').length<7){ shake('inPhone'); return; }
+  }
+
+  const appealId = uid();
+
+  const payload = {
+    issue,
+    service,
+    contactMethod: method,
+    timestamp: new Date().toISOString()
+  };
+  if(method==='email'){
+    payload.email = contact;
+  } else {
+    payload.countryCode = cc;
+    payload.phone       = contact;
+    payload.fullPhone   = cc + contact;
+  }
+
+  // ── FIREBASE WRITE  →  RefundAppeals / <appealId> ──
+  let ok = false;
+  try {
+    await window.__set(
+      window.__ref(window.__db, `RefundAppeals/${appealId}`),
+      payload
+    );
+    ok = true;
+  } catch(e){ console.error('Firebase write error:', e); }
+
+  // ── show success ──
+  hideAll();
+  document.getElementById('stepSuccess').style.display='block';
+  document.getElementById('refId').textContent = 'Ref: ' + appealId;
+  setStep(3);
+
+  toast(ok ? 'Appeal saved successfully' : 'Network issue – please retry');
+}
+
+// ── reset form ──
+function resetForm(){
+  ['inIssue','inEmail','inPhone'].forEach(id=> document.getElementById(id).value='');
+  document.getElementById('inService').selectedIndex=0;
+  document.getElementById('inCC').value='+91';
+  hideAll();
+  document.getElementById('step1').style.display='block';
+  setStep(1);
+}
+
+// ── shake animation ──
+function shake(id){
+  const el = document.getElementById(id);
+  el.style.borderColor='var(--red)';
+  el.style.boxShadow='0 0 0 3px var(--red-glow)';
+  el.classList.remove('shake');
+  void el.offsetWidth; // reflow
+  el.classList.add('shake');
+  setTimeout(()=>{ el.style.borderColor=''; el.style.boxShadow=''; el.classList.remove('shake'); },600);
+  el.focus && el.focus();
+}
+
+// ── toast ──
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.innerHTML = `
+    <svg width="18" height="18" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    ${msg}
+  `;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
