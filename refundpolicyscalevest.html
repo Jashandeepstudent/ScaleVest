@@ -163,7 +163,61 @@ body::before{
 .card:nth-child(5){animation-delay:.32s}
 @keyframes cardIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 .card:hover{border-color:var(--border-hi);box-shadow:0 8px 40px rgba(0,0,0,.25)}
+.btn-submit.loading {
+  pointer-events: none;
+  opacity: 0.7;
+  position: relative;
+}
 
+.btn-submit.loading .btn-text {
+  opacity: 0;
+}
+
+.btn-submit .spinner {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.btn-submit.loading .spinner {
+  display: block;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Success checkmark animation */
+.btn-submit.success {
+  background: linear-gradient(135deg, var(--green), #10b981);
+  pointer-events: none;
+}
+
+.btn-submit .checkmark {
+  display: none;
+}
+
+.btn-submit.success .checkmark {
+  display: inline-block;
+  animation: checkPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
 /* header row */
 .card-header{
   display:flex;align-items:center;gap:16px;
@@ -865,13 +919,21 @@ footer{
       <label>Email Address</label>
       <input type="email" id="inEmail" placeholder="you@example.com">
 
-      <button class="btn-submit" onclick="submit('email')">
-        Submit Appeal
-        <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </button>
+<button class="btn-submit" onclick="submit('email')" id="submitBtnEmail">
+  <span class="btn-text">
+    Submit Appeal
+    <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+      <polyline points="12 5 19 12 12 19"></polyline>
+    </svg>
+  </span>
+  <div class="spinner"></div>
+  <span class="checkmark">
+    <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </span>
+</button>
     </div>
 
     <!-- ── STEP 3b – Phone input pop-up ── -->
@@ -915,14 +977,21 @@ footer{
         <input type="tel" id="inPhone" placeholder="Enter number">
       </div>
 
-      <button class="btn-submit" onclick="submit('phone')">
-        Submit Appeal
-        <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </button>
-    </div>
+<button class="btn-submit" onclick="submit('phone')" id="submitBtnPhone">
+  <span class="btn-text">
+    Submit Appeal
+    <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+      <polyline points="12 5 19 12 12 19"></polyline>
+    </svg>
+  </span>
+  <div class="spinner"></div>
+  <span class="checkmark">
+    <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+  </span>
+</button>
 
     <!-- ── SUCCESS ── -->
     <div id="stepSuccess" style="display:none">
@@ -1036,11 +1105,15 @@ function uid(){
   let s='APL-'; for(let i=0;i<12;i++) s+=c[Math.random()*c.length|0]; return s;
 }
 
-// ── SUBMIT ──
 async function submit(method){
   const issue   = document.getElementById('inIssue').value.trim();
   const service = document.getElementById('inService').value;
   let contact, cc;
+
+  // Get the correct button based on method
+  const btn = method === 'email' ? 
+    document.getElementById('submitBtnEmail') : 
+    document.getElementById('submitBtnPhone');
 
   if(method==='email'){
     contact = document.getElementById('inEmail').value.trim();
@@ -1050,6 +1123,9 @@ async function submit(method){
     contact = document.getElementById('inPhone').value.trim();
     if(!contact || contact.replace(/\D/g,'').length<7){ shake('inPhone'); return; }
   }
+
+  // Show loading state
+  btn.classList.add('loading');
 
   const appealId = uid();
 
@@ -1075,17 +1151,32 @@ async function submit(method){
       payload
     );
     ok = true;
-  } catch(e){ console.error('Firebase write error:', e); }
+    
+    // Show success state on button
+    btn.classList.remove('loading');
+    btn.classList.add('success');
+    
+    // Wait a moment to show the success animation
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+  } catch(e){ 
+    console.error('Firebase write error:', e);
+    btn.classList.remove('loading');
+  }
 
-  // ── show success ──
+  // ── show success panel ──
   hideAll();
   document.getElementById('stepSuccess').style.display='block';
   document.getElementById('refId').textContent = 'Ref: ' + appealId;
   setStep(3);
 
   toast(ok ? 'Appeal saved successfully' : 'Network issue – please retry');
+  
+  // Reset button state
+  setTimeout(() => {
+    btn.classList.remove('success');
+  }, 100);
 }
-
 // ── reset form ──
 function resetForm(){
   ['inIssue','inEmail','inPhone'].forEach(id=> document.getElementById(id).value='');
