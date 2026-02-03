@@ -188,7 +188,25 @@ body::before{
 .card-header .ch-label{font-size:10.5px;text-transform:uppercase;letter-spacing:1.6px;color:var(--txt-dim);margin-top:2px}
 
 .card-body{padding:0 26px 26px}
+/* Loading Spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
+/* Disabled state for button */
+.btn-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
 /* ---------- policy row ---------- */
 .policy-row{
   display:flex;align-items:flex-start;gap:14px;
@@ -1042,6 +1060,7 @@ async function submit(method){
   const service = document.getElementById('inService').value;
   let contact, cc;
 
+  // Validation
   if(method==='email'){
     contact = document.getElementById('inEmail').value.trim();
     if(!contact || !contact.includes('@')){ shake('inEmail'); return; }
@@ -1051,14 +1070,24 @@ async function submit(method){
     if(!contact || contact.replace(/\D/g,'').length<7){ shake('inPhone'); return; }
   }
 
-  const appealId = uid();
+  // --- START SUBMITTING ANIMATION ---
+  const activeBtn = method === 'email' 
+    ? document.querySelector('#step3Email .btn-submit') 
+    : document.querySelector('#step3Phone .btn-submit');
+  
+  const originalBtnHTML = activeBtn.innerHTML;
+  activeBtn.disabled = true;
+  activeBtn.innerHTML = `<div class="spinner"></div> Sending...`;
+  // ----------------------------------
 
+  const appealId = uid();
   const payload = {
     issue,
     service,
     contactMethod: method,
     timestamp: new Date().toISOString()
   };
+
   if(method==='email'){
     payload.email = contact;
   } else {
@@ -1067,25 +1096,36 @@ async function submit(method){
     payload.fullPhone   = cc + contact;
   }
 
-  // ── FIREBASE WRITE  →  RefundAppeals / <appealId> ──
   let ok = false;
   try {
+    // Artificial delay to make animation visible (optional, remove for instant)
+    await new Promise(resolve => setTimeout(resolve, 800)); 
+
     await window.__set(
       window.__ref(window.__db, `RefundAppeals/${appealId}`),
       payload
     );
     ok = true;
-  } catch(e){ console.error('Firebase write error:', e); }
+  } catch(e){ 
+    console.error('Firebase write error:', e); 
+    activeBtn.disabled = false;
+    activeBtn.innerHTML = originalBtnHTML; // Reset if it fails
+    toast('Network Error. Please try again.');
+    return;
+  }
 
-  // ── show success ──
+  // --- SHOW SUCCESS ---
   hideAll();
   document.getElementById('stepSuccess').style.display='block';
   document.getElementById('refId').textContent = 'Ref: ' + appealId;
   setStep(3);
 
+  // Restore button state for next time
+  activeBtn.disabled = false;
+  activeBtn.innerHTML = originalBtnHTML;
+
   toast(ok ? 'Appeal saved successfully' : 'Network issue – please retry');
 }
-
 // ── reset form ──
 function resetForm(){
   ['inIssue','inEmail','inPhone'].forEach(id=> document.getElementById(id).value='');
