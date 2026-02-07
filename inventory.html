@@ -1519,7 +1519,7 @@ auth.onAuthStateChanged(u => {
   if (!u) { console.log("User not logged in"); return; }
   
   currentUserId = u.uid;
-  
+  checkForAuthCallback();
   // 1. Inventory Reference
   invRef = db.ref(`Businesses/${u.uid}/inventory`);
   invRef.on("value", s => { 
@@ -1661,172 +1661,80 @@ function updateCredentialHelp(platform) {
     document.getElementById("credentialHelp").textContent = helpText[platform];
 }
 
-async function connectStore() {
-    const btn = document.getElementById("connectStoreBtn");
-    
-    // If already connected, disconnect
-    if (storeConnection.connected) {
-        if (confirm(`Disconnect from ${storeConnection.platform}?`)) {
-            await disconnectStore();
-        }
-        return;
-    }
-    
-    const storeUrl = document.getElementById("storeUrl").value.trim();
-    const apiKey = document.getElementById("apiKey").value.trim();
-    const apiSecret = document.getElementById("apiSecret").value.trim();
-    
-    if (!storeUrl || !apiKey || !apiSecret) {
-        alert("Please fill in all credentials");
-        return;
-    }
-    
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<div class="sync-spinner"></div> Verifying...';
-    
-    try {
-        // Step 1: Verify connection
-        const verifyResponse = await fetch(VERCEL_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'verify',
-                platform: selectedPlatform,
-                storeUrl: storeUrl,
-                apiKey: apiKey,
-                apiSecret: apiSecret
-            })
-        });
-        
-        const verifyData = await verifyResponse.json();
-        
-        if (!verifyData.success) {
-            throw new Error(verifyData.error || 'Connection verification failed');
-        }
-        
-        // Step 2: Save connection details
-        const connectionData = {
-            platform: selectedPlatform,
-            connected: true,
-            storeUrl: storeUrl,
-            apiKey: apiKey,
-            apiSecret: apiSecret,
-            shopName: verifyData.shopName || verifyData.siteId,
-            connectedAt: firebase.database.ServerValue.TIMESTAMP,
-            lastSync: null
-        };
-        
-        await db.ref(`Businesses/${currentUserId}/storeIntegration`).set(connectionData);
-        
-        storeConnection = connectionData;
-        
-        // Step 3: Initial product sync
-        btn.innerHTML = '<div class="sync-spinner"></div> Loading products...';
-        await syncStoreProducts();
-        
-        triggerSuccess(`✅ Connected to ${selectedPlatform.toUpperCase()} successfully!`);
-        closeStoreIntegrationModal();
-        updateStoreButtonUI();
-        startAutoSync();
-        
-    } catch (error) {
-        console.error("Connection error:", error);
-        alert(`❌ Connection failed: ${error.message}\n\nPlease check your credentials and try again.`);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-    }
-}
+async function handleStoreAuth() {
+    const shopName = document.getElementById("storeUrl").value.trim();
+    if (!shopName) return alert("Please enter your store name!");
 
-async function disconnectStore() {
-    await db.ref(`Businesses/${currentUserId}/storeIntegration`).update({
-        connected: false,
-        lastSync: null
-    });
-    
-    storeConnection.connected = false;
-    stopAutoSync();
-    updateStoreButtonUI();
-    closeStoreIntegrationModal();
-    triggerSuccess("Store disconnected");
-}
+    const storeUrl = shopName.includes('.myshopify.com') ? shopName : `${shopName}.myshopify.com`;
 
-async function syncStoreProducts() {
-    showSyncIndicator("Loading products from store...");
-    
     try {
         const response = await fetch(VERCEL_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: 'fetchProducts',
-                platform: storeConnection.platform,
-                storeUrl: storeConnection.storeUrl,
-                apiKey: storeConnection.apiKey,
-                apiSecret: storeConnection.apiSecret
+                action: 'authorize',
+                platform: selectedPlatform,
+                storeUrl: storeUrl,
+                userId: currentUserId // State to identify user in Firebase
             })
         });
-        
+
         const data = await response.json();
-        
-        if (!data.success) {
-            throw new Error(data.error || 'Failed to fetch products');
+        if (data.url) {
+            // STEP 1: SEND USER TO SHOPIFY TO LOG IN
+            window.location.href = data.url; 
+        } else {
+            throw new Error(data.error || "Failed to start auth");
         }
-        
-        const products = data.products;
-        let importedCount = 0;
-        let updatedCount = 0;
-        
-        for (const product of products) {
-            // Check if product already exists
-            const existingEntry = Object.entries(inventory).find(([_, p]) => 
-                p.storeProductId === product.id || 
-                p.name.toLowerCase() === product.name.toLowerCase()
-            );
-            
-            if (existingEntry) {
-                // Update existing product
-                await invRef.child(existingEntry[0]).update({
-                    quantity: product.quantity,
-                    storeProductId: product.id,
-                    storeSKU: product.sku,
-                    lastSyncedAt: firebase.database.ServerValue.TIMESTAMP
-                });
-                updatedCount++;
-            } else {
-                // Add new product
-                await invRef.push({
-                    name: product.name,
-                    quantity: product.quantity,
-                    unit: product.unit || "pcs",
-                    storeProductId: product.id,
-                    storeSKU: product.sku,
-                    importedFrom: storeConnection.platform,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP,
-                    lastSyncedAt: firebase.database.ServerValue.TIMESTAMP
-                });
-                importedCount++;
-            }
-        }
-        
-        // Update last sync time
-        await db.ref(`Businesses/${currentUserId}/storeIntegration/lastSync`).set(firebase.database.ServerValue.TIMESTAMP);
-        storeConnection.lastSync = Date.now();
-        
-        hideSyncIndicator();
-        
-        const message = `✅ Sync complete!\n${importedCount} new products imported\n${updatedCount} products updated`;
-        triggerSuccess(message);
-        
-    } catch (error) {
-        console.error("Sync error:", error);
-        hideSyncIndicator();
-        alert(`❌ Sync failed: ${error.message}`);
+    } catch (e) {
+        alert("Auth Error: " + e.message);
     }
 }
 
-// Auto-sync every 10 minutes
+// STEP 2: CAPTURE THE TOKEN (Add this to your window.onload or auth listener)
+// Check if the URL has ?code= from Shopify after login
+async function checkForAuthCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const shop = urlParams.get('shop');
+
+    if (code && shop) {
+        showSyncIndicator("Securing permanent connection...");
+        try {
+            const res = await fetch(VERCEL_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'exchangeToken',
+                    platform: 'shopify',
+                    storeUrl: shop,
+                    code: code
+                })
+            });
+            const data = await res.json();
+            
+            if (data.success) {
+                // Save token to your local current storage/Firebase
+                await db.ref(`Businesses/${currentUserId}/storeIntegration`).update({
+                    connected: true,
+                    apiSecret: data.access_token, // This is now your permanent OAuth token
+                    storeUrl: shop,
+                    platform: 'shopify',
+                    lastSync: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                triggerSuccess("✅ Store Connected Forever!");
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                syncStoreProducts(); // Start first sync
+            }
+        } catch (e) {
+            console.error("Token Exchange Failed", e);
+        } finally {
+            hideSyncIndicator();
+        }
+    }
+}// Auto-sync every 10 minutes
 let syncInterval = null;
 
 function startAutoSync() {
@@ -4077,43 +3985,24 @@ document.head.appendChild(styleElement);
         </div>
         
         <div id="connectionForm" style="display: none; background: #f8fafc; padding: 25px; border-radius: 16px; margin-bottom: 20px;">
-            <h3 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #1e293b;">
-                Enter <span id="platformName">Store</span> Credentials
-            </h3>
-            
-            <div class="report-input-group">
-                <label>Store URL</label>
-                <input type="text" id="storeUrl" placeholder="e.g., mystore.myshopify.com">
-            </div>
-            
-            <div class="report-input-group">
-                <label>API Key</label>
-                <input type="text" id="apiKey" placeholder="Enter your API key">
-            </div>
-            
-            <div class="report-input-group">
-                <label>API Secret / Access Token</label>
-                <input type="password" id="apiSecret" placeholder="Enter your API secret">
-            </div>
-            
-            <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 8px; margin-top: 15px;">
-                <p style="margin: 0; font-size: 12px; color: #856404;">
-                    <strong>📌 Where to find credentials:</strong><br>
-                    <span id="credentialHelp"></span>
-                </p>
-            </div>
+    <h3 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #1e293b;">
+        Connect your <span id="platformName">Store</span>
+    </h3>
+    
+    <div class="report-input-group">
+        <label>Store URL</label>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="text" id="storeUrl" placeholder="e.g., mystore" style="flex: 1;">
+            <span style="font-weight: 800; color: #64748b;">.myshopify.com</span>
         </div>
-        
-        <div class="report-actions">
-            <button class="btn-cancel-report" onclick="closeStoreIntegrationModal()">Cancel</button>
-            <button class="btn-generate-report" id="connectStoreBtn" onclick="connectStore()" style="display: none;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                Connect Store
-            </button>
-        </div>
+        <p style="font-size: 11px; color: #94a3b8; margin-top: 5px;">Just enter your shop's name. We'll handle the rest.</p>
+    </div>
+
+    <div class="report-actions">
+        <button class="btn-cancel-report" onclick="closeStoreIntegrationModal()">Cancel</button>
+        <button class="btn-generate-report" id="connectStoreBtn" onclick="handleStoreAuth()" style="display: flex;">
+            🚀 Secure Login & Sync
+        </button>
     </div>
 </div>
 
