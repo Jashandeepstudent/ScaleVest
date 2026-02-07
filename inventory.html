@@ -48,7 +48,106 @@ body{margin:0;background:#f6f7fb;padding:30px}
     text-transform: uppercase;
     font-weight: bold;
 }
+/* ONLINE STORE INTEGRATION STYLES */
+.store-connect-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
 
+.store-connect-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+}
+
+.store-connect-btn.connected {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.platform-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.platform-card:hover {
+    border-color: #8b5cf6;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
+}
+
+.platform-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: #f8fafc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+}
+
+.store-status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 10px;
+}
+
+.store-status-badge.connected {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.store-status-badge.disconnected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sync-indicator {
+    position: fixed;
+    top: 80px;
+    right: 30px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
+    z-index: 1500;
+    display: none;
+    align-items: center;
+    gap: 10px;
+}
+
+.sync-indicator.active {
+    display: flex;
+}
+
+@keyframes syncPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.sync-icon {
+    animation: syncPulse 1.5s ease-in-out infinite;
+}
 /* This makes it look like PhonePe */
 #reader__scan_region {
     background: #000;
@@ -195,106 +294,7 @@ body{margin:0;background:#f6f7fb;padding:30px}
     z-index: 9999 !important;
     pointer-events: auto !important;
 }
-/* ONLINE STORE INTEGRATION STYLES */
-.store-connect-btn {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    color: white;
-    padding: 12px 18px;
-    border: none;
-    border-radius: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: 0.3s;
-}
 
-.store-connect-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
-}
-
-.store-connect-btn.connected {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.platform-card {
-    background: white;
-    border: 2px solid #e2e8f0;
-    border-radius: 20px;
-    padding: 30px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.platform-card:hover {
-    border-color: #8b5cf6;
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
-}
-
-.platform-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: #f8fafc;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 40px;
-}
-
-.store-status-badge {
-    display: inline-block;
-    padding: 6px 14px;
-    border-radius: 100px;
-    font-size: 11px;
-    font-weight: 700;
-    margin-top: 10px;
-}
-
-.store-status-badge.connected {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.store-status-badge.disconnected {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.sync-indicator {
-    position: fixed;
-    top: 80px;
-    right: 30px;
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    color: white;
-    padding: 12px 20px;
-    border-radius: 50px;
-    font-weight: 700;
-    font-size: 13px;
-    box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4);
-    z-index: 1500;
-    display: none;
-    align-items: center;
-    gap: 10px;
-}
-
-.sync-indicator.active {
-    display: flex;
-}
-
-@keyframes syncPulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.1); }
-}
-
-.sync-icon {
-    animation: syncPulse 1.5s ease-in-out infinite;
-}
 .manual-modal-box {
     position: relative;
     z-index: 9998;
@@ -1547,6 +1547,7 @@ auth.onAuthStateChanged(u => {
   
   // 5. AUTO-UPDATE TRENDING (Remove products older than 7 days)
   setInterval(() => updateTrendingProducts(), 3600000); // Every hour
+  loadStoreConnection();
 });
 
 
@@ -2549,7 +2550,7 @@ document.getElementById("confirmQtyBtn").onclick = () => {
         invRef.child(currentUpdateId).update({ quantity: newQty }).then(() => {
             closeQtyModal();
             triggerSuccess(`✅ Added ${amount} ${p.unit}`);
-syncToOnlineStore(currentUpdateId, newQty);
+ syncToOnlineStore(currentUpdateId, newQty);
         });
         
     } else {
@@ -2573,6 +2574,7 @@ syncToOnlineStore(currentUpdateId, newQty);
             
             // UPDATE ANALYTICS
             updateProductAnalytics(currentUpdateId, p.name, amount);
+ syncToOnlineStore(currentUpdateId, newQty);
         });
     }
 };
@@ -3659,7 +3661,7 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 // ============================================
-// ONLINE STORE INTEGRATION
+// ONLINE STORE INTEGRATION - OAUTH 2.0
 // ============================================
 
 const VERCEL_STORE_API = 'https://gemini-sigma-plum.vercel.app/api/onlinestore';
@@ -3684,11 +3686,11 @@ function loadStoreConnection() {
     });
 }
 
-// Call this after auth
-auth.onAuthStateChanged(u => {
-    if (u) {
-        // ... existing code ...
-        loadStoreConnection();
+// Listen for OAuth callback messages
+window.addEventListener('message', function(event) {
+    // Security: verify origin if needed
+    if (event.data && event.data.platform) {
+        handleOAuthCallback(event.data);
     }
 });
 
@@ -3700,102 +3702,158 @@ function closeStoreSelectModal() {
     document.getElementById("storeSelectModal").style.display = "none";
 }
 
-function selectPlatform(platform) {
-    const titleMap = {
-        'shopify': 'Connect to Shopify',
-        'wix': 'Connect to Wix'
-    };
-    
-    document.getElementById("credentialsTitle").textContent = titleMap[platform];
-    
-    // Show/hide relevant fields
-    document.getElementById("shopifyFields").style.display = platform === 'shopify' ? 'block' : 'none';
-    document.getElementById("wixFields").style.display = platform === 'wix' ? 'block' : 'none';
-    
-    document.getElementById("storeSelectModal").style.display = "none";
-    document.getElementById("storeCredentialsModal").style.display = "flex";
-    
-    // Store selected platform temporarily
-    window.selectedPlatform = platform;
+// ============================================
+// SHOPIFY OAUTH FLOW
+// ============================================
+
+function initiateShopifyOAuth() {
+    closeStoreSelectModal();
+    document.getElementById("shopifyNameModal").style.display = "flex";
+    setTimeout(() => document.getElementById("shopifyStoreName").focus(), 100);
 }
 
-function closeCredentialsModal() {
-    document.getElementById("storeCredentialsModal").style.display = "none";
+function closeShopifyNameModal() {
+    document.getElementById("shopifyNameModal").style.display = "none";
     document.getElementById("storeSelectModal").style.display = "flex";
 }
 
-async function authenticateStore() {
-    const platform = window.selectedPlatform;
-    let credentials = {};
+async function proceedToShopifyAuth() {
+    const shopName = document.getElementById("shopifyStoreName").value.trim();
     
-    if (platform === 'shopify') {
-        credentials = {
-            shopUrl: document.getElementById("shopifyUrl").value.trim(),
-            accessToken: document.getElementById("shopifyToken").value.trim()
-        };
-        
-        if (!credentials.shopUrl || !credentials.accessToken) {
-            alert("Please fill in all Shopify credentials");
-            return;
-        }
-    } else if (platform === 'wix') {
-        credentials = {
-            siteId: document.getElementById("wixSiteId").value.trim(),
-            apiKey: document.getElementById("wixApiKey").value.trim()
-        };
-        
-        if (!credentials.siteId || !credentials.apiKey) {
-            alert("Please fill in all Wix credentials");
-            return;
-        }
+    if (!shopName) {
+        alert("Please enter your store name");
+        return;
     }
     
-    showSyncIndicator("Authenticating...");
+    // Clean up input (remove .myshopify.com if user added it)
+    const cleanShopName = shopName.replace('.myshopify.com', '').replace('https://', '');
     
     try {
+        // Get auth URL pattern from API
         const response = await fetch(VERCEL_STORE_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                action: 'authenticate',
-                platform: platform,
-                credentials: credentials
+                action: 'getAuthUrl',
+                platform: 'shopify',
+                userId: currentUserId
             })
         });
         
         const data = await response.json();
         
         if (!data.success) {
-            throw new Error(data.error || 'Authentication failed');
+            throw new Error(data.error || 'Failed to get auth URL');
         }
         
-        // Save to Firebase
+        // Replace {SHOP_NAME} with actual shop name
+        const authUrl = data.authUrlPattern.replace('{SHOP_NAME}', cleanShopName);
+        
+        // Open OAuth popup
+        const width = 600;
+        const height = 700;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        
+        window.open(
+            authUrl,
+            'Shopify Login',
+            `width=${width},height=${height},left=${left},top=${top}`
+        );
+        
+        closeShopifyNameModal();
+        showSyncIndicator("Waiting for Shopify login...");
+        
+    } catch (error) {
+        alert("Error: " + error.message);
+        console.error("Shopify OAuth error:", error);
+    }
+}
+
+// ============================================
+// WIX OAUTH FLOW
+// ============================================
+
+async function initiateWixOAuth() {
+    try {
+        const response = await fetch(VERCEL_STORE_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'getAuthUrl',
+                platform: 'wix',
+                userId: currentUserId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to get auth URL');
+        }
+        
+        // Open OAuth popup
+        const width = 600;
+        const height = 700;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        
+        window.open(
+            data.authUrl,
+            'Wix Login',
+            `width=${width},height=${height},left=${left},top=${top}`
+        );
+        
+        closeStoreSelectModal();
+        showSyncIndicator("Waiting for Wix login...");
+        
+    } catch (error) {
+        alert("Error: " + error.message);
+        console.error("Wix OAuth error:", error);
+    }
+}
+
+// ============================================
+// HANDLE OAUTH CALLBACK
+// ============================================
+
+async function handleOAuthCallback(data) {
+    if (data.userId !== currentUserId) {
+        console.warn("OAuth callback for different user");
+        return;
+    }
+    
+    try {
+        // Save credentials to Firebase
         await db.ref(`Businesses/${currentUserId}/onlineStore`).set({
-            platform: platform,
-            credentials: credentials,
+            platform: data.platform,
+            credentials: data.credentials,
             shopName: data.shopName || '',
+            instanceId: data.instanceId || '',
             connectedAt: firebase.database.ServerValue.TIMESTAMP
         });
         
-        connectedPlatform = platform;
-        storeCredentials = credentials;
+        connectedPlatform = data.platform;
+        storeCredentials = data.credentials;
         
-        document.getElementById("storeCredentialsModal").style.display = "none";
         hideSyncIndicator();
-        
-        triggerSuccess(`✅ Connected to ${platform === 'shopify' ? 'Shopify' : 'Wix'}!`);
+        triggerSuccess(`✅ Connected to ${data.platform === 'shopify' ? 'Shopify' : 'Wix'}!`);
         updateStoreButtonUI(true);
-        updatePlatformStatus(platform, true);
+        updatePlatformStatus(data.platform, true);
         
         // Immediately fetch and import products
         setTimeout(() => importStoreProducts(), 1000);
         
     } catch (error) {
         hideSyncIndicator();
-        alert("Connection failed: " + error.message);
-        console.error("Store auth error:", error);
+        alert("Failed to save connection: " + error.message);
+        console.error("OAuth save error:", error);
     }
 }
+
+// ============================================
+// IMPORT PRODUCTS FROM STORE
+// ============================================
 
 async function importStoreProducts() {
     if (!connectedPlatform || !storeCredentials) {
@@ -3810,7 +3868,7 @@ async function importStoreProducts() {
     
     if (!confirmed) return;
     
-    showSyncIndicator("Importing products...");
+    showSyncIndicator("Importing products from store...");
     
     try {
         const response = await fetch(VERCEL_STORE_API, {
@@ -3834,14 +3892,13 @@ async function importStoreProducts() {
         const newMapping = {};
         
         for (const product of products) {
-            // Check if product already exists (by name or barcode)
+            // Check if product already exists
             const existingEntry = Object.entries(inventory).find(([_, p]) => 
                 p.name.toLowerCase() === product.name.toLowerCase() ||
                 (product.barcode && p.barcode === product.barcode)
             );
             
             if (existingEntry) {
-                // Update existing product
                 const [existingId, _] = existingEntry;
                 await invRef.child(existingId).update({
                     quantity: product.quantity,
@@ -3849,10 +3906,10 @@ async function importStoreProducts() {
                 });
                 newMapping[existingId] = {
                     externalId: product.externalId,
-                    variantId: product.variantId || null
+                    variantId: product.variantId || null,
+                    inventoryItemId: product.inventoryItemId || null
                 };
             } else {
-                // Add new product
                 const newRef = await invRef.push({
                     name: product.name,
                     quantity: product.quantity,
@@ -3864,10 +3921,10 @@ async function importStoreProducts() {
                 
                 newMapping[newRef.key] = {
                     externalId: product.externalId,
-                    variantId: product.variantId || null
+                    variantId: product.variantId || null,
+                    inventoryItemId: product.inventoryItemId || null
                 };
                 
-                // Also save price if available
                 if (product.price > 0) {
                     db.ref(`Businesses/${currentUserId}/prices/${newRef.key}`).set({
                         sellPrice: product.price
@@ -3878,7 +3935,6 @@ async function importStoreProducts() {
             importedCount++;
         }
         
-        // Save product mapping
         await db.ref(`Businesses/${currentUserId}/onlineStore/productMapping`).set(newMapping);
         productMapping = newMapping;
         
@@ -3893,21 +3949,23 @@ async function importStoreProducts() {
     }
 }
 
+// ============================================
+// SYNC TO ONLINE STORE
+// ============================================
+
 async function syncToOnlineStore(productId, newQuantity) {
     if (!connectedPlatform || !storeCredentials) return;
     
     const mapping = productMapping[productId];
-    if (!mapping) return; // Product not from online store
+    if (!mapping) return;
     
     showSyncIndicator(`Syncing to ${connectedPlatform}...`);
     
     try {
-        const productData = {
-            newQuantity: newQuantity
-        };
+        const productData = { newQuantity };
         
         if (connectedPlatform === 'shopify') {
-            productData.variantId = mapping.variantId;
+            productData.inventoryItemId = mapping.inventoryItemId;
         } else if (connectedPlatform === 'wix') {
             productData.productId = mapping.externalId;
         }
@@ -3937,6 +3995,10 @@ async function syncToOnlineStore(productId, newQuantity) {
     }
 }
 
+// ============================================
+// UI HELPER FUNCTIONS
+// ============================================
+
 function updateStoreButtonUI(connected) {
     const btn = document.getElementById("storeConnectBtn");
     const text = document.getElementById("storeConnectText");
@@ -3956,7 +4018,7 @@ function updatePlatformStatus(platform, connected) {
     
     if (badge) {
         badge.className = `store-status-badge ${connected ? 'connected' : 'disconnected'}`;
-        badge.textContent = connected ? 'Connected' : 'Not Connected';
+        badge.textContent = connected ? 'Connected ✓' : 'Not Connected';
     }
 }
 
@@ -3971,7 +4033,6 @@ function hideSyncIndicator() {
     const indicator = document.getElementById("syncIndicator");
     indicator.classList.remove("active");
 }
-
 </script>
 <!-- SYNC INDICATOR -->
 <div id="syncIndicator" class="sync-indicator">
@@ -3989,26 +4050,26 @@ function hideSyncIndicator() {
             </svg>
             Connect Your Online Store
         </h2>
-        <p style="margin-bottom: 30px; color: #64748b;">Select your e-commerce platform to sync inventory automatically</p>
+        <p style="margin-bottom: 30px; color: #64748b;">Click to login and connect your store instantly!</p>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
             <!-- Shopify Card -->
-            <div class="platform-card" onclick="selectPlatform('shopify')">
+            <div class="platform-card" onclick="initiateShopifyOAuth()">
                 <div class="platform-icon" style="background: #96bf48;">
                     <span style="font-weight: 900; color: white; font-size: 24px;">S</span>
                 </div>
                 <h3 style="margin: 0 0 10px 0; font-size: 20px; color: #1e293b;">Shopify</h3>
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Connect your Shopify store for real-time sync</p>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Login with your Shopify account</p>
                 <span class="store-status-badge disconnected" id="shopifyStatus">Not Connected</span>
             </div>
             
             <!-- Wix Card -->
-            <div class="platform-card" onclick="selectPlatform('wix')">
+            <div class="platform-card" onclick="initiateWixOAuth()">
                 <div class="platform-icon" style="background: #0c6efd;">
                     <span style="font-weight: 900; color: white; font-size: 24px;">W</span>
                 </div>
                 <h3 style="margin: 0 0 10px 0; font-size: 20px; color: #1e293b;">Wix</h3>
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Connect your Wix store for automatic updates</p>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">Login with your Wix account</p>
                 <span class="store-status-badge disconnected" id="wixStatus">Not Connected</span>
             </div>
         </div>
@@ -4019,57 +4080,30 @@ function hideSyncIndicator() {
     </div>
 </div>
 
-<!-- STORE CREDENTIALS MODAL -->
-<div id="storeCredentialsModal" class="custom-modal">
-    <div class="report-modal-content" style="max-width: 500px;">
-        <h2 id="credentialsTitle" style="margin-bottom: 15px;">Connect to Shopify</h2>
-        <p style="margin-bottom: 25px; color: #64748b;" id="credentialsInstructions">Enter your store credentials to enable automatic synchronization</p>
-        
-        <!-- Shopify Fields -->
-        <div id="shopifyFields" style="display: none;">
-            <div class="report-input-group">
-                <label>Shop URL</label>
-                <input type="text" id="shopifyUrl" placeholder="your-store.myshopify.com">
-                <small style="font-size: 11px; color: #94a3b8; margin-top: 5px; display: block;">
-                    Example: mystore.myshopify.com (without https://)
-                </small>
-            </div>
-            
-            <div class="report-input-group">
-                <label>Admin API Access Token</label>
-                <input type="password" id="shopifyToken" placeholder="shpat_...">
-                <small style="font-size: 11px; color: #94a3b8; margin-top: 5px; display: block;">
-                    Get from: Shopify Admin → Settings → Apps and sales channels → Develop apps
-                </small>
+<!-- SHOPIFY SHOP NAME INPUT (appears before OAuth) -->
+<div id="shopifyNameModal" class="custom-modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 80px; height: 80px; margin: 0 auto; background: #96bf48; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span style="font-weight: 900; color: white; font-size: 36px;">S</span>
             </div>
         </div>
-        
-        <!-- Wix Fields -->
-        <div id="wixFields" style="display: none;">
-            <div class="report-input-group">
-                <label>Site ID</label>
-                <input type="text" id="wixSiteId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
-                <small style="font-size: 11px; color: #94a3b8; margin-top: 5px; display: block;">
-                    Find in: Wix Dashboard → Settings → Business Info
-                </small>
-            </div>
-            
-            <div class="report-input-group">
-                <label>API Key</label>
-                <input type="password" id="wixApiKey" placeholder="Enter your Wix API key">
-                <small style="font-size: 11px; color: #94a3b8; margin-top: 5px; display: block;">
-                    Get from: Wix Dashboard → Settings → API Keys
-                </small>
-            </div>
-        </div>
-        
-        <div class="report-actions" style="margin-top: 25px;">
-            <button class="btn-cancel-report" onclick="closeCredentialsModal()">Cancel</button>
-            <button class="btn-generate-report" onclick="authenticateStore()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="20 6 9 17 4 12"/>
+        <h3>Enter Your Shopify Store Name</h3>
+        <p style="margin-bottom: 20px; color: #64748b;">
+            What's your Shopify store URL?
+        </p>
+        <input type="text" id="shopifyStoreName" placeholder="mystore" 
+               style="width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0; font-size: 16px; margin-bottom: 10px;">
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">
+            Example: If your store is <strong>mystore.myshopify.com</strong>, just enter <strong>mystore</strong>
+        </p>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeShopifyNameModal()">Cancel</button>
+            <button class="btn-confirm" onclick="proceedToShopifyAuth()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle; margin-right:5px">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
-                Connect Store
+                Continue to Shopify Login
             </button>
         </div>
     </div>
