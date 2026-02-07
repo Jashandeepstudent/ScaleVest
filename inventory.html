@@ -86,6 +86,110 @@ body{margin:0;background:#f6f7fb;padding:30px}
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.12);
 }
+/* ONLINE STORE INTEGRATION STYLES */
+.store-integration-btn {
+    background: linear-gradient(135deg, #ec4899 0%, #be185d 100%) !important;
+    color: white !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    transition: all 0.3s ease;
+}
+
+.store-integration-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+}
+
+.store-integration-btn.connected {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.store-platform-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.store-platform-card:hover {
+    border-color: #ec4899;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(236, 72, 153, 0.2);
+}
+
+.store-platform-card.selected {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.platform-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+}
+
+.shopify-logo { background: linear-gradient(135deg, #96bf48 0%, #5e8e3e 100%); }
+.wix-logo { background: linear-gradient(135deg, #0c6efd 0%, #084298 100%); }
+
+.connection-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.connection-status.connected {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.connection-status.disconnected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.sync-indicator {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 5000;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.sync-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f4f6;
+    border-top-color: #ec4899;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
 .pdf-type-card {
     background: white;
     border: 2px solid #e2e8f0;
@@ -1052,6 +1156,13 @@ input:focus, select:focus, textarea:focus {
             <button onclick="openBulkAdd()">📦 Bulk Add</button>
         </div>
     </div>
+<button class="store-integration-btn" id="storeIntegrationBtn" onclick="openStoreIntegrationModal()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+    </svg>
+    <span id="storeButtonText">Connect Online Store</span>
+</button>
     <button style="background:#f59e0b" onclick="openBulkExpiryModal()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:middle; margin-right:5px">
             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -1444,10 +1555,379 @@ auth.onAuthStateChanged(u => {
 });
 
 
-// PRODUCT ANALYTICS SYSTEM
-// PRODUCT ANALYTICS SYSTEM - FIXED CALCULATION
-// PRODUCT ANALYTICS SYSTEM - ONLY ACTIVE PRODUCTS
-// PRODUCT ANALYTICS SYSTEM - NO DUPLICATE PRODUCTS
+// ============================================
+// UPDATED ONLINE STORE INTEGRATION - CLIENT SIDE
+// Replace the entire "ONLINE STORE INTEGRATION SYSTEM" section in your HTML
+// ============================================
+
+const VERCEL_API_URL = 'https://gemini-sigma-plum.vercel.app/api/onlinestore';
+
+let selectedPlatform = null;
+let storeConnection = {
+    platform: null,
+    connected: false,
+    storeUrl: null,
+    apiKey: null,
+    apiSecret: null,
+    lastSync: null
+};
+
+// Load store connection status
+function loadStoreConnection() {
+    if (!currentUserId) return;
+    
+    db.ref(`Businesses/${currentUserId}/storeIntegration`).once("value", s => {
+        if (s.exists()) {
+            storeConnection = s.val();
+            updateStoreButtonUI();
+            if (storeConnection.connected) {
+                startAutoSync();
+            }
+        }
+    });
+}
+
+function updateStoreButtonUI() {
+    const btn = document.getElementById("storeIntegrationBtn");
+    const btnText = document.getElementById("storeButtonText");
+    
+    if (storeConnection.connected) {
+        btn.classList.add("connected");
+        btnText.textContent = `${storeConnection.platform.toUpperCase()} Connected`;
+    } else {
+        btn.classList.remove("connected");
+        btnText.textContent = "Connect Online Store";
+    }
+}
+
+function openStoreIntegrationModal() {
+    document.getElementById("storeIntegrationModal").style.display = "flex";
+    
+    // Update UI based on current connection
+    if (storeConnection.connected) {
+        const platformCard = document.getElementById(`${storeConnection.platform}Card`);
+        const statusBadge = document.getElementById(`${storeConnection.platform}Status`);
+        
+        platformCard.classList.add("selected");
+        statusBadge.textContent = "Connected";
+        statusBadge.className = "connection-status connected";
+        
+        document.getElementById("connectionForm").style.display = "block";
+        document.getElementById("platformName").textContent = storeConnection.platform.charAt(0).toUpperCase() + storeConnection.platform.slice(1);
+        document.getElementById("storeUrl").value = storeConnection.storeUrl || "";
+        document.getElementById("connectStoreBtn").style.display = "flex";
+        document.getElementById("connectStoreBtn").textContent = "Disconnect Store";
+        updateCredentialHelp(storeConnection.platform);
+    }
+}
+
+function closeStoreIntegrationModal() {
+    document.getElementById("storeIntegrationModal").style.display = "none";
+    document.getElementById("connectionForm").style.display = "none";
+    selectedPlatform = null;
+    
+    // Reset cards
+    document.querySelectorAll(".store-platform-card").forEach(card => {
+        card.classList.remove("selected");
+    });
+}
+
+function selectPlatform(platform) {
+    selectedPlatform = platform;
+    
+    // Remove selection from all cards
+    document.querySelectorAll(".store-platform-card").forEach(card => {
+        card.classList.remove("selected");
+    });
+    
+    // Select current card
+    document.getElementById(`${platform}Card`).classList.add("selected");
+    
+    // Show connection form
+    document.getElementById("connectionForm").style.display = "block";
+    document.getElementById("platformName").textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
+    document.getElementById("connectStoreBtn").style.display = "flex";
+    document.getElementById("connectStoreBtn").textContent = "Connect Store";
+    
+    updateCredentialHelp(platform);
+}
+
+function updateCredentialHelp(platform) {
+    const helpText = {
+        shopify: "Go to Shopify Admin → Apps → Develop apps → Create private app → Admin API",
+        wix: "Go to Wix Dashboard → Settings → Business & Site → API Keys → Create New Key (include site ID in URL)"
+    };
+    
+    document.getElementById("credentialHelp").textContent = helpText[platform];
+}
+
+async function connectStore() {
+    const btn = document.getElementById("connectStoreBtn");
+    
+    // If already connected, disconnect
+    if (storeConnection.connected) {
+        if (confirm(`Disconnect from ${storeConnection.platform}?`)) {
+            await disconnectStore();
+        }
+        return;
+    }
+    
+    const storeUrl = document.getElementById("storeUrl").value.trim();
+    const apiKey = document.getElementById("apiKey").value.trim();
+    const apiSecret = document.getElementById("apiSecret").value.trim();
+    
+    if (!storeUrl || !apiKey || !apiSecret) {
+        alert("Please fill in all credentials");
+        return;
+    }
+    
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="sync-spinner"></div> Verifying...';
+    
+    try {
+        // Step 1: Verify connection
+        const verifyResponse = await fetch(VERCEL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'verify',
+                platform: selectedPlatform,
+                storeUrl: storeUrl,
+                apiKey: apiKey,
+                apiSecret: apiSecret
+            })
+        });
+        
+        const verifyData = await verifyResponse.json();
+        
+        if (!verifyData.success) {
+            throw new Error(verifyData.error || 'Connection verification failed');
+        }
+        
+        // Step 2: Save connection details
+        const connectionData = {
+            platform: selectedPlatform,
+            connected: true,
+            storeUrl: storeUrl,
+            apiKey: apiKey,
+            apiSecret: apiSecret,
+            shopName: verifyData.shopName || verifyData.siteId,
+            connectedAt: firebase.database.ServerValue.TIMESTAMP,
+            lastSync: null
+        };
+        
+        await db.ref(`Businesses/${currentUserId}/storeIntegration`).set(connectionData);
+        
+        storeConnection = connectionData;
+        
+        // Step 3: Initial product sync
+        btn.innerHTML = '<div class="sync-spinner"></div> Loading products...';
+        await syncStoreProducts();
+        
+        triggerSuccess(`✅ Connected to ${selectedPlatform.toUpperCase()} successfully!`);
+        closeStoreIntegrationModal();
+        updateStoreButtonUI();
+        startAutoSync();
+        
+    } catch (error) {
+        console.error("Connection error:", error);
+        alert(`❌ Connection failed: ${error.message}\n\nPlease check your credentials and try again.`);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+    }
+}
+
+async function disconnectStore() {
+    await db.ref(`Businesses/${currentUserId}/storeIntegration`).update({
+        connected: false,
+        lastSync: null
+    });
+    
+    storeConnection.connected = false;
+    stopAutoSync();
+    updateStoreButtonUI();
+    closeStoreIntegrationModal();
+    triggerSuccess("Store disconnected");
+}
+
+async function syncStoreProducts() {
+    showSyncIndicator("Loading products from store...");
+    
+    try {
+        const response = await fetch(VERCEL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'fetchProducts',
+                platform: storeConnection.platform,
+                storeUrl: storeConnection.storeUrl,
+                apiKey: storeConnection.apiKey,
+                apiSecret: storeConnection.apiSecret
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to fetch products');
+        }
+        
+        const products = data.products;
+        let importedCount = 0;
+        let updatedCount = 0;
+        
+        for (const product of products) {
+            // Check if product already exists
+            const existingEntry = Object.entries(inventory).find(([_, p]) => 
+                p.storeProductId === product.id || 
+                p.name.toLowerCase() === product.name.toLowerCase()
+            );
+            
+            if (existingEntry) {
+                // Update existing product
+                await invRef.child(existingEntry[0]).update({
+                    quantity: product.quantity,
+                    storeProductId: product.id,
+                    storeSKU: product.sku,
+                    lastSyncedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                updatedCount++;
+            } else {
+                // Add new product
+                await invRef.push({
+                    name: product.name,
+                    quantity: product.quantity,
+                    unit: product.unit || "pcs",
+                    storeProductId: product.id,
+                    storeSKU: product.sku,
+                    importedFrom: storeConnection.platform,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    lastSyncedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                importedCount++;
+            }
+        }
+        
+        // Update last sync time
+        await db.ref(`Businesses/${currentUserId}/storeIntegration/lastSync`).set(firebase.database.ServerValue.TIMESTAMP);
+        storeConnection.lastSync = Date.now();
+        
+        hideSyncIndicator();
+        
+        const message = `✅ Sync complete!\n${importedCount} new products imported\n${updatedCount} products updated`;
+        triggerSuccess(message);
+        
+    } catch (error) {
+        console.error("Sync error:", error);
+        hideSyncIndicator();
+        alert(`❌ Sync failed: ${error.message}`);
+    }
+}
+
+// Auto-sync every 10 minutes
+let syncInterval = null;
+
+function startAutoSync() {
+    if (syncInterval) clearInterval(syncInterval);
+    
+    // Initial sync after 5 seconds
+    setTimeout(() => {
+        if (storeConnection.connected) {
+            console.log("🔄 Running initial sync...");
+            syncStoreProducts();
+        }
+    }, 5000);
+    
+    // Then sync every 10 minutes
+    syncInterval = setInterval(() => {
+        if (storeConnection.connected) {
+            console.log("🔄 Auto-syncing with store...");
+            syncStoreProducts();
+        }
+    }, 10 * 60 * 1000); // 10 minutes
+}
+
+function stopAutoSync() {
+    if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
+    }
+}
+
+function showSyncIndicator(text) {
+    const indicator = document.getElementById("syncIndicator");
+    document.getElementById("syncText").textContent = text;
+    indicator.style.display = "flex";
+}
+
+function hideSyncIndicator() {
+    document.getElementById("syncIndicator").style.display = "none";
+}
+
+// Watch for inventory changes and sync TO store
+let inventoryWatcher = null;
+
+function setupInventoryWatcher() {
+    if (inventoryWatcher) {
+        invRef.off("child_changed", inventoryWatcher);
+    }
+    
+    inventoryWatcher = async (snapshot) => {
+        const product = snapshot.val();
+        
+        if (storeConnection.connected && product.storeProductId) {
+            console.log(`📤 Syncing ${product.name} to ${storeConnection.platform}`);
+            await updateStoreInventory(product.storeProductId, product.quantity);
+        }
+    };
+    
+    invRef.on("child_changed", inventoryWatcher);
+}
+
+async function updateStoreInventory(productId, newQuantity) {
+    try {
+        showSyncIndicator(`Updating ${storeConnection.platform}...`);
+        
+        const response = await fetch(VERCEL_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'updateInventory',
+                platform: storeConnection.platform,
+                storeUrl: storeConnection.storeUrl,
+                apiKey: storeConnection.apiKey,
+                apiSecret: storeConnection.apiSecret,
+                productId: productId,
+                quantity: newQuantity
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`✅ Successfully synced inventory to ${storeConnection.platform}`);
+        } else {
+            console.error('Sync to store failed:', data.error);
+        }
+        
+        hideSyncIndicator();
+        
+    } catch (error) {
+        console.error('Error syncing to store:', error);
+        hideSyncIndicator();
+    }
+}
+
+// Initialize when auth completes
+setTimeout(() => {
+    if (currentUserId) {
+        loadStoreConnection();
+        setupInventoryWatcher();
+    }
+}, 2000);
+
 function updateProductAnalytics(productId, productName, quantitySold) {
     if (!currentUserId) {
         console.error("User not authenticated");
@@ -3552,6 +4032,95 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 </script>
+<!-- STORE INTEGRATION MODAL -->
+<div id="storeIntegrationModal" class="custom-modal">
+    <div class="report-modal-content" style="max-width: 700px;">
+        <h2>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ec4899" stroke-width="2">
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            Connect Your Online Store
+        </h2>
+        <p style="margin-bottom: 30px;">Sync your inventory automatically with your e-commerce platform</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <!-- Shopify Card -->
+            <div class="store-platform-card" id="shopifyCard" onclick="selectPlatform('shopify')">
+                <div class="connection-status disconnected" id="shopifyStatus">Not Connected</div>
+                <div class="platform-logo shopify-logo">🛍️</div>
+                <h3 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700;">Shopify</h3>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
+                    Sync products, inventory & orders
+                </p>
+                <ul style="text-align: left; padding-left: 20px; font-size: 12px; color: #475569;">
+                    <li>Auto-sync inventory levels</li>
+                    <li>Real-time stock updates</li>
+                    <li>Order tracking</li>
+                </ul>
+            </div>
+            
+            <!-- Wix Card -->
+            <div class="store-platform-card" id="wixCard" onclick="selectPlatform('wix')">
+                <div class="connection-status disconnected" id="wixStatus">Not Connected</div>
+                <div class="platform-logo wix-logo">🌐</div>
+                <h3 style="margin: 0 0 10px 0; font-size: 20px; font-weight: 700;">Wix</h3>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">
+                    Connect your Wix store seamlessly
+                </p>
+                <ul style="text-align: left; padding-left: 20px; font-size: 12px; color: #475569;">
+                    <li>Bidirectional sync</li>
+                    <li>Automatic updates</li>
+                    <li>Product management</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="connectionForm" style="display: none; background: #f8fafc; padding: 25px; border-radius: 16px; margin-bottom: 20px;">
+            <h3 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #1e293b;">
+                Enter <span id="platformName">Store</span> Credentials
+            </h3>
+            
+            <div class="report-input-group">
+                <label>Store URL</label>
+                <input type="text" id="storeUrl" placeholder="e.g., mystore.myshopify.com">
+            </div>
+            
+            <div class="report-input-group">
+                <label>API Key</label>
+                <input type="text" id="apiKey" placeholder="Enter your API key">
+            </div>
+            
+            <div class="report-input-group">
+                <label>API Secret / Access Token</label>
+                <input type="password" id="apiSecret" placeholder="Enter your API secret">
+            </div>
+            
+            <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 8px; margin-top: 15px;">
+                <p style="margin: 0; font-size: 12px; color: #856404;">
+                    <strong>📌 Where to find credentials:</strong><br>
+                    <span id="credentialHelp"></span>
+                </p>
+            </div>
+        </div>
+        
+        <div class="report-actions">
+            <button class="btn-cancel-report" onclick="closeStoreIntegrationModal()">Cancel</button>
+            <button class="btn-generate-report" id="connectStoreBtn" onclick="connectStore()" style="display: none;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Connect Store
+            </button>
+        </div>
+    </div>
+</div>
 
+<!-- Sync Indicator -->
+<div class="sync-indicator" id="syncIndicator">
+    <div class="sync-spinner"></div>
+    <span id="syncText">Syncing inventory...</span>
+</div>
 </body>
 </html>
