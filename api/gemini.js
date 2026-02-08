@@ -1,34 +1,44 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export default async function handler(req, res) {
-    // Explicitly set CORS headers for every request
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Content-Type');
+// Vercel API config
+export const config = {
+  api: {
+    bodyParser: true,
+    externalResolver: true,
+  },
+};
 
-    // Handle OPTIONS request (preflight)
+// CORS headers function
+const setCorsHeaders = (res) => {
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+};
+
+export default async function handler(req, res) {
+    // Set CORS headers for all requests
+    setCorsHeaders(res);
+
+    // Handle preflight
     if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+        return res.status(200).end();
     }
     
-    // Only allow POST for actual requests
+    // Only allow POST
     if (req.method !== 'POST') {
-        res.status(405).json({ error: 'Method Not Allowed' });
-        return;
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
     try {
         const { prompt } = req.body;
         
         if (!prompt) {
-            res.status(400).json({ error: 'Prompt is required' });
-            return;
+            return res.status(400).json({ error: 'Prompt is required' });
         }
         
         if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-            throw new Error('API key not configured');
+            return res.status(500).json({ error: 'API key not configured' });
         }
         
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
@@ -63,11 +73,11 @@ export default async function handler(req, res) {
         let parsedData = JSON.parse(cleanJsonString);
         const finalArray = Array.isArray(parsedData) ? parsedData : (parsedData.trends || [parsedData]);
         
-        res.status(200).json(finalArray);
+        return res.status(200).json(finalArray);
         
     } catch (error) {
         console.error("CFO API Error:", error);
-        res.status(500).json({ 
+        return res.status(500).json({ 
             error: "Analysis Failed", 
             details: error.message 
         });
