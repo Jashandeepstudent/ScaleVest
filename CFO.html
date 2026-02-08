@@ -2503,7 +2503,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// ✅ ADD THIS NEW FUNCTION to fetch data for AI
+// ✅AI
 async function fetchFinancialDataForAI(userId) {
     const dbRef = ref(getDatabase());
     
@@ -2548,7 +2548,7 @@ document.addEventListener('DOMContentLoaded', () => {
     content.innerHTML = '<p style="text-align: center; padding: 20px;">Scanning 2026 Viral Trends...</p>';
     
     try {
-        const response = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/gemini', {
+        const response = await fetch('https://gemini-sigma-plum.vercel.app/api/gemini', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -3770,7 +3770,7 @@ function launchFlashSale() {
     // You can build this feature later to create automatic discounts
 }
 function openCFOChat() {
-    // Adding a small scale effect before navigating for that premium feel
+    // SEARCH
     const searchBar = document.querySelector('.search-bar');
     searchBar.style.transform = 'scale(0.98)';
     
@@ -3805,8 +3805,7 @@ async function askCFO(userInput) {
                 if (done) break;
                 
                 const chunk = decoder.decode(value, { stream: true });
-                // The Vercel AI SDK sends parts of the text prefixed by codes; 
-                // this simple regex helps extract just the text content.
+                // vercel
                 const cleanChunk = chunk.replace(/0:\"/g, '').replace(/\"/g, '');
                 adviceTextEl.innerText += cleanChunk;
             }
@@ -4344,6 +4343,7 @@ console.log('✅ ScaleVest CFO initialized');
 
 </body>
 </html>
+
 
 
 
