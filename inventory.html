@@ -28,7 +28,6 @@ body{margin:0;background:#f6f7fb;padding:30px}
         height:34px;
     }
 }
-/* HEADER */
 .top{
     display:flex;
     flex-direction:column;
@@ -43,19 +42,280 @@ body{margin:0;background:#f6f7fb;padding:30px}
         align-items:center;
     }
 }
+
 .top h2{margin:0;font-size:26px;font-weight:700}
+
+/* ACTION BUTTONS - KEEP IN ROW ON MOBILE */
 .top .actions{
-    display:grid;
-    grid-template-columns:1fr;
-    gap:10px;
-    width:100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
 }
 
-@media (min-width: 640px) {
+.top button{
+    padding: 12px 16px;
+    border: none;
+    border-radius: 14px;
+    background: #000;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Mobile: 2 buttons per row */
+@media (max-width: 640px) {
+    .top button{
+        flex: 1 1 calc(50% - 4px);
+        padding: 11px 10px;
+        font-size: 13px;
+    }
+}
+
+/* Desktop: auto width */
+@media (min-width: 641px) {
     .top .actions{
-        display:flex;
-        flex-wrap:wrap;
-        width:auto;
+        width: auto;
+    }
+    
+    .top button{
+        width: auto;
+        flex: 0 1 auto;
+    }
+}
+
+/* STATS CARDS - FIXED FOR MOBILE */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .stats-container {
+        grid-template-columns: 1fr 1fr; /* 2 per row on mobile */
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-container {
+        gap: 8px;
+    }
+}
+
+.stat-card {
+    background: white;
+    padding: 16px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Keep layout on mobile */
+@media (max-width: 640px) {
+    .stat-card {
+        flex-direction: row; /* Keep horizontal */
+        padding: 12px 10px;
+        gap: 10px;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .stat-details h3 {
+        font-size: 16px;
+    }
+    
+    .stat-label {
+        font-size: 8px;
+    }
+}
+
+    /* ========================================
+   MOBILE RESPONSIVENESS FIXES
+   ======================================== */
+
+/* Fix action buttons - keep them in a row on mobile */
+.top .actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+}
+
+@media (max-width: 640px) {
+    .top .actions {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .top .actions button {
+        flex: 1 1 calc(50% - 4px); /* Two buttons per row */
+        min-width: 0;
+        padding: 12px 10px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Fix stats cards for mobile */
+@media (max-width: 768px) {
+    .stats-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 2 cards per row */
+        gap: 10px;
+    }
+    
+    .stat-card {
+        flex-direction: row; /* Keep icon and text side by side */
+        padding: 12px;
+        gap: 10px;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+    }
+    
+    .stat-details {
+        text-align: left;
+    }
+    
+    .stat-label {
+        font-size: 9px;
+    }
+    
+    .stat-details h3 {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small screens - even more compact */
+    .top .actions button {
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+    
+    .stat-card {
+        padding: 10px;
+        gap: 8px;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .stat-details h3 {
+        font-size: 16px;
+    }
+}
+
+/* Fix inventory grid for mobile */
+@media (max-width: 768px) {
+    .grid-header {
+        display: none; /* Hide header on mobile */
+    }
+    
+    .row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 15px;
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+        margin-bottom: 10px;
+    }
+    
+    .row > * {
+        width: 100%;
+    }
+    
+    .col-main,
+    .col-stat,
+    .col-status,
+    .col-actions {
+        justify-content: flex-start;
+        text-align: left;
+    }
+    
+    .action-buttons {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    .action-text-btn {
+        flex: 1 1 calc(50% - 3px);
+        justify-content: center;
+    }
+}
+
+/* Fix PDF type cards for mobile */
+@media (max-width: 640px) {
+    .pdf-type-card {
+        padding: 20px;
+    }
+    
+    .pdf-type-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .pdf-type-card h3 {
+        font-size: 18px;
+    }
+    
+    .pdf-type-card p {
+        font-size: 12px;
+    }
+    
+    .pdf-type-card ul li {
+        font-size: 11px;
+    }
+}
+
+/* Fix modal responsiveness */
+@media (max-width: 768px) {
+    .manual-modal-box,
+    .modal-box,
+    .report-modal-content {
+        padding: 20px;
+        max-width: 95% !important;
+        width: 95% !important;
+        margin: 10px;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .modal-actions button {
+        width: 100%;
     }
 }
 .top button{
@@ -3640,3 +3900,4 @@ document.head.appendChild(styleElement);
 
 </body>
 </html>
+
