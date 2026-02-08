@@ -172,6 +172,345 @@
             height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
+        /* ========== ENHANCED MOBILE RESPONSIVE FIXES ========== */
+
+@media (max-width: 768px) {
+    body {
+        padding: 15px 10px;
+    }
+
+    .container {
+        padding: 0;
+    }
+
+    .logo {
+        font-size: 24px;
+        letter-spacing: 1.5px;
+    }
+
+    .search-bar {
+        padding: 12px 20px;
+        font-size: 14px;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    /* Dashboard Grid - Single Column */
+    .dashboard {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+
+    /* All Cards */
+    .card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    /* Card Titles */
+    .card-title {
+        font-size: 10px;
+        margin-bottom: 12px;
+        letter-spacing: 1.5px;
+    }
+
+    /* Profit Card */
+    .big-number {
+        font-size: 32px;
+    }
+
+    .profit-text {
+        font-size: 13px;
+    }
+
+    #trend-badge {
+        font-size: 0.75rem !important;
+        padding: 3px 6px !important;
+    }
+
+    #daily-breakdown {
+        font-size: 0.75rem !important;
+    }
+
+    .burn-rate {
+        font-size: 11px;
+        padding: 5px 12px;
+    }
+
+    /* Revenue Chart */
+    .chart, #revenue-chart {
+        height: 80px !important;
+    }
+
+    /* Products Card */
+    .products {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+    }
+
+    .product {
+        padding: 15px;
+    }
+
+    .product-icon, .dynamic-icon {
+        font-size: 32px !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .product-name {
+        font-size: 14px;
+    }
+
+    .product-badge {
+        font-size: 11px;
+    }
+
+    .product-header {
+        font-size: 9px;
+    }
+
+    /* Salary Card */
+    .salary-card-wide {
+        padding: 20px !important;
+        max-width: 100% !important;
+    }
+
+    .salary-card-wide h2 {
+        font-size: 20px !important;
+    }
+
+    .salary-card-wide > div:first-child {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+
+    .svg-container img {
+        width: 60px !important;
+        height: 60px !important;
+    }
+
+    /* Momentum Card */
+    .momentum-text {
+        font-size: 16px;
+    }
+
+    .line-chart {
+        height: 80px;
+    }
+
+    .price-warning {
+        font-size: 11px;
+    }
+
+    /* Alert Card */
+    .alert-text {
+        font-size: 15px;
+    }
+
+    .launch-btn {
+        padding: 12px 20px;
+        font-size: 12px;
+    }
+
+    /* Quick Actions */
+    .quick-actions {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px;
+    }
+
+    .action-btn {
+        padding: 15px 10px;
+    }
+
+    .action-icon {
+        font-size: 24px;
+    }
+
+    .action-label {
+        font-size: 9px;
+    }
+
+    /* Advice Card */
+    .advice-text {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    /* Stock Card */
+    .stock-text {
+        font-size: 12px;
+    }
+
+    /* AI CFO Card */
+    .ai-cfo-card {
+        grid-column: span 1 !important;
+    }
+
+    #ai-suggestions {
+        font-size: 13px;
+    }
+
+    #shelf-upload-section button {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    /* Onboarding Popup */
+    #cfo-popup .card {
+        max-width: 95% !important;
+        padding: 25px !important;
+    }
+
+    #cfo-popup h2 {
+        font-size: 22px;
+    }
+
+    #cfo-name-input {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    /* Product Analysis Page */
+    #product-analysis-page {
+        padding: 15px;
+    }
+
+    #product-analysis-page h1 {
+        font-size: 28px !important;
+    }
+
+    #products-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px;
+    }
+
+    /* Finance Report Page */
+    #finance-report-page {
+        padding: 15px;
+    }
+
+    #finance-report-page h1 {
+        font-size: 32px !important;
+    }
+
+    #dashboard-container .card {
+        padding: 25px !important;
+    }
+
+    #weekly-sales-chart,
+    #monthly-sales-chart {
+        height: 200px !important;
+    }
+
+    #pnl-status-main {
+        font-size: 42px !important;
+    }
+
+    #executive-summary {
+        font-size: 14px !important;
+    }
+
+    /* Export Modal */
+    #export-modal .card {
+        padding: 25px !important;
+    }
+
+    #export-modal h3 {
+        font-size: 20px;
+    }
+
+    /* Trend Overlay */
+    #trend-overlay .card {
+        width: 95% !important;
+        padding: 20px !important;
+    }
+
+    .trend-item {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px 8px;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .search-bar {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .big-number {
+        font-size: 28px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+
+    .product-name {
+        font-size: 13px;
+    }
+
+    .action-label {
+        font-size: 8px;
+    }
+
+    .salary-card-wide h2 {
+        font-size: 18px !important;
+    }
+
+    #finance-report-page h1 {
+        font-size: 26px !important;
+    }
+
+    .chart, #revenue-chart {
+        height: 60px !important;
+    }
+
+    #pnl-status-main {
+        font-size: 36px !important;
+    }
+}
+
+/* Fix for Horizontal Overflow */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+
+    * {
+        max-width: 100%;
+    }
+
+    .container {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Ensure flex items don't overflow */
+    .salary-card-wide > div:first-child > div {
+        min-width: 0;
+    }
+
+    /* Wrap long text */
+    .advice-text,
+    .stock-text,
+    .alert-text,
+    .momentum-text,
+    .product-name,
+    #executive-summary {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+}
         /* ========== MOBILE RESPONSIVE FIXES ========== */
 
 @media (max-width: 768px) {
@@ -4005,6 +4344,7 @@ console.log('✅ ScaleVest CFO initialized');
 
 </body>
 </html>
+
 
 
 
