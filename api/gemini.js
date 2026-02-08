@@ -1,28 +1,22 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-    // CORS Configuration - Allow your specific domain with proper protocol
-    const allowedOrigins = [
-        'https://upscalevest.site',
-        'http://upscalevest.site', // For local testing if needed
-        'http://localhost:3000' // For local development
-    ];
-    
-    const origin = req.headers.origin;
-    
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
+    // Let vercel.json handle CORS, but keep OPTIONS handler
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
     }
     
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    
-    if (req.method === 'OPTIONS') return res.status(200).end();
-    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method Not Allowed' });
+    }
 
     try {
         const { prompt } = req.body;
+        
+        if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+            throw new Error('API key not configured');
+        }
+        
         const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
         
         const model = genAI.getGenerativeModel({ 
@@ -55,9 +49,13 @@ export default async function handler(req, res) {
         let parsedData = JSON.parse(cleanJsonString);
         const finalArray = Array.isArray(parsedData) ? parsedData : (parsedData.trends || [parsedData]);
         
-        res.status(200).json(finalArray);
+        return res.status(200).json(finalArray);
+        
     } catch (error) {
         console.error("CFO API Error:", error);
-        res.status(500).json({ error: "Analysis Failed", details: error.message });
+        return res.status(500).json({ 
+            error: "Analysis Failed", 
+            details: error.message 
+        });
     }
 }
