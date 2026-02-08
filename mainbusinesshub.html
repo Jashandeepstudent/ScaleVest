@@ -42,143 +42,7 @@
 #createHubCard:hover img.hub-icon {
     transform: scale(1.1) rotate(-2deg);
 }
-.icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Ensure the wrapper has a fixed height/width if not already set */
-}
-
-.icon-img {
-    width: 24px;   /* Match your original SVG size */
-    height: 24px;
-    display: block; /* Removes the "baseline" gap below images */
-    object-fit: contain; /* Prevents distortion */
-}
-/* New Logout Button Styles */
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.logout-btn {
-    background: #fee2e2;
-    color: #dc2626;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.logout-btn:hover {
-    background: #fecaca;
-    transform: translateY(-1px);
-}
-/* Logout Modal Specific Styles */
-#logoutModal { 
-    position: fixed; 
-    inset: 0; 
-    background: rgba(15, 23, 42, 0.6); 
-    backdrop-filter: blur(8px); 
-    display: none; 
-    justify-content: center; 
-    align-items: center; 
-    z-index: 2000; 
-}
-
-.confirm-box { 
-    width: 90%; 
-    max-width: 350px; 
-    background: white; 
-    padding: 30px; 
-    border-radius: 30px; 
-    text-align: center; 
-    box-shadow: var(--shadow);
-}
-
-.confirm-box h3 { margin-top: 0; color: #1e293b; }
-.confirm-box p { color: var(--text-sub); font-size: 14px; margin-bottom: 25px; }
-
-.modal-btns { display: flex; gap: 12px; }
-
-.btn-cancel { 
-    flex: 1; 
-    padding: 14px; 
-    border-radius: 14px; 
-    border: 1px solid #e2e8f0; 
-    background: #f8fafc; 
-    font-weight: 600; 
-    cursor: pointer; 
-}
-
-.btn-confirm { 
-    flex: 1; 
-    padding: 14px; 
-    border-radius: 14px; 
-    border: none; 
-    background: #ef4444; 
-    color: white; 
-    font-weight: 700; 
-    cursor: pointer; 
-}
-.logout-btn.confirming {
-    background: #dc2626;
-    color: white;
-}
-    #createHubCard {
-    display: flex;
-    flex-direction: column; /* Stacks items vertically */
-    align-items: center;    /* Centers items horizontally */
-    justify-content: center;
-    text-align: center;     /* Centers the paragraph text */
-    padding: 20px;
-    width: 100%;            /* Ensures it fits the screen width */
-    box-sizing: border-box; /* Prevents padding from breaking width */
-}
-
-.hub-icon {
-    width: 60px;            /* Adjust size as needed */
-    height: auto;
-    margin-bottom: 15px;    /* Space between icon and title */
-    display: block;
-    flex-shrink: 0;         /* Prevents the SVG from getting squeezed */
-}
-
-#createHubCard h2 {
-    margin: 10px 0;
-    font-size: 1.5rem;      /* Adjust for mobile readability */
-}
-
-#createHubCard p {
-    margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.4;
-}
-
-    
-    /* MODERN 5-BOX GRID */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-
-    .box {
-        background: var(--card-bg);
-        padding: 28px;
-        border-radius: 28px;
-        border: 1px solid #f1f5f9;
-        box-shadow: var(--shadow);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 200px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        cursor: pointer;
-        position: relative;
-    }
-    .box:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 30px rgba(0,0,0,0.08); }
-/* Helper Bot Styles */
+    /* Helper Bot Styles */
 .helper-bot {
     position: fixed;
     bottom: 20px;
@@ -433,6 +297,148 @@
     border-color: #7c3aed;
 }
 
+/* Help Modal Styles */
+.help-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.help-modal.open {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.help-modal-content {
+    background: white;
+    border-radius: 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.help-modal-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    padding: 24px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.help-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.close-help-modal {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.close-help-modal:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.help-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.help-modal-body h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+}
+
+.help-modal-body p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #475569;
+    margin: 0 0 16px 0;
+}
+
+.help-modal-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+}
+
+.help-modal-body ul li {
+    padding: 10px 0;
+    padding-left: 28px;
+    position: relative;
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+}
+
+.help-modal-body ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #7c3aed;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.help-feature-box {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border-left: 4px solid #7c3aed;
+}
+
+.help-feature-box h5 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+
+.help-feature-box p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
 /* Mobile Responsive */
 @media (max-width: 600px) {
     .bot-panel {
@@ -447,7 +453,161 @@
         bottom: 15px;
         right: 15px;
     }
+    
+    .help-modal-content {
+        max-width: 100%;
+        border-radius: 20px;
+    }
+    
+    .help-modal-header {
+        padding: 20px;
+    }
+    
+    .help-modal-title {
+        font-size: 20px;
+    }
+    
+    .help-modal-body {
+        padding: 20px;
+    }
 }
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Ensure the wrapper has a fixed height/width if not already set */
+}
+
+.icon-img {
+    width: 24px;   /* Match your original SVG size */
+    height: 24px;
+    display: block; /* Removes the "baseline" gap below images */
+    object-fit: contain; /* Prevents distortion */
+}
+/* New Logout Button Styles */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #fecaca;
+    transform: translateY(-1px);
+}
+/* Logout Modal Specific Styles */
+#logoutModal { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(15, 23, 42, 0.6); 
+    backdrop-filter: blur(8px); 
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 2000; 
+}
+
+.confirm-box { 
+    width: 90%; 
+    max-width: 350px; 
+    background: white; 
+    padding: 30px; 
+    border-radius: 30px; 
+    text-align: center; 
+    box-shadow: var(--shadow);
+}
+
+.confirm-box h3 { margin-top: 0; color: #1e293b; }
+.confirm-box p { color: var(--text-sub); font-size: 14px; margin-bottom: 25px; }
+
+.modal-btns { display: flex; gap: 12px; }
+
+.btn-cancel { 
+    flex: 1; 
+    padding: 14px; 
+    border-radius: 14px; 
+    border: 1px solid #e2e8f0; 
+    background: #f8fafc; 
+    font-weight: 600; 
+    cursor: pointer; 
+}
+
+.btn-confirm { 
+    flex: 1; 
+    padding: 14px; 
+    border-radius: 14px; 
+    border: none; 
+    background: #ef4444; 
+    color: white; 
+    font-weight: 700; 
+    cursor: pointer; 
+}
+.logout-btn.confirming {
+    background: #dc2626;
+    color: white;
+}
+    #createHubCard {
+    display: flex;
+    flex-direction: column; /* Stacks items vertically */
+    align-items: center;    /* Centers items horizontally */
+    justify-content: center;
+    text-align: center;     /* Centers the paragraph text */
+    padding: 20px;
+    width: 100%;            /* Ensures it fits the screen width */
+    box-sizing: border-box; /* Prevents padding from breaking width */
+}
+
+.hub-icon {
+    width: 60px;            /* Adjust size as needed */
+    height: auto;
+    margin-bottom: 15px;    /* Space between icon and title */
+    display: block;
+    flex-shrink: 0;         /* Prevents the SVG from getting squeezed */
+}
+
+#createHubCard h2 {
+    margin: 10px 0;
+    font-size: 1.5rem;      /* Adjust for mobile readability */
+}
+
+#createHubCard p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+    
+    /* MODERN 5-BOX GRID */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+    .box {
+        background: var(--card-bg);
+        padding: 28px;
+        border-radius: 28px;
+        border: 1px solid #f1f5f9;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 200px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+    }
+    .box:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 30px rgba(0,0,0,0.08); }
+
     /* ICON STYLING */
     .icon-wrapper { width: 52px; height: 52px; background: #f8fafc; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; transition: 0.3s; }
     .box:hover .icon-wrapper { background: var(--primary); }
@@ -653,33 +813,34 @@ function toggleBot() {
     }
 }
 
-// Update current time
 function updateTime() {
     const now = new Date();
     
-    // Format time
-    const timeStr = now.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
-        hour12: true 
-    });
+    // Format time with proper 12-hour format
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
     
-    // Format date
-    const dateStr = now.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    });
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12
+    const hoursStr = String(hours).padStart(2, '0');
     
-    document.getElementById('currentTime').textContent = timeStr;
-    document.getElementById('currentDate').textContent = dateStr;
+    const timeStr = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+    
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-US', options);
+    const timeEl = document.getElementById('currentTime');
+    const dateEl = document.getElementById('currentDate');
+    
+    if (timeEl) timeEl.textContent = timeStr;
+    if (dateEl) dateEl.textContent = dateStr;
 }
 
-// Initialize time and update every second
-updateTime();
-setInterval(updateTime, 1000);
+setTimeout(() => {
+    updateTime();
+    setInterval(updateTime, 1000);
+}, 100);
 
 // Generate smart reminders based on user activity
 function generateSmartReminders() {
@@ -696,7 +857,6 @@ function generateSmartReminders() {
         });
     }
     
-    // Check if user hasn't visited sales
     if (!salesVisited) {
         reminders.push({
             icon: '💰',
@@ -705,6 +865,7 @@ function generateSmartReminders() {
         });
     }
     
+    // Daily reminder for expiry dates
     const today = new Date().toDateString();
     if (lastLogin !== today) {
         reminders.push({
@@ -728,6 +889,8 @@ function displayReminders() {
     const reminders = generateSmartReminders();
     const container = document.getElementById('smartReminders');
     
+    if (!container) return;
+    
     if (reminders.length === 0) {
         container.innerHTML = '';
         return;
@@ -740,112 +903,404 @@ function displayReminders() {
         </div>
     `).join('');
     
-    // Show notification badge if user hasn't seen reminders
     if (!hasSeenReminders && reminders.length > 0) {
-        document.getElementById('botBubble').classList.add('has-notification');
+        const bubble = document.getElementById('botBubble');
+        if (bubble) bubble.classList.add('has-notification');
     }
 }
 
-// Show help information
 function showHelp(section) {
-    const helpTexts = {
+    const helpContent = {
         inventory: {
-            title: '📦 Inventory Hub',
+            icon: '📦',
+            title: 'Inventory Hub',
             content: `
-                <strong>What it does:</strong><br>
-                • Track all your products and stock levels<br>
-                • Set expiry dates for perishable items<br>
-                • Get low stock alerts automatically<br>
-                • AI-powered item extraction from invoices<br><br>
-                <strong>Key Features:</strong><br>
-                • Add products with quantities<br>
-                • Set expiry dates to avoid waste<br>
-                • Monitor stock levels in real-time<br>
-                • Upload invoices for auto-extraction
+                <h4>What is Inventory Hub?</h4>
+                <p>Your central command center for managing all products and stock levels with AI-powered intelligence.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Track every product in your business, monitor stock levels, and never run out of essential items.</p>
+                </div>
+                
+                <h4>Key Features</h4>
+                <ul>
+                    <li>Add unlimited products with names, quantities, and units</li>
+                    <li>Set expiry dates for perishable items (milk, medicines, food)</li>
+                    <li>Get automatic low stock alerts</li>
+                    <li>AI-powered invoice scanning to extract items automatically</li>
+                    <li>Track stock levels in real-time</li>
+                    <li>View product history and movements</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚠️ Important Reminder</h5>
+                    <p>Always set expiry dates for perishable products! This helps you avoid waste and the AI CFO will alert you when items are about to expire.</p>
+                </div>
+                
+                <h4>How to Use</h4>
+                <ul>
+                    <li>Click "Add Product" to create new inventory items</li>
+                    <li>Upload invoices and let AI extract products automatically</li>
+                    <li>Update quantities as you sell or restock</li>
+                    <li>Check regularly for low stock warnings</li>
+                </ul>
             `
         },
         sales: {
-            title: '💰 Sales Flow',
+            icon: '💰',
+            title: 'Sales Flow',
             content: `
-                <strong>What it does:</strong><br>
-                • Record every sale and transaction<br>
-                • Track revenue and profit margins<br>
-                • Set cost and selling prices<br>
-                • Monitor business performance<br><br>
-                <strong>Important:</strong><br>
-                • Always set COST PRICE (what you paid)<br>
-                • Always set SELLING PRICE (what customer pays)<br>
-                • This helps calculate your actual profit/loss<br>
-                • View detailed sales reports and trends
+                <h4>What is Sales Flow?</h4>
+                <p>Your complete transaction recording system that tracks every sale, calculates profits, and monitors business performance.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Record all sales transactions and automatically calculate your actual profit or loss for each sale.</p>
+                </div>
+                
+                <h4>Key Features</h4>
+                <ul>
+                    <li>Record sales with product selection and quantity</li>
+                    <li>Set cost price (what you paid to supplier)</li>
+                    <li>Set selling price (what customer pays you)</li>
+                    <li>Automatic profit/loss calculation</li>
+                    <li>View revenue trends and patterns</li>
+                    <li>Track daily, weekly, and monthly sales</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚠️ Critical: Always Set Prices!</h5>
+                    <p><strong>Cost Price:</strong> What you paid to buy the product<br>
+                    <strong>Selling Price:</strong> What the customer pays you<br><br>
+                    Without both prices, the system cannot calculate your actual profit!</p>
+                </div>
+                
+                <h4>How It Helps</h4>
+                <ul>
+                    <li>Know exactly how much profit you're making</li>
+                    <li>Identify which products are most profitable</li>
+                    <li>Make better pricing decisions</li>
+                    <li>Track revenue growth over time</li>
+                </ul>
             `
         },
         vault: {
-            title: '🔒 Business Vault',
+            icon: '🔒',
+            title: 'Business Vault',
             content: `
-                <strong>What it does:</strong><br>
-                • Store important business documents<br>
-                • Keep notes and reminders<br>
-                • Track staff tasks and assignments<br>
-                • Manage pending orders<br><br>
-                <strong>Store Here:</strong><br>
-                • Tax documents and receipts<br>
-                • Business licenses and certificates<br>
-                • Employee records<br>
-                • Important business notes
+                <h4>What is Business Vault?</h4>
+                <p>Your secure digital filing cabinet for all important business documents, notes, and records.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Store, organize, and access all your critical business documents and information in one secure place.</p>
+                </div>
+                
+                <h4>What You Can Store</h4>
+                <ul>
+                    <li>Tax documents and GST returns</li>
+                    <li>Business licenses and permits</li>
+                    <li>Employee records and contracts</li>
+                    <li>Receipts and invoices</li>
+                    <li>Important business notes</li>
+                    <li>Staff task assignments</li>
+                    <li>Pending orders and follow-ups</li>
+                    <li>Supplier contact information</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Pro Tip</h5>
+                    <p>Organize documents by categories like "Tax", "Legal", "Staff", "Orders" for easy access when you need them.</p>
+                </div>
+                
+                <h4>Key Benefits</h4>
+                <ul>
+                    <li>Never lose important documents</li>
+                    <li>Access from anywhere, anytime</li>
+                    <li>Share documents with team members</li>
+                    <li>Track pending tasks and orders</li>
+                    <li>Keep business organized</li>
+                </ul>
             `
         },
         cfo: {
-            title: '🤖 AI CFO',
+            icon: '🤖',
+            title: 'AI CFO',
             content: `
-                <strong>What it does:</strong><br>
-                • Analyzes your business finances<br>
-                • Provides personalized recommendations<br>
-                • Identifies profit/loss patterns<br>
-                • Suggests pricing optimizations<br><br>
-                <strong>Features:</strong><br>
-                • Weekly financial reports<br>
-                • Product performance analysis<br>
-                • Expiry and stock alerts<br>
-                • Business growth insights<br>
-                • Upload shelf photos for analysis
+                <h4>What is AI CFO?</h4>
+                <p>Your personal Chief Financial Officer powered by artificial intelligence, analyzing your business 24/7 and providing expert recommendations.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Get professional financial analysis and business insights without hiring an expensive CFO.</p>
+                </div>
+                
+                <h4>What AI CFO Does</h4>
+                <ul>
+                    <li>Analyzes all your sales and inventory data</li>
+                    <li>Calculates profit margins and trends</li>
+                    <li>Identifies products losing money</li>
+                    <li>Suggests optimal pricing strategies</li>
+                    <li>Alerts you to expiring inventory</li>
+                    <li>Warns about low stock situations</li>
+                    <li>Tracks weekly revenue patterns</li>
+                    <li>Provides business growth recommendations</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>✨ Advanced Features</h5>
+                    <p><strong>Shelf Analysis:</strong> Upload photos of your store shelves and AI CFO will analyze product placement, suggest optimizations, and identify sales opportunities!</p>
+                </div>
+                
+                <h4>Financial Reports</h4>
+                <ul>
+                    <li>Weekly revenue vs. last week comparison</li>
+                    <li>Product performance rankings</li>
+                    <li>Profit/loss statements</li>
+                    <li>Comprehensive PDF reports</li>
+                    <li>Executive summaries</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Best Practice</h5>
+                    <p>Check AI CFO daily! It updates in real-time as you make sales and can catch problems early before they become serious.</p>
+                </div>
             `
         },
         command: {
-            title: '🎮 Digital Command Centre',
+            icon: '🎮',
+            title: 'Digital Command Centre',
             content: `
-                <strong>What it does:</strong><br>
-                • 3D visualization of your business<br>
-                • Spatial view of inventory<br>
-                • Interactive business management<br>
-                • Digital twin of your store<br><br>
-                <strong>Experience:</strong><br>
-                • Navigate in 3D space<br>
-                • View products in virtual shelves<br>
-                • Manage business spatially<br>
-                • Future-ready business control
+                <h4>What is Digital Command Centre?</h4>
+                <p>Experience your business in immersive 3D - a futuristic way to visualize and manage your entire operation in spatial computing.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Manage your business in a revolutionary 3D environment, like stepping into a digital twin of your physical store.</p>
+                </div>
+                
+                <h4>Unique Features</h4>
+                <ul>
+                    <li>3D visualization of your entire business</li>
+                    <li>Virtual shelves showing real inventory</li>
+                    <li>Spatial product organization</li>
+                    <li>Interactive business management</li>
+                    <li>Navigate like a video game</li>
+                    <li>Future-ready AR/VR compatible</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>🚀 Innovation</h5>
+                    <p>Command Centre represents the future of business management - think of it as your business in the metaverse!</p>
+                </div>
+                
+                <h4>How to Navigate</h4>
+                <ul>
+                    <li>Use mouse or touch to move around</li>
+                    <li>Click on shelves to view products</li>
+                    <li>Zoom in/out for different perspectives</li>
+                    <li>Manage inventory in 3D space</li>
+                    <li>Visualize your business layout</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Pro Tip</h5>
+                    <p>Great for planning store layouts, training staff, or impressing clients with a virtual tour of your business!</p>
+                </div>
             `
         }
     };
     
-    const help = helpTexts[section];
-    alert(`${help.title}\n\n${help.content.replace(/<br>/g, '\n').replace(/<strong>/g, '').replace(/<\/strong>/g, '')}`);
+    const help = helpContent[section];
+    const modal = document.getElementById('helpModal');
+    const icon = document.getElementById('helpModalIcon');
+    const title = document.getElementById('helpModalTitleText');
+    const body = document.getElementById('helpModalBody');
+    
+    if (modal && icon && title && body) {
+        icon.textContent = help.icon;
+        title.textContent = help.title;
+        body.innerHTML = help.content;
+        modal.classList.add('open');
+    }
 }
 
-// Show tips
+function closeHelpModal() {
+    const modal = document.getElementById('helpModal');
+    if (modal) {
+        modal.classList.remove('open');
+    }
+}
+
 function showTip(tip) {
     const tips = {
-        expiry: `📅 Setting Expiry Dates:\n\n1. Go to Inventory Hub\n2. Click on any product\n3. Find "Expiry Date" field\n4. Select the date\n5. Click Save\n\n💡 Tip: Set expiry dates for all perishable items to get automatic alerts!`,
-        pricing: `💰 Setting Prices:\n\n1. Go to Sales Flow\n2. Select a product to sell\n3. Enter COST PRICE (what you paid)\n4. Enter SELLING PRICE (what customer pays)\n5. System auto-calculates profit\n\n⚠️ Important: Always set both prices for accurate profit tracking!`,
-        tracking: `📊 Tracking Inventory:\n\n1. Inventory Hub shows all stock levels\n2. Green = Healthy stock\n3. Yellow = Low stock warning\n4. Red = Critical - restock now!\n\n💡 Tip: Check AI CFO's Stock Radar for detailed analysis!`
+        expiry: {
+            icon: '📅',
+            title: 'Setting Expiry Dates',
+            content: `
+                <h4>Why Set Expiry Dates?</h4>
+                <p>Prevent waste and losses by tracking when products expire. AI CFO will automatically alert you when items are approaching expiration!</p>
+                
+                <div class="help-feature-box">
+                    <h5>Step-by-Step Guide</h5>
+                    <p>Follow these simple steps:</p>
+                </div>
+                
+                <h4>How to Set Expiry Dates</h4>
+                <ul>
+                    <li>Go to <strong>Inventory Hub</strong></li>
+                    <li>Click on any existing product or add new product</li>
+                    <li>Look for the "Expiry Date" field</li>
+                    <li>Click and select the date from calendar</li>
+                    <li>Click "Save" or "Update Product"</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚡ Quick Tip</h5>
+                    <p>Set expiry dates immediately when you receive new stock. This way you'll never forget!</p>
+                </div>
+                
+                <h4>What Products Need Expiry Dates?</h4>
+                <ul>
+                    <li>Food items (bread, milk, snacks)</li>
+                    <li>Medicines and pharmaceuticals</li>
+                    <li>Cosmetics and beauty products</li>
+                    <li>Chemicals and cleaning products</li>
+                    <li>Any time-sensitive items</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Benefits</h5>
+                    <p>AI CFO will send alerts 3-7 days before expiry, suggesting flash sales to move products before they expire!</p>
+                </div>
+            `
+        },
+        pricing: {
+            icon: '💰',
+            title: 'Setting Cost & Selling Prices',
+            content: `
+                <h4>Why Prices Matter?</h4>
+                <p>Without proper pricing, you won't know if you're making profit or loss. This is CRITICAL for business success!</p>
+                
+                <div class="help-feature-box">
+                    <h5>📊 Two Essential Prices</h5>
+                    <p><strong>Cost Price:</strong> What you paid to buy/make the product<br>
+                    <strong>Selling Price:</strong> What you charge the customer<br><br>
+                    <strong>Profit = Selling Price - Cost Price</strong></p>
+                </div>
+                
+                <h4>How to Set Prices</h4>
+                <ul>
+                    <li>Go to <strong>Sales Flow</strong></li>
+                    <li>When recording a sale, select the product</li>
+                    <li>Enter <strong>Cost Price</strong> (your purchase price)</li>
+                    <li>Enter <strong>Selling Price</strong> (customer payment)</li>
+                    <li>System automatically calculates profit!</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚠️ Common Mistake</h5>
+                    <p>Many businesses skip cost price and only track selling price. This means you don't know your actual profit - you could be losing money without knowing it!</p>
+                </div>
+                
+                <h4>Example</h4>
+                <p style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #7c3aed;">
+                    You buy a product for <strong>₹50</strong> (Cost Price)<br>
+                    You sell it for <strong>₹80</strong> (Selling Price)<br>
+                    Your profit = ₹80 - ₹50 = <strong style="color: #10b981;">₹30 profit ✓</strong>
+                </p>
+                
+                <div class="help-feature-box">
+                    <h5>💡 AI CFO Feature</h5>
+                    <p>Once you set prices correctly, AI CFO can identify:<br>
+                    • Products with low profit margins<br>
+                    • Products selling below cost (loss!)<br>
+                    • Optimal pricing strategies</p>
+                </div>
+            `
+        },
+        tracking: {
+            icon: '📊',
+            title: 'Tracking Inventory Levels',
+            content: `
+                <h4>Why Track Inventory?</h4>
+                <p>Never run out of best-selling products or waste money on slow-moving items. Smart inventory tracking is key to profitability!</p>
+                
+                <div class="help-feature-box">
+                    <h5>📍 Where to Track</h5>
+                    <p>Inventory levels are shown in multiple places for your convenience.</p>
+                </div>
+                
+                <h4>Tracking Locations</h4>
+                <ul>
+                    <li><strong>Inventory Hub:</strong> See all products and current stock levels</li>
+                    <li><strong>AI CFO Dashboard:</strong> Stock Radar card shows critical alerts</li>
+                    <li><strong>Sales Flow:</strong> Updated when you make sales</li>
+                    <li><strong>Product Analysis:</strong> Detailed stock movement history</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>🚦 Stock Level Indicators</h5>
+                    <p><span style="color: #10b981;">● Green</span> = Healthy stock (15+ units)<br>
+                    <span style="color: #f59e0b;">● Yellow</span> = Low stock warning (5-15 units)<br>
+                    <span style="color: #ef4444;">● Red</span> = Critical! Restock now (0-5 units)</p>
+                </div>
+                
+                <h4>AI CFO Stock Analysis</h4>
+                <ul>
+                    <li>Calculates daily burn rate (items sold per day)</li>
+                    <li>Predicts when you'll run out of stock</li>
+                    <li>Shows "Days Until Stockout" warnings</li>
+                    <li>Identifies fast-moving vs. slow-moving products</li>
+                    <li>Suggests optimal reorder quantities</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Best Practice</h5>
+                    <p>Check Stock Radar in AI CFO every morning! It will tell you exactly which products need immediate attention.</p>
+                </div>
+                
+                <h4>How Stock Updates</h4>
+                <ul>
+                    <li>Automatically decreases when you record sales</li>
+                    <li>Manually increase when you restock</li>
+                    <li>Real-time updates across all screens</li>
+                    <li>Historical tracking shows usage patterns</li>
+                </ul>
+            `
+        }
     };
     
-    alert(tips[tip]);
+    const tip = tips[tip];
+    const modal = document.getElementById('helpModal');
+    const icon = document.getElementById('helpModalIcon');
+    const title = document.getElementById('helpModalTitleText');
+    const body = document.getElementById('helpModalBody');
+    
+    if (modal && icon && title && body && tip) {
+        icon.textContent = tip.icon;
+        title.textContent = tip.title;
+        body.innerHTML = tip.content;
+        modal.classList.add('open');
+    }
 }
 
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('helpModal');
+    if (modal && event.target === modal) {
+        closeHelpModal();
+    }
+});
+
+// Initialize reminders on page load
 displayReminders();
 
+// Refresh reminders every 5 minutes
 setInterval(displayReminders, 5 * 60 * 1000);
 
+// Mark sections as visited
 const currentPage = window.location.pathname;
 if (currentPage.includes('inventory')) {
     localStorage.setItem('inventoryVisited', 'true');
@@ -855,14 +1310,18 @@ if (currentPage.includes('inventory')) {
 </script>
 <div class="helper-bot">
     <div class="bot-bubble" onclick="toggleBot()" id="botBubble">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E" alt="Helper Bot" class="bot-icon">
+        <svg class="bot-icon" fill="none" viewBox="0 0 24 24" stroke="white">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
     </div>
     
     <div class="bot-panel" id="botPanel">
         <div class="bot-header">
             <div class="bot-header-left">
                 <div class="bot-avatar">
-                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z'/%3E%3C/svg%3E" style="width: 24px; height: 24px;">
+                    <svg style="width: 24px; height: 24px;" fill="none" viewBox="0 0 24 24" stroke="white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
                 </div>
                 <div class="bot-info">
                     <h3>ScaleVest Assistant</h3>
@@ -876,7 +1335,7 @@ if (currentPage.includes('inventory')) {
             <!-- Current Time Widget -->
             <div class="current-time">
                 <div class="time-label">Current Time</div>
-                <div class="time-display" id="currentTime">--:--:--</div>
+                <div class="time-display" id="currentTime">Loading...</div>
                 <div class="date-display" id="currentDate">Loading...</div>
             </div>
             
@@ -931,10 +1390,23 @@ if (currentPage.includes('inventory')) {
     </div>
 </div>
 
+<!-- Help Modal -->
+<div class="help-modal" id="helpModal">
+    <div class="help-modal-content">
+        <div class="help-modal-header">
+            <h2 class="help-modal-title" id="helpModalTitle">
+                <span id="helpModalIcon">📦</span>
+                <span id="helpModalTitleText">Section Guide</span>
+            </h2>
+            <button class="close-help-modal" onclick="closeHelpModal()">×</button>
+        </div>
+        <div class="help-modal-body" id="helpModalBody">
+            <!-- Content will be injected here -->
+        </div>
+    </div>
+</div>
 </body>
 </html>
-
-
 
 
 
