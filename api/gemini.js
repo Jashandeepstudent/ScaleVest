@@ -1,17 +1,31 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default async function handler(req, res) {
-    // Let vercel.json handle CORS, but keep OPTIONS handler
+    // Explicitly set CORS headers for every request
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Content-Type');
+
+    // Handle OPTIONS request (preflight)
     if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+        res.status(200).end();
+        return;
     }
     
+    // Only allow POST for actual requests
     if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method Not Allowed' });
+        res.status(405).json({ error: 'Method Not Allowed' });
+        return;
     }
 
     try {
         const { prompt } = req.body;
+        
+        if (!prompt) {
+            res.status(400).json({ error: 'Prompt is required' });
+            return;
+        }
         
         if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
             throw new Error('API key not configured');
@@ -49,11 +63,11 @@ export default async function handler(req, res) {
         let parsedData = JSON.parse(cleanJsonString);
         const finalArray = Array.isArray(parsedData) ? parsedData : (parsedData.trends || [parsedData]);
         
-        return res.status(200).json(finalArray);
+        res.status(200).json(finalArray);
         
     } catch (error) {
         console.error("CFO API Error:", error);
-        return res.status(500).json({ 
+        res.status(500).json({ 
             error: "Analysis Failed", 
             details: error.message 
         });
