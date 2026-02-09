@@ -2552,7 +2552,8 @@ document.addEventListener('DOMContentLoaded', () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                prompt: " # ROLE
+                prompt: `
+ # ROLE
                 You are a ScaleVest Elite Market Analyst providing REAL-TIME February 2026 trending data.
                 
                 # CRITICAL INSTRUCTIONS
@@ -2605,8 +2606,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 - Use ONLY 2026 trends
                 - Be creative with product names but stay realistic
                 - Growth percentages should reflect actual viral momentum
-                - NO old trends from 2024 or earlier" 
-            })
+                - NO old trends from 2024 or earlier
+                   `
+             })
         });
 
         const data = await response.json();
