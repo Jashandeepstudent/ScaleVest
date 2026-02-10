@@ -96,6 +96,16 @@
             max-width: 1600px;
             margin: 0 auto;
         }
+@keyframes popupSlideOut {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.9) translateY(30px);
+    }
+}
 .trend-item {
     display: flex;
     justify-content: space-between;
@@ -206,7 +216,106 @@
         padding: 20px;
         border-radius: 16px;
     }
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
 
+@keyframes shimmer {
+    0% {
+        background-position: -200% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+@keyframes buttonPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+    }
+}
+
+@keyframes spinLoader {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+.launch-btnv {
+    width: 100%;
+    padding: 18px 32px;
+    border-radius: 14px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: not-allowed;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.launch-btnv.active {
+    cursor: pointer;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+    animation: buttonPulse 2s infinite;
+}
+
+.launch-btnv.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5);
+}
+
+.launch-btnv.active:active {
+    transform: translateY(0);
+}
+
+.launch-btnv.loading {
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        #3b82f6 0%,
+        #60a5fa 50%,
+        #3b82f6 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+    color: white;
+}
+
+.launch-btnv.loading::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spinLoader 0.8s linear infinite;
+}
+
+.launch-btnv.loading span {
+    opacity: 0;
+}
     /* Card Titles */
     .card-title {
         font-size: 10px;
@@ -2705,28 +2814,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
   }
-
-  function startIntroSequence(textEl, overlayEl, popupEl) {
-      setTimeout(() => {
-          textEl.style.transition = "opacity 0.8s";
-          textEl.style.opacity = "0";
-          
-          setTimeout(() => {
-              textEl.innerText = "Let's customize your CFO";
-              textEl.style.opacity = "1";
-              
-              setTimeout(() => {
-                  overlayEl.style.opacity = "0";
-                  setTimeout(() => {
-                      overlayEl.style.display = "none";
-                      popupEl.style.display = "flex";
-                  }, 1000);
-              }, 2000);
-          }, 1000);
-      }, 2000);
-  }
-
- 
+startBtn.addEventListener("click", async () => {
+    if (!startBtn.disabled && !startBtn.classList.contains('loading')) {
+        console.log("Starting App...");
+        
+        // Show loading state
+        startBtn.classList.add('loading');
+        startBtn.innerHTML = '<span>STARTING CFO</span>';
+        
+        const cfoName = cfoInput.value.trim() || "Mark";
+        
+        try {
+            // Import set function
+            const { set } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+            const currentAuth = getAuth();
+            const user = currentAuth.currentUser;
+            
+            if (user) {
+                // Store CFO data
+                await set(ref(db, `BusinessOwners/${user.uid}/CFO`), {
+                    name: cfoName,
+                    trialStarted: new Date().toISOString()
+                });
+                
+                displayCFOName(cfoName);
+                
+                // Small delay for better UX
+                setTimeout(() => {
+                    cfoPopup.style.animation = "popupSlideOut 0.3s ease-out";
+                    setTimeout(() => {
+                        cfoPopup.style.display = "none";
+                        if (onboardingOverlay) {
+                            onboardingOverlay.style.display = "none";
+                        }
+                        
+                        // Fetch user data
+                        fetchAnalytics(user.uid);
+                        fetchRevenuePulse(user.uid);
+                    }, 300);
+                }, 500);
+            }
+        } catch (error) {
+            console.error("Error saving CFO:", error);
+            
+            // Remove loading state
+            startBtn.classList.remove('loading');
+            startBtn.innerHTML = '<span>START CFO</span>';
+            
+            alert("Failed to save CFO. Please try again.");
+        }
+    }
+});
+function startIntroSequence(textEl, overlayEl, popupEl) {
+    setTimeout(() => {
+        textEl.style.transition = "opacity 0.4s ease-out";
+        textEl.style.opacity = "0";
+        
+        setTimeout(() => {
+            textEl.innerText = "Let's customize your CFO";
+            textEl.style.opacity = "1";
+            
+            setTimeout(() => {
+                overlayEl.style.transition = "opacity 0.5s ease-out";
+                overlayEl.style.opacity = "0";
+                
+                setTimeout(() => {
+                    overlayEl.style.display = "none";
+                    popupEl.style.display = "flex";
+                    popupEl.style.animation = "popupSlideIn 0.5s ease-out";
+                }, 500);
+            }, 1000);
+        }, 400);
+    }, 1200);
+} 
 // Fetch all products and calculate sales
 async function fetchProductAnalysis(userId) {
     const dbRef = ref(getDatabase());
@@ -3901,7 +4061,9 @@ async function askCFO(userInput) {
             <label for="terms-check">I have read and understood the notes</label>
         </div>
 
-        <button id="start-cfo-btn" class="launch-btnv" style="opacity: 0.5; cursor: not-allowed;">START CFO</button>
+<button id="start-cfo-btn" class="launch-btnv">
+    <span>START CFO</span>
+</button>
     </div>
 </div>
     <div class="blur-orb orb1"></div>
@@ -4398,6 +4560,7 @@ console.log('✅ ScaleVest CFO initialized');
 
 </body>
 </html>
+
 
 
 
