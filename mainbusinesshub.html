@@ -432,7 +432,27 @@
     color: #1e293b;
     margin: 0 0 8px 0;
 }
+.shopify-box:hover {
+    border-color: #16a34a;
+}
 
+.shopify-box:hover .icon-wrapper {
+    background: #16a34a;
+}
+
+.shopify-box:hover .icon-wrapper svg {
+    stroke: white;
+}
+
+.shopify-connected {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    border-color: #16a34a !important;
+}
+
+.shopify-connected .title::after {
+    content: ' ✓';
+    color: #16a34a;
+}
 .help-feature-box p {
     margin: 0;
     font-size: 13px;
@@ -723,6 +743,24 @@
             </div>
         </div>
 
+<div class="box shopify-box" onclick="connectShopify()" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); border-color: #bbf7d0;">
+    <div>
+        <div class="icon-wrapper" style="background: #f0fdf4;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+        </div>
+        <div class="title">Connect to Shopify</div>
+        <div class="desc">Sync your Shopify store inventory and orders automatically.</div>
+    </div>
+    <div class="action-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+    </div>
+</div>
     </div>
 </div>
 <div id="logoutModal">
@@ -909,6 +947,66 @@ function displayReminders() {
     }
 }
 
+const SHOPIFY_CONFIG = {
+    clientId: 'c3ea5a64920c67ecc82499b56935134b', 
+    scopes: 'read_products,write_products,read_orders,write_orders,read_inventory,write_inventory',
+    redirectUri: window.location.origin + '/shopify-callback.html'
+};
+
+function connectShopify() {
+    // Check if already connected
+    const isConnected = localStorage.getItem('shopifyConnected');
+    
+    if (isConnected) {
+        // Show connected status
+        alert('Shopify Already Connected!\n\nStore: ' + localStorage.getItem('shopifyStoreName'));
+        return;
+    }
+    
+    // Prompt for shop name
+    const shopName = prompt('Enter your Shopify store name:\n(e.g., if your store is mystore.myshopify.com, enter "mystore")');
+    
+    if (!shopName) return;
+    
+    // Validate shop name
+    const cleanShopName = shopName.trim().toLowerCase().replace('.myshopify.com', '');
+    
+    // Store shop name temporarily
+    localStorage.setItem('shopifyStoreName', cleanShopName + '.myshopify.com');
+    
+    // Build OAuth URL
+    const state = generateRandomState();
+    localStorage.setItem('shopifyOAuthState', state);
+    
+    const authUrl = `https://${cleanShopName}.myshopify.com/admin/oauth/authorize?` +
+        `client_id=${SHOPIFY_CONFIG.clientId}&` +
+        `scope=${SHOPIFY_CONFIG.scopes}&` +
+        `redirect_uri=${encodeURIComponent(SHOPIFY_CONFIG.redirectUri)}&` +
+        `state=${state}`;
+    
+    // Redirect to Shopify OAuth
+    window.location.href = authUrl;
+}
+
+function generateRandomState() {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+}
+
+// Check if Shopify is connected on page load
+function checkShopifyConnection() {
+    const isConnected = localStorage.getItem('shopifyConnected');
+    const shopifyBox = document.querySelector('.shopify-box');
+    
+    if (isConnected && shopifyBox) {
+        shopifyBox.classList.add('shopify-connected');
+        const desc = shopifyBox.querySelector('.desc');
+        desc.textContent = 'Connected to ' + localStorage.getItem('shopifyStoreName');
+    }
+}
+
+// Run on page load
+setTimeout(checkShopifyConnection, 500);
 function showHelp(section) {
     const helpContent = {
         inventory: {
@@ -1407,7 +1505,6 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
-
 
 
 
