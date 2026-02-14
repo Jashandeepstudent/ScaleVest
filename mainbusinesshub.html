@@ -11,8 +11,8 @@
         --bg: #f8fafc;
         --card-bg: #ffffff;
         --primary: #7c3aed;
-        --accent: #0ea5e9;
-        --gold: #f59e0b;
+        --accent: #0ea5e9; /* Blue for Sales/Records */
+        --gold: #f59e0b;   /* Gold for AI CFO */
         --text-main: #1e293b;
         --text-sub: #64748b;
         --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
@@ -23,110 +23,593 @@
 
     header { max-width: 1200px; margin: 0 auto 30px auto; width: 100%; display: none; justify-content: space-between; align-items: center; }
     header h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; margin: 0; }
-    
-    .header-left { display: flex; align-items: center; gap: 20px; }
-    
-    .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
+    header .status { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
+    header .status::before { content: ""; width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: block; }
 
-    .status { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
-    .status::before { content: ""; width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: block; }
-
-    /* Shopify Connect Button */
-    .shopify-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-        border: 1px solid #bbf7d0;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 600;
-        color: #16a34a;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .shopify-btn:hover {
-        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
-    }
-
-    .shopify-btn.connected {
-        background: linear-gradient(135deg, #dcfce7 0%, #86efac 100%);
-        border-color: #16a34a;
-    }
-
-    .shopify-btn svg {
-        width: 16px;
-        height: 16px;
-    }
-
-    .logout-btn {
-        background: #fee2e2;
-        color: #dc2626;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .logout-btn:hover {
-        background: #fecaca;
-        transform: translateY(-1px);
-    }
-
-    #createHubCard { 
-        max-width: 400px; 
-        width: 100%; 
-        margin: auto; 
-        background: var(--card-bg); 
-        padding: 40px; 
-        border-radius: 32px; 
-        border: 1px solid #e2e8f0; 
-        text-align: center; 
-        box-shadow: var(--shadow); 
-        cursor: pointer;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .hub-icon {
-        width: 100px;
-        height: auto;
-        margin-bottom: 24px;
-        filter: drop-shadow(0 10px 15px rgba(124, 58, 237, 0.3));
-        transition: transform 0.4s ease;
-    }
-
-    #createHubCard:hover .hub-icon {
-        transform: scale(1.1) rotate(-2deg);
-    }
-
-    #createHubCard h2 {
-        margin: 10px 0;
-        font-size: 1.5rem;
-    }
-
-    #createHubCard p {
-        margin: 0;
-        font-size: 0.9rem;
-        line-height: 1.4;
-        color: var(--text-sub);
-    }
+    #createHubCard { max-width: 400px; width: 100%; margin: auto; background: var(--card-bg); padding: 40px; border-radius: 32px; border: 1px solid #e2e8f0; text-align: center; box-shadow: var(--shadow); cursor: pointer; }
+    #createHubCard img { width: 80px; margin-bottom: 20px; }
 
     #dashboard { display: none; width: 100%; max-width: 1200px; margin: 0 auto; }
+#createHubCard img.hub-icon {
+    width: 100px;
+    height: auto;
+    margin-bottom: 24px;
+    /* This adds a professional soft purple glow to your SVG icon */
+    filter: drop-shadow(0 10px 15px rgba(124, 58, 237, 0.3));
+    transition: transform 0.4s ease;
+}
+
+#createHubCard:hover img.hub-icon {
+    transform: scale(1.1) rotate(-2deg);
+}
+    /* Helper Bot Styles */
+.helper-bot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.bot-bubble {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.bot-bubble:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 32px rgba(124, 58, 237, 0.6);
+}
+
+.bot-bubble.has-notification::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid white;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+.bot-icon {
+    width: 32px;
+    height: 32px;
+    filter: brightness(0) invert(1);
+}
+
+.bot-panel {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 380px;
+    max-height: 600px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9998;
+}
+
+.bot-panel.open {
+    display: flex;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.bot-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    padding: 20px;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bot-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bot-avatar {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bot-info h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.bot-info p {
+    margin: 2px 0 0 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.close-bot {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.close-bot:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.bot-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8fafc;
+}
+
+.current-time {
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.current-time .time-label {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.current-time .time-display {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.current-time .date-display {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.reminder-card {
+    background: #fef3c7;
+    border: 1px solid #fde047;
+    border-left: 4px solid #f59e0b;
+    padding: 14px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #78350f;
+}
+
+.reminder-card strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #92400e;
+}
+
+.help-section {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.help-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.help-item {
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 13px;
+    color: #475569;
+}
+
+.help-item:hover {
+    background: #f1f5f9;
+    transform: translateX(4px);
+}
+
+.help-item:last-child {
+    margin-bottom: 0;
+}
+
+.bot-footer {
+    padding: 16px 20px;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.quick-action-btn {
+    padding: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-action-btn:hover {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
+/* Help Modal Styles */
+.help-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.help-modal.open {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.help-modal-content {
+    background: white;
+    border-radius: 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: modalSlideUp 0.3s ease;
+}
+
+@keyframes modalSlideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.help-modal-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    padding: 24px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.help-modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.close-help-modal {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.close-help-modal:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.help-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.help-modal-body h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+}
+
+.help-modal-body p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #475569;
+    margin: 0 0 16px 0;
+}
+
+.help-modal-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+}
+
+.help-modal-body ul li {
+    padding: 10px 0;
+    padding-left: 28px;
+    position: relative;
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+}
+
+.help-modal-body ul li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #7c3aed;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.help-feature-box {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border-left: 4px solid #7c3aed;
+}
+
+.help-feature-box h5 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 8px 0;
+}
+.shopify-box:hover {
+    border-color: #16a34a;
+}
+
+.shopify-box:hover .icon-wrapper {
+    background: #16a34a;
+}
+
+.shopify-box:hover .icon-wrapper svg {
+    stroke: white;
+}
+
+.shopify-connected {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    border-color: #16a34a !important;
+}
+
+.shopify-connected .title::after {
+    content: ' ✓';
+    color: #16a34a;
+}
+.help-feature-box p {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+    .bot-panel {
+        width: calc(100vw - 40px);
+        max-height: 70vh;
+        right: 20px;
+        left: 20px;
+        bottom: 90px;
+    }
     
+    .helper-bot {
+        bottom: 15px;
+        right: 15px;
+    }
+    
+    .help-modal-content {
+        max-width: 100%;
+        border-radius: 20px;
+    }
+    
+    .help-modal-header {
+        padding: 20px;
+    }
+    
+    .help-modal-title {
+        font-size: 20px;
+    }
+    
+    .help-modal-body {
+        padding: 20px;
+    }
+}
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Ensure the wrapper has a fixed height/width if not already set */
+}
+
+.icon-img {
+    width: 24px;   /* Match your original SVG size */
+    height: 24px;
+    display: block; /* Removes the "baseline" gap below images */
+    object-fit: contain; /* Prevents distortion */
+}
+/* New Logout Button Styles */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #fecaca;
+    transform: translateY(-1px);
+}
+/* Logout Modal Specific Styles */
+#logoutModal { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(15, 23, 42, 0.6); 
+    backdrop-filter: blur(8px); 
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 2000; 
+}
+
+.confirm-box { 
+    width: 90%; 
+    max-width: 350px; 
+    background: white; 
+    padding: 30px; 
+    border-radius: 30px; 
+    text-align: center; 
+    box-shadow: var(--shadow);
+}
+
+.confirm-box h3 { margin-top: 0; color: #1e293b; }
+.confirm-box p { color: var(--text-sub); font-size: 14px; margin-bottom: 25px; }
+
+.modal-btns { display: flex; gap: 12px; }
+
+.btn-cancel { 
+    flex: 1; 
+    padding: 14px; 
+    border-radius: 14px; 
+    border: 1px solid #e2e8f0; 
+    background: #f8fafc; 
+    font-weight: 600; 
+    cursor: pointer; 
+}
+
+.btn-confirm { 
+    flex: 1; 
+    padding: 14px; 
+    border-radius: 14px; 
+    border: none; 
+    background: #ef4444; 
+    color: white; 
+    font-weight: 700; 
+    cursor: pointer; 
+}
+.logout-btn.confirming {
+    background: #dc2626;
+    color: white;
+}
+    #createHubCard {
+    display: flex;
+    flex-direction: column; /* Stacks items vertically */
+    align-items: center;    /* Centers items horizontally */
+    justify-content: center;
+    text-align: center;     /* Centers the paragraph text */
+    padding: 20px;
+    width: 100%;            /* Ensures it fits the screen width */
+    box-sizing: border-box; /* Prevents padding from breaking width */
+}
+
+.hub-icon {
+    width: 60px;            /* Adjust size as needed */
+    height: auto;
+    margin-bottom: 15px;    /* Space between icon and title */
+    display: block;
+    flex-shrink: 0;         /* Prevents the SVG from getting squeezed */
+}
+
+#createHubCard h2 {
+    margin: 10px 0;
+    font-size: 1.5rem;      /* Adjust for mobile readability */
+}
+
+#createHubCard p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+    
+    /* MODERN 5-BOX GRID */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 
     .box {
@@ -142,30 +625,18 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         position: relative;
-        text-decoration: none;
-        color: inherit;
     }
-    
     .box:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 30px rgba(0,0,0,0.08); }
 
-    .icon-wrapper { 
-        width: 52px; 
-        height: 52px; 
-        background: #f8fafc; 
-        border-radius: 16px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        margin-bottom: 20px; 
-        transition: 0.3s; 
-    }
-    
+    /* ICON STYLING */
+    .icon-wrapper { width: 52px; height: 52px; background: #f8fafc; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; transition: 0.3s; }
     .box:hover .icon-wrapper { background: var(--primary); }
     .box:hover .icon-wrapper svg { stroke: white; }
 
     .title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
     .desc { font-size: 13.5px; color: var(--text-sub); line-height: 1.5; }
 
+    /* SPECIAL BOX HIGHLIGHTS */
     .inventory-box { background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%); }
     .ai-cfo-box { background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%); border-color: #fef3c7; }
     .ai-cfo-box:hover { border-color: var(--gold); }
@@ -175,89 +646,29 @@
     .action-arrow { position: absolute; right: 28px; bottom: 28px; opacity: 0; transform: translateX(-10px); transition: 0.3s; }
     .box:hover .action-arrow { opacity: 1; transform: translateX(0); }
 
+    /* MODAL */
     #nameModal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 1000; }
     .modal-box { width: 90%; max-width: 400px; background: white; padding: 32px; border-radius: 30px; text-align: center; }
     .modal-box input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #e2e8f0; margin: 20px 0; font-size: 16px; }
     .modal-box button { width: 100%; padding: 16px; border: none; border-radius: 16px; background: var(--primary); color: white; font-weight: 700; cursor: pointer; }
 
-    #logoutModal { 
-        position: fixed; 
-        inset: 0; 
-        background: rgba(15, 23, 42, 0.6); 
-        backdrop-filter: blur(8px); 
-        display: none; 
-        justify-content: center; 
-        align-items: center; 
-        z-index: 2000; 
-    }
-
-    .confirm-box { 
-        width: 90%; 
-        max-width: 350px; 
-        background: white; 
-        padding: 30px; 
-        border-radius: 30px; 
-        text-align: center; 
-        box-shadow: var(--shadow);
-    }
-
-    .confirm-box h3 { margin-top: 0; color: #1e293b; }
-    .confirm-box p { color: var(--text-sub); font-size: 14px; margin-bottom: 25px; }
-
-    .modal-btns { display: flex; gap: 12px; }
-
-    .btn-cancel { 
-        flex: 1; 
-        padding: 14px; 
-        border-radius: 14px; 
-        border: 1px solid #e2e8f0; 
-        background: #f8fafc; 
-        font-weight: 600; 
-        cursor: pointer; 
-    }
-
-    .btn-confirm { 
-        flex: 1; 
-        padding: 14px; 
-        border-radius: 14px; 
-        border: none; 
-        background: #ef4444; 
-        color: white; 
-        font-weight: 700; 
-        cursor: pointer; 
-    }
-
-    @media (max-width: 600px) { 
-        .grid { grid-template-columns: 1fr; }
-        .header-left { flex-direction: column; align-items: flex-start; gap: 10px; }
-        .header-actions { flex-wrap: wrap; }
-    }
+    @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 
 <header id="headerUI">
-    <div class="header-left">
-        <h1 id="displayBizName">Control Panel</h1>
-        <button id="shopifyBtn" class="shopify-btn" onclick="connectShopify()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
-            </svg>
-            <span id="shopifyBtnText">Connect with Shopify</span>
-        </button>
-    </div>
-    <div class="header-actions">
+    <h1 id="displayBizName">Control Panel</h1>
+    <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
         <div class="status">System Online</div>
-        <button class="logout-btn" onclick="toggleLogoutModal(true)">Log Out</button>
+        <button onclick="toggleLogoutModal(true)" style="background:none; border:none; color:#dc2626; font-weight:600; cursor:pointer;">Log Out</button>
     </div>
 </header>
 
 <div id="createHubCard">
     <img src="shop.svg" alt="Shop" class="hub-icon">
     <h2>Initialize Business Hub</h2>
-    <p>Launch your ecosystem and grow your Business with ScaleVest</p>
+    <p>Launch your ecosystem and grow your Business with ScaleVest </p>
 </div>
 
 <div id="nameModal">
@@ -271,77 +682,87 @@
 <div id="dashboard">
     <div class="grid">
         
-        <a href="inventory.html" class="box inventory-box">
-            <div>
-                <div class="icon-wrapper">
-                    <img src="inventory.svg" alt="Inventory Icon" width="24" height="24">
-                </div>
-                <div class="title">Inventory Hub</div>
-                <div class="desc">AI-powered stock tracking and neural item extraction.</div>
-            </div>
-            <div class="action-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-            </div>
-        </a>
+<a href="inventory.html" class="box inventory-box" style="text-decoration: none; display: block;">
+    <div>
+        <div class="icon-wrapper">
+            <img src="inventory.svg" alt="Inventory Icon" width="24" height="24">
+        </div>
+        <div class="title">Inventory Hub</div>
+        <div class="desc">AI-powered stock tracking and neural item extraction.</div>
+    </div>
+    <div class="action-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+    </div>
+</a>
 
-        <div class="box" onclick="window.location.href='salesflow.html'">
+       <div class="box" onclick="window.location.href='salesflow.html'">
+
             <div>
                 <div class="icon-wrapper">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                    </svg>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
                 <div class="title">Sales Flow</div>
                 <div class="desc">Track transactions, revenue streams, and Profits or Losses</div>
             </div>
         </div>
 
-        <div class="box" onclick="window.location.href='commandcentre.html'">
-            <div>
-                <div class="icon-wrapper" style="width: 48px; height: 48px;"> 
-                    <img src="personlaptop.svg" alt="Command Centre Icon" style="width: 100%; height: 100%; object-fit: contain;">
-                </div>
-                <div class="title">Digital Command Centre</div>
-                <div class="desc">Business Management and Analysis in Spatial or Digital 3D Twin View Centre.</div>
-            </div>
+<div class="box" onclick="window.location.href='commandcentre.html'">
+    <div>
+        <div class="icon-wrapper" style="width: 48px; height: 48px;"> 
+            <img src="personlaptop.svg" alt="Command Centre Icon" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
-
-        <div class="box" onclick="window.location.href='businessvault.html'">
-            <div>
-                <div class="icon-wrapper">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10 9 9 9 8 9"/>
-                    </svg>
-                </div>
-                <div class="title">Business Vault</div>
-                <div class="desc">Digital vault for notes, tax documents, staff tasks, pending orders and transactions.</div>
-            </div>
-        </div>
-
-        <div class="box ai-cfo-box" onclick="window.location.href='CFO.html'">
-            <div>
-                <div class="icon-wrapper">
-                    <img src="CFO.svg" alt="CFO Icon" width="24" height="24">
-                </div>
-                <div class="title">AI CFO</div>
-                <div class="desc">Your Smart, Real and Personal CFO just for your own Business.</div>
-            </div>
-            <div class="action-arrow">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-            </div>
-        </div>
-
+        <div class="title">Digital Command Centre</div>
+        <div class="desc">Business Management and Analysis in Spatial or Digital 3D Twin View Centre.</div>
     </div>
 </div>
 
+        <div class="box" onclick="window.location.href='businessvault.html'">
+
+            <div>
+                <div class="icon-wrapper">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                </div>
+                <div class="title">Business Vault</div>
+                <div class="desc">Digital vault for notes, tax documents, staff tasks , pending orders and transactions.</div>
+            </div>
+        </div>
+
+<div class="box ai-cfo-box" onclick="window.location.href='CFO.html'">
+    <div>
+        <div class="icon-wrapper">
+            <img src="CFO.svg" alt="CFO Icon" width="24" height="24">
+        </div>
+        <div class="title">AI CFO</div>
+        <div class="desc">Your Smart, Real and Personal CFO just for your own Business.</div>
+    </div>
+</div>
+            <div class="action-arrow">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+        </div>
+
+<div class="box shopify-box" onclick="connectShopify()" style="background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); border-color: #bbf7d0;">
+    <div>
+        <div class="icon-wrapper" style="background: #f0fdf4;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+        </div>
+        <div class="title">Connect to Shopify</div>
+        <div class="desc">Sync your Shopify store inventory and orders automatically.</div>
+    </div>
+    <div class="action-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+    </div>
+</div>
+    </div>
+</div>
 <div id="logoutModal">
     <div class="confirm-box">
         <h3>Sign Out?</h3>
@@ -352,7 +773,6 @@
         </div>
     </div>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -366,15 +786,191 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.database();
+const auth = firebase.auth(), db = firebase.database();
 
-// ==================== SHOPIFY OAUTH CONFIGURATION ====================
-const SHOPIFY_CONFIG = {
-    clientId: '5807020ba939e7ddeba0f95e86e3704d', 
-    scopes: 'read_products,write_products,read_orders,write_orders,read_inventory,write_inventory',
-    redirectUri: window.location.origin + '/shopify-callback.html'
-};
+const createCard = document.getElementById("createHubCard"), modal = document.getElementById("nameModal"), 
+      dashboard = document.getElementById("dashboard"), headerUI = document.getElementById("headerUI"),
+      bizNameDisplay = document.getElementById("displayBizName"), bizInput = document.getElementById("businessNameInput");
+
+function showDashboard(name) {
+    createCard.style.display = "none"; modal.style.display = "none";
+    dashboard.style.display = "block"; headerUI.style.display = "flex";
+    if(name) bizNameDisplay.textContent = name;
+}
+function toggleLogoutModal(show) {
+    document.getElementById("logoutModal").style.display = show ? "flex" : "none";
+}
+
+function executeLogout() {
+    auth.signOut().then(() => {
+        localStorage.clear(); // Clears business name and session
+        window.location.href = "index.html";
+    }).catch(err => {
+        console.error("Logout failed", err);
+        alert("Error signing out.");
+    });
+}
+function showCreateCard() { dashboard.style.display = "none"; headerUI.style.display = "none"; createCard.style.display = "flex"; }
+
+createCard.onclick = () => modal.style.display = "flex";
+
+function saveBusinessName() {
+    const name = bizInput.value.trim();
+    if (!name) return alert("Enter a name");
+    localStorage.setItem("businessName", name);
+    showDashboard(name);
+    const u = auth.currentUser;
+    if (u) {
+        db.ref("BusinessOwners/" + u.uid).update({ businessName: name, createdAt: new Date().toISOString() });
+    }
+}
+
+auth.onAuthStateChanged(user => {
+    if (!user) { window.location.href = "login.html"; return; }
+    const cached = localStorage.getItem("businessName");
+    if (cached) showDashboard(cached); else showCreateCard();
+    db.ref("BusinessOwners/" + user.uid + "/businessName").once("value").then(snap => {
+        if (snap.exists()) { showDashboard(snap.val()); localStorage.setItem("businessName", snap.val()); }
+    });
+});
+    let botOpen = false;
+let hasSeenReminders = localStorage.getItem('seenReminders') === 'true';
+
+function toggleBot() {
+    botOpen = !botOpen;
+    const panel = document.getElementById('botPanel');
+    const bubble = document.getElementById('botBubble');
+    
+    if (botOpen) {
+        panel.classList.add('open');
+        bubble.classList.remove('has-notification');
+        hasSeenReminders = true;
+        localStorage.setItem('seenReminders', 'true');
+    } else {
+        panel.classList.remove('open');
+    }
+}
+
+function updateTime() {
+    const now = new Date();
+    
+    // Format time with proper 12-hour format
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Convert 0 to 12
+    const hoursStr = String(hours).padStart(2, '0');
+    
+    const timeStr = `${hoursStr}:${minutes}:${seconds} ${ampm}`;
+    
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-US', options);
+    const timeEl = document.getElementById('currentTime');
+    const dateEl = document.getElementById('currentDate');
+    
+    if (timeEl) timeEl.textContent = timeStr;
+    if (dateEl) dateEl.textContent = dateStr;
+}
+
+setTimeout(() => {
+    updateTime();
+    setInterval(updateTime, 1000);
+}, 100);
+// ==================== SHOPIFY MODAL FUNCTIONS ====================
+
+function openShopifyModal() {
+    document.getElementById('shopifyModal').style.display = 'flex';
+    document.getElementById('shopifyStoreInput').focus();
+    document.getElementById('shopifyError').style.display = 'none';
+}
+
+function closeShopifyModal() {
+    document.getElementById('shopifyModal').style.display = 'none';
+    document.getElementById('shopifyStoreInput').value = '';
+    document.getElementById('shopifyError').style.display = 'none';
+}
+
+function validateShopifyInput() {
+    const input = document.getElementById('shopifyStoreInput');
+    const value = input.value.trim().toLowerCase();
+    const errorDiv = document.getElementById('shopifyError');
+    const errorText = document.getElementById('shopifyErrorText');
+    
+    // Remove any .myshopify.com if user typed it
+    const cleanValue = value.replace('.myshopify.com', '');
+    if (cleanValue !== value) {
+        input.value = cleanValue;
+    }
+    
+    // Validate format
+    if (value && !/^[a-z0-9-]+$/.test(cleanValue)) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Only letters, numbers, and hyphens allowed';
+        return false;
+    } else {
+        errorDiv.style.display = 'none';
+        return true;
+    }
+}
+
+function confirmShopifyConnect() {
+    const input = document.getElementById('shopifyStoreInput');
+    const shopName = input.value.trim().toLowerCase().replace('.myshopify.com', '');
+    const errorDiv = document.getElementById('shopifyError');
+    const errorText = document.getElementById('shopifyErrorText');
+    
+    // Validation
+    if (!shopName) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Please enter your store name';
+        input.focus();
+        return;
+    }
+    
+    if (shopName.length < 3) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Store name must be at least 3 characters';
+        input.focus();
+        return;
+    }
+    
+    if (!/^[a-z0-9-]+$/.test(shopName)) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Invalid store name format';
+        input.focus();
+        return;
+    }
+    
+    // All good - proceed with OAuth
+    const fullStoreName = shopName + '.myshopify.com';
+    localStorage.setItem('shopifyStoreName', fullStoreName);
+    localStorage.setItem('shopifyApiKey', SHOPIFY_CONFIG.clientId);
+    
+    const state = generateRandomState();
+    localStorage.setItem('shopifyOAuthState', state);
+    
+    const authUrl = `https://${fullStoreName}/admin/oauth/authorize?` +
+        `client_id=${SHOPIFY_CONFIG.clientId}&` +
+        `scope=${SHOPIFY_CONFIG.scopes}&` +
+        `redirect_uri=${encodeURIComponent(SHOPIFY_CONFIG.redirectUri)}&` +
+        `state=${state}`;
+    
+    // Show loading state
+    const btn = document.getElementById('shopifyConnectBtn');
+    btn.textContent = 'Connecting...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    // Redirect after brief delay
+    setTimeout(() => {
+        window.location.href = authUrl;
+    }, 500);
+}
+
+// ==================== UPDATED CONNECT SHOPIFY FUNCTION ====================
 
 function connectShopify() {
     const isConnected = localStorage.getItem('shopifyConnected');
@@ -387,30 +983,8 @@ function connectShopify() {
         return;
     }
     
-    const shopName = prompt('Enter your Shopify store name:\n\n(Example: if your store is "mystore.myshopify.com", enter "mystore")');
-    
-    if (!shopName) return;
-    
-    const cleanShopName = shopName.trim().toLowerCase().replace('.myshopify.com', '');
-    
-    if (!/^[a-z0-9-]+$/.test(cleanShopName)) {
-        alert('Invalid store name. Please use only letters, numbers, and hyphens.');
-        return;
-    }
-    
-    localStorage.setItem('shopifyStoreName', cleanShopName + '.myshopify.com');
-    localStorage.setItem('shopifyApiKey', SHOPIFY_CONFIG.clientId);
-    
-    const state = generateRandomState();
-    localStorage.setItem('shopifyOAuthState', state);
-    
-    const authUrl = `https://${cleanShopName}.myshopify.com/admin/oauth/authorize?` +
-        `client_id=${SHOPIFY_CONFIG.clientId}&` +
-        `scope=${SHOPIFY_CONFIG.scopes}&` +
-        `redirect_uri=${encodeURIComponent(SHOPIFY_CONFIG.redirectUri)}&` +
-        `state=${state}`;
-    
-    window.location.href = authUrl;
+    // Open custom modal instead of prompt
+    openShopifyModal();
 }
 
 function disconnectShopify() {
@@ -449,94 +1023,654 @@ function updateShopifyButtonUI() {
     }
 }
 
-// ==================== FIREBASE AUTH ====================
-const createCard = document.getElementById("createHubCard");
-const modal = document.getElementById("nameModal");
-const dashboard = document.getElementById("dashboard");
-const headerUI = document.getElementById("headerUI");
-const bizNameDisplay = document.getElementById("displayBizName");
-const bizInput = document.getElementById("businessNameInput");
-
-function showDashboard(name) {
-    createCard.style.display = "none";
-    modal.style.display = "none";
-    dashboard.style.display = "block";
-    headerUI.style.display = "flex";
-    if(name) bizNameDisplay.textContent = name;
-    updateShopifyButtonUI();
-}
-
-function showCreateCard() {
-    dashboard.style.display = "none";
-    headerUI.style.display = "none";
-    createCard.style.display = "flex";
-}
-
-function toggleLogoutModal(show) {
-    document.getElementById("logoutModal").style.display = show ? "flex" : "none";
-}
-
-function executeLogout() {
-    auth.signOut().then(() => {
-        localStorage.clear();
-        window.location.href = "index.html";
-    }).catch(err => {
-        console.error("Logout failed", err);
-        alert("Error signing out.");
-    });
-}
-
-createCard.onclick = () => modal.style.display = "flex";
-
-function saveBusinessName() {
-    const name = bizInput.value.trim();
-    if (!name) return alert("Enter a name");
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('shopifyModal');
+    if (event.target === modal) {
+        closeShopifyModal();
+    }
+});
+// Generate smart reminders based on user activity
+function generateSmartReminders() {
+    const reminders = [];
+    const inventoryVisited = localStorage.getItem('inventoryVisited');
+    const salesVisited = localStorage.getItem('salesVisited');
+    const lastLogin = localStorage.getItem('lastLogin');
     
-    localStorage.setItem("businessName", name);
-    showDashboard(name);
-    
-    const user = auth.currentUser;
-    if (user) {
-        db.ref("BusinessOwners/" + user.uid).update({ 
-            businessName: name, 
-            createdAt: new Date().toISOString() 
+    if (!inventoryVisited) {
+        reminders.push({
+            icon: '📦',
+            title: 'Set Up Your Inventory',
+            message: 'Don\'t forget to add your products and set expiry dates in Inventory Hub!'
         });
     }
+    
+    if (!salesVisited) {
+        reminders.push({
+            icon: '💰',
+            title: 'Configure Pricing',
+            message: 'Remember to set cost prices and selling prices in Sales Flow for accurate profit tracking.'
+        });
+    }
+    
+    // Daily reminder for expiry dates
+    const today = new Date().toDateString();
+    if (lastLogin !== today) {
+        reminders.push({
+            icon: '⏰',
+            title: 'Daily Check',
+            message: 'Check your inventory for items expiring soon and update stock levels.'
+        });
+        localStorage.setItem('lastLogin', today);
+    }
+    
+    reminders.push({
+        icon: '🎯',
+        title: 'Pro Tip',
+        message: 'Visit AI CFO daily to get personalized business insights and financial analysis.'
+    });
+    
+    return reminders;
 }
 
-auth.onAuthStateChanged(user => {
-    if (!user) {
-        window.location.href = "login.html";
+function displayReminders() {
+    const reminders = generateSmartReminders();
+    const container = document.getElementById('smartReminders');
+    
+    if (!container) return;
+    
+    if (reminders.length === 0) {
+        container.innerHTML = '';
         return;
     }
     
-    const cached = localStorage.getItem("businessName");
-    if (cached) {
-        showDashboard(cached);
-    } else {
-        showCreateCard();
+    container.innerHTML = reminders.map(r => `
+        <div class="reminder-card">
+            <strong>${r.icon} ${r.title}</strong>
+            ${r.message}
+        </div>
+    `).join('');
+    
+    if (!hasSeenReminders && reminders.length > 0) {
+        const bubble = document.getElementById('botBubble');
+        if (bubble) bubble.classList.add('has-notification');
+    }
+}
+
+const SHOPIFY_CONFIG = {
+    clientId: '5807020ba939e7ddeba0f95e86e3704d', 
+    scopes: 'read_products,write_products,read_orders,write_orders,read_inventory,write_inventory',
+    redirectUri: window.location.origin + '/shopify-callback.html'
+};
+
+function connectShopify() {
+    // Check if already connected
+    const isConnected = localStorage.getItem('shopifyConnected');
+    
+    if (isConnected) {
+        alert('Shopify Already Connected!\n\nStore: ' + localStorage.getItem('shopifyStoreName'));
+        return;
     }
     
-    db.ref("BusinessOwners/" + user.uid + "/businessName").once("value").then(snap => {
-        if (snap.exists()) {
-            showDashboard(snap.val());
-            localStorage.setItem("businessName", snap.val());
-        }
-    });
+    // Prompt for shop name
+    const shopName = prompt('Enter your Shopify store name:\n(e.g., if your store is mystore.myshopify.com, enter "mystore")');
     
-    // Check Shopify connection from Firebase
-    db.ref(`BusinessOwners/${user.uid}/shopify`).once("value").then(snap => {
-        if (snap.exists() && snap.val().connected) {
-            localStorage.setItem('shopifyConnected', 'true');
-            localStorage.setItem('shopifyStoreName', snap.val().storeName);
-            updateShopifyButtonUI();
+    if (!shopName) return;
+    
+    // Validate shop name
+    const cleanShopName = shopName.trim().toLowerCase().replace('.myshopify.com', '');
+    
+    // Store shop name and API key temporarily
+    localStorage.setItem('shopifyStoreName', cleanShopName + '.myshopify.com');
+    localStorage.setItem('shopifyApiKey', SHOPIFY_CONFIG.clientId); // Pass to callback page
+    
+    // Build OAuth URL
+    const state = generateRandomState();
+    localStorage.setItem('shopifyOAuthState', state);
+    
+    const authUrl = `https://${cleanShopName}.myshopify.com/admin/oauth/authorize?` +
+        `client_id=${SHOPIFY_CONFIG.clientId}&` +
+        `scope=${SHOPIFY_CONFIG.scopes}&` +
+        `redirect_uri=${encodeURIComponent(SHOPIFY_CONFIG.redirectUri)}&` +
+        `state=${state}`;
+    
+    // Redirect to Shopify OAuth
+    window.location.href = authUrl;
+}
+function generateRandomState() {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+}
+
+// Check if Shopify is connected on page load
+function checkShopifyConnection() {
+    const isConnected = localStorage.getItem('shopifyConnected');
+    const shopifyBox = document.querySelector('.shopify-box');
+    
+    if (isConnected && shopifyBox) {
+        shopifyBox.classList.add('shopify-connected');
+        const desc = shopifyBox.querySelector('.desc');
+        desc.textContent = 'Connected to ' + localStorage.getItem('shopifyStoreName');
+    }
+}
+
+// Run on page load
+setTimeout(checkShopifyConnection, 500);
+function showHelp(section) {
+    const helpContent = {
+        inventory: {
+            icon: '📦',
+            title: 'Inventory Hub',
+            content: `
+                <h4>What is Inventory Hub?</h4>
+                <p>Your central command center for managing all products and stock levels with AI-powered intelligence.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Track every product in your business, monitor stock levels, and never run out of essential items.</p>
+                </div>
+                
+                <h4>Key Features</h4>
+                <ul>
+                    <li>Add unlimited products with names, quantities, and units</li>
+                    <li>Set expiry dates for perishable items (milk, medicines, food)</li>
+                    <li>Get automatic low stock alerts</li>
+                    <li>AI-powered invoice scanning to extract items automatically</li>
+                    <li>Track stock levels in real-time</li>
+                    <li>View product history and movements</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚠️ Important Reminder</h5>
+                    <p>Always set expiry dates for perishable products! This helps you avoid waste and the AI CFO will alert you when items are about to expire.</p>
+                </div>
+                
+                <h4>How to Use</h4>
+                <ul>
+                    <li>Click "Add Product" to create new inventory items</li>
+                    <li>Upload invoices and let AI extract products automatically</li>
+                    <li>Update quantities as you sell or restock</li>
+                    <li>Check regularly for low stock warnings</li>
+                </ul>
+            `
+        },
+        sales: {
+            icon: '💰',
+            title: 'Sales Flow',
+            content: `
+                <h4>What is Sales Flow?</h4>
+                <p>Your complete transaction recording system that tracks every sale, calculates profits, and monitors business performance.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Record all sales transactions and automatically calculate your actual profit or loss for each sale.</p>
+                </div>
+                
+                <h4>Key Features</h4>
+                <ul>
+                    <li>Record sales with product selection and quantity</li>
+                    <li>Set cost price (what you paid to supplier)</li>
+                    <li>Set selling price (what customer pays you)</li>
+                    <li>Automatic profit/loss calculation</li>
+                    <li>View revenue trends and patterns</li>
+                    <li>Track daily, weekly, and monthly sales</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚠️ Critical: Always Set Prices!</h5>
+                    <p><strong>Cost Price:</strong> What you paid to buy the product<br>
+                    <strong>Selling Price:</strong> What the customer pays you<br><br>
+                    Without both prices, the system cannot calculate your actual profit!</p>
+                </div>
+                
+                <h4>How It Helps</h4>
+                <ul>
+                    <li>Know exactly how much profit you're making</li>
+                    <li>Identify which products are most profitable</li>
+                    <li>Make better pricing decisions</li>
+                    <li>Track revenue growth over time</li>
+                </ul>
+            `
+        },
+        vault: {
+            icon: '🔒',
+            title: 'Business Vault',
+            content: `
+                <h4>What is Business Vault?</h4>
+                <p>Your secure digital filing cabinet for all important business documents, notes, and records.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Store, organize, and access all your critical business documents and information in one secure place.</p>
+                </div>
+                
+                <h4>What You Can Store</h4>
+                <ul>
+                    <li>Tax documents and GST returns</li>
+                    <li>Business licenses and permits</li>
+                    <li>Employee records and contracts</li>
+                    <li>Receipts and invoices</li>
+                    <li>Important business notes</li>
+                    <li>Staff task assignments</li>
+                    <li>Pending orders and follow-ups</li>
+                    <li>Supplier contact information</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Pro Tip</h5>
+                    <p>Organize documents by categories like "Tax", "Legal", "Staff", "Orders" for easy access when you need them.</p>
+                </div>
+                
+                <h4>Key Benefits</h4>
+                <ul>
+                    <li>Never lose important documents</li>
+                    <li>Access from anywhere, anytime</li>
+                    <li>Share documents with team members</li>
+                    <li>Track pending tasks and orders</li>
+                    <li>Keep business organized</li>
+                </ul>
+            `
+        },
+        cfo: {
+            icon: '🤖',
+            title: 'AI CFO',
+            content: `
+                <h4>What is AI CFO?</h4>
+                <p>Your personal Chief Financial Officer powered by artificial intelligence, analyzing your business 24/7 and providing expert recommendations.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Get professional financial analysis and business insights without hiring an expensive CFO.</p>
+                </div>
+                
+                <h4>What AI CFO Does</h4>
+                <ul>
+                    <li>Analyzes all your sales and inventory data</li>
+                    <li>Calculates profit margins and trends</li>
+                    <li>Identifies products losing money</li>
+                    <li>Suggests optimal pricing strategies</li>
+                    <li>Alerts you to expiring inventory</li>
+                    <li>Warns about low stock situations</li>
+                    <li>Tracks weekly revenue patterns</li>
+                    <li>Provides business growth recommendations</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>✨ Advanced Features</h5>
+                    <p><strong>Shelf Analysis:</strong> Upload photos of your store shelves and AI CFO will analyze product placement, suggest optimizations, and identify sales opportunities!</p>
+                </div>
+                
+                <h4>Financial Reports</h4>
+                <ul>
+                    <li>Weekly revenue vs. last week comparison</li>
+                    <li>Product performance rankings</li>
+                    <li>Profit/loss statements</li>
+                    <li>Comprehensive PDF reports</li>
+                    <li>Executive summaries</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Best Practice</h5>
+                    <p>Check AI CFO daily! It updates in real-time as you make sales and can catch problems early before they become serious.</p>
+                </div>
+            `
+        },
+        command: {
+            icon: '🎮',
+            title: 'Digital Command Centre',
+            content: `
+                <h4>What is Digital Command Centre?</h4>
+                <p>Experience your business in immersive 3D - a futuristic way to visualize and manage your entire operation in spatial computing.</p>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Main Purpose</h5>
+                    <p>Manage your business in a revolutionary 3D environment, like stepping into a digital twin of your physical store.</p>
+                </div>
+                
+                <h4>Unique Features</h4>
+                <ul>
+                    <li>3D visualization of your entire business</li>
+                    <li>Virtual shelves showing real inventory</li>
+                    <li>Spatial product organization</li>
+                    <li>Interactive business management</li>
+                    <li>Navigate like a video game</li>
+                    <li>Future-ready AR/VR compatible</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>🚀 Innovation</h5>
+                    <p>Command Centre represents the future of business management - think of it as your business in the metaverse!</p>
+                </div>
+                
+                <h4>How to Navigate</h4>
+                <ul>
+                    <li>Use mouse or touch to move around</li>
+                    <li>Click on shelves to view products</li>
+                    <li>Zoom in/out for different perspectives</li>
+                    <li>Manage inventory in 3D space</li>
+                    <li>Visualize your business layout</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Pro Tip</h5>
+                    <p>Great for planning store layouts, training staff, or impressing clients with a virtual tour of your business!</p>
+                </div>
+            `
         }
-    });
+    };
+    
+    const help = helpContent[section];
+    const modal = document.getElementById('helpModal');
+    const icon = document.getElementById('helpModalIcon');
+    const title = document.getElementById('helpModalTitleText');
+    const body = document.getElementById('helpModalBody');
+    
+    if (modal && icon && title && body) {
+        icon.textContent = help.icon;
+        title.textContent = help.title;
+        body.innerHTML = help.content;
+        modal.classList.add('open');
+    }
+}
+
+function closeHelpModal() {
+    const modal = document.getElementById('helpModal');
+    if (modal) {
+        modal.classList.remove('open');
+    }
+}
+
+function showTip(tip) {
+    const tips = {
+        expiry: {
+            icon: '📅',
+            title: 'Setting Expiry Dates',
+            content: `
+                <h4>Why Set Expiry Dates?</h4>
+                <p>Prevent waste and losses by tracking when products expire. AI CFO will automatically alert you when items are approaching expiration!</p>
+                
+                <div class="help-feature-box">
+                    <h5>Step-by-Step Guide</h5>
+                    <p>Follow these simple steps:</p>
+                </div>
+                
+                <h4>How to Set Expiry Dates</h4>
+                <ul>
+                    <li>Go to <strong>Inventory Hub</strong></li>
+                    <li>Click on any existing product or add new product</li>
+                    <li>Look for the "Expiry Date" field</li>
+                    <li>Click and select the date from calendar</li>
+                    <li>Click "Save" or "Update Product"</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚡ Quick Tip</h5>
+                    <p>Set expiry dates immediately when you receive new stock. This way you'll never forget!</p>
+                </div>
+                
+                <h4>What Products Need Expiry Dates?</h4>
+                <ul>
+                    <li>Food items (bread, milk, snacks)</li>
+                    <li>Medicines and pharmaceuticals</li>
+                    <li>Cosmetics and beauty products</li>
+                    <li>Chemicals and cleaning products</li>
+                    <li>Any time-sensitive items</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>🎯 Benefits</h5>
+                    <p>AI CFO will send alerts 3-7 days before expiry, suggesting flash sales to move products before they expire!</p>
+                </div>
+            `
+        },
+        pricing: {
+            icon: '💰',
+            title: 'Setting Cost & Selling Prices',
+            content: `
+                <h4>Why Prices Matter?</h4>
+                <p>Without proper pricing, you won't know if you're making profit or loss. This is CRITICAL for business success!</p>
+                
+                <div class="help-feature-box">
+                    <h5>📊 Two Essential Prices</h5>
+                    <p><strong>Cost Price:</strong> What you paid to buy/make the product<br>
+                    <strong>Selling Price:</strong> What you charge the customer<br><br>
+                    <strong>Profit = Selling Price - Cost Price</strong></p>
+                </div>
+                
+                <h4>How to Set Prices</h4>
+                <ul>
+                    <li>Go to <strong>Sales Flow</strong></li>
+                    <li>When recording a sale, select the product</li>
+                    <li>Enter <strong>Cost Price</strong> (your purchase price)</li>
+                    <li>Enter <strong>Selling Price</strong> (customer payment)</li>
+                    <li>System automatically calculates profit!</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>⚠️ Common Mistake</h5>
+                    <p>Many businesses skip cost price and only track selling price. This means you don't know your actual profit - you could be losing money without knowing it!</p>
+                </div>
+                
+                <h4>Example</h4>
+                <p style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #7c3aed;">
+                    You buy a product for <strong>₹50</strong> (Cost Price)<br>
+                    You sell it for <strong>₹80</strong> (Selling Price)<br>
+                    Your profit = ₹80 - ₹50 = <strong style="color: #10b981;">₹30 profit ✓</strong>
+                </p>
+                
+                <div class="help-feature-box">
+                    <h5>💡 AI CFO Feature</h5>
+                    <p>Once you set prices correctly, AI CFO can identify:<br>
+                    • Products with low profit margins<br>
+                    • Products selling below cost (loss!)<br>
+                    • Optimal pricing strategies</p>
+                </div>
+            `
+        },
+        tracking: {
+            icon: '📊',
+            title: 'Tracking Inventory Levels',
+            content: `
+                <h4>Why Track Inventory?</h4>
+                <p>Never run out of best-selling products or waste money on slow-moving items. Smart inventory tracking is key to profitability!</p>
+                
+                <div class="help-feature-box">
+                    <h5>📍 Where to Track</h5>
+                    <p>Inventory levels are shown in multiple places for your convenience.</p>
+                </div>
+                
+                <h4>Tracking Locations</h4>
+                <ul>
+                    <li><strong>Inventory Hub:</strong> See all products and current stock levels</li>
+                    <li><strong>AI CFO Dashboard:</strong> Stock Radar card shows critical alerts</li>
+                    <li><strong>Sales Flow:</strong> Updated when you make sales</li>
+                    <li><strong>Product Analysis:</strong> Detailed stock movement history</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>🚦 Stock Level Indicators</h5>
+                    <p><span style="color: #10b981;">● Green</span> = Healthy stock (15+ units)<br>
+                    <span style="color: #f59e0b;">● Yellow</span> = Low stock warning (5-15 units)<br>
+                    <span style="color: #ef4444;">● Red</span> = Critical! Restock now (0-5 units)</p>
+                </div>
+                
+                <h4>AI CFO Stock Analysis</h4>
+                <ul>
+                    <li>Calculates daily burn rate (items sold per day)</li>
+                    <li>Predicts when you'll run out of stock</li>
+                    <li>Shows "Days Until Stockout" warnings</li>
+                    <li>Identifies fast-moving vs. slow-moving products</li>
+                    <li>Suggests optimal reorder quantities</li>
+                </ul>
+                
+                <div class="help-feature-box">
+                    <h5>💡 Best Practice</h5>
+                    <p>Check Stock Radar in AI CFO every morning! It will tell you exactly which products need immediate attention.</p>
+                </div>
+                
+                <h4>How Stock Updates</h4>
+                <ul>
+                    <li>Automatically decreases when you record sales</li>
+                    <li>Manually increase when you restock</li>
+                    <li>Real-time updates across all screens</li>
+                    <li>Historical tracking shows usage patterns</li>
+                </ul>
+            `
+        }
+    };
+    
+
+    const modal = document.getElementById('helpModal');
+    const icon = document.getElementById('helpModalIcon');
+    const title = document.getElementById('helpModalTitleText');
+    const body = document.getElementById('helpModalBody');
+    
+    if (modal && icon && title && body && tip) {
+        icon.textContent = tip.icon;
+        title.textContent = tip.title;
+        body.innerHTML = tip.content;
+        modal.classList.add('open');
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('helpModal');
+    if (modal && event.target === modal) {
+        closeHelpModal();
+    }
 });
 
-// Update button on page load
-setTimeout(updateShopifyButtonUI, 500);
-</script>
+// Initialize reminders on page load
+displayReminders();
 
+// Refresh reminders every 5 minutes
+setInterval(displayReminders, 5 * 60 * 1000);
+
+// Mark sections as visited
+const currentPage = window.location.pathname;
+if (currentPage.includes('inventory')) {
+    localStorage.setItem('inventoryVisited', 'true');
+} else if (currentPage.includes('sales')) {
+    localStorage.setItem('salesVisited', 'true');
+}
+</script>
+<div class="helper-bot">
+    <div class="bot-bubble" onclick="toggleBot()" id="botBubble">
+        <svg class="bot-icon" fill="none" viewBox="0 0 24 24" stroke="white">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+    </div>
+    
+    <div class="bot-panel" id="botPanel">
+        <div class="bot-header">
+            <div class="bot-header-left">
+                <div class="bot-avatar">
+                    <svg style="width: 24px; height: 24px;" fill="none" viewBox="0 0 24 24" stroke="white">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                </div>
+                <div class="bot-info">
+                    <h3>ScaleVest Assistant</h3>
+                    <p id="botStatus">Online</p>
+                </div>
+            </div>
+            <button class="close-bot" onclick="toggleBot()">×</button>
+        </div>
+        
+        <div class="bot-body">
+            <!-- Current Time Widget -->
+            <div class="current-time">
+                <div class="time-label">Current Time</div>
+                <div class="time-display" id="currentTime">Loading...</div>
+                <div class="date-display" id="currentDate">Loading...</div>
+            </div>
+            
+            <!-- Smart Reminders -->
+            <div id="smartReminders">
+                <!-- Reminders will be injected here -->
+            </div>
+            
+            <!-- Help Sections -->
+            <div class="help-section">
+                <h4>📦 What Each Section Does</h4>
+                <div class="help-item" onclick="showHelp('inventory')">
+                    Inventory Hub - What is it?
+                </div>
+                <div class="help-item" onclick="showHelp('sales')">
+                    Sales Flow - What is it?
+                </div>
+                <div class="help-item" onclick="showHelp('vault')">
+                    Business Vault - What is it?
+                </div>
+                <div class="help-item" onclick="showHelp('cfo')">
+                    AI CFO - What is it?
+                </div>
+                <div class="help-item" onclick="showHelp('command')">
+                    Command Centre - What is it?
+                </div>
+            </div>
+            
+            <!-- Quick Tips -->
+            <div class="help-section">
+                <h4>💡 Quick Tips</h4>
+                <div class="help-item" onclick="showTip('expiry')">
+                    How to set expiry dates?
+                </div>
+                <div class="help-item" onclick="showTip('pricing')">
+                    How to set cost & selling prices?
+                </div>
+                <div class="help-item" onclick="showTip('tracking')">
+                    How to track inventory levels?
+                </div>
+            </div>
+        </div>
+        
+        <div class="bot-footer">
+            <div class="quick-actions">
+                <button class="quick-action-btn" onclick="window.location.href='inventory.html'">Go to Inventory</button>
+                <button class="quick-action-btn" onclick="window.location.href='salesflow.html'">Go to Sales</button>
+                <button class="quick-action-btn" onclick="window.location.href='CFO.html'">Open AI CFO</button>
+                <button class="quick-action-btn" onclick="window.location.href='businessvault.html'">Open Vault</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Modal -->
+<div class="help-modal" id="helpModal">
+    <div class="help-modal-content">
+        <div class="help-modal-header">
+            <h2 class="help-modal-title" id="helpModalTitle">
+                <span id="helpModalIcon">📦</span>
+                <span id="helpModalTitleText">Section Guide</span>
+            </h2>
+            <button class="close-help-modal" onclick="closeHelpModal()">×</button>
+        </div>
+        <div class="help-modal-body" id="helpModalBody">
+            <!-- Content will be injected here -->
+        </div>
+    </div>
+</div>
+    <div id="shopifyModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Connect your Shopify Store</h3>
+            <p>Enter your store subdomain to sync your data.</p>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="storeNameInput" placeholder="mystore-name" autofocus>
+            <span class="domain-suffix">.myshopify.com</span>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeShopifyModal()">Cancel</button>
+            <button class="btn-primary" onclick="handleShopifySubmit()">Connect Store</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
+
+
