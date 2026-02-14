@@ -946,6 +946,155 @@ function displayReminders() {
         if (bubble) bubble.classList.add('has-notification');
     }
 }
+function openShopifyModal() {
+    document.getElementById('shopifyModal').style.display = 'flex';
+    document.getElementById('shopifyStoreInput').focus();
+    document.getElementById('shopifyError').style.display = 'none';
+}
+
+function closeShopifyModal() {
+    document.getElementById('shopifyModal').style.display = 'none';
+    document.getElementById('shopifyStoreInput').value = '';
+    document.getElementById('shopifyError').style.display = 'none';
+}
+
+function validateShopifyInput() {
+    const input = document.getElementById('shopifyStoreInput');
+    const value = input.value.trim().toLowerCase();
+    const errorDiv = document.getElementById('shopifyError');
+    const errorText = document.getElementById('shopifyErrorText');
+    
+    // Remove any .myshopify.com if user typed it
+    const cleanValue = value.replace('.myshopify.com', '');
+    if (cleanValue !== value) {
+        input.value = cleanValue;
+    }
+    
+    // Validate format
+    if (value && !/^[a-z0-9-]+$/.test(cleanValue)) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Only letters, numbers, and hyphens allowed';
+        return false;
+    } else {
+        errorDiv.style.display = 'none';
+        return true;
+    }
+}
+
+function confirmShopifyConnect() {
+    const input = document.getElementById('shopifyStoreInput');
+    const shopName = input.value.trim().toLowerCase().replace('.myshopify.com', '');
+    const errorDiv = document.getElementById('shopifyError');
+    const errorText = document.getElementById('shopifyErrorText');
+    
+    // Validation
+    if (!shopName) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Please enter your store name';
+        input.focus();
+        return;
+    }
+    
+    if (shopName.length < 3) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Store name must be at least 3 characters';
+        input.focus();
+        return;
+    }
+    
+    if (!/^[a-z0-9-]+$/.test(shopName)) {
+        errorDiv.style.display = 'block';
+        errorText.textContent = 'Invalid store name format';
+        input.focus();
+        return;
+    }
+    
+    // All good - proceed with OAuth
+    const fullStoreName = shopName + '.myshopify.com';
+    localStorage.setItem('shopifyStoreName', fullStoreName);
+    localStorage.setItem('shopifyApiKey', SHOPIFY_CONFIG.clientId);
+    
+    const state = generateRandomState();
+    localStorage.setItem('shopifyOAuthState', state);
+    
+    const authUrl = `https://${fullStoreName}/admin/oauth/authorize?` +
+        `client_id=${SHOPIFY_CONFIG.clientId}&` +
+        `scope=${SHOPIFY_CONFIG.scopes}&` +
+        `redirect_uri=${encodeURIComponent(SHOPIFY_CONFIG.redirectUri)}&` +
+        `state=${state}`;
+    
+    // Show loading state
+    const btn = document.getElementById('shopifyConnectBtn');
+    btn.textContent = 'Connecting...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    // Redirect after brief delay
+    setTimeout(() => {
+        window.location.href = authUrl;
+    }, 500);
+}
+
+// ==================== UPDATED CONNECT SHOPIFY FUNCTION ====================
+
+function connectShopify() {
+    const isConnected = localStorage.getItem('shopifyConnected');
+    
+    if (isConnected) {
+        const storeName = localStorage.getItem('shopifyStoreName');
+        if (confirm(`Already connected to ${storeName}\n\nDo you want to disconnect?`)) {
+            disconnectShopify();
+        }
+        return;
+    }
+    
+    // Open custom modal instead of prompt
+    openShopifyModal();
+}
+
+function disconnectShopify() {
+    localStorage.removeItem('shopifyConnected');
+    localStorage.removeItem('shopifyStoreName');
+    localStorage.removeItem('shopifyAccessToken');
+    localStorage.removeItem('shopifyApiKey');
+    
+    const user = auth.currentUser;
+    if (user) {
+        db.ref(`BusinessOwners/${user.uid}/shopify`).remove();
+    }
+    
+    updateShopifyButtonUI();
+    alert('Disconnected from Shopify successfully!');
+}
+
+function generateRandomState() {
+    return Math.random().toString(36).substring(2, 15) + 
+           Math.random().toString(36).substring(2, 15);
+}
+
+function updateShopifyButtonUI() {
+    const btn = document.getElementById('shopifyBtn');
+    const btnText = document.getElementById('shopifyBtnText');
+    const isConnected = localStorage.getItem('shopifyConnected');
+    
+    if (!btn || !btnText) return;
+    
+    if (isConnected) {
+        btn.classList.add('connected');
+        btnText.textContent = '✓ Shopify Connected';
+    } else {
+        btn.classList.remove('connected');
+        btnText.textContent = 'Connect with Shopify';
+    }
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('shopifyModal');
+    if (event.target === modal) {
+        closeShopifyModal();
+    }
+});
 
 const SHOPIFY_CONFIG = {
     clientId: '5807020ba939e7ddeba0f95e86e3704d', 
