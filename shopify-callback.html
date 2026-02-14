@@ -113,8 +113,7 @@
             throw new Error('API key not found. Please try connecting again.');
         }
 
-        // Exchange authorization code for access token via Vercel backend
-        const tokenResponse = await fetch('YOUR_VERCEL_URL/api/shopify-token', {
+       const tokenResponse = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/shopify-token', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -145,7 +144,7 @@
             await db.ref(`BusinessOwners/${user.uid}/shopify`).set({
                 connected: true,
                 storeName: shopName,
-                accessToken: tokenData.access_token, // In production, encrypt this or store server-side
+                accessToken: tokenData.access_token, 
                 scope: tokenData.scope,
                 connectedAt: new Date().toISOString()
             });
