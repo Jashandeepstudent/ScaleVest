@@ -958,7 +958,6 @@ function connectShopify() {
     const isConnected = localStorage.getItem('shopifyConnected');
     
     if (isConnected) {
-        // Show connected status
         alert('Shopify Already Connected!\n\nStore: ' + localStorage.getItem('shopifyStoreName'));
         return;
     }
@@ -971,8 +970,9 @@ function connectShopify() {
     // Validate shop name
     const cleanShopName = shopName.trim().toLowerCase().replace('.myshopify.com', '');
     
-    // Store shop name temporarily
+    // Store shop name and API key temporarily
     localStorage.setItem('shopifyStoreName', cleanShopName + '.myshopify.com');
+    localStorage.setItem('shopifyApiKey', SHOPIFY_CONFIG.clientId); // Pass to callback page
     
     // Build OAuth URL
     const state = generateRandomState();
@@ -987,7 +987,6 @@ function connectShopify() {
     // Redirect to Shopify OAuth
     window.location.href = authUrl;
 }
-
 function generateRandomState() {
     return Math.random().toString(36).substring(2, 15) + 
            Math.random().toString(36).substring(2, 15);
