@@ -657,39 +657,36 @@
 </head>
 <body>
 
-<header id="headerUI">
-    <h1 id="displayBizName">Control Panel</h1>
+<header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
+    <h1 id="displayBizName" style="margin: 0;">Control Panel</h1>
+    
     <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
-        <div class="status">System Online</div>
-        <button onclick="toggleLogoutModal(true)" style="background:none; border:none; color:#dc2626; font-weight:600; cursor:pointer;">Log Out</button>
+        <div class="shopify-button" onclick="connectShopify()" style="
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 6px 12px; 
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); 
+            border: 1px solid #bbf7d0; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.2s ease;">
+            
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+
+            <span style="color: #166534; font-weight: 600; font-size: 13px; font-family: sans-serif; white-space: nowrap;">
+                Shopify
+            </span>
+        </div>
+
+        <div class="status" style="font-size: 14px; color: #64748b;">System Online</div>
+        <button onclick="toggleLogoutModal(true)" style="background:none; border:none; color:#dc2626; font-weight:600; cursor:pointer; font-size: 14px;">Log Out</button>
     </div>
 </header>
-<div class="shopify-button" onclick="connectShopify()" style="
-    display: inline-flex; 
-    align-items: center; 
-    gap: 12px; 
-    padding: 8px 16px; 
-    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); 
-    border: 1px solid #bbf7d0; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    transition: all 0.2s ease;">
-    
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-        <line x1="12" y1="22.08" x2="12" y2="12"/>
-    </svg>
-
-    <span style="color: #166534; font-weight: 600; font-size: 14px; font-family: sans-serif;">
-        Connect Shopify
-    </span>
-
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5">
-        <path d="M5 12h14M12 5l7 7-7 7"/>
-    </svg>
-</div>
 <div id="createHubCard">
     <img src="shop.svg" alt="Shop" class="hub-icon">
     <h2>Initialize Business Hub</h2>
@@ -1512,6 +1509,7 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
+
 
 
 
