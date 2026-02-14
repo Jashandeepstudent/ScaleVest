@@ -38,7 +38,133 @@
             pointer-events: none;
             z-index: 0;
         }
+/* Enhanced Animations - Smoother & Faster */
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85) translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
 
+@keyframes popupSlideOut {
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95) translateY(-30px);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+@keyframes buttonPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
+    }
+}
+
+@keyframes spinLoader {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Smooth Transitions for Welcome Text */
+#welcome-text {
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+/* Enhanced Button States */
+.launch-btnv {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.launch-btnv.active {
+    animation: buttonPulse 2.5s infinite;
+}
+
+.launch-btnv.active:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(59, 130, 246, 0.6);
+}
+
+.launch-btnv.active:active {
+    transform: translateY(-1px) scale(0.98);
+}
+
+.launch-btnv.loading {
+    pointer-events: none;
+    background: linear-gradient(
+        90deg,
+        #3b82f6 0%,
+        #60a5fa 50%,
+        #3b82f6 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.launch-btnv.loading::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spinLoader 0.7s linear infinite;
+}
+
+.launch-btnv.loading span {
+    opacity: 0;
+}
+
+/* Popup Entry Animation Enhancement */
+#cfo-popup {
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Checkbox Interaction */
+#terms-check {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+}
+
+#terms-check:hover {
+    transform: scale(1.1);
+}
+
+/* Input Focus State */
+#cfo-name-input {
+    transition: all 0.3s ease;
+}
+
+#cfo-name-input:focus {
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+}
         .blur-orb {
             position: fixed;
             border-radius: 50%;
@@ -2795,7 +2921,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(trendCard) trendCard.onclick = () => { overlay.style.display = 'flex'; loadTrends(); };
 });
- async function runOnboarding(userId) {
+async function runOnboarding(userId) {
     const nameSpan = document.getElementById('user-name-display');
     const welcomeOverlay = document.getElementById('onboarding-overlay');
     const welcomeText = document.getElementById('welcome-text');
@@ -2805,123 +2931,115 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkbox = document.getElementById('terms-check');
 
     try {
-      // 1. Fetch Name from /BusinessOwners/user.id/name
-      const snapshot = await get(ref(db, `BusinessOwners/${userId}/name`));
-      const userName = snapshot.exists() ? snapshot.val() : "Partner";
-      nameSpan.innerText = userName;
+        // 1. Fetch Name from /BusinessOwners/user.id/name
+        const snapshot = await get(ref(db, `BusinessOwners/${userId}/name`));
+        const userName = snapshot.exists() ? snapshot.val() : "Partner";
+        nameSpan.innerText = userName;
 
-      // 2. Check if CFO is already named
-      const cfoSnapshot = await get(ref(db, `BusinessOwners/${userId}/CFO/name`));
-      
-      if (cfoSnapshot.exists()) {
-        // Skip onboarding if already set
-        welcomeOverlay.style.display = "none";
-        displayCFOName(cfoSnapshot.val());
-      } else {
-        // 3. Cinematic Intro Sequence
-        startIntroSequence(welcomeText, welcomeOverlay, cfoPopup);
-      }
+        // 2. Check if CFO is already named
+        const cfoSnapshot = await get(ref(db, `BusinessOwners/${userId}/CFO/name`));
+        
+        if (cfoSnapshot.exists()) {
+            // Skip onboarding - smooth fade out
+            welcomeOverlay.style.transition = "opacity 0.6s ease-out";
+            welcomeOverlay.style.opacity = "0";
+            setTimeout(() => {
+                welcomeOverlay.style.display = "none";
+            }, 600);
+            displayCFOName(cfoSnapshot.val());
+        } else {
+            // 3. Enhanced Intro Sequence
+            startEnhancedIntroSequence(welcomeText, welcomeOverlay, cfoPopup);
+        }
     } catch (error) {
-      console.error("Database Error:", error);
+        console.error("Database Error:", error);
     }
 
-    // 4. Save Logic
+    // 4. Save Logic with smooth animation
     startBtn.addEventListener('click', async () => {
-        if (!checkbox.checked) return;
+        if (!checkbox.checked || startBtn.disabled) return;
+        
         const cfoName = cfoInput.value.trim() || "Mark";
+        
+        // Show loading state
+        startBtn.classList.add('loading');
+        startBtn.innerHTML = '<span>STARTING CFO</span>';
 
         try {
-            // Import set function
             const { set } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
             
-            // Store under BusinessOwners/user.id/CFO/name
             await set(ref(db, `BusinessOwners/${userId}/CFO`), {
                 name: cfoName,
                 trialStarted: new Date().toISOString()
             });
 
             displayCFOName(cfoName);
-            cfoPopup.style.display = "none";
-            welcomeOverlay.style.display = "none"; // Also hide the overlay
+            
+            // Smooth exit animation
+            setTimeout(() => {
+                cfoPopup.style.animation = "popupSlideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1)";
+                
+                setTimeout(() => {
+                    cfoPopup.style.display = "none";
+                    welcomeOverlay.style.transition = "opacity 0.5s ease-out";
+                    welcomeOverlay.style.opacity = "0";
+                    
+                    setTimeout(() => {
+                        welcomeOverlay.style.display = "none";
+                        
+                        // Fetch data after animations complete
+                        const currentAuth = getAuth();
+                        const user = currentAuth.currentUser;
+                        if (user) {
+                            fetchAnalytics(user.uid);
+                            fetchRevenuePulse(user.uid);
+                        }
+                    }, 500);
+                }, 400);
+            }, 300);
+            
         } catch (error) {
             console.error("Error saving CFO:", error);
+            startBtn.classList.remove('loading');
+            startBtn.innerHTML = '<span>START CFO</span>';
             alert("Failed to save CFO. Please try again.");
         }
     });
-  }
-startBtn.addEventListener("click", async () => {
-    if (!startBtn.disabled && !startBtn.classList.contains('loading')) {
-        console.log("Starting App...");
-        
-        // Show loading state
-        startBtn.classList.add('loading');
-        startBtn.innerHTML = '<span>STARTING CFO</span>';
-        
-        const cfoName = cfoInput.value.trim() || "Mark";
-        
-        try {
-            // Import set function
-            const { set } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
-            const currentAuth = getAuth();
-            const user = currentAuth.currentUser;
-            
-            if (user) {
-                // Store CFO data
-                await set(ref(db, `BusinessOwners/${user.uid}/CFO`), {
-                    name: cfoName,
-                    trialStarted: new Date().toISOString()
-                });
-                
-                displayCFOName(cfoName);
-                
-                // Small delay for better UX
-                setTimeout(() => {
-                    cfoPopup.style.animation = "popupSlideOut 0.3s ease-out";
-                    setTimeout(() => {
-                        cfoPopup.style.display = "none";
-                        if (onboardingOverlay) {
-                            onboardingOverlay.style.display = "none";
-                        }
-                        
-                        // Fetch user data
-                        fetchAnalytics(user.uid);
-                        fetchRevenuePulse(user.uid);
-                    }, 300);
-                }, 500);
-            }
-        } catch (error) {
-            console.error("Error saving CFO:", error);
-            
-            // Remove loading state
-            startBtn.classList.remove('loading');
-            startBtn.innerHTML = '<span>START CFO</span>';
-            
-            alert("Failed to save CFO. Please try again.");
-        }
-    }
-});
-function startIntroSequence(textEl, overlayEl, popupEl) {
+}
+
+function startEnhancedIntroSequence(textEl, overlayEl, popupEl) {
+    // Step 1: Fade out welcome text (faster)
     setTimeout(() => {
-        textEl.style.transition = "opacity 0.4s ease-out";
+        textEl.style.transition = "opacity 0.3s ease-out, transform 0.3s ease-out";
         textEl.style.opacity = "0";
+        textEl.style.transform = "translateY(-20px)";
         
+        // Step 2: Change text and fade in (smoother)
         setTimeout(() => {
             textEl.innerText = "Let's customize your CFO";
-            textEl.style.opacity = "1";
+            textEl.style.transform = "translateY(20px)";
             
+            // Force reflow
+            void textEl.offsetWidth;
+            
+            textEl.style.transition = "opacity 0.4s ease-out, transform 0.4s ease-out";
+            textEl.style.opacity = "1";
+            textEl.style.transform = "translateY(0)";
+            
+            // Step 3: Transition to popup (faster, smoother)
             setTimeout(() => {
-                overlayEl.style.transition = "opacity 0.5s ease-out";
+                overlayEl.style.transition = "opacity 0.4s ease-out";
                 overlayEl.style.opacity = "0";
                 
                 setTimeout(() => {
                     overlayEl.style.display = "none";
                     popupEl.style.display = "flex";
-                    popupEl.style.animation = "popupSlideIn 0.5s ease-out";
-                }, 500);
-            }, 1000);
-        }, 400);
-    }, 1200);
-} 
+                    popupEl.style.animation = "popupSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
+                }, 400);
+            }, 800);
+        }, 300);
+    }, 1000);
+}
 // Fetch all products and calculate sales
 async function fetchProductAnalysis(userId) {
     const dbRef = ref(getDatabase());
