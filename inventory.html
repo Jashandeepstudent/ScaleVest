@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ScaleVest Inventory</title>
+<title id="pageTitle">Inventory</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1375,10 +1375,13 @@ input:focus, select:focus, textarea:focus {
 
 <div class="top">
   <div style="display: flex; align-items: center; gap: 15px;">
-    <a href="mainbusinesshub.html" class="back-nav-btn">
+    <a href="business-hub.html" class="back-nav-btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
     </a>
-    <h2>Inventory</h2>
+    <div style="display: flex; flex-direction: column;">
+      <h2 id="inventoryTitle" style="margin: 0;">Inventory</h2>
+      <p id="inventorySubtitle" style="margin: 0; font-size: 12px; color: #64748b; font-weight: 500;">Loading...</p>
+    </div>
   </div>
 
   <div class="actions">
@@ -1750,9 +1753,29 @@ let notificationDays = 5; // Default notification days
 let currentExpiryProductId = null;
 
 auth.onAuthStateChanged(u => {
-  if (!u) { console.log("User not logged in"); return; }
+  if (!u) { 
+    console.log("User not logged in"); 
+    window.location.href = "login.html";
+    return; 
+  }
   
   currentUserId = u.uid;
+db.ref(`BusinessOwners/${u.uid}/businessName`).once("value", snapshot => {
+  if (snapshot.exists()) {
+    const businessName = snapshot.val();
+
+    document.getElementById('pageTitle').textContent = `${businessName} Inventory`;
+    document.getElementById('inventoryTitle').textContent = `${businessName} Inventory`;
+    
+    document.getElementById('inventorySubtitle').textContent = 'Product Management System';
+    
+    console.log(`✅ Loaded business: ${businessName}`);
+  } else {
+    document.getElementById('pageTitle').textContent = 'Inventory';
+    document.getElementById('inventoryTitle').textContent = 'Inventory';
+    document.getElementById('inventorySubtitle').textContent = 'ScaleVest';
+  }
+});
   
   // 1. Inventory Reference
   invRef = db.ref(`Businesses/${u.uid}/inventory`);
@@ -2753,7 +2776,7 @@ function closeQtyModal() {
     document.getElementById("qtyModal").style.display = "none";
 }
 
-document.getElementById("confirmQtyBtn").onclick = () => {
+document.getElementById("confirmQtyBtn").onclick = async () => {
     const val = document.getElementById("qtyInput").value;
     if (!val || isNaN(val)) return;
 
@@ -2764,14 +2787,12 @@ document.getElementById("confirmQtyBtn").onclick = () => {
     if (currentDirection > 0) {
         // RESTOCKING
         
-        // ✅ FIX: Only check expiry if it EXISTS
         if (p.expiryDate) {
             closeQtyModal();
             askExpiryForRestock(currentUpdateId, p, amount);
             return;
         }
         
-        // NO EXPIRY DATE - ADD NORMALLY (THIS WAS MISSING!)
         const costPrice = (typeof priceData.costPrice === 'object') 
             ? (priceData.costPrice.numericValue || 0) 
             : parseFloat(priceData.costPrice) || 0;
@@ -2785,10 +2806,15 @@ document.getElementById("confirmQtyBtn").onclick = () => {
         });
         
         const newQty = p.quantity + amount;
-        invRef.child(currentUpdateId).update({ quantity: newQty }).then(() => {
-            closeQtyModal();
-            triggerSuccess(`✅ Added ${amount} ${p.unit}`);
-        });
+        await invRef.child(currentUpdateId).update({ quantity: newQty });
+        
+        // 🔄 SYNC TO SHOPIFY
+        if (p.shopifyId) {
+            await updateShopifyInventory(p.shopifyVariantId, newQty);
+        }
+        
+        closeQtyModal();
+        triggerSuccess(`✅ Added ${amount} ${p.unit}`);
         
     } else {
         // DECREASING STOCK (SELLING)
@@ -2805,13 +2831,17 @@ document.getElementById("confirmQtyBtn").onclick = () => {
         });
         
         const newQty = Math.max(0, p.quantity - amount);
-        invRef.child(currentUpdateId).update({ quantity: newQty }).then(() => {
-            closeQtyModal();
-            triggerSuccess(`✅ Sold ${amount} ${p.unit}`);
-            
-            // UPDATE ANALYTICS
-            updateProductAnalytics(currentUpdateId, p.name, amount);
-        });
+        await invRef.child(currentUpdateId).update({ quantity: newQty });
+        
+        // 🔄 SYNC TO SHOPIFY
+        if (p.shopifyId) {
+            await updateShopifyInventory(p.shopifyVariantId, newQty);
+        }
+        
+        closeQtyModal();
+        triggerSuccess(`✅ Sold ${amount} ${p.unit}`);
+        
+        updateProductAnalytics(currentUpdateId, p.name, amount);
     }
 };
 window.onclick = (event) => {
@@ -2819,8 +2849,41 @@ window.onclick = (event) => {
     if (event.target == modal) closeQtyModal();
 }
 
-function handleManualDelete(id, name) {
-    if(confirm(`Delete ${name}?`)) invRef.child(id).remove();
+async function handleManualDelete(id, name) {
+    const product = inventory[id];
+    
+    if (!confirm(`Delete ${name}?`)) return;
+    
+    try {
+        // Delete from Firebase
+        await invRef.child(id).remove();
+        
+        // 🔄 DELETE FROM SHOPIFY
+        if (product.shopifyId) {
+            const accessToken = localStorage.getItem('shopifyAccessToken');
+            const storeName = localStorage.getItem('shopifyStoreName');
+            
+            if (accessToken && storeName) {
+                await fetch(
+                    `https://${storeName}/admin/api/2024-01/products/${product.shopifyId}.json`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'X-Shopify-Access-Token': accessToken,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                console.log('✅ Product deleted from Shopify');
+            }
+        }
+        
+        triggerSuccess(`Deleted: ${name}`);
+        
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert('Error deleting product: ' + error.message);
+    }
 }
 
 // --- SCANNER FUNCTIONS ---
@@ -3896,8 +3959,84 @@ styleElement.textContent = `
     }
 `;
 document.head.appendChild(styleElement);
+// ============================================
+// SHOPIFY INVENTORY UPDATE
+// ============================================
+
+async function updateShopifyInventory(variantId, newQuantity) {
+    try {
+        const accessToken = localStorage.getItem('shopifyAccessToken');
+        const storeName = localStorage.getItem('shopifyStoreName');
+        
+        if (!accessToken || !storeName) {
+            console.log('⚠️ Shopify not connected, skipping sync');
+            return;
+        }
+        
+        console.log(`🔄 Updating Shopify inventory: Variant ${variantId} → ${newQuantity}`);
+        
+        // Get inventory item ID
+        const variantResponse = await fetch(
+            `https://${storeName}/admin/api/2024-01/variants/${variantId}.json`,
+            {
+                headers: {
+                    'X-Shopify-Access-Token': accessToken,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        if (!variantResponse.ok) throw new Error('Failed to fetch variant');
+        
+        const variantData = await variantResponse.json();
+        const inventoryItemId = variantData.variant.inventory_item_id;
+        
+        // Get location ID
+        const locationsResponse = await fetch(
+            `https://${storeName}/admin/api/2024-01/locations.json`,
+            {
+                headers: {
+                    'X-Shopify-Access-Token': accessToken,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        if (!locationsResponse.ok) throw new Error('Failed to fetch locations');
+        
+        const locationsData = await locationsResponse.json();
+        const locationId = locationsData.locations[0].id;
+        
+        // Update inventory level
+        const updateResponse = await fetch(
+            `https://${storeName}/admin/api/2024-01/inventory_levels/set.json`,
+            {
+                method: 'POST',
+                headers: {
+                    'X-Shopify-Access-Token': accessToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    location_id: locationId,
+                    inventory_item_id: inventoryItemId,
+                    available: newQuantity
+                })
+            }
+        );
+        
+        if (!updateResponse.ok) {
+            const error = await updateResponse.json();
+            throw new Error(error.errors || 'Failed to update inventory');
+        }
+        
+        console.log('✅ Shopify inventory updated successfully');
+        
+    } catch (error) {
+        console.error('❌ Shopify sync error:', error);
+        // Don't show error to user - fail silently
+    }
+}
 </script>
 
 </body>
 </html>
-
