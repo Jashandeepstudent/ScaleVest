@@ -661,31 +661,8 @@
     <h1 id="displayBizName" style="margin: 0;">Control Panel</h1>
     
     <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
-        <div class="shopify-button" onclick="connectShopify()" style="
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            padding: 6px 12px; 
-            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); 
-            border: 1px solid #bbf7d0; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            transition: all 0.2s ease;">
-            
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                <line x1="12" y1="22.08" x2="12" y2="12"/>
-            </svg>
-
-            <span style="color: #166534; font-weight: 600; font-size: 13px; font-family: sans-serif; white-space: nowrap;">
-                Connect with Shopify Store
-            </span>
-        </div>
-
-        <div class="status" style="font-size: 14px; color: #64748b;">System Online</div>
-        <button onclick="toggleLogoutModal(true)" style="background:none; border:none; color:#dc2626; font-weight:600; cursor:pointer; font-size: 14px;">Log Out</button>
-    </div>
+      <div id="shopifyButtonContainer">
+</div>
 </header>
 <div id="createHubCard">
     <img src="shop.svg" alt="Shop" class="hub-icon">
@@ -832,11 +809,23 @@ function saveBusinessName() {
 
 auth.onAuthStateChanged(user => {
     if (!user) { window.location.href = "login.html"; return; }
+    
+    updateShopifyButton(); // Update button state
+    
     const cached = localStorage.getItem("businessName");
     if (cached) showDashboard(cached); else showCreateCard();
+    
     db.ref("BusinessOwners/" + user.uid + "/businessName").once("value").then(snap => {
-        if (snap.exists()) { showDashboard(snap.val()); localStorage.setItem("businessName", snap.val()); }
+        if (snap.exists()) { 
+            showDashboard(snap.val()); 
+            localStorage.setItem("businessName", snap.val()); 
+        }
     });
+    
+    // Check if Shopify just connected
+    if (localStorage.getItem('shopifyConnected') === 'true' && !localStorage.getItem('shopifySynced')) {
+        syncShopifyProducts();
+    }
 });
     let botOpen = false;
 let hasSeenReminders = localStorage.getItem('seenReminders') === 'true';
@@ -996,6 +985,143 @@ function generateRandomState() {
     return Math.random().toString(36).substring(2, 15) + 
            Math.random().toString(36).substring(2, 15);
 }
+// ============================================
+// SHOPIFY INTEGRATION FUNCTIONS
+// ============================================
+
+function updateShopifyButton() {
+    const container = document.getElementById('shopifyButtonContainer');
+    const isConnected = localStorage.getItem('shopifyConnected');
+    
+    if (isConnected === 'true') {
+        const storeName = localStorage.getItem('shopifyStoreName');
+        container.innerHTML = `
+            <div onclick="confirmDisconnectShopify()" style="
+                display: flex; 
+                align-items: center; 
+                gap: 8px; 
+                padding: 6px 12px; 
+                background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); 
+                border: 2px solid #16a34a; 
+                border-radius: 6px; 
+                cursor: pointer; 
+                transition: all 0.2s ease;">
+                
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+
+                <span style="color: #166534; font-weight: 600; font-size: 13px; font-family: sans-serif; white-space: nowrap;">
+                    Connected: ${storeName}
+                </span>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div onclick="connectShopify()" style="
+                display: flex; 
+                align-items: center; 
+                gap: 8px; 
+                padding: 6px 12px; 
+                background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); 
+                border: 1px solid #bbf7d0; 
+                border-radius: 6px; 
+                cursor: pointer; 
+                transition: all 0.2s ease;">
+                
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                </svg>
+
+                <span style="color: #166534; font-weight: 600; font-size: 13px; font-family: sans-serif; white-space: nowrap;">
+                    Connect with Shopify Store
+                </span>
+            </div>
+        `;
+    }
+}
+
+function confirmDisconnectShopify() {
+    const modal = document.createElement('div');
+    modal.id = 'disconnectModal';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); display:flex; justify-content:center; align-items:center; z-index:5000;';
+    
+    modal.innerHTML = `
+        <div style="background:white; padding:30px; border-radius:24px; max-width:400px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <div style="font-size:48px; margin-bottom:15px;">⚠️</div>
+            <h3 style="margin:0 0 10px 0; color:#dc2626; font-size:22px;">Disconnect Shopify Store?</h3>
+            <p style="color:#64748b; margin-bottom:20px; font-size:14px;">
+                This will remove ALL synced products from your inventory. This action cannot be undone.
+            </p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <button onclick="document.getElementById('disconnectModal').remove()" style="padding:14px; border:none; border-radius:12px; background:#f1f5f9; color:#64748b; font-weight:600; cursor:pointer;">
+                    Cancel
+                </button>
+                <button onclick="disconnectShopify()" style="padding:14px; border:none; border-radius:12px; background:#ef4444; color:white; font-weight:700; cursor:pointer;">
+                    Yes, Disconnect
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+async function disconnectShopify() {
+    try {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        // Show loading
+        const modal = document.getElementById('disconnectModal');
+        modal.innerHTML = `
+            <div style="background:white; padding:40px; border-radius:24px; text-align:center;">
+                <div style="font-size:48px; margin-bottom:15px;">🔄</div>
+                <h3 style="color:#1e293b;">Disconnecting...</h3>
+                <p style="color:#64748b; font-size:14px;">Removing all synced products</p>
+            </div>
+        `;
+        
+        // Get all products with Shopify IDs
+        const inventoryRef = db.ref(`Businesses/${user.uid}/inventory`);
+        const snapshot = await inventoryRef.once('value');
+        const products = snapshot.val() || {};
+        
+        // Remove all Shopify synced products
+        const updates = {};
+        Object.entries(products).forEach(([id, product]) => {
+            if (product.shopifyId) {
+                updates[id] = null;
+            }
+        });
+        
+        await inventoryRef.update(updates);
+        
+        // Clear Shopify data from Firebase
+        await db.ref(`BusinessOwners/${user.uid}/shopify`).remove();
+        
+        // Clear localStorage
+        localStorage.removeItem('shopifyAccessToken');
+        localStorage.removeItem('shopifyConnected');
+        localStorage.removeItem('shopifyStoreName');
+        
+        // Close modal
+        modal.remove();
+        
+        // Update button
+        updateShopifyButton();
+        
+        alert('✅ Shopify store disconnected successfully!\n\nAll synced products have been removed.');
+        
+    } catch (error) {
+        console.error('Disconnect error:', error);
+        alert('Error disconnecting: ' + error.message);
+        document.getElementById('disconnectModal').remove();
+    }
+}
+
 
 // Check if Shopify is connected on page load
 function checkShopifyConnection() {
@@ -1008,7 +1134,78 @@ function checkShopifyConnection() {
         desc.textContent = 'Connected to ' + localStorage.getItem('shopifyStoreName');
     }
 }
+// ============================================
+// SHOPIFY PRODUCT SYNC
+// ============================================
 
+async function syncShopifyProducts() {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    const accessToken = localStorage.getItem('shopifyAccessToken');
+    const storeName = localStorage.getItem('shopifyStoreName');
+    
+    if (!accessToken || !storeName) return;
+    
+    try {
+        console.log('🔄 Starting Shopify product sync...');
+        
+        // Fetch products from Shopify
+        const response = await fetch(`https://${storeName}/admin/api/2024-01/products.json`, {
+            headers: {
+                'X-Shopify-Access-Token': accessToken,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch Shopify products');
+        }
+        
+        const data = await response.json();
+        const products = data.products || [];
+        
+        console.log(`✅ Found ${products.length} products in Shopify`);
+        
+        // Save to Firebase
+        const inventoryRef = db.ref(`Businesses/${user.uid}/inventory`);
+        
+        for (const product of products) {
+            const variant = product.variants[0]; // Get first variant
+            
+            const productData = {
+                name: product.title,
+                quantity: variant.inventory_quantity || 0,
+                unit: 'pcs',
+                shopifyId: product.id.toString(),
+                shopifyVariantId: variant.id.toString(),
+                shopifySync: true,
+                lastSynced: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            // Check if product already exists
+            const snapshot = await inventoryRef.orderByChild('shopifyId').equalTo(productData.shopifyId).once('value');
+            
+            if (snapshot.exists()) {
+                // Update existing product
+                const existingKey = Object.keys(snapshot.val())[0];
+                await inventoryRef.child(existingKey).update(productData);
+            } else {
+                // Add new product
+                await inventoryRef.push(productData);
+            }
+        }
+        
+        localStorage.setItem('shopifySynced', 'true');
+        console.log('✅ Shopify products synced successfully!');
+        
+        alert(`✅ Successfully synced ${products.length} products from Shopify!`);
+        
+    } catch (error) {
+        console.error('❌ Sync error:', error);
+        alert('Error syncing products: ' + error.message);
+    }
+}
 // Run on page load
 setTimeout(checkShopifyConnection, 500);
 function showHelp(section) {
@@ -1509,7 +1706,6 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
-
 
 
 
