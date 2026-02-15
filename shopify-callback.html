@@ -81,10 +81,9 @@
         const storedState = localStorage.getItem('shopifyOAuthState');
         const shopName = localStorage.getItem('shopifyStoreName');
 
-       async function handleCallback() {
+      async function handleCallback() {
     const content = document.getElementById('content');
     
-    // Verify state to prevent CSRF
     if (state !== storedState) {
         content.innerHTML = `
             <div class="error">⚠️</div>
@@ -106,18 +105,15 @@
     }
 
     try {
-        // Get API key from localStorage (sent from main page)
         const apiKey = localStorage.getItem('shopifyApiKey');
         
         if (!apiKey) {
             throw new Error('API key not found. Please try connecting again.');
         }
 
-       const tokenResponse = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/shopify-token', {
+        const tokenResponse = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/shopify-token', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 code: code,
                 shop: shopName,
@@ -132,33 +128,30 @@
 
         const tokenData = await tokenResponse.json();
 
-        // Store the access token securely
         localStorage.setItem('shopifyAccessToken', tokenData.access_token);
         localStorage.setItem('shopifyConnected', 'true');
         localStorage.removeItem('shopifyOAuthState');
-        localStorage.removeItem('shopifyApiKey'); // Clean up
+        localStorage.removeItem('shopifyApiKey');
+        localStorage.removeItem('shopifySynced'); // Mark as needs sync
 
-        // Save to Firebase for current user
         const user = auth.currentUser;
         if (user) {
             await db.ref(`BusinessOwners/${user.uid}/shopify`).set({
                 connected: true,
                 storeName: shopName,
-                accessToken: tokenData.access_token, 
+                accessToken: tokenData.access_token,
                 scope: tokenData.scope,
                 connectedAt: new Date().toISOString()
             });
         }
 
-        // Show success
         content.innerHTML = `
             <div class="success">✓</div>
             <h2>Successfully Connected!</h2>
             <p>Your Shopify store "${shopName}" is now connected to ScaleVest.</p>
-            <p style="margin-top: 10px; font-size: 13px;">Redirecting to dashboard...</p>
+            <p style="margin-top: 10px; font-size: 13px;">Syncing products...</p>
         `;
 
-        // Redirect after 2 seconds
         setTimeout(() => {
             window.location.href = 'business-hub.html';
         }, 2000);
@@ -169,7 +162,7 @@
             <div class="error">❌</div>
             <h2>Connection Error</h2>
             <p>${error.message}</p>
-            <a href="business-hub.html" class="btn">Back to Dashboard</a>
+            <a href="business-hub.html" class="btn">Back to Hub</a>
         `;
     }
 }
