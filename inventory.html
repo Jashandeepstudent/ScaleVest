@@ -1765,9 +1765,9 @@ db.ref(`BusinessOwners/${u.uid}/businessName`).once("value", snapshot => {
     const businessName = snapshot.val();
 
     document.getElementById('pageTitle').textContent = `${businessName} Inventory`;
-    document.getElementById('inventoryTitle').textContent = `${businessName} Inventory`;
+    document.getElementById('inventoryTitle').textContent = ` Inventory`;
     
-    document.getElementById('inventorySubtitle').textContent = 'Product Management System';
+    document.getElementById('inventorySubtitle').textContent = 'ScaleVest Inventory System';
     
     console.log(`✅ Loaded business: ${businessName}`);
   } else {
@@ -1812,10 +1812,7 @@ db.ref(`BusinessOwners/${u.uid}/businessName`).once("value", snapshot => {
 });
 
 
-// PRODUCT ANALYTICS SYSTEM
-// PRODUCT ANALYTICS SYSTEM - FIXED CALCULATION
-// PRODUCT ANALYTICS SYSTEM - ONLY ACTIVE PRODUCTS
-// PRODUCT ANALYTICS SYSTEM - NO DUPLICATE PRODUCTS
+
 function updateProductAnalytics(productId, productName, quantitySold) {
     if (!currentUserId) {
         console.error("User not authenticated");
@@ -4040,3 +4037,4 @@ async function updateShopifyInventory(variantId, newQuantity) {
 
 </body>
 </html>
+
