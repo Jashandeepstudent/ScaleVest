@@ -120,28 +120,29 @@
   </script>
 
   <!-- Website Schema -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
+  
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ScaleVest",
+  "url": "https://upscalevest.site/",
+  "description": "Business management platform for SMEs and startup-investor matching platform for India",
+  "publisher": {
+    "@type": "Organization",
     "name": "ScaleVest",
-    "alternateName": ["ScaleVest Platform", "ScaleVest India", "Business Management App India"],
-    "url": "https://upscalevest.site/",
-    "description": "Business management platform for SMEs and startup-investor matching platform for India",
-    "publisher": {
-      "@type": "Organization",
-      "name": "UnioraX Private Limited"
+    "url": "https://upscalevest.site/"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://upscalevest.site/?q={search_term_string}"
     },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": "https://upscalevest.site/?q={search_term_string}"
-      },
-      "query-input": "required name=search_term_string"
-    }
+    "query-input": "required name=search_term_string"
   }
-  </script>
+}
+</script>
   
   <!-- SoftwareApplication Schema -->
   <script type="application/ld+json">
@@ -1823,6 +1824,7 @@ function sendSupportEmail() {
 </div>
 </body>
 </html>
+
 
 
 
