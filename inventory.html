@@ -3972,7 +3972,7 @@ async function updateShopifyInventory(variantId, newQuantity) {
         
         console.log(`🔄 Updating Shopify inventory: Variant ${variantId} → ${newQuantity}`);
         
-        // Get inventory item ID
+        // Get variant details (including pricing)
         const variantResponse = await fetch(
             `https://${storeName}/admin/api/2024-01/variants/${variantId}.json`,
             {
@@ -3987,6 +3987,21 @@ async function updateShopifyInventory(variantId, newQuantity) {
         
         const variantData = await variantResponse.json();
         const inventoryItemId = variantData.variant.inventory_item_id;
+        
+        // 💰 SYNC PRICING BACK TO FIREBASE
+        const costPrice = parseFloat(variantData.variant.cost || 0);
+        const sellPrice = parseFloat(variantData.variant.price || 0);
+        
+        if (costPrice > 0 || sellPrice > 0) {
+            const pricesRef = db.ref(`Businesses/${auth.currentUser.uid}/prices/${currentUpdateId}`);
+            await pricesRef.update({
+                costPrice: costPrice,
+                sellPrice: sellPrice,
+                updatedAt: firebase.database.ServerValue.TIMESTAMP,
+                shopifySync: true
+            });
+            console.log('💰 Synced prices from Shopify');
+        }
         
         // Get location ID
         const locationsResponse = await fetch(
@@ -4030,11 +4045,11 @@ async function updateShopifyInventory(variantId, newQuantity) {
         
     } catch (error) {
         console.error('❌ Shopify sync error:', error);
-        // Don't show error to user - fail silently
     }
 }
 </script>
 
 </body>
 </html>
+
 
