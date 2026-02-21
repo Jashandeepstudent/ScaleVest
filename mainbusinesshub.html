@@ -779,8 +779,8 @@
 // TIER MANAGEMENT SYSTEM
 // ============================================
 
-const FREE_TRIAL_MINUTES = 10 / 60; // 10 seconds in minutes
-const FREE_TRIAL_SECONDS = 10;
+const FREE_TRIAL_MINUTES = 2880; 
+const FREE_TRIAL_SECONDS = 2 * 24 * 60 * 60;
 const RESET_HOURS = 2;
 const RESET_TRIAL_MINUTES = 30;
 
@@ -862,50 +862,61 @@ function startFreeTrialTimer(userId) {
     }, 1000);
 }
 
+let headerCountdownInterval = null;
+
 function updateHeaderFree(timeLeftSeconds, resetAt) {
     const badge = document.getElementById('tierBadge');
     const upgradeBtn = document.getElementById('upgradeHeaderBtn');
-    
     if (!badge) return;
-    
-    if (timeLeftSeconds > 0) {
-        const mins = Math.floor(timeLeftSeconds / 60);
-        const secs = timeLeftSeconds % 60;
-        const display = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-        badge.innerHTML = `
-            <div style="
-                background: linear-gradient(135deg, #fef3c7, #fde68a);
-                border: 1px solid #f59e0b; border-radius: 10px;
-                padding: 6px 12px; font-size: 12px; font-weight: 700; color: #92400e;
-                display:flex; align-items:center; gap:6px;
-            ">
-                ⏱ Free Trial: ${display}
-            </div>
-        `;
-    } else {
-        let waitText = '';
-        if (resetAt) {
-            const resetDate = new Date(resetAt);
-            const h = resetDate.getHours() % 12 || 12;
-            const m = String(resetDate.getMinutes()).padStart(2,'0');
-            const ampm = resetDate.getHours() >= 12 ? 'PM' : 'AM';
-            waitText = `Resets at ${h}:${m} ${ampm}`;
-        }
-        badge.innerHTML = `
-            <div style="
-                background: #fee2e2; border: 1px solid #fecaca;
-                border-radius: 10px; padding: 6px 12px;
-                font-size: 12px; font-weight: 700; color: #dc2626;
-                display:flex; align-items:center; gap:6px;
-            ">
-                🔒 Trial Ended · ${waitText}
-            </div>
-        `;
-    }
-    
-    if (upgradeBtn) upgradeBtn.style.display = 'flex';
-}
 
+    if (headerCountdownInterval) clearInterval(headerCountdownInterval);
+
+    if (timeLeftSeconds > 0) {
+        function renderTrialBadge(secs) {
+            const mins = Math.floor(secs / 60);
+            const s = secs % 60;
+            const display = mins > 0 ? `${mins}m ${s}s` : `${s}s`;
+            badge.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #fef3c7, #fde68a);
+                    border: 1px solid #f59e0b; border-radius: 10px;
+                    padding: 6px 12px; font-size: 12px; font-weight: 700; color: #92400e;
+                    display:flex; align-items:center; gap:6px;
+                ">⏱ Free Trial: ${display}</div>`;
+        }
+        renderTrialBadge(timeLeftSeconds);
+    } else {
+        if (resetAt) {
+            function renderResetBadge() {
+                const diff = resetAt - Date.now();
+                if (diff <= 0) {
+                    clearInterval(headerCountdownInterval);
+                    window.location.reload();
+                    return;
+                }
+                const hrs = Math.floor(diff / 3600000);
+                const mins = Math.floor((diff % 3600000) / 60000);
+                const secs = Math.floor((diff % 60000) / 1000);
+                const timeStr = `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+                badge.innerHTML = `
+                    <div style="
+                        background: #fee2e2; border: 1px solid #fecaca;
+                        border-radius: 10px; padding: 6px 12px;
+                        font-size: 12px; font-weight: 700; color: #dc2626;
+                        display:flex; align-items:center; gap:6px;
+                    ">🔒 Trial Over · Resets in ${timeStr}</div>`;
+            }
+            renderResetBadge();
+            headerCountdownInterval = setInterval(renderResetBadge, 1000);
+        } else {
+            badge.innerHTML = `
+                <div style="background:#fee2e2; border:1px solid #fecaca; border-radius:10px; padding:6px 12px; font-size:12px; font-weight:700; color:#dc2626; display:flex; align-items:center; gap:6px;">
+                    🔒 Trial Ended
+                </div>`;
+        }
+    }
+    if (upgradeBtn) upgradeBtn.style.display = 'flex';
+}	
 function updateHeaderForAce(tier) {
     const badge = document.getElementById('tierBadge');
     const upgradeBtn = document.getElementById('upgradeHeaderBtn');
@@ -950,29 +961,53 @@ async function canAccessFeature() {
     return (data.timeLeftSeconds || 0) > 0;
 }
 
+let deniedCountdownInterval = null;
+
 function showAccessDenied(featureName, resetAt) {
     const modal = document.getElementById('accessDeniedModal');
     const title = document.getElementById('deniedTitle');
     const msg = document.getElementById('deniedMessage');
     const waitMsg = document.getElementById('deniedWaitMsg');
+    const countdown = document.getElementById('deniedCountdown');
     
     title.textContent = `${featureName} – Access Restricted`;
     msg.textContent = `Your free trial time has ended. Upgrade to ACE Plan for unlimited access.`;
+    
+    if (deniedCountdownInterval) clearInterval(deniedCountdownInterval);
     
     if (resetAt) {
         const resetDate = new Date(resetAt);
         const h = resetDate.getHours() % 12 || 12;
         const m = String(resetDate.getMinutes()).padStart(2,'0');
         const ampm = resetDate.getHours() >= 12 ? 'PM' : 'AM';
-        waitMsg.textContent = `⏰ Free access resets at ${h}:${m} ${ampm} (${RESET_TRIAL_MINUTES} min session)`;
+        waitMsg.textContent = `⏰ Free access resets at ${h}:${m} ${ampm}`;
+        
+        // Live countdown
+        function updateCountdown() {
+            const now = Date.now();
+            const diff = resetAt - now;
+            if (diff <= 0) {
+                countdown.textContent = '✅ Refreshing...';
+                clearInterval(deniedCountdownInterval);
+                setTimeout(() => window.location.reload(), 1500);
+                return;
+            }
+            const hrs = Math.floor(diff / 3600000);
+            const mins = Math.floor((diff % 3600000) / 60000);
+            const secs = Math.floor((diff % 60000) / 1000);
+            countdown.textContent = `⏳ ${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')} remaining`;
+        }
+        updateCountdown();
+        deniedCountdownInterval = setInterval(updateCountdown, 1000);
     } else {
         waitMsg.textContent = '';
+        if (countdown) countdown.textContent = '';
     }
     
     modal.style.display = 'flex';
 }
-
 function closeAccessDenied() {
+    if (deniedCountdownInterval) clearInterval(deniedCountdownInterval);
     document.getElementById('accessDeniedModal').style.display = 'none';
 }
 
@@ -1015,7 +1050,7 @@ function buyPlan(plan) {
         currency: 'INR',
         name: 'ScaleVest',
         description: names[plan],
-        image: '', 
+        image: 'ScaleVestLogo.png',
         handler: async function(response) {
             await activatePlan(plan, response.razorpay_payment_id);
         },
@@ -2043,14 +2078,18 @@ if (currentPage.includes('inventory')) {
 
     <!-- Features List -->
     <div style="padding: 24px 32px 0 32px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
-        ${['Inventory Hub','Sales Flow','Business Vault','AI CFO','Command Centre','Shopify Sync','Priority Support','Unlimited Records'].map(f => `
-          <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#1e293b; font-weight:600;">
-            <span style="color:#7c3aed; font-size:16px;">✓</span> ${f}
-          </div>
-        `).join('')}
-      </div>
-    </div>
+<div style="padding: 20px 32px 0 32px;">
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> Inventory Hub</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> Sales Flow</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> Business Vault</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> AI CFO</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> Command Centre</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> Shopify Sync</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> Priority Support</div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#1e293b;font-weight:600;"><span style="color:#7c3aed;">✓</span> Unlimited Records</div>
+  </div>
+</div>
 
     <!-- Plans -->
     <div style="padding: 0 24px 28px 24px; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
@@ -2106,7 +2145,8 @@ if (currentPage.includes('inventory')) {
     <div style="font-size:56px; margin-bottom:16px;">🔒</div>
     <h3 style="margin:0 0 10px 0; font-size:22px; color:#1e293b;" id="deniedTitle">Access Restricted</h3>
     <p style="color:#64748b; font-size:14px; margin-bottom:8px;" id="deniedMessage">Your free trial has ended.</p>
-    <p style="color:#7c3aed; font-weight:700; font-size:14px; margin-bottom:24px;" id="deniedWaitMsg"></p>
+    <p style="color:#7c3aed; font-weight:700; font-size:14px; margin-bottom:8px;" id="deniedWaitMsg"></p>
+<p style="color:#ef4444; font-weight:800; font-size:18px; margin-bottom:24px; font-family:monospace;" id="deniedCountdown"></p>
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
       <button onclick="closeAccessDenied()" style="
         padding:14px; border:1px solid #e2e8f0; border-radius:14px;
