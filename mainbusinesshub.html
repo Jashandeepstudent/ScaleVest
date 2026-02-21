@@ -668,15 +668,8 @@
 <header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
     <h1 id="displayBizName" style="margin: 0;">Control Panel</h1>
     
-<div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
-      <div id="shopifyButtonContainer"></div>
-      <div id="tierBadge"></div>
-      <button id="upgradeHeaderBtn" onclick="openUpgradeModal()" style="
-        background: linear-gradient(135deg, #7c3aed, #a855f7);
-        color: white; border: none; padding: 8px 16px;
-        border-radius: 12px; font-size: 13px; font-weight: 600;
-        cursor: pointer; display: flex; align-items: center; gap: 6px;
-      ">🔥 Upgrade to ACE</button>
+    <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+      <div id="shopifyButtonContainer">
 </div>
 </header>
 <div id="createHubCard">
@@ -696,7 +689,7 @@
 <div id="dashboard">
     <div class="grid">
         
-<a onclick="navigateWithCheck('inventory.html', 'Inventory Hub')" class="box inventory-box" style="text-decoration: none; display: block; cursor:pointer;">
+<a href="inventory.html" class="box inventory-box" style="text-decoration: none; display: block;">
     <div>
         <div class="icon-wrapper">
             <img src="inventory.svg" alt="Inventory Icon" width="24" height="24">
@@ -711,7 +704,7 @@
     </div>
 </a>
 
-       <div class="box" onclick="navigateWithCheck('salesflow.html', 'Sales Flow')">
+       <div class="box" onclick="window.location.href='salesflow.html'">
 
             <div>
                 <div class="icon-wrapper">
@@ -722,7 +715,7 @@
             </div>
         </div>
 
-<div class="box" onclick="navigateWithCheck('commandcentre.html', 'Command Centre')">
+<div class="box" onclick="window.location.href='commandcentre.html'">
     <div>
         <div class="icon-wrapper" style="width: 48px; height: 48px;"> 
             <img src="personlaptop.svg" alt="Command Centre Icon" style="width: 100%; height: 100%; object-fit: contain;">
@@ -732,7 +725,7 @@
     </div>
 </div>
 
-        <div class="box" onclick="navigateWithCheck('businessvault.html', 'Business Vault')">
+        <div class="box" onclick="window.location.href='businessvault.html'">
 
             <div>
                 <div class="icon-wrapper">
@@ -743,7 +736,7 @@
             </div>
         </div>
 
-<div class="box ai-cfo-box" onclick="navigateWithCheck('CFO.html', 'AI CFO')">
+<div class="box ai-cfo-box" onclick="window.location.href='CFO.html'">
     <div>
         <div class="icon-wrapper">
             <img src="CFO.svg" alt="CFO Icon" width="24" height="24">
@@ -775,302 +768,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// ============================================
-// TIER MANAGEMENT SYSTEM
-// ============================================
-
-const FREE_TRIAL_MINUTES = 10 / 60; // 10 seconds in minutes
-const FREE_TRIAL_SECONDS = 10;
-const RESET_HOURS = 2;
-const RESET_TRIAL_MINUTES = 30;
-
-let tierCheckInterval = null;
-let trialTimerInterval = null;
-
-async function initTierSystem(userId) {
-    const tierRef = db.ref(`BusinessOwners/${userId}/tier`);
-    const snap = await tierRef.once('value');
-    
-    if (!snap.exists()) {
-        // First time user - create free tier
-        const now = Date.now();
-        await db.ref(`BusinessOwners/${userId}`).update({
-            tier: 'free',
-            timeLeftSeconds: FREE_TRIAL_SECONDS,
-            timeSpentSeconds: 0,
-            trialStartedAt: now,
-            resetAt: null
-        });
-        startFreeTrialTimer(userId);
-    } else {
-        const data = (await db.ref(`BusinessOwners/${userId}`).once('value')).val();
-        const tier = data.tier || 'free';
-        
-        if (tier === 'monthly_ace' || tier === 'yearly_ace') {
-            updateHeaderForAce(tier);
-            return;
-        }
-        
-        // Check if reset time has come
-        if (data.resetAt && Date.now() >= data.resetAt) {
-            await db.ref(`BusinessOwners/${userId}`).update({
-                timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
-                timeSpentSeconds: 0,
-                resetAt: null,
-                trialStartedAt: Date.now()
-            });
-            startFreeTrialTimer(userId);
-        } else if (data.timeLeftSeconds > 0) {
-            startFreeTrialTimer(userId);
-        } else {
-            // Time is up
-            const resetAt = data.resetAt;
-            updateHeaderFree(0, resetAt);
-        }
-    }
-}
-
-function startFreeTrialTimer(userId) {
-    if (trialTimerInterval) clearInterval(trialTimerInterval);
-    
-    trialTimerInterval = setInterval(async () => {
-        const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
-        const data = snap.val() || {};
-        
-        let timeLeft = (data.timeLeftSeconds || 0) - 1;
-        let timeSpent = (data.timeSpentSeconds || 0) + 1;
-        
-        if (timeLeft <= 0) {
-            timeLeft = 0;
-            clearInterval(trialTimerInterval);
-            
-            // Set reset time = 2 hours from now
-            const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
-            await db.ref(`BusinessOwners/${userId}`).update({
-                timeLeftSeconds: 0,
-                timeSpentSeconds: FREE_TRIAL_SECONDS,
-                resetAt: resetAt
-            });
-            updateHeaderFree(0, resetAt);
-        } else {
-            await db.ref(`BusinessOwners/${userId}`).update({
-                timeLeftSeconds: timeLeft,
-                timeSpentSeconds: timeSpent
-            });
-            updateHeaderFree(timeLeft, null);
-        }
-    }, 1000);
-}
-
-function updateHeaderFree(timeLeftSeconds, resetAt) {
-    const badge = document.getElementById('tierBadge');
-    const upgradeBtn = document.getElementById('upgradeHeaderBtn');
-    
-    if (!badge) return;
-    
-    if (timeLeftSeconds > 0) {
-        const mins = Math.floor(timeLeftSeconds / 60);
-        const secs = timeLeftSeconds % 60;
-        const display = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-        badge.innerHTML = `
-            <div style="
-                background: linear-gradient(135deg, #fef3c7, #fde68a);
-                border: 1px solid #f59e0b; border-radius: 10px;
-                padding: 6px 12px; font-size: 12px; font-weight: 700; color: #92400e;
-                display:flex; align-items:center; gap:6px;
-            ">
-                ⏱ Free Trial: ${display}
-            </div>
-        `;
-    } else {
-        let waitText = '';
-        if (resetAt) {
-            const resetDate = new Date(resetAt);
-            const h = resetDate.getHours() % 12 || 12;
-            const m = String(resetDate.getMinutes()).padStart(2,'0');
-            const ampm = resetDate.getHours() >= 12 ? 'PM' : 'AM';
-            waitText = `Resets at ${h}:${m} ${ampm}`;
-        }
-        badge.innerHTML = `
-            <div style="
-                background: #fee2e2; border: 1px solid #fecaca;
-                border-radius: 10px; padding: 6px 12px;
-                font-size: 12px; font-weight: 700; color: #dc2626;
-                display:flex; align-items:center; gap:6px;
-            ">
-                🔒 Trial Ended · ${waitText}
-            </div>
-        `;
-    }
-    
-    if (upgradeBtn) upgradeBtn.style.display = 'flex';
-}
-
-function updateHeaderForAce(tier) {
-    const badge = document.getElementById('tierBadge');
-    const upgradeBtn = document.getElementById('upgradeHeaderBtn');
-    
-    if (badge) {
-        badge.innerHTML = `
-            <div style="
-                background: linear-gradient(135deg, #fef3c7, #fde68a);
-                border: 2px solid #f59e0b; border-radius: 10px;
-                padding: 6px 14px; font-size: 13px; font-weight: 800; color: #92400e;
-                display:flex; align-items:center; gap:6px;
-            ">
-                🔥 CURRENT TIER: ACE
-            </div>
-        `;
-    }
-    if (upgradeBtn) upgradeBtn.style.display = 'none';
-}
-
-async function canAccessFeature() {
-    const user = auth.currentUser;
-    if (!user) return false;
-    
-    const snap = await db.ref(`BusinessOwners/${user.uid}`).once('value');
-    const data = snap.val() || {};
-    const tier = data.tier || 'free';
-    
-    if (tier === 'monthly_ace' || tier === 'yearly_ace') return true;
-    
-    // Check reset
-    if (data.resetAt && Date.now() >= data.resetAt) {
-        await db.ref(`BusinessOwners/${user.uid}`).update({
-            timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
-            timeSpentSeconds: 0,
-            resetAt: null,
-            trialStartedAt: Date.now()
-        });
-        startFreeTrialTimer(user.uid);
-        return true;
-    }
-    
-    return (data.timeLeftSeconds || 0) > 0;
-}
-
-function showAccessDenied(featureName, resetAt) {
-    const modal = document.getElementById('accessDeniedModal');
-    const title = document.getElementById('deniedTitle');
-    const msg = document.getElementById('deniedMessage');
-    const waitMsg = document.getElementById('deniedWaitMsg');
-    
-    title.textContent = `${featureName} – Access Restricted`;
-    msg.textContent = `Your free trial time has ended. Upgrade to ACE Plan for unlimited access.`;
-    
-    if (resetAt) {
-        const resetDate = new Date(resetAt);
-        const h = resetDate.getHours() % 12 || 12;
-        const m = String(resetDate.getMinutes()).padStart(2,'0');
-        const ampm = resetDate.getHours() >= 12 ? 'PM' : 'AM';
-        waitMsg.textContent = `⏰ Free access resets at ${h}:${m} ${ampm} (${RESET_TRIAL_MINUTES} min session)`;
-    } else {
-        waitMsg.textContent = '';
-    }
-    
-    modal.style.display = 'flex';
-}
-
-function closeAccessDenied() {
-    document.getElementById('accessDeniedModal').style.display = 'none';
-}
-
-async function navigateWithCheck(url, featureName) {
-    const allowed = await canAccessFeature();
-    if (allowed) {
-        window.location.href = url;
-    } else {
-        const user = auth.currentUser;
-        const snap = await db.ref(`BusinessOwners/${user.uid}`).once('value');
-        const data = snap.val() || {};
-        showAccessDenied(featureName, data.resetAt || null);
-    }
-}
-
-// ============================================
-// UPGRADE MODAL
-// ============================================
-
-function openUpgradeModal() {
-    document.getElementById('upgradeModal').style.display = 'flex';
-}
-
-function closeUpgradeModal() {
-    document.getElementById('upgradeModal').style.display = 'none';
-}
-
-function selectPlan(plan) {
-    document.getElementById('monthlyCard').style.border = plan === 'monthly' ? '2px solid #7c3aed' : '2px solid #e2e8f0';
-    document.getElementById('yearlyCard').style.border = plan === 'yearly' ? '2px solid #7c3aed' : '2px solid #e2e8f0';
-}
-
-function buyPlan(plan) {
-    const amounts = { monthly: 19900, yearly: 59900 }; // in paise
-    const names = { monthly: 'ACE Monthly Plan', yearly: 'ACE Yearly Plan' };
-    
-    const options = {
-        key: 'rzp_test_1DP5mmOlF5G5ag', // Test key
-        amount: amounts[plan],
-        currency: 'INR',
-        name: 'ScaleVest',
-        description: names[plan],
-        image: '', 
-        handler: async function(response) {
-            await activatePlan(plan, response.razorpay_payment_id);
-        },
-        prefill: { name: '', email: '', contact: '' },
-        theme: { color: '#7c3aed' },
-        modal: { backdropclose: false }
-    };
-    
-    // Load Razorpay script if not loaded
-    if (typeof Razorpay === 'undefined') {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.onload = () => { const rzp = new Razorpay(options); rzp.open(); };
-        document.head.appendChild(script);
-    } else {
-        const rzp = new Razorpay(options);
-        rzp.open();
-    }
-}
-
-async function activatePlan(plan, paymentId) {
-    const user = auth.currentUser;
-    if (!user) return;
-    
-    const now = Date.now();
-    let timeLeftSeconds, tierName;
-    
-    if (plan === 'monthly') {
-        tierName = 'monthly_ace';
-        timeLeftSeconds = 30 * 24 * 60 * 60; // 30 days in seconds
-    } else {
-        tierName = 'yearly_ace';
-        timeLeftSeconds = 365 * 24 * 60 * 60; // 365 days in seconds
-    }
-    
-    await db.ref(`BusinessOwners/${user.uid}`).update({
-        tier: tierName,
-        timeLeftSeconds: timeLeftSeconds,
-        timeSpentSeconds: 0,
-        activatedAt: now,
-        paymentId: paymentId,
-        resetAt: null
-    });
-    
-    clearInterval(trialTimerInterval);
-    closeUpgradeModal();
-    updateHeaderForAce(tierName);
-    
-    // Success notification
-    const div = document.createElement('div');
-    div.style.cssText = 'position:fixed;top:20px;right:20px;background:linear-gradient(135deg,#10b981,#059669);color:white;padding:16px 24px;border-radius:16px;font-weight:700;font-size:14px;z-index:99999;box-shadow:0 10px 30px rgba(16,185,129,0.4);';
-    div.innerHTML = `🔥 Welcome to ACE Plan! Unlimited access activated.`;
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 5000);
-}
 const firebaseConfig = {
     apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
     authDomain: "scalevest-163a0.firebaseapp.com",
@@ -1423,7 +1120,6 @@ async function disconnectShopify() {
         
         // Update button
         updateShopifyButton();
-        initTierSystem(user.uid); 
         
         alert('✅ Shopify store disconnected successfully!\n\nAll synced products have been removed.');
         
@@ -2010,116 +1706,6 @@ if (currentPage.includes('inventory')) {
     localStorage.setItem('salesVisited', 'true');
 }
 </script>
-<!-- Upgrade Modal -->
-<div id="upgradeModal" style="
-  position:fixed; inset:0; background:rgba(15,23,42,0.85);
-  backdrop-filter:blur(12px); display:none; justify-content:center;
-  align-items:center; z-index:20000; padding:20px;
-">
-  <div style="
-    background: white; border-radius: 32px; max-width: 520px; width:100%;
-    overflow:hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.4);
-    animation: modalSlideUp 0.4s ease;
-  ">
-    <!-- Header -->
-    <div style="
-      background: linear-gradient(135deg, #1e0a3c 0%, #7c3aed 60%, #f59e0b 100%);
-      padding: 36px 32px; text-align:center; position:relative;
-    ">
-      <button onclick="closeUpgradeModal()" style="
-        position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.2);
-        border:none; color:white; font-size:22px; width:36px; height:36px;
-        border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;
-      ">×</button>
-      <!-- Fire SVG Logo -->
-      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" style="margin-bottom:12px;">
-        <path d="M12 2C12 2 7 7 7 12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12C17 9.5 15.5 7.5 14 6C14 7.5 13.5 9 12 10C12 10 11 8.5 11 7C11 5.5 11.5 3.5 12 2Z" fill="#f97316"/>
-        <path d="M12 10C10.5 11.5 10 13 10 14C10 15.1 10.9 16 12 16C13.1 16 14 15.1 14 14C14 12.5 13 11 12 10Z" fill="#fbbf24"/>
-        <ellipse cx="12" cy="19" rx="5" ry="2" fill="#7c3aed" opacity="0.3"/>
-      </svg>
-      <h2 style="color:white; margin:0 0 6px 0; font-size:28px; font-weight:800; letter-spacing:-0.5px;">ACE Plan</h2>
-      <p style="color:rgba(255,255,255,0.85); margin:0; font-size:14px;">Unlock unlimited access to every ScaleVest feature</p>
-    </div>
-
-    <!-- Features List -->
-    <div style="padding: 24px 32px 0 32px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
-        ${['Inventory Hub','Sales Flow','Business Vault','AI CFO','Command Centre','Shopify Sync','Priority Support','Unlimited Records'].map(f => `
-          <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#1e293b; font-weight:600;">
-            <span style="color:#7c3aed; font-size:16px;">✓</span> ${f}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-
-    <!-- Plans -->
-    <div style="padding: 0 24px 28px 24px; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-      <!-- Monthly -->
-      <div id="monthlyCard" onclick="selectPlan('monthly')" style="
-        border: 2px solid #e2e8f0; border-radius:20px; padding:20px; text-align:center;
-        cursor:pointer; transition:all 0.2s;
-      ">
-        <div style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Monthly</div>
-        <div style="font-size:32px; font-weight:800; color:#1e293b;">₹199</div>
-        <div style="font-size:12px; color:#64748b; margin:4px 0 12px 0;">per month</div>
-        <div style="font-size:11px; color:#7c3aed; font-weight:600;">Unlimited access for 1 month</div>
-        <button onclick="buyPlan('monthly')" style="
-          margin-top:14px; width:100%; padding:12px; background:linear-gradient(135deg,#7c3aed,#a855f7);
-          color:white; border:none; border-radius:12px; font-weight:700; font-size:13px; cursor:pointer;
-        ">Buy Monthly</button>
-      </div>
-      <!-- Yearly -->
-      <div id="yearlyCard" onclick="selectPlan('yearly')" style="
-        border: 2px solid #7c3aed; border-radius:20px; padding:20px; text-align:center;
-        cursor:pointer; transition:all 0.2s; background: linear-gradient(135deg, #faf5ff, #f5f3ff);
-        position:relative;
-      ">
-        <div style="
-          position:absolute; top:-10px; left:50%; transform:translateX(-50%);
-          background:linear-gradient(135deg,#f59e0b,#d97706); color:white;
-          font-size:10px; font-weight:700; padding:3px 12px; border-radius:20px; white-space:nowrap;
-        ">BEST VALUE 🔥</div>
-        <div style="font-size:12px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Yearly</div>
-        <div style="font-size:32px; font-weight:800; color:#7c3aed;">₹599</div>
-        <div style="font-size:12px; color:#64748b; margin:4px 0 12px 0;">per year</div>
-        <div style="font-size:11px; color:#7c3aed; font-weight:600;">Unlimited access for 1 year</div>
-        <button onclick="buyPlan('yearly')" style="
-          margin-top:14px; width:100%; padding:12px; background:linear-gradient(135deg,#f59e0b,#d97706);
-          color:white; border:none; border-radius:12px; font-weight:700; font-size:13px; cursor:pointer;
-        ">Buy Yearly</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Access Denied Modal -->
-<div id="accessDeniedModal" style="
-  position:fixed; inset:0; background:rgba(15,23,42,0.85);
-  backdrop-filter:blur(12px); display:none; justify-content:center;
-  align-items:center; z-index:20000; padding:20px;
-">
-  <div style="
-    background:white; border-radius:28px; max-width:380px; width:100%;
-    padding:36px; text-align:center; box-shadow:0 30px 60px rgba(0,0,0,0.3);
-    animation: modalSlideUp 0.3s ease;
-  ">
-    <div style="font-size:56px; margin-bottom:16px;">🔒</div>
-    <h3 style="margin:0 0 10px 0; font-size:22px; color:#1e293b;" id="deniedTitle">Access Restricted</h3>
-    <p style="color:#64748b; font-size:14px; margin-bottom:8px;" id="deniedMessage">Your free trial has ended.</p>
-    <p style="color:#7c3aed; font-weight:700; font-size:14px; margin-bottom:24px;" id="deniedWaitMsg"></p>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <button onclick="closeAccessDenied()" style="
-        padding:14px; border:1px solid #e2e8f0; border-radius:14px;
-        background:#f8fafc; font-weight:600; font-size:13px; cursor:pointer; color:#64748b;
-      ">Wait for Reset</button>
-      <button onclick="closeAccessDenied(); openUpgradeModal();" style="
-        padding:14px; border:none; border-radius:14px;
-        background:linear-gradient(135deg,#7c3aed,#a855f7); color:white;
-        font-weight:700; font-size:13px; cursor:pointer;
-      ">🔥 Upgrade to ACE</button>
-    </div>
-  </div>
-</div>
 <div class="helper-bot">
     <div class="bot-bubble" onclick="toggleBot()" id="botBubble">
         <svg class="bot-icon" fill="none" viewBox="0 0 24 24" stroke="white">
@@ -2219,7 +1805,6 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
-
 
 
 
