@@ -669,6 +669,30 @@
     <h1 id="displayBizName" style="margin: 0;">Control Panel</h1>
     
 <div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+<button onclick="toggleLogoutModal(true)" style="
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    box-shadow: 0 4px 15px rgba(239,68,68,0.4);
+    transition: all 0.2s ease;
+    letter-spacing: 0.2px;
+" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(239,68,68,0.5)'"
+   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(239,68,68,0.4)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Sign Out
+</button>
       <div id="shopifyButtonContainer"></div>
       <div id="tierBadge"></div>
       <button id="upgradeHeaderBtn" onclick="openUpgradeModal()" style="
@@ -760,13 +784,74 @@
 
     </div>
 </div>
-<div id="logoutModal">
-    <div class="confirm-box">
-        <h3>Sign Out?</h3>
-        <p>Are you sure you want to log out of your ScaleVest account?</p>
-        <div class="modal-btns">
-            <button class="btn-cancel" onclick="toggleLogoutModal(false)">Cancel</button>
-            <button class="btn-confirm" onclick="executeLogout()">Yes, Sign Out</button>
+<div id="logoutModal" style="
+    position:fixed; inset:0;
+    background:rgba(15,23,42,0.7);
+    backdrop-filter:blur(10px);
+    display:none; justify-content:center;
+    align-items:center; z-index:50000;
+">
+    <div style="
+        background:white; border-radius:28px;
+        max-width:360px; width:90%;
+        overflow:hidden;
+        box-shadow:0 30px 60px rgba(0,0,0,0.35);
+        animation: modalSlideUp 0.3s ease;
+    ">
+        <!-- Red top bar -->
+        <div style="
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            padding: 28px; text-align:center;
+        ">
+            <div style="
+                width:56px; height:56px;
+                background:rgba(255,255,255,0.2);
+                border-radius:50%; display:flex;
+                align-items:center; justify-content:center;
+                margin:0 auto 12px auto;
+            ">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </div>
+            <h3 style="color:white; margin:0; font-size:20px; font-weight:800;">Sign Out?</h3>
+            <p style="color:rgba(255,255,255,0.85); margin:6px 0 0 0; font-size:13px;">You'll need to sign back in to access your hub</p>
+        </div>
+
+        <!-- Body -->
+        <div style="padding:24px 28px 28px 28px;">
+            <p style="
+                color:#64748b; font-size:14px;
+                text-align:center; margin:0 0 24px 0;
+                line-height:1.6;
+            ">Are you sure you want to log out of <strong style="color:#1e293b;">ScaleVest</strong>?</p>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <button onclick="toggleLogoutModal(false)" style="
+                    padding:14px; border-radius:14px;
+                    border:1.5px solid #e2e8f0;
+                    background:#f8fafc; font-weight:600;
+                    font-size:14px; cursor:pointer; color:#64748b;
+                    transition:all 0.2s;
+                " onmouseover="this.style.background='#f1f5f9'"
+                   onmouseout="this.style.background='#f8fafc'">
+                    Cancel
+                </button>
+                <button onclick="executeLogout()" style="
+                    padding:14px; border-radius:14px;
+                    border:none;
+                    background:linear-gradient(135deg,#ef4444,#dc2626);
+                    color:white; font-weight:700;
+                    font-size:14px; cursor:pointer;
+                    box-shadow:0 4px 15px rgba(239,68,68,0.4);
+                    transition:all 0.2s;
+                " onmouseover="this.style.transform='translateY(-1px)'"
+                   onmouseout="this.style.transform='translateY(0)'">
+                    Yes, Sign Out
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -1216,11 +1301,17 @@ function toggleLogoutModal(show) {
 
 function executeLogout() {
     auth.signOut().then(() => {
-        localStorage.clear(); // Clears business name and session
+        localStorage.removeItem('businessName');
+        localStorage.removeItem('businessProfileCreated');
+        localStorage.removeItem('shopifyConnected');
+        localStorage.removeItem('shopifyStoreName');
+        localStorage.removeItem('shopifyAccessToken');
+        localStorage.removeItem('seenReminders');
+        localStorage.removeItem('lastLogin');
+        localStorage.clear(); // nuclear clear just in case
         window.location.href = "index.html";
     }).catch(err => {
         console.error("Logout failed", err);
-        alert("Error signing out.");
     });
 }
 function showCreateCard() { dashboard.style.display = "none"; headerUI.style.display = "none"; createCard.style.display = "flex"; }
@@ -2355,6 +2446,7 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
+
 
 
 
