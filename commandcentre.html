@@ -1733,16 +1733,32 @@ box-sizing: border-box;
     <i class="fas fa-cog"></i> Digital Controls
 </button>
 
-<!-- Top Right: Leaderboard + Back Button -->
-<div style="position: fixed; top: 10px; right: 10px; display: flex; flex-direction: row-reverse; gap: 8px; align-items: flex-start; z-index: 900;">
-    <div class="inventory-leaderboard" id="outOfStockPanel" style="margin: 0;">
-        <div class="leaderboard-title">🚨 Out of Stock <span id="oosCount">0</span></div>
-        <div id="oosList"></div>
-    </div>
-    
-    <a href="mainbusinesshub.html" style="background: rgba(15, 15, 35, 0.9); border: 2px solid var(--neon-primary); color: var(--neon-primary); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap;">
-        <i class="fas fa-arrow-left"></i> Back
-    </a>
+<div class="inventory-leaderboard" id="outOfStockPanel" style="position: fixed; top: 10px; right: 10px; margin: 0; z-index: 901;">
+    <div class="leaderboard-title">🚨 Out of Stock <span id="oosCount">0</span></div>
+    <div id="oosList"></div>
+</div>
+
+<!-- Back Button — fixed, positioned to LEFT of the leaderboard (leaderboard is 140px wide + 10px right + 8px gap = 158px from right) -->
+<a href="mainbusinesshub.html" style="
+    position: fixed;
+    top: 10px;
+    right: 158px;
+    background: rgba(15, 15, 35, 0.9);
+    border: 2px solid var(--neon-primary);
+    color: var(--neon-primary);
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    z-index: 902;
+">
+    <i class="fas fa-arrow-left"></i> Back
+</a>
 </div>
 <div class="controls" id="controlsPanel">
     <h3>
