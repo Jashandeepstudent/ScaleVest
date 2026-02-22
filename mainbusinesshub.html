@@ -941,13 +941,13 @@ async function _handleUserReturn(reason) {
 
         // Cap the credit: don't give more time than the full free trial
         const maxCredit = FREE_TRIAL_SECONDS;
-        const creditSeconds = Math.min(awaySeconds, maxCredit);
-        const newTimeLeft = Math.min(currentLeft + creditSeconds, FREE_TRIAL_SECONDS);
+const deductSeconds = Math.min(awaySeconds, FREE_TRIAL_SECONDS);
+const newTimeLeft = Math.max(0, currentLeft - deductSeconds);
 
-        await db.ref(`BusinessOwners/${_awayTrackingUserId}`).update({
-            timeLeftSeconds: newTimeLeft,
-            timeSpentSeconds: Math.max(0, (data.timeSpentSeconds || 0) - creditSeconds)
-        });
+await db.ref(`BusinessOwners/${_awayTrackingUserId}`).update({
+    timeLeftSeconds: newTimeLeft,
+    timeSpentSeconds: (data.timeSpentSeconds || 0) + deductSeconds
+});
 
         console.log(`✅ Credited ${creditSeconds}s back. New timeLeft: ${newTimeLeft}s`);
 
@@ -986,13 +986,13 @@ async function _checkReturnFromPreviousSession(userId) {
         const currentLeft = data.timeLeftSeconds || 0;
         if (currentLeft <= 0) return;
 
-        const creditSeconds = Math.min(awaySeconds, FREE_TRIAL_SECONDS);
-        const newTimeLeft = Math.min(currentLeft + creditSeconds, FREE_TRIAL_SECONDS);
+const deductSeconds = Math.min(awaySeconds, FREE_TRIAL_SECONDS);
+const newTimeLeft = Math.max(0, currentLeft - deductSeconds);
 
-        await db.ref(`BusinessOwners/${userId}`).update({
-            timeLeftSeconds: newTimeLeft,
-            timeSpentSeconds: Math.max(0, (data.timeSpentSeconds || 0) - creditSeconds)
-        });
+await db.ref(`BusinessOwners/${userId}`).update({
+    timeLeftSeconds: newTimeLeft,
+    timeSpentSeconds: (data.timeSpentSeconds || 0) + deductSeconds
+});
 
         console.log(`✅ Session credit: +${creditSeconds}s. New timeLeft: ${newTimeLeft}s`);
     } catch (err) {
