@@ -665,10 +665,10 @@
 </head>
 <body>
 
-<header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; flex-wrap: wrap; gap: 8px;">
-    <h1 id="displayBizName" style="margin: 0; font-size: clamp(14px, 3vw, 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">Control Panel</h1>
+<header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
+    <h1 id="displayBizName" style="margin: 0;">Control Panel</h1>
     
-<div class="header-actions" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: 1;">
+<div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
 <button onclick="toggleLogoutModal(true)" style="
     background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
@@ -861,6 +861,174 @@
 
 <script>
 // ============================================
+// OFFLINE / AWAY TIME TRACKER
+// ============================================
+
+let _awayStartTime = null;
+let _awayTrackingUserId = null;
+
+function startAwayTracking(userId) {
+    _awayTrackingUserId = userId;
+
+    // --- TAB HIDDEN (user switches tab, minimizes, locks screen) ---
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            _awayStartTime = Date.now();
+            console.log('⏸ User went away (tab hidden)');
+        } else {
+            _handleUserReturn('tab visible');
+        }
+    });
+
+    // --- WINDOW BLUR / FOCUS (user clicks away from browser window) ---
+    window.addEventListener('blur', () => {
+        if (!_awayStartTime) {
+            _awayStartTime = Date.now();
+            console.log('⏸ User went away (window blur)');
+        }
+    });
+
+    window.addEventListener('focus', () => {
+        _handleUserReturn('window focus');
+    });
+
+    // --- NETWORK OFFLINE / ONLINE ---
+    window.addEventListener('offline', () => {
+        if (!_awayStartTime) {
+            _awayStartTime = Date.now();
+            console.log('⏸ User went offline');
+        }
+    });
+
+    window.addEventListener('online', () => {
+        _handleUserReturn('back online');
+    });
+
+    // --- PAGE UNLOAD: save timestamp so we can credit on next load ---
+    window.addEventListener('beforeunload', () => {
+        if (_awayStartTime === null) {
+            // User is actively on page when closing — save current time
+            localStorage.setItem('_svLastSeen', Date.now().toString());
+        }
+    });
+
+    // --- ON PAGE LOAD: check if user was gone since last visit ---
+    _checkReturnFromPreviousSession(userId);
+}
+
+async function _handleUserReturn(reason) {
+    if (_awayStartTime === null) return;
+
+    const awayMs = Date.now() - _awayStartTime;
+    const awaySeconds = Math.floor(awayMs / 1000);
+    _awayStartTime = null;
+
+    // Only credit back if they were gone for at least 5 seconds
+    if (awaySeconds < 5 || !_awayTrackingUserId) return;
+
+    console.log(`▶ User returned (${reason}). Was away for ${awaySeconds}s — crediting back.`);
+
+    try {
+        const snap = await db.ref(`BusinessOwners/${_awayTrackingUserId}`).once('value');
+        const data = snap.val() || {};
+        const tier = data.tier || 'free';
+
+        // Only credit for free tier users
+        if (tier === 'monthly_ace' || tier === 'yearly_ace') return;
+
+        const currentLeft = data.timeLeftSeconds || 0;
+        if (currentLeft <= 0) return; // Trial already ended, nothing to credit
+
+        // Cap the credit: don't give more time than the full free trial
+        const maxCredit = FREE_TRIAL_SECONDS;
+        const creditSeconds = Math.min(awaySeconds, maxCredit);
+        const newTimeLeft = Math.min(currentLeft + creditSeconds, FREE_TRIAL_SECONDS);
+
+        await db.ref(`BusinessOwners/${_awayTrackingUserId}`).update({
+            timeLeftSeconds: newTimeLeft,
+            timeSpentSeconds: Math.max(0, (data.timeSpentSeconds || 0) - creditSeconds)
+        });
+
+        console.log(`✅ Credited ${creditSeconds}s back. New timeLeft: ${newTimeLeft}s`);
+
+        // Show a small toast so user knows
+        if (awaySeconds >= 30) {
+            _showAwayToast(awaySeconds, creditSeconds);
+        }
+
+    } catch (err) {
+        console.error('Error crediting away time:', err);
+    }
+}
+
+async function _checkReturnFromPreviousSession(userId) {
+    const lastSeenStr = localStorage.getItem('_svLastSeen');
+    if (!lastSeenStr) return;
+
+    localStorage.removeItem('_svLastSeen');
+
+    const lastSeen = parseInt(lastSeenStr, 10);
+    const awayMs = Date.now() - lastSeen;
+    const awaySeconds = Math.floor(awayMs / 1000);
+
+    // Only credit if they were gone between 10 seconds and 24 hours
+    if (awaySeconds < 10 || awaySeconds > 86400) return;
+
+    console.log(`🔄 User was away for ${awaySeconds}s between sessions — crediting back.`);
+
+    try {
+        const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
+        const data = snap.val() || {};
+        const tier = data.tier || 'free';
+
+        if (tier === 'monthly_ace' || tier === 'yearly_ace') return;
+
+        const currentLeft = data.timeLeftSeconds || 0;
+        if (currentLeft <= 0) return;
+
+        const creditSeconds = Math.min(awaySeconds, FREE_TRIAL_SECONDS);
+        const newTimeLeft = Math.min(currentLeft + creditSeconds, FREE_TRIAL_SECONDS);
+
+        await db.ref(`BusinessOwners/${userId}`).update({
+            timeLeftSeconds: newTimeLeft,
+            timeSpentSeconds: Math.max(0, (data.timeSpentSeconds || 0) - creditSeconds)
+        });
+
+        console.log(`✅ Session credit: +${creditSeconds}s. New timeLeft: ${newTimeLeft}s`);
+    } catch (err) {
+        console.error('Error on session return credit:', err);
+    }
+}
+
+function _showAwayToast(awaySeconds, creditedSeconds) {
+    const mins = Math.floor(awaySeconds / 60);
+    const secs = awaySeconds % 60;
+    const awayLabel = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position:fixed; bottom:100px; right:20px;
+        background:linear-gradient(135deg,#1e293b,#334155);
+        color:white; padding:14px 18px; border-radius:16px;
+        font-size:13px; font-weight:600; z-index:99999;
+        box-shadow:0 10px 30px rgba(0,0,0,0.3);
+        display:flex; align-items:center; gap:10px;
+        animation: slideIn 0.3s ease;
+        max-width: 280px;
+    `;
+    toast.innerHTML = `
+        <span style="font-size:20px;">⏱</span>
+        <div>
+            <div style="margin-bottom:2px;">Welcome back!</div>
+            <div style="font-weight:400; font-size:12px; color:#94a3b8;">
+                You were away for <strong style="color:white;">${awayLabel}</strong> — that time has been credited back to your trial.
+            </div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+}
+// ============================================
 // TIER MANAGEMENT SYSTEM
 // ============================================
 
@@ -918,6 +1086,7 @@ async function initTierSystem(userId) {
 function startFreeTrialTimer(userId) {
     if (trialTimerInterval) clearInterval(trialTimerInterval);
     
+    startAwayTracking(userId);
     trialTimerInterval = setInterval(async () => {
         const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
         const data = snap.val() || {};
