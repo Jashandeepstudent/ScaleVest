@@ -373,12 +373,14 @@ box-sizing: border-box;
         /* Product Node Styles */
 .product-node {
     position: absolute;
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 120px; 
     transform-style: preserve-3d;
     display: flex;
+    flex-direction: column; 
     align-items: center;
     justify-content: center;
+    gap: 15px;
     transition: transform 0.5s ease;
     pointer-events: auto;
 }
@@ -439,20 +441,20 @@ box-sizing: border-box;
             transform: translateZ(20px);
         }
 
-        .product-name {
-            font-size: 9px;
-            font-weight: 900;
-            color: #ffffff !important;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: 2px solid var(--neon-primary);
-            margin-bottom: 8px;
-            width: 100%;
-            text-shadow: 0 0 10px var(--neon-primary);
-            transform: translateZ(15px);
-            z-index: 20;
-        }
+.product-name {
+    font-size: 9px;
+    font-weight: 900;
+    color: #ffffff !important;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 4px 8px; /* Slightly tighter padding */
+    border-radius: 8px;
+    border: 2px solid var(--neon-primary);
+    margin-top: auto; 
+    white-space: nowrap; 
+    text-shadow: 0 0 10px var(--neon-primary);
+    transform: translateZ(20px); 
+    z-index: 20;
+}
 /* Custom Quantity Popup Styling */
 .quantity-popup {
     position: fixed;
