@@ -383,8 +383,8 @@ box-sizing: border-box;
 }
 
         .product-card {
-            width: 100px;
-            height: 100px;
+           width: 68px;
+            height: 68px;
             position: relative;
             transform-style: preserve-3d;
             border-radius: 14px;
@@ -436,14 +436,14 @@ box-sizing: border-box;
         }
 
         .product-icon {
-            font-size: 48px;
+            font-size: 28px;
             margin-bottom: 10px;
             text-shadow: 0 0 20px var(--neon-primary);
             transform: translateZ(20px);
         }
 
         .product-name {
-            font-size: 13px;
+            font-size: 9px;
             font-weight: 900;
             color: #ffffff !important;
             background: rgba(0, 0, 0, 0.9);
@@ -499,7 +499,7 @@ box-sizing: border-box;
     transition: 0.3s;
 }
         .product-price {
-            font-size: 16px;
+            font-size: 10px;
             font-weight: bold;
             color: var(--neon-accent);
             text-shadow: 0 0 10px var(--neon-accent);
@@ -2173,8 +2173,9 @@ node.style.transform = `translate(${xPosition}px, ${yPosition}px) translateZ(${f
 node.style.width = isMobile ? '35px' : '70px';
 node.style.height = isMobile ? '35px' : '70px';
 node.style.transformStyle = 'preserve-3d';
-node.style.pointerEvents = 'auto';node.style.width = '80px';
-node.style.height = '80px';
+node.style.pointerEvents = 'auto';
+node.style.width = isMobile ? '40px' : '80px';
+node.style.height = isMobile ? '40px' : '80px';
 
 
                 const expiryStatus = getExpiryStatus(product, isTimeTravelMode ? new Date(Date.now() + timeTravelDaysOffset * 86400000) : null);
@@ -2675,8 +2676,8 @@ newProducts.push({
                 stock: parseInt(inv.quantity || 0),
                 sales: parseInt(inv.sold || 0),
                 expiryDate: inv.expiryDate || null,
-                x: parseInt(inv.x !== undefined ? inv.x : index % 10),
-                y: parseInt(inv.y !== undefined ? inv.y : Math.floor(index / 10) % 10),
+x: parseInt(inv.x !== undefined ? inv.x : index % 10),
+y: parseInt(inv.y !== undefined ? inv.y : Math.floor((index % 100) / 10)),
                 floor: Math.floor(index / 100) 
             });
         });
