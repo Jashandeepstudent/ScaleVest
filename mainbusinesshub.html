@@ -887,88 +887,81 @@ let tierCheckInterval = null;
 let trialTimerInterval = null;
 
 async function initTierSystem(userId) {
-    const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
-    const data = snap.val() || {};
-    const tier = data.tier || 'free';
-
-    if (tier === 'monthly_ace' || tier === 'yearly_ace') {
-        updateHeaderForAce(tier);
-        return;
-    }
-
-    const now = Date.now();
-
-    // First time user
-    if (!data.trialStartedAt) {
+    const tierRef = db.ref(`BusinessOwners/${userId}/tier`);
+    const snap = await tierRef.once('value');
+    
+    if (!snap.exists()) {
+        // First time user - create free tier
+        const now = Date.now();
         await db.ref(`BusinessOwners/${userId}`).update({
             tier: 'free',
+            timeLeftSeconds: FREE_TRIAL_SECONDS,
+            timeSpentSeconds: 0,
             trialStartedAt: now,
-            trialDurationSeconds: FREE_TRIAL_SECONDS,
             resetAt: null
         });
-        startPassiveTimer(userId, now, FREE_TRIAL_SECONDS, null);
-        return;
-    }
-
-    // Check if reset time has passed
-    if (data.resetAt && now >= data.resetAt) {
-        const newStart = now;
-        const newDuration = RESET_TRIAL_MINUTES * 60;
-        await db.ref(`BusinessOwners/${userId}`).update({
-            trialStartedAt: newStart,
-            trialDurationSeconds: newDuration,
-            resetAt: null
-        });
-        startPassiveTimer(userId, newStart, newDuration, null);
-        return;
-    }
-
-    // Calculate time left passively
-    const elapsed = Math.floor((now - data.trialStartedAt) / 1000);
-    const duration = data.trialDurationSeconds || FREE_TRIAL_SECONDS;
-    const timeLeft = Math.max(0, duration - elapsed);
-
-    if (timeLeft > 0) {
-        startPassiveTimer(userId, data.trialStartedAt, duration, data.resetAt);
+        startFreeTrialTimer(userId);
     } else {
-        // Trial already expired while app was closed
-        if (!data.resetAt) {
-            const resetAt = (data.trialStartedAt + duration * 1000) + (RESET_HOURS * 60 * 60 * 1000);
-            await db.ref(`BusinessOwners/${userId}`).update({ resetAt });
-            updateHeaderFree(0, resetAt);
-            showTrialLimitPopup(resetAt);
+        const data = (await db.ref(`BusinessOwners/${userId}`).once('value')).val();
+        const tier = data.tier || 'free';
+        
+        if (tier === 'monthly_ace' || tier === 'yearly_ace') {
+            updateHeaderForAce(tier);
+            return;
+        }
+        
+        // Check if reset time has come
+        if (data.resetAt && Date.now() >= data.resetAt) {
+            await db.ref(`BusinessOwners/${userId}`).update({
+                timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
+                timeSpentSeconds: 0,
+                resetAt: null,
+                trialStartedAt: Date.now()
+            });
+            startFreeTrialTimer(userId);
+        } else if (data.timeLeftSeconds > 0) {
+            startFreeTrialTimer(userId);
         } else {
-            updateHeaderFree(0, data.resetAt);
+            // Time is up
+            const resetAt = data.resetAt;
+            updateHeaderFree(0, resetAt);
         }
     }
 }
-function startPassiveTimer(userId, trialStartedAt, trialDurationSeconds, existingResetAt) {
+
+function startFreeTrialTimer(userId) {
     if (trialTimerInterval) clearInterval(trialTimerInterval);
-
+    
     trialTimerInterval = setInterval(async () => {
-        const now = Date.now();
-        const elapsed = Math.floor((now - trialStartedAt) / 1000);
-        const timeLeft = Math.max(0, trialDurationSeconds - elapsed);
-
+        const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
+        const data = snap.val() || {};
+        
+        let timeLeft = (data.timeLeftSeconds || 0) - 1;
+        let timeSpent = (data.timeSpentSeconds || 0) + 1;
+        
         if (timeLeft <= 0) {
+            timeLeft = 0;
             clearInterval(trialTimerInterval);
-
-            // Only set resetAt once
-            const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
-            const data = snap.val() || {};
-            if (!data.resetAt) {
-                const resetAt = (trialStartedAt + trialDurationSeconds * 1000) + (RESET_HOURS * 60 * 60 * 1000);
-                await db.ref(`BusinessOwners/${userId}`).update({ resetAt });
-                updateHeaderFree(0, resetAt);
-                showTrialLimitPopup(resetAt);
-            } else {
-                updateHeaderFree(0, data.resetAt);
-            }
+            
+            // Set reset time = 2 hours from now
+            const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
+            await db.ref(`BusinessOwners/${userId}`).update({
+                timeLeftSeconds: 0,
+                timeSpentSeconds: FREE_TRIAL_SECONDS,
+                resetAt: resetAt
+            });
+            updateHeaderFree(0, resetAt);
+showTrialLimitPopup(resetAt);
         } else {
+            await db.ref(`BusinessOwners/${userId}`).update({
+                timeLeftSeconds: timeLeft,
+                timeSpentSeconds: timeSpent
+            });
             updateHeaderFree(timeLeft, null);
         }
     }, 1000);
 }
+
 function updateHeaderFree(timeLeftSeconds, resetAt) {
     const badge = document.getElementById('tierBadge');
     const upgradeBtn = document.getElementById('upgradeHeaderBtn');
@@ -1035,34 +1028,28 @@ function updateHeaderForAce(tier) {
 async function canAccessFeature() {
     const user = auth.currentUser;
     if (!user) return false;
-
+    
     const snap = await db.ref(`BusinessOwners/${user.uid}`).once('value');
     const data = snap.val() || {};
     const tier = data.tier || 'free';
-
+    
     if (tier === 'monthly_ace' || tier === 'yearly_ace') return true;
-
-    const now = Date.now();
-
-    // Check if reset time has passed
-    if (data.resetAt && now >= data.resetAt) {
-        const newStart = now;
-        const newDuration = RESET_TRIAL_MINUTES * 60;
+    
+    // Check reset
+    if (data.resetAt && Date.now() >= data.resetAt) {
         await db.ref(`BusinessOwners/${user.uid}`).update({
-            trialStartedAt: newStart,
-            trialDurationSeconds: newDuration,
-            resetAt: null
+            timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
+            timeSpentSeconds: 0,
+            resetAt: null,
+            trialStartedAt: Date.now()
         });
-        startPassiveTimer(user.uid, newStart, newDuration, null);
+        startFreeTrialTimer(user.uid);
         return true;
     }
-
-    if (!data.trialStartedAt) return false;
-
-    const elapsed = Math.floor((now - data.trialStartedAt) / 1000);
-    const duration = data.trialDurationSeconds || FREE_TRIAL_SECONDS;
-    return (duration - elapsed) > 0;
+    
+    return (data.timeLeftSeconds || 0) > 0;
 }
+
 let deniedCountdownInterval = null;
 
 function showAccessDenied(featureName, resetAt) {
@@ -1272,35 +1259,26 @@ async function activatePlan(plan, paymentId) {
     const user = auth.currentUser;
     if (!user) return;
     
-   const now = Date.now();
-
-// CLEANUP: Always remove old fields if they exist
-if (data.timeLeftSeconds !== undefined || data.timeSpentSeconds !== undefined) {
-    await db.ref(`BusinessOwners/${userId}`).update({
-        timeLeftSeconds: null,
-        timeSpentSeconds: null
-    });
-}
-
-// First time user
-if (!data.trialStartedAt) {
-    await db.ref(`BusinessOwners/${userId}`).update({
-        tier: 'free',
-        trialStartedAt: now,
-        trialDurationSeconds: FREE_TRIAL_SECONDS,
+    const now = Date.now();
+    let timeLeftSeconds, tierName;
+    
+    if (plan === 'monthly') {
+        tierName = 'monthly_ace';
+        timeLeftSeconds = 30 * 24 * 60 * 60; // 30 days in seconds
+    } else {
+        tierName = 'yearly_ace';
+        timeLeftSeconds = 365 * 24 * 60 * 60; // 365 days in seconds
+    }
+    
+    await db.ref(`BusinessOwners/${user.uid}`).update({
+        tier: tierName,
+        timeLeftSeconds: timeLeftSeconds,
+        timeSpentSeconds: 0,
+        activatedAt: now,
+        paymentId: paymentId,
         resetAt: null
     });
-    startPassiveTimer(userId, now, FREE_TRIAL_SECONDS, null);
-    return;
-}
-
-// Ensure trialDurationSeconds exists (in case it was never set)
-if (!data.trialDurationSeconds) {
-    await db.ref(`BusinessOwners/${userId}`).update({
-        trialDurationSeconds: FREE_TRIAL_SECONDS
-    });
-    data.trialDurationSeconds = FREE_TRIAL_SECONDS;
-}
+    
     clearInterval(trialTimerInterval);
     closeUpgradeModal();
     updateHeaderForAce(tierName);
