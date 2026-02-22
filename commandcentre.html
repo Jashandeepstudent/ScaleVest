@@ -160,7 +160,18 @@ body {
             transform: scale(1.1);
             box-shadow: 0 0 20px #fff;
         }
-
+@media (max-width: 768px) {
+    .product-card {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+        padding: 3px !important;
+    }
+    .product-icon { font-size: 16px !important; margin-bottom: 2px !important; }
+    .product-name { font-size: 5px !important; padding: 1px 3px !important; }
+    .product-price { font-size: 6px !important; }
+    .stock-badge { font-size: 5px !important; padding: 1px 3px !important; }
+}
         .future-reason {
             font-size: 10px;
             color: var(--ice-blue);
@@ -382,54 +393,34 @@ box-sizing: border-box;
     pointer-events: auto;
 }
 
-        .product-card {
-            width: 100px;
-            height: 100px;
-            position: relative;
-            transform-style: preserve-3d;
-            border-radius: 14px;
-            background: linear-gradient(180deg, rgba(0, 190, 255, 0.35), rgba(0, 60, 180, 0.45));
-            transform: rotateX(-15deg) rotateY(-30deg) translateZ(80px);
-            animation: cardFloat 4s ease-in-out infinite;
-            box-shadow: 0 0 50px rgba(0, 220, 255, 0.9), inset 0 0 35px rgba(0, 220, 255, 0.7);
-            transition: all 0.3s ease;
-        }
+.product-card {
+    width: 72px;
+    height: 72px;
+    position: relative;
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(0, 30, 60, 0.9), rgba(0, 10, 30, 0.95));
+    border: 1.5px solid rgba(0, 243, 255, 0.5);
+    box-shadow: 0 4px 20px rgba(0, 243, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 4px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
 
-        /* Normal Mode Colors (Heatmap OFF) */
-        .product-node.is-out-of-stock .product-card {
-            background: linear-gradient(180deg, rgba(255, 0, 64, 0.45), rgba(100, 0, 20, 0.55));
-            box-shadow: 0 0 50px rgba(255, 0, 64, 0.9), inset 0 0 35px rgba(255, 0, 64, 0.7);
-        }
-        .product-node.is-out-of-stock .product-card::before {
-            border-color: var(--neon-red);
-            box-shadow: 0 0 30px var(--neon-red);
-        }
+.product-card::before { display: none; } /* Remove the glowing border layer */
 
-        .product-node.is-low-stock .product-card {
-            background: linear-gradient(180deg, rgba(255, 255, 0, 0.35), rgba(180, 180, 0, 0.45));
-            box-shadow: 0 0 50px rgba(255, 255, 0, 0.9), inset 0 0 35px rgba(255, 255, 0, 0.7);
-        }
-        .product-node.is-low-stock .product-card::before {
-            border-color: var(--neon-yellow);
-            box-shadow: 0 0 30px var(--neon-yellow);
-        }
+.product-node:hover .product-card {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 30px rgba(0, 243, 255, 0.6);
+}
 
-
-        .product-card::before {
-            content: '';
-            position: absolute;
-            inset: -5px;
-            border-radius: 14px;
-            border: 4px solid rgba(230, 250, 255, 1);
-            box-shadow: 0 0 30px rgba(230, 250, 255, 1), 0 0 80px rgba(0, 220, 255, 1);
-            transform: translateZ(18px);
-            pointer-events: none;
-        }
-
-        @keyframes cardFloat {
-            0%, 100% { transform: rotateX(-15deg) rotateY(-30deg) translateZ(80px); }
-            50% { transform: rotateX(-15deg) rotateY(-30deg) translateZ(120px); }
-        }
+@keyframes cardFloat { /* disabled - no more bobbing */
+    0%, 100% { }
+}
 
         .product-node:hover .product-card {
             transform: rotateX(-10deg) rotateY(-35deg) translateZ(140px) scale(1.1);
@@ -1734,16 +1725,39 @@ box-sizing: border-box;
 </button>
 
 <!-- Top Right: Leaderboard + Back Button -->
-<div style="position: fixed; top: 10px; right: 10px; display: flex; gap: 10px; align-items: flex-start; z-index: 900;">
+<div style="position: fixed; top: 10px; right: 10px; display: flex; gap: 8px; align-items: flex-start; z-index: 900;">
     <div class="inventory-leaderboard" id="outOfStockPanel" style="margin: 0;">
         <div class="leaderboard-title">🚨 Out of Stock <span id="oosCount">0</span></div>
         <div id="oosList"></div>
     </div>
     
-    <a href="mainbusinesshub.html" style="background: rgba(15, 15, 35, 0.9); border: 2px solid var(--neon-primary); color: var(--neon-primary); padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; white-space: nowrap;">
-        <i class="fas fa-arrow-left"></i> Back
+    <a href="mainbusinesshub.html" style="
+        background: rgba(15, 15, 35, 0.9); 
+        border: 2px solid var(--neon-primary); 
+        color: var(--neon-primary); 
+        padding: 10px 14px; 
+        border-radius: 10px; 
+        text-decoration: none; 
+        font-weight: bold; 
+        display: flex; 
+        align-items: center; 
+        gap: 6px; 
+        font-size: 13px; 
+        white-space: nowrap;
+        height: fit-content;
+    ">
+        <i class="fas fa-arrow-left"></i> 
+        <span class="back-btn-text">Back</span>
     </a>
 </div>
+
+<style>
+@media (max-width: 480px) {
+    .back-btn-text { display: none; }
+    .inventory-leaderboard { width: 110px !important; font-size: 9px !important; }
+    .inventory-leaderboard .leaderboard-title { font-size: 11px !important; }
+}
+</style>
 <div class="controls" id="controlsPanel">
     <h3>
         <span>🎮 Digital Controls</span>
@@ -2154,8 +2168,9 @@ node.style.position = 'absolute';
 node.style.left = '50%';
 node.style.top = '50%';
 node.style.transform = `translate(${xPosition}px, ${yPosition}px) translateZ(${floorZ + 40}px)`;
-node.style.width = '80px';
-node.style.height = '80px';
+const cellSize = isMobile ? 40 : 80;
+node.style.width = cellSize + 'px';
+node.style.height = cellSize + 'px';
 node.style.transformStyle = 'preserve-3d';
 node.style.pointerEvents = 'auto';node.style.width = '80px';
 node.style.height = '80px';
