@@ -887,109 +887,81 @@ let tierCheckInterval = null;
 let trialTimerInterval = null;
 
 async function initTierSystem(userId) {
-    const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
+    const tierRef = db.ref(`BusinessOwners/${userId}/tier`);
+    const snap = await tierRef.once('value');
     
     if (!snap.exists()) {
-        // Brand new user
+        // First time user - create free tier
         const now = Date.now();
         await db.ref(`BusinessOwners/${userId}`).update({
             tier: 'free',
-            allocatedSeconds: FREE_TRIAL_SECONDS,
+            timeLeftSeconds: FREE_TRIAL_SECONDS,
+            timeSpentSeconds: 0,
             trialStartedAt: now,
             resetAt: null
         });
         startFreeTrialTimer(userId);
-        return;
-    }
-
-    const data = snap.val();
-    const tier = data.tier || 'free';
-
-    if (tier === 'monthly_ace' || tier === 'yearly_ace') {
-        updateHeaderForAce(tier);
-        return;
-    }
-
-    // Check if reset time has passed
-    if (data.resetAt && Date.now() >= data.resetAt) {
-        const now = Date.now();
-        await db.ref(`BusinessOwners/${userId}`).update({
-            allocatedSeconds: RESET_TRIAL_MINUTES * 60,
-            trialStartedAt: now,
-            resetAt: null
-        });
-        startFreeTrialTimer(userId);
-        return;
-    }
-
-    // Calculate time left using wall-clock
-    if (data.trialStartedAt && data.allocatedSeconds) {
-        const elapsed = Math.floor((Date.now() - data.trialStartedAt) / 1000);
-        const timeLeft = Math.max(0, data.allocatedSeconds - elapsed);
-
-        if (timeLeft > 0) {
+    } else {
+        const data = (await db.ref(`BusinessOwners/${userId}`).once('value')).val();
+        const tier = data.tier || 'free';
+        
+        if (tier === 'monthly_ace' || tier === 'yearly_ace') {
+            updateHeaderForAce(tier);
+            return;
+        }
+        
+        // Check if reset time has come
+        if (data.resetAt && Date.now() >= data.resetAt) {
+            await db.ref(`BusinessOwners/${userId}`).update({
+                timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
+                timeSpentSeconds: 0,
+                resetAt: null,
+                trialStartedAt: Date.now()
+            });
+            startFreeTrialTimer(userId);
+        } else if (data.timeLeftSeconds > 0) {
             startFreeTrialTimer(userId);
         } else {
-            // Trial already expired (user was offline)
-            if (!data.resetAt) {
-                const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
-                await db.ref(`BusinessOwners/${userId}`).update({
-                    timeLeftSeconds: 0,
-                    resetAt: resetAt
-                });
-                updateHeaderFree(0, resetAt);
-                showTrialLimitPopup(resetAt);
-            } else {
-                updateHeaderFree(0, data.resetAt);
-            }
+            // Time is up
+            const resetAt = data.resetAt;
+            updateHeaderFree(0, resetAt);
         }
-    } else {
-        // Old user missing new fields — migrate them
-        const now = Date.now();
-        const remaining = data.timeLeftSeconds || FREE_TRIAL_SECONDS;
-        await db.ref(`BusinessOwners/${userId}`).update({
-            allocatedSeconds: remaining,
-            trialStartedAt: now
-        });
-        startFreeTrialTimer(userId);
     }
 }
+
 function startFreeTrialTimer(userId) {
     if (trialTimerInterval) clearInterval(trialTimerInterval);
-
-    // Read Firebase ONCE, then just do math locally every second
-    db.ref(`BusinessOwners/${userId}`).once('value').then(snap => {
+    
+    trialTimerInterval = setInterval(async () => {
+        const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
         const data = snap.val() || {};
-        const sessionStartedAt = data.trialStartedAt || Date.now();
-        const allocatedSeconds = data.allocatedSeconds || FREE_TRIAL_SECONDS;
-
-        trialTimerInterval = setInterval(async () => {
-            // Pure math — no Firebase read needed
-            const elapsed = Math.floor((Date.now() - sessionStartedAt) / 1000);
-            const timeLeft = Math.max(0, allocatedSeconds - elapsed);
-
-            if (timeLeft <= 0) {
-                clearInterval(trialTimerInterval);
-
-                if (!data.resetAt) {
-                    const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
-                    // Only 1 write when expired
-                    await db.ref(`BusinessOwners/${userId}`).update({
-                        timeLeftSeconds: 0,
-                        resetAt: resetAt
-                    });
-                    data.resetAt = resetAt; // prevent double-write
-                    updateHeaderFree(0, resetAt);
-                    showTrialLimitPopup(resetAt);
-                } else {
-                    updateHeaderFree(0, data.resetAt);
-                }
-            } else {
-                updateHeaderFree(timeLeft, null);
-            }
-        }, 1000);
-    });
+        
+        let timeLeft = (data.timeLeftSeconds || 0) - 1;
+        let timeSpent = (data.timeSpentSeconds || 0) + 1;
+        
+        if (timeLeft <= 0) {
+            timeLeft = 0;
+            clearInterval(trialTimerInterval);
+            
+            // Set reset time = 2 hours from now
+            const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
+            await db.ref(`BusinessOwners/${userId}`).update({
+                timeLeftSeconds: 0,
+                timeSpentSeconds: FREE_TRIAL_SECONDS,
+                resetAt: resetAt
+            });
+            updateHeaderFree(0, resetAt);
+showTrialLimitPopup(resetAt);
+        } else {
+            await db.ref(`BusinessOwners/${userId}`).update({
+                timeLeftSeconds: timeLeft,
+                timeSpentSeconds: timeSpent
+            });
+            updateHeaderFree(timeLeft, null);
+        }
+    }, 1000);
 }
+
 function updateHeaderFree(timeLeftSeconds, resetAt) {
     const badge = document.getElementById('tierBadge');
     const upgradeBtn = document.getElementById('upgradeHeaderBtn');
@@ -1065,21 +1037,19 @@ async function canAccessFeature() {
     
     // Check reset
     if (data.resetAt && Date.now() >= data.resetAt) {
-        const now = Date.now();
         await db.ref(`BusinessOwners/${user.uid}`).update({
-            allocatedSeconds: RESET_TRIAL_MINUTES * 60,
-            trialStartedAt: now,
-            resetAt: null
+            timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
+            timeSpentSeconds: 0,
+            resetAt: null,
+            trialStartedAt: Date.now()
         });
         startFreeTrialTimer(user.uid);
         return true;
     }
     
-    // Wall-clock based check
-    if (!data.trialStartedAt || !data.allocatedSeconds) return false;
-    const elapsed = Math.floor((Date.now() - data.trialStartedAt) / 1000);
-    return (data.allocatedSeconds - elapsed) > 0;
+    return (data.timeLeftSeconds || 0) > 0;
 }
+
 let deniedCountdownInterval = null;
 
 function showAccessDenied(featureName, resetAt) {
