@@ -1272,26 +1272,35 @@ async function activatePlan(plan, paymentId) {
     const user = auth.currentUser;
     if (!user) return;
     
-    const now = Date.now();
-    let timeLeftSeconds, tierName;
-    
-    if (plan === 'monthly') {
-        tierName = 'monthly_ace';
-        timeLeftSeconds = 30 * 24 * 60 * 60; // 30 days in seconds
-    } else {
-        tierName = 'yearly_ace';
-        timeLeftSeconds = 365 * 24 * 60 * 60; // 365 days in seconds
-    }
-    
-    await db.ref(`BusinessOwners/${user.uid}`).update({
-        tier: tierName,
-        timeLeftSeconds: timeLeftSeconds,
-        timeSpentSeconds: 0,
-        activatedAt: now,
-        paymentId: paymentId,
+   const now = Date.now();
+
+// CLEANUP: Always remove old fields if they exist
+if (data.timeLeftSeconds !== undefined || data.timeSpentSeconds !== undefined) {
+    await db.ref(`BusinessOwners/${userId}`).update({
+        timeLeftSeconds: null,
+        timeSpentSeconds: null
+    });
+}
+
+// First time user
+if (!data.trialStartedAt) {
+    await db.ref(`BusinessOwners/${userId}`).update({
+        tier: 'free',
+        trialStartedAt: now,
+        trialDurationSeconds: FREE_TRIAL_SECONDS,
         resetAt: null
     });
-    
+    startPassiveTimer(userId, now, FREE_TRIAL_SECONDS, null);
+    return;
+}
+
+// Ensure trialDurationSeconds exists (in case it was never set)
+if (!data.trialDurationSeconds) {
+    await db.ref(`BusinessOwners/${userId}`).update({
+        trialDurationSeconds: FREE_TRIAL_SECONDS
+    });
+    data.trialDurationSeconds = FREE_TRIAL_SECONDS;
+}
     clearInterval(trialTimerInterval);
     closeUpgradeModal();
     updateHeaderForAce(tierName);
