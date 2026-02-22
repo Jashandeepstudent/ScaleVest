@@ -665,33 +665,32 @@
 </head>
 <body>
 
-<header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
-    <h1 id="displayBizName" style="margin: 0;">Control Panel</h1>
+<header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; flex-wrap: wrap; gap: 8px;">
+    <h1 id="displayBizName" style="margin: 0; font-size: clamp(14px, 3vw, 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">Control Panel</h1>
     
-<div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+<div class="header-actions" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: 1;">
 <button onclick="toggleLogoutModal(true)" style="
     background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
     border: none;
-    padding: 9px 18px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: 7px 12px;
+    border-radius: 10px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 5px;
     box-shadow: 0 4px 15px rgba(239,68,68,0.4);
-    transition: all 0.2s ease;
-    letter-spacing: 0.2px;
-" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(239,68,68,0.5)'"
-   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(239,68,68,0.4)'">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+    white-space: nowrap;
+" onmouseover="this.style.transform='translateY(-2px)'"
+   onmouseout="this.style.transform='translateY(0)'">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
     </svg>
-    Sign Out
+    <span style="display: inline;">Sign Out</span>
 </button>
       <div id="shopifyButtonContainer"></div>
       <div id="tierBadge"></div>
