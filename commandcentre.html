@@ -382,18 +382,22 @@ box-sizing: border-box;
     pointer-events: auto;
 }
 
-        .product-card {
-           width: 68px;
-            height: 68px;
-            position: relative;
-            transform-style: preserve-3d;
-            border-radius: 14px;
-            background: linear-gradient(180deg, rgba(0, 190, 255, 0.35), rgba(0, 60, 180, 0.45));
-            transform: rotateX(-15deg) rotateY(-30deg) translateZ(80px);
-            animation: cardFloat 4s ease-in-out infinite;
-            box-shadow: 0 0 50px rgba(0, 220, 255, 0.9), inset 0 0 35px rgba(0, 220, 255, 0.7);
-            transition: all 0.3s ease;
-        }
+.product-card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    border-radius: 8px;
+    background: transparent;
+    transform: none;
+    animation: none;
+    box-shadow: none;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
 
         /* Normal Mode Colors (Heatmap OFF) */
         .product-node.is-out-of-stock .product-card {
@@ -415,22 +419,95 @@ box-sizing: border-box;
         }
 
 
-        .product-card::before {
-            content: '';
-            position: absolute;
-            inset: -5px;
-            border-radius: 14px;
-            border: 4px solid rgba(230, 250, 255, 1);
-            box-shadow: 0 0 30px rgba(230, 250, 255, 1), 0 0 80px rgba(0, 220, 255, 1);
-            transform: translateZ(18px);
-            pointer-events: none;
-        }
+ @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 15px var(--podium-color), 0 0 30px var(--podium-color); }
+    50% { box-shadow: 0 0 25px var(--podium-color), 0 0 50px var(--podium-color); }
+}
 
-        @keyframes cardFloat {
-            0%, 100% { transform: rotateX(-15deg) rotateY(-30deg) translateZ(80px); }
-            50% { transform: rotateX(-15deg) rotateY(-30deg) translateZ(120px); }
-        }
+.product-node:hover {
+    transform: translateZ(30px) scale(1.08) !important;
+    z-index: 10;
+}
+/* ===== PODIUM SYSTEM ===== */
+.podium-base {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 10px;
+    border-radius: 6px 6px 4px 4px;
+    --podium-color: var(--neon-primary);
+    background: var(--podium-color);
+    box-shadow: 0 0 15px var(--podium-color), 0 0 30px var(--podium-color);
+    animation: glowPulse 3s ease-in-out infinite;
+}
 
+.podium-icon {
+    font-size: 22px;
+    line-height: 1;
+    margin-bottom: 4px;
+    filter: drop-shadow(0 0 6px var(--neon-primary));
+}
+
+.podium-name {
+    font-size: 7px;
+    font-weight: 900;
+    color: #fff;
+    text-align: center;
+    background: rgba(0,0,0,0.85);
+    padding: 2px 5px;
+    border-radius: 4px;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+    letter-spacing: 0.3px;
+}
+
+.podium-price {
+    font-size: 7px;
+    font-weight: bold;
+    color: var(--neon-accent);
+    margin-bottom: 12px;
+}
+
+.podium-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 6px;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
+    background: var(--neon-red);
+    color: #fff;
+    z-index: 5;
+}
+
+/* Podium color states */
+.product-node.is-out-of-stock .podium-base {
+    --podium-color: var(--neon-red);
+}
+.product-node.is-low-stock .podium-base {
+    --podium-color: var(--neon-yellow);
+}
+.product-node.is-expiring-soon .podium-base {
+    --podium-color: #8B4513;
+}
+.product-node.is-expired .podium-base {
+    --podium-color: #444;
+    animation: none;
+}
+
+/* Mobile podium adjustments */
+@media (max-width: 768px) {
+    .podium-icon { font-size: 14px; }
+    .podium-name { font-size: 5px; padding: 1px 3px; }
+    .podium-price { font-size: 5px; margin-bottom: 8px; }
+    .podium-base { height: 6px; }
+    .podium-badge { font-size: 4px; padding: 1px 2px; }
+}
         .product-node:hover .product-card {
             transform: rotateX(-10deg) rotateY(-35deg) translateZ(140px) scale(1.1);
         }
@@ -2174,8 +2251,9 @@ node.style.width = isMobile ? '35px' : '70px';
 node.style.height = isMobile ? '35px' : '70px';
 node.style.transformStyle = 'preserve-3d';
 node.style.pointerEvents = 'auto';
-node.style.width = isMobile ? '40px' : '80px';
-node.style.height = isMobile ? '40px' : '80px';
+node.style.width = isMobile ? '36px' : '72px';
+node.style.height = isMobile ? '36px' : '72px';
+node.style.transition = 'transform 0.3s ease';
 
 
                 const expiryStatus = getExpiryStatus(product, isTimeTravelMode ? new Date(Date.now() + timeTravelDaysOffset * 86400000) : null);
@@ -2211,18 +2289,18 @@ node.style.height = isMobile ? '40px' : '80px';
                     ? `<div style="font-size: 9px; color: ${expiryStatus === 'expiring-soon' ? '#8B4513' : '#888'}; margin-top: 2px;">EXP: ${product.expiryDate}</div>`
                     : '';
 
-                node.innerHTML = `
-                    <div class="product-card">
-                        ${expiryBadgeHtml}
-                        ${stockBadgeHtml}
-                        <div class="product-icon">${product.icon}</div>
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-price">${isTimeTravelMode ? 'PREDICTED' : product.price}</div>
-                        <div style="font-size: 10px; color: #ccc; margin-top: 4px;">STOCK: ${stockText}</div>
-                        ${expiryInfoHtml}
-                        ${futureReasonHtml}
-                    </div>
-                `;
+node.innerHTML = `
+    <div class="product-card">
+        ${product.stock === 0 ? '<span class="podium-badge">OUT</span>' :
+          product.stock < 5 ? '<span class="podium-badge" style="background:var(--neon-yellow);color:#000;">LOW</span>' :
+          expiryStatus === 'expired' ? '<span class="podium-badge" style="background:#404040;">EXP</span>' :
+          expiryStatus === 'expiring-soon' ? `<span class="podium-badge" style="background:#8B4513;">${daysLeft}D</span>` : ''}
+        <div class="podium-icon">${product.icon}</div>
+        <div class="podium-name">${product.name}</div>
+        <div class="podium-price">${isTimeTravelMode ? '🔮' : product.price}</div>
+        <div class="podium-base"></div>
+    </div>
+`;
 
 node.addEventListener('click', () => {
     openStoryCard(product);
