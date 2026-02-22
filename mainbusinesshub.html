@@ -957,36 +957,38 @@ async function initTierSystem(userId) {
 function startFreeTrialTimer(userId) {
     if (trialTimerInterval) clearInterval(trialTimerInterval);
 
-    // Tick every second — purely UI update, no writes needed
-    trialTimerInterval = setInterval(async () => {
-        const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
+    // Read Firebase ONCE, then just do math locally every second
+    db.ref(`BusinessOwners/${userId}`).once('value').then(snap => {
         const data = snap.val() || {};
-
-        // Calculate time left based on wall-clock, not tick counting
         const sessionStartedAt = data.trialStartedAt || Date.now();
         const allocatedSeconds = data.allocatedSeconds || FREE_TRIAL_SECONDS;
-        const elapsed = Math.floor((Date.now() - sessionStartedAt) / 1000);
-        const timeLeft = Math.max(0, allocatedSeconds - elapsed);
 
-        if (timeLeft <= 0) {
-            clearInterval(trialTimerInterval);
+        trialTimerInterval = setInterval(async () => {
+            // Pure math — no Firebase read needed
+            const elapsed = Math.floor((Date.now() - sessionStartedAt) / 1000);
+            const timeLeft = Math.max(0, allocatedSeconds - elapsed);
 
-            // Only write resetAt if not already set
-            if (!data.resetAt) {
-                const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
-                await db.ref(`BusinessOwners/${userId}`).update({
-                    timeLeftSeconds: 0,
-                    resetAt: resetAt
-                });
-                updateHeaderFree(0, resetAt);
-                showTrialLimitPopup(resetAt);
+            if (timeLeft <= 0) {
+                clearInterval(trialTimerInterval);
+
+                if (!data.resetAt) {
+                    const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
+                    // Only 1 write when expired
+                    await db.ref(`BusinessOwners/${userId}`).update({
+                        timeLeftSeconds: 0,
+                        resetAt: resetAt
+                    });
+                    data.resetAt = resetAt; // prevent double-write
+                    updateHeaderFree(0, resetAt);
+                    showTrialLimitPopup(resetAt);
+                } else {
+                    updateHeaderFree(0, data.resetAt);
+                }
             } else {
-                updateHeaderFree(0, data.resetAt);
+                updateHeaderFree(timeLeft, null);
             }
-        } else {
-            updateHeaderFree(timeLeft, null);
-        }
-    }, 1000);
+        }, 1000);
+    });
 }
 function updateHeaderFree(timeLeftSeconds, resetAt) {
     const badge = document.getElementById('tierBadge');
