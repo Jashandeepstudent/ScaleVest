@@ -615,22 +615,7 @@
     font-size: 0.9rem;
     line-height: 1.4;
 }
-@media (max-width: 600px) {
-    #tierBadge > div {
-        font-size: 11px !important;
-        padding: 5px 8px !important;
-    }
-    #upgradeHeaderBtn {
-        font-size: 11px !important;
-        padding: 6px 10px !important;
-    }
-    #shopifyButtonContainer span {
-        display: none !important;
-    }
-    #shopifyButtonContainer > div {
-        padding: 6px 8px !important;
-    }
-}
+
     
     /* MODERN 5-BOX GRID */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
@@ -688,24 +673,25 @@
     background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
     border: none;
-    padding: 7px 12px;
-    border-radius: 10px;
-    font-size: 12px;
+    padding: 9px 18px;
+    border-radius: 12px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 7px;
     box-shadow: 0 4px 15px rgba(239,68,68,0.4);
-    white-space: nowrap;
-" onmouseover="this.style.transform='translateY(-2px)'"
-   onmouseout="this.style.transform='translateY(0)'">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+    transition: all 0.2s ease;
+    letter-spacing: 0.2px;
+" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(239,68,68,0.5)'"
+   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(239,68,68,0.4)'">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
     </svg>
-    <span style="display: inline;">Sign Out</span>
+    Sign Out
 </button>
       <div id="shopifyButtonContainer"></div>
       <div id="tierBadge"></div>
