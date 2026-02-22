@@ -615,7 +615,22 @@
     font-size: 0.9rem;
     line-height: 1.4;
 }
-
+@media (max-width: 600px) {
+    #tierBadge > div {
+        font-size: 11px !important;
+        padding: 5px 8px !important;
+    }
+    #upgradeHeaderBtn {
+        font-size: 11px !important;
+        padding: 6px 10px !important;
+    }
+    #shopifyButtonContainer span {
+        display: none !important;
+    }
+    #shopifyButtonContainer > div {
+        padding: 6px 8px !important;
+    }
+}
     
     /* MODERN 5-BOX GRID */
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
@@ -665,33 +680,32 @@
 </head>
 <body>
 
-<header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
-    <h1 id="displayBizName" style="margin: 0;">Control Panel</h1>
+<header id="headerUI" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; flex-wrap: wrap; gap: 8px;">
+    <h1 id="displayBizName" style="margin: 0; font-size: clamp(14px, 3vw, 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px;">Control Panel</h1>
     
-<div class="header-actions" style="display: flex; align-items: center; gap: 15px;">
+<div class="header-actions" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; flex: 1;">
 <button onclick="toggleLogoutModal(true)" style="
     background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
     border: none;
-    padding: 9px 18px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: 7px 12px;
+    border-radius: 10px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 5px;
     box-shadow: 0 4px 15px rgba(239,68,68,0.4);
-    transition: all 0.2s ease;
-    letter-spacing: 0.2px;
-" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(239,68,68,0.5)'"
-   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(239,68,68,0.4)'">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+    white-space: nowrap;
+" onmouseover="this.style.transform='translateY(-2px)'"
+   onmouseout="this.style.transform='translateY(0)'">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
         <polyline points="16 17 21 12 16 7"/>
         <line x1="21" y1="12" x2="9" y2="12"/>
     </svg>
-    Sign Out
+    <span style="display: inline;">Sign Out</span>
 </button>
       <div id="shopifyButtonContainer"></div>
       <div id="tierBadge"></div>
@@ -873,81 +887,88 @@ let tierCheckInterval = null;
 let trialTimerInterval = null;
 
 async function initTierSystem(userId) {
-    const tierRef = db.ref(`BusinessOwners/${userId}/tier`);
-    const snap = await tierRef.once('value');
-    
-    if (!snap.exists()) {
-        // First time user - create free tier
-        const now = Date.now();
+    const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
+    const data = snap.val() || {};
+    const tier = data.tier || 'free';
+
+    if (tier === 'monthly_ace' || tier === 'yearly_ace') {
+        updateHeaderForAce(tier);
+        return;
+    }
+
+    const now = Date.now();
+
+    // First time user
+    if (!data.trialStartedAt) {
         await db.ref(`BusinessOwners/${userId}`).update({
             tier: 'free',
-            timeLeftSeconds: FREE_TRIAL_SECONDS,
-            timeSpentSeconds: 0,
             trialStartedAt: now,
+            trialDurationSeconds: FREE_TRIAL_SECONDS,
             resetAt: null
         });
-        startFreeTrialTimer(userId);
+        startPassiveTimer(userId, now, FREE_TRIAL_SECONDS, null);
+        return;
+    }
+
+    // Check if reset time has passed
+    if (data.resetAt && now >= data.resetAt) {
+        const newStart = now;
+        const newDuration = RESET_TRIAL_MINUTES * 60;
+        await db.ref(`BusinessOwners/${userId}`).update({
+            trialStartedAt: newStart,
+            trialDurationSeconds: newDuration,
+            resetAt: null
+        });
+        startPassiveTimer(userId, newStart, newDuration, null);
+        return;
+    }
+
+    // Calculate time left passively
+    const elapsed = Math.floor((now - data.trialStartedAt) / 1000);
+    const duration = data.trialDurationSeconds || FREE_TRIAL_SECONDS;
+    const timeLeft = Math.max(0, duration - elapsed);
+
+    if (timeLeft > 0) {
+        startPassiveTimer(userId, data.trialStartedAt, duration, data.resetAt);
     } else {
-        const data = (await db.ref(`BusinessOwners/${userId}`).once('value')).val();
-        const tier = data.tier || 'free';
-        
-        if (tier === 'monthly_ace' || tier === 'yearly_ace') {
-            updateHeaderForAce(tier);
-            return;
-        }
-        
-        // Check if reset time has come
-        if (data.resetAt && Date.now() >= data.resetAt) {
-            await db.ref(`BusinessOwners/${userId}`).update({
-                timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
-                timeSpentSeconds: 0,
-                resetAt: null,
-                trialStartedAt: Date.now()
-            });
-            startFreeTrialTimer(userId);
-        } else if (data.timeLeftSeconds > 0) {
-            startFreeTrialTimer(userId);
-        } else {
-            // Time is up
-            const resetAt = data.resetAt;
+        // Trial already expired while app was closed
+        if (!data.resetAt) {
+            const resetAt = (data.trialStartedAt + duration * 1000) + (RESET_HOURS * 60 * 60 * 1000);
+            await db.ref(`BusinessOwners/${userId}`).update({ resetAt });
             updateHeaderFree(0, resetAt);
+            showTrialLimitPopup(resetAt);
+        } else {
+            updateHeaderFree(0, data.resetAt);
         }
     }
 }
-
-function startFreeTrialTimer(userId) {
+function startPassiveTimer(userId, trialStartedAt, trialDurationSeconds, existingResetAt) {
     if (trialTimerInterval) clearInterval(trialTimerInterval);
-    
+
     trialTimerInterval = setInterval(async () => {
-        const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
-        const data = snap.val() || {};
-        
-        let timeLeft = (data.timeLeftSeconds || 0) - 1;
-        let timeSpent = (data.timeSpentSeconds || 0) + 1;
-        
+        const now = Date.now();
+        const elapsed = Math.floor((now - trialStartedAt) / 1000);
+        const timeLeft = Math.max(0, trialDurationSeconds - elapsed);
+
         if (timeLeft <= 0) {
-            timeLeft = 0;
             clearInterval(trialTimerInterval);
-            
-            // Set reset time = 2 hours from now
-            const resetAt = Date.now() + (RESET_HOURS * 60 * 60 * 1000);
-            await db.ref(`BusinessOwners/${userId}`).update({
-                timeLeftSeconds: 0,
-                timeSpentSeconds: FREE_TRIAL_SECONDS,
-                resetAt: resetAt
-            });
-            updateHeaderFree(0, resetAt);
-showTrialLimitPopup(resetAt);
+
+            // Only set resetAt once
+            const snap = await db.ref(`BusinessOwners/${userId}`).once('value');
+            const data = snap.val() || {};
+            if (!data.resetAt) {
+                const resetAt = (trialStartedAt + trialDurationSeconds * 1000) + (RESET_HOURS * 60 * 60 * 1000);
+                await db.ref(`BusinessOwners/${userId}`).update({ resetAt });
+                updateHeaderFree(0, resetAt);
+                showTrialLimitPopup(resetAt);
+            } else {
+                updateHeaderFree(0, data.resetAt);
+            }
         } else {
-            await db.ref(`BusinessOwners/${userId}`).update({
-                timeLeftSeconds: timeLeft,
-                timeSpentSeconds: timeSpent
-            });
             updateHeaderFree(timeLeft, null);
         }
     }, 1000);
 }
-
 function updateHeaderFree(timeLeftSeconds, resetAt) {
     const badge = document.getElementById('tierBadge');
     const upgradeBtn = document.getElementById('upgradeHeaderBtn');
@@ -1014,28 +1035,34 @@ function updateHeaderForAce(tier) {
 async function canAccessFeature() {
     const user = auth.currentUser;
     if (!user) return false;
-    
+
     const snap = await db.ref(`BusinessOwners/${user.uid}`).once('value');
     const data = snap.val() || {};
     const tier = data.tier || 'free';
-    
+
     if (tier === 'monthly_ace' || tier === 'yearly_ace') return true;
-    
-    // Check reset
-    if (data.resetAt && Date.now() >= data.resetAt) {
+
+    const now = Date.now();
+
+    // Check if reset time has passed
+    if (data.resetAt && now >= data.resetAt) {
+        const newStart = now;
+        const newDuration = RESET_TRIAL_MINUTES * 60;
         await db.ref(`BusinessOwners/${user.uid}`).update({
-            timeLeftSeconds: RESET_TRIAL_MINUTES * 60,
-            timeSpentSeconds: 0,
-            resetAt: null,
-            trialStartedAt: Date.now()
+            trialStartedAt: newStart,
+            trialDurationSeconds: newDuration,
+            resetAt: null
         });
-        startFreeTrialTimer(user.uid);
+        startPassiveTimer(user.uid, newStart, newDuration, null);
         return true;
     }
-    
-    return (data.timeLeftSeconds || 0) > 0;
-}
 
+    if (!data.trialStartedAt) return false;
+
+    const elapsed = Math.floor((now - data.trialStartedAt) / 1000);
+    const duration = data.trialDurationSeconds || FREE_TRIAL_SECONDS;
+    return (duration - elapsed) > 0;
+}
 let deniedCountdownInterval = null;
 
 function showAccessDenied(featureName, resetAt) {
@@ -2446,7 +2473,6 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
-
 
 
 
