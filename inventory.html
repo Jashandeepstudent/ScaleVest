@@ -1939,12 +1939,13 @@ let currentExpiryProductId = null;
         init();
     }
 
-})();
+}();
 auth.onAuthStateChanged(u => {
 checkFreeTierLimit(user.uid);
   if (!u) { 
     console.log("User not logged in"); 
-    window.location.href = "login.html";
+   
+      window.location.href = "login.html";
     return; 
   }
   
@@ -4240,5 +4241,6 @@ async function updateShopifyInventory(variantId, newQuantity) {
 
 </body>
 </html>
+
 
 
