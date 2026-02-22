@@ -1751,8 +1751,197 @@ let pendingAction = null;
 let currentUserId = null;
 let notificationDays = 5; // Default notification days
 let currentExpiryProductId = null;
+// ============================================
+// FREE TIER LIMIT GUARD — Universal Script
+// Drop this <script> tag into ANY html file
+// Requires: Firebase `db` and `auth` already initialized
+// ============================================
 
+(function () {
+
+    function showLimitPopup(nextResetLabel) {
+        // Prevent duplicate popups
+        if (document.getElementById('_svLimitOverlay')) return;
+
+        const overlay = document.createElement('div');
+        overlay.id = '_svLimitOverlay';
+        overlay.style.cssText = `
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(6px);
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        `;
+
+        overlay.innerHTML = `
+            <div style="
+                background: linear-gradient(135deg, #0f172a, #1e293b);
+                border: 1px solid #334155;
+                border-radius: 24px;
+                padding: 40px 36px;
+                max-width: 420px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+                color: white;
+            ">
+                <!-- Icon -->
+                <div style="
+                    width: 72px; height: 72px;
+                    background: linear-gradient(135deg, #f59e0b, #ef4444);
+                    border-radius: 50%;
+                    display: flex; align-items: center; justify-content: center;
+                    font-size: 32px;
+                    margin: 0 auto 20px;
+                    box-shadow: 0 0 30px rgba(245,158,11,0.4);
+                ">⏰</div>
+
+                <!-- Title -->
+                <h2 style="
+                    margin: 0 0 10px;
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #f1f5f9;
+                ">Your Free Tier Limit is Over</h2>
+
+                <!-- Subtitle -->
+                <p style="
+                    margin: 0 0 6px;
+                    font-size: 14px;
+                    color: #94a3b8;
+                    line-height: 1.6;
+                ">
+                    You've used up today's free usage.
+                    Upgrade to the <strong style="color:#f59e0b;">Ace Plan</strong> in Business Hub for unlimited access.
+                </p>
+
+                <!-- Next reset -->
+                <div style="
+                    margin: 16px auto;
+                    background: #0f172a;
+                    border: 1px solid #1e3a5f;
+                    border-radius: 12px;
+                    padding: 10px 16px;
+                    font-size: 13px;
+                    color: #64748b;
+                    display: inline-block;
+                ">
+                    🔄 Next limit reset: <strong style="color:#38bdf8;">${nextResetLabel}</strong>
+                </div>
+
+                <!-- Buttons -->
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+                    
+                    <!-- Upgrade button -->
+                    <button onclick="window.location.href='mainbusinesshub.html?action=upgrade'" style="
+                        background: linear-gradient(135deg, #f59e0b, #ef4444);
+                        color: white;
+                        border: none;
+                        border-radius: 14px;
+                        padding: 14px 20px;
+                        font-size: 15px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        box-shadow: 0 6px 20px rgba(245,158,11,0.3);
+                        transition: opacity 0.2s;
+                    " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                        ⚡ Upgrade to Ace Plan
+                    </button>
+
+                    <!-- Check reset time in hub -->
+                    <button onclick="window.location.href='mainbusinesshub.html?action=timer'" style="
+                        background: transparent;
+                        color: #38bdf8;
+                        border: 1px solid #38bdf8;
+                        border-radius: 14px;
+                        padding: 12px 20px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='rgba(56,189,248,0.1)'" onmouseout="this.style.background='transparent'">
+                        🕐 Check Next Reset in Hub
+                    </button>
+
+                    <!-- Back to hub -->
+                    <button onclick="window.location.href='mainbusinesshub.html'" style="
+                        background: transparent;
+                        color: #64748b;
+                        border: 1px solid #334155;
+                        border-radius: 14px;
+                        padding: 12px 20px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                        ← Back to Business Hub
+                    </button>
+
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+    }
+
+    function getNextMidnightLabel() {
+        const now = new Date();
+        const midnight = new Date(now);
+        midnight.setHours(24, 0, 0, 0); // next midnight
+        const diffMs = midnight - now;
+        const diffH = Math.floor(diffMs / 3600000);
+        const diffM = Math.floor((diffMs % 3600000) / 60000);
+        if (diffH > 0) return `in ${diffH}h ${diffM}m`;
+        return `in ${diffM} minutes`;
+    }
+
+    function checkFreeTierLimit(userId) {
+        db.ref(`BusinessOwners/${userId}/timeLeftSeconds`)
+            .once('value')
+            .then(snap => {
+                const timeLeft = snap.val();
+                // If timeLeft is exactly 0 or less, show popup
+                if (timeLeft !== null && timeLeft <= 0) {
+                    showLimitPopup(getNextMidnightLabel());
+                }
+            })
+            .catch(err => {
+                console.error('[FreeTierGuard] Error reading timeLeftSeconds:', err);
+            });
+
+        // Also listen in real-time so popup appears the moment time runs out
+        db.ref(`BusinessOwners/${userId}/timeLeftSeconds`)
+            .on('value', snap => {
+                const timeLeft = snap.val();
+                if (timeLeft !== null && timeLeft <= 0) {
+                    showLimitPopup(getNextMidnightLabel());
+                }
+            });
+    }
+
+    // ── Wait for Firebase Auth to resolve ──
+    function init() {
+        if (typeof firebase === 'undefined' || typeof db === 'undefined') {
+            console.warn('[FreeTierGuard] Firebase or db not ready yet. Retrying in 500ms...');
+            setTimeout(init, 500);
+            return;
+        }
+
+    // Run after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
 auth.onAuthStateChanged(u => {
+checkFreeTierLimit(user.uid);
   if (!u) { 
     console.log("User not logged in"); 
     window.location.href = "login.html";
@@ -4051,4 +4240,5 @@ async function updateShopifyInventory(variantId, newQuantity) {
 
 </body>
 </html>
+
 
