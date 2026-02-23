@@ -2643,74 +2643,184 @@ window.updateStock = function(productId, change) {
         if (!window.firebaseListenerActive) {
             window.firebaseListenerActive = true;
             
-            onAuthStateChanged(auth, (user) => {
-                currentUserId = user ? user.uid : "demo-user";
-                const businessRef = ref(database, `Businesses/${currentUserId}`);
-                
-onValue(businessRef, (snapshot) => {
+           onAuthStateChanged(auth, (user) => {
+  currentUserId = user ? user.uid : "demo-user";
+
+  const timeRef = ref(database, `BusinessOwners/${currentUserId}/timeLeftSeconds`);
+  get(timeRef).then(timeSnapshot => {
+    const timeLeft = timeSnapshot.val();
+
+    if (timeLeft !== null && timeLeft <= 0) {
+      // BLOCK USER - Show beautiful non-ignorable overlay
+      document.body.innerHTML = `
+        <div style="
+          position: fixed; inset: 0;
+          background: linear-gradient(135deg, #0f172a 0%, #1e1b2e 100%);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 99999; font-family: Inter, sans-serif;
+          padding: 20px;
+        ">
+          <div style="
+            background: white;
+            border-radius: 28px;
+            padding: 48px 40px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+            border: 2px solid #fca5a5;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          ">
+            <div style="
+              width: 80px; height: 80px;
+              background: linear-gradient(135deg, #ef4444, #dc2626);
+              border-radius: 50%;
+              display: flex; align-items: center; justify-content: center;
+              margin: 0 auto 24px;
+              box-shadow: 0 0 0 12px rgba(239,68,68,0.15), 0 0 0 24px rgba(239,68,68,0.07);
+              animation: pulse 2s ease-in-out infinite;
+            ">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+
+            <h1 style="
+              margin: 0 0 12px;
+              font-size: 26px;
+              font-weight: 800;
+              color: #dc2626;
+            ">Access Restricted</h1>
+
+            <p style="
+              color: #475569;
+              font-size: 15px;
+              line-height: 1.7;
+              margin: 0 0 28px;
+            ">
+              You cannot access the Digital Command Centre.<br>
+              Your <strong style="color:#1e293b;">plan may have expired</strong> or your 
+              <strong style="color:#1e293b;">free tier daily limit</strong> has been reached.
+            </p>
+
+            <div style="
+              background: #fef2f2;
+              border: 1px solid #fecaca;
+              border-radius: 14px;
+              padding: 16px 20px;
+              margin-bottom: 28px;
+              text-align: left;
+            ">
+              <p style="margin:0 0 6px; font-size:13px; font-weight:700; color:#b91c1c;">What you can do:</p>
+              <p style="margin:0; font-size:13px; color:#64748b; line-height:1.7;">
+                • Upgrade your plan in the Business Hub<br>
+                • Wait <strong style="color:#1e293b;">2 hours</strong> to reset your daily limit<br>
+                • Claim your reset time from the Business Hub
+              </p>
+            </div>
+
+            <a href="mainbusinesshub.html" style="
+              display: block;
+              background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+              color: white;
+              text-decoration: none;
+              padding: 16px;
+              border-radius: 14px;
+              font-weight: 700;
+              font-size: 15px;
+              transition: opacity 0.2s;
+              box-shadow: 0 8px 20px rgba(15,23,42,0.3);
+            ">
+              ← Return to Business Hub
+            </a>
+          </div>
+        </div>
+
+        <style>
+          @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+          @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 12px rgba(239,68,68,0.15), 0 0 0 24px rgba(239,68,68,0.07); }
+            50% { box-shadow: 0 0 0 18px rgba(239,68,68,0.2), 0 0 0 36px rgba(239,68,68,0.05); }
+          }
+        </style>
+      `;
+      return; 
+    }
+
+    loadCommandCentre(user);
+  });
+});
+
+function loadCommandCentre(user) {
+  const businessRef = ref(database, `Businesses/${currentUserId}`);
+
+  onValue(businessRef, (snapshot) => {
     const business = snapshot.val();
     let newProducts = [];
-    
+
     // Get the inventory and the price list from your data
     const inventory = business?.inventory || {};
     const priceList = business?.prices || {};
 
     if (inventory) {
-        Object.keys(inventory).forEach((key, index) => {
-            const inv = inventory[key];
-            
-            // FIX: Look up the price using the product key in the prices node
-            const priceData = priceList[key];
-const priceValue = priceData?.sellPrice || 0; 
+      Object.keys(inventory).forEach((key, index) => {
+        const inv = inventory[key];
 
-const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
-            
-newProducts.push({
-                id: key,
-                name: inv.name || key,
-                icon: iconMap[key.toLowerCase()] || '📦',
-                price: formattedPrice, 
-                stock: parseInt(inv.quantity || 0),
-                sales: parseInt(inv.sold || 0),
-                expiryDate: inv.expiryDate || null,
-x: parseInt(inv.x !== undefined ? inv.x : index % 10),
-y: parseInt(inv.y !== undefined ? inv.y : Math.floor((index % 100) / 10)),
-                floor: Math.floor(index / 100) 
-            });
+        // Look up the price using the product key in the prices node
+        const priceData = priceList[key];
+        const priceValue = priceData?.sellPrice || 0;
+        const formattedPrice = `$${parseFloat(priceValue).toFixed(2)}`;
+
+        newProducts.push({
+          id: key,
+          name: inv.name || key,
+          icon: iconMap[key.toLowerCase()] || '📦',
+          price: formattedPrice,
+          stock: parseInt(inv.quantity || 0),
+          sales: parseInt(inv.sold || 0),
+          expiryDate: inv.expiryDate || null,
+          x: parseInt(inv.x !== undefined ? inv.x : index % 10),
+          y: parseInt(inv.y !== undefined ? inv.y : Math.floor((index % 100) / 10)),
+          floor: Math.floor(index / 100)
         });
-    }else {
-                        // Demo data
-                        newProducts = [
-                            {id: 'p1', name: 'Organic Apple', price: '$2.50', stock: 50, sales: 60, x: 2, y: 2, icon: '🍎', floor: 0},
-                            {id: 'p2', name: 'Fresh Bread', price: '$4.00', stock: 10, sales: 20, x: 3, y: 3, icon: '🍞', floor: 0},
-                            {id: 'p3', name: 'Milk', price: '$3.50', stock: 3, sales: 5, x: 4, y: 2, icon: '🥛', floor: 0}, // Low
-                            {id: 'p4', name: 'Coffee', price: '$12.00', stock: 0, sales: 80, x: 5, y: 5, icon: '☕', floor: 0}, // OOS
-                        ];
-                    }
-// Load expiry notification settings
-                    const businessItemsRef = ref(database, `BusinessOwners/${currentUserId}/BusinessItems`);
-                    get(businessItemsRef).then(itemsSnapshot => {
-                        if (itemsSnapshot.exists()) {
-                            const items = itemsSnapshot.val();
-                            expiryNotificationDays = items.expiryDateNotification || 3;
-                        }
-                    });
-                    
-productsData = newProducts;
-renderShop(productsData);
-const loadingEl = document.getElementById('loading');
-const statusEl = document.getElementById('statusIndicator');
+      });
+    } else {
+      // Demo data
+      newProducts = [
+        {id: 'p1', name: 'Organic Apple', price: '$2.50', stock: 50, sales: 60, x: 2, y: 2, icon: '🍎', floor: 0},
+        {id: 'p2', name: 'Fresh Bread', price: '$4.00', stock: 10, sales: 20, x: 3, y: 3, icon: '🍞', floor: 0},
+        {id: 'p3', name: 'Milk', price: '$3.50', stock: 3, sales: 5, x: 4, y: 2, icon: '🥛', floor: 0},
+        {id: 'p4', name: 'Coffee', price: '$12.00', stock: 0, sales: 80, x: 5, y: 5, icon: '☕', floor: 0},
+      ];
+    }
 
-if (loadingEl) loadingEl.style.display = 'none';
+    // Load expiry notification settings
+    const businessItemsRef = ref(database, `BusinessOwners/${currentUserId}/BusinessItems`);
+    get(businessItemsRef).then(itemsSnapshot => {
+      if (itemsSnapshot.exists()) {
+        const items = itemsSnapshot.val();
+        expiryNotificationDays = items.expiryDateNotification || 3;
+      }
+    });
 
-// Check for deadlines in real-time (only once after initial load)
-if (!window.hasCheckedInitialDeadlines) {
-    window.hasCheckedInitialDeadlines = true;
-    setTimeout(() => checkDeadlines(false), 1000);
+    productsData = newProducts;
+    renderShop(productsData);
+
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.style.display = 'none';
+
+    // Check for deadlines in real-time (only once after initial load)
+    if (!window.hasCheckedInitialDeadlines) {
+      window.hasCheckedInitialDeadlines = true;
+      setTimeout(() => checkDeadlines(false), 1000);
+    }
+  });
 }
-                });
-            });
-        }
 
        // ============================================
 // UPGRADED MEGA ALERT SYSTEM WITH TIME TRAVEL
