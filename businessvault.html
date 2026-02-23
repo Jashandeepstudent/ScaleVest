@@ -2104,80 +2104,180 @@ const currencySymbols = {
         // --- AUTHENTICATION & REDIRECT ---
 // --- AUTHENTICATION & REDIRECT ---
 auth.onAuthStateChanged((user) => {
-    if (user) {
-        console.log("User verified:", user.uid);
-        currentUserId = user.uid;
-        document.getElementById('loading').style.display = 'none';
-        
-        // NEW: Fetch currency and check deadlines
-        fetchUserCurrency();
-        checkDeadlines();
-        
-        initListeners();
-        
-        // Restore page view from URL on refresh
-// Restore page view from URL on refresh
-// Restore page view from URL on refresh
-const urlParams = new URLSearchParams(window.location.search);
-const viewParam = urlParams.get('view');
-if (viewParam) {
-    setTimeout(() => navTo(viewParam), 100);
-}
-        
-        // Handle browser back/forward buttons
-        window.addEventListener('popstate', (event) => {
-            if (event.state && event.state.view) {
-                const viewId = event.state.view === 'dashboard' ? 'dashboard-view' : event.state.view;
-                document.querySelectorAll('.section-view, #dashboard-view').forEach(el => el.style.display = 'none');
-                document.getElementById(viewId).style.display = 'block';
+  if (user) {
+    console.log("User verified:", user.uid);
+    currentUserId = user.uid;
+
+    db.ref(`BusinessOwners/${currentUserId}/timeLeftSeconds`).once("value", snapshot => {
+      const timeLeft = snapshot.val();
+
+      if (timeLeft !== null && timeLeft <= 0) {
+        // BLOCK USER - Show beautiful non-ignorable overlay
+        document.body.innerHTML = `
+          <div style="
+            position: fixed; inset: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b2e 100%);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 99999; font-family: Inter, sans-serif;
+            padding: 20px;
+          ">
+            <div style="
+              background: white;
+              border-radius: 28px;
+              padding: 48px 40px;
+              max-width: 480px;
+              width: 100%;
+              text-align: center;
+              box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+              border: 2px solid #fca5a5;
+              animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            ">
+              <div style="
+                width: 80px; height: 80px;
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+                margin: 0 auto 24px;
+                box-shadow: 0 0 0 12px rgba(239,68,68,0.15), 0 0 0 24px rgba(239,68,68,0.07);
+                animation: pulse 2s ease-in-out infinite;
+              ">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+
+              <h1 style="
+                margin: 0 0 12px;
+                font-size: 26px;
+                font-weight: 800;
+                color: #dc2626;
+              ">Access Restricted</h1>
+
+              <p style="
+                color: #475569;
+                font-size: 15px;
+                line-height: 1.7;
+                margin: 0 0 28px;
+              ">
+                You cannot access the Business Vault.<br>
+                Your <strong style="color:#1e293b;">plan may have expired</strong> or your 
+                <strong style="color:#1e293b;">free tier daily limit</strong> has been reached.
+              </p>
+
+              <div style="
+                background: #fef2f2;
+                border: 1px solid #fecaca;
+                border-radius: 14px;
+                padding: 16px 20px;
+                margin-bottom: 28px;
+                text-align: left;
+              ">
+                <p style="margin:0 0 6px; font-size:13px; font-weight:700; color:#b91c1c;">What you can do:</p>
+                <p style="margin:0; font-size:13px; color:#64748b; line-height:1.7;">
+                  • Upgrade your plan in the Business Hub<br>
+                  • Wait <strong style="color:#1e293b;">2 hours</strong> to reset your daily limit<br>
+                  • Claim your reset time from the Business Hub
+                </p>
+              </div>
+
+              <a href="mainbusinesshub.html" style="
+                display: block;
+                background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+                color: white;
+                text-decoration: none;
+                padding: 16px;
+                border-radius: 14px;
+                font-weight: 700;
+                font-size: 15px;
+                transition: opacity 0.2s;
+                box-shadow: 0 8px 20px rgba(15,23,42,0.3);
+              ">
+                ← Return to Business Hub
+              </a>
+            </div>
+          </div>
+
+          <style>
+            @keyframes popIn {
+              from { transform: scale(0.8); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
             }
-        });
-        
-    } else {
-        console.log("No user found. Redirecting to login...");
-        window.location.href = "login.html"; 
-    }
-}); // THIS CLOSING IS CRITICAL - YOU WERE MISSING IT!
+            @keyframes pulse {
+              0%, 100% { box-shadow: 0 0 0 12px rgba(239,68,68,0.15), 0 0 0 24px rgba(239,68,68,0.07); }
+              50% { box-shadow: 0 0 0 18px rgba(239,68,68,0.2), 0 0 0 36px rgba(239,68,68,0.05); }
+            }
+          </style>
+        `;
+        return; 
+      }
 
-// Request audio permission on first user interaction
-let audioPermissionGranted = false;
-
-document.addEventListener('click', function enableAudio() {
-    if (!audioPermissionGranted) {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-        audioPermissionGranted = true;
-        document.removeEventListener('click', enableAudio);
-    }
-}, { once: true });
-
-// Also try on touch for mobile
-document.addEventListener('touchstart', function enableAudioTouch() {
-    if (!audioPermissionGranted) {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioContext.state === 'suspended') {
-            audioContext.resume();
-        }
-        audioPermissionGranted = true;
-        document.removeEventListener('touchstart', enableAudioTouch);
-    }
-}, { once: true });
-        function logout() {
-            auth.signOut().then(() => {
-                window.location.href = "login.html";
-            });
-        }
-// Fetch user's currency from Firebase
-function fetchUserCurrency() {
-    db.ref(`BusinessOwners/${currentUserId}/BusinessItems/National Currency/currency`).once('value', snapshot => {
-        if (snapshot.exists()) {
-            userCurrency = snapshot.val();
-            currencySymbol = currencySymbols[userCurrency] || userCurrency + ' ';
-            console.log('User currency loaded:', userCurrency, currencySymbol);
-        }
+      loadBusinessVault(user);
     });
+
+  } else {
+    console.log("No user found. Redirecting to login...");
+    window.location.href = "login.html";
+  }
+});
+
+function loadBusinessVault(user) {
+  document.getElementById('loading').style.display = 'none';
+
+  fetchUserCurrency();
+  checkDeadlines();
+
+  initListeners();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const viewParam = urlParams.get('view');
+  if (viewParam) {
+    setTimeout(() => navTo(viewParam), 100);
+  }
+
+  window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.view) {
+      const viewId = event.state.view === 'dashboard' ? 'dashboard-view' : event.state.view;
+      document.querySelectorAll('.section-view, #dashboard-view').forEach(el => el.style.display = 'none');
+      document.getElementById(viewId).style.display = 'block';
+    }
+  });
+}
+
+let audioPermissionGranted = false;
+document.addEventListener('click', function enableAudio() {
+  if (!audioPermissionGranted) {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioContext.state === 'suspended') audioContext.resume();
+    audioPermissionGranted = true;
+    document.removeEventListener('click', enableAudio);
+  }
+}, { once: true });
+
+document.addEventListener('touchstart', function enableAudioTouch() {
+  if (!audioPermissionGranted) {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioContext.state === 'suspended') audioContext.resume();
+    audioPermissionGranted = true;
+    document.removeEventListener('touchstart', enableAudioTouch);
+  }
+}, { once: true });
+
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
+
+function fetchUserCurrency() {
+  db.ref(`BusinessOwners/${currentUserId}/BusinessItems/National Currency/currency`).once('value', snapshot => {
+    if (snapshot.exists()) {
+      userCurrency = snapshot.val();
+      currencySymbol = currencySymbols[userCurrency] || userCurrency + ' ';
+      console.log('User currency loaded:', userCurrency, currencySymbol);
+    }
+  });
 }
 // ============================================
 // MEGA ALERT SYSTEM - ENHANCED DEADLINE CHECKS
