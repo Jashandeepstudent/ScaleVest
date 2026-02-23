@@ -1332,41 +1332,20 @@ function showTrialLimitPopup(resetAt) {
                 </div>
 
                 <!-- Buttons -->
-               <!-- CFO Still Available Banner -->
-<div style="
-    background: linear-gradient(135deg, #fffbeb, #fef3c7);
-    border: 1.5px solid #f59e0b;
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-align: left;
-">
-    <span style="font-size: 28px;">✨</span>
-    <div>
-        <div style="font-size:13px; font-weight:800; color:#78350f;">AI CFO is still available!</div>
-        <div style="font-size:12px; color:#92400e; margin-top:2px;">Your limit is over but you can still use AI CFO for free.</div>
-    </div>
-</div>
-
-<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
-    <button onclick="document.getElementById('trialLimitOverlay').style.display='none'; clearInterval(window._popupCountdownInterval);" style="
-        padding:12px 8px; border:1px solid #e2e8f0; border-radius:14px;
-        background:#f8fafc; font-weight:600; font-size:12px; cursor:pointer; color:#64748b;
-    ">⏳ Wait</button>
-    <button onclick="document.getElementById('trialLimitOverlay').style.display='none'; clearInterval(window._popupCountdownInterval); window.location.href='CFO.html';" style="
-        padding:12px 8px; border:none; border-radius:14px;
-        background:linear-gradient(135deg,#f59e0b,#d97706); color:white;
-        font-weight:700; font-size:12px; cursor:pointer;
-    ">✨ Open CFO</button>
-    <button onclick="document.getElementById('trialLimitOverlay').style.display='none'; clearInterval(window._popupCountdownInterval); openUpgradeModal();" style="
-        padding:12px 8px; border:none; border-radius:14px;
-        background:linear-gradient(135deg,#7c3aed,#a855f7); color:white;
-        font-weight:700; font-size:12px; cursor:pointer;
-    ">🔥 Upgrade</button>
-</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <button onclick="document.getElementById('trialLimitOverlay').style.display='none'; clearInterval(window._popupCountdownInterval);" style="
+                        padding:14px; border:1px solid #e2e8f0; border-radius:14px;
+                        background:#f8fafc; font-weight:600; font-size:13px; cursor:pointer; color:#64748b;
+                    ">⏳ Wait for Reset</button>
+                    <button onclick="document.getElementById('trialLimitOverlay').style.display='none'; clearInterval(window._popupCountdownInterval); openUpgradeModal();" style="
+                        padding:14px; border:none; border-radius:14px;
+                        background:linear-gradient(135deg,#7c3aed,#a855f7); color:white;
+                        font-weight:700; font-size:14px; cursor:pointer;
+                    ">🔥 Upgrade to ACE</button>
+                </div>
+            </div>
+        </div>
+    `;
 
     document.body.appendChild(overlay);
 
