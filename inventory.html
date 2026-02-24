@@ -1701,7 +1701,18 @@ input:focus, select:focus, textarea:focus {
 <div id="voiceModal" class="modal">
   <div class="modal-box">
     <h2 style="margin-top:0">AI Voice Assistant</h2>
-    <p style="color:#666; font-size:14px">Just speak the product name and quantity.<br>I will add, increase, or decrease it for you.</p>
+<p style="color:#666; font-size:14px">Hindi या English में बोलें।<br>मैं product add, increase, या decrease करूँगा।</p>
+
+<div style="display:flex; gap:10px; justify-content:center; margin-bottom:10px;">
+  <button onclick="setVoiceLang('hi-IN')" id="btn-hi" 
+    style="padding:8px 18px; border-radius:20px; border:2px solid #2563eb; background:#2563eb; color:white; font-weight:700; cursor:pointer;">
+    🇮🇳 Hindi
+  </button>
+  <button onclick="setVoiceLang('en-US')" id="btn-en"
+    style="padding:8px 18px; border-radius:20px; border:2px solid #ddd; background:white; color:#333; font-weight:700; cursor:pointer;">
+    🇺🇸 English
+  </button>
+</div>
     
     <div id="viz" class="ai-visualizer">
       <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
@@ -2626,7 +2637,29 @@ function saveBulkProducts() {
     btn.textContent = "🚀 Import All";
     btn.disabled = false;
 }
+let voiceLang = "hi-IN"; // Default Hindi
 
+function setVoiceLang(lang) {
+  voiceLang = lang;
+
+  // Update button styles
+  document.getElementById("btn-hi").style.background = lang === "hi-IN" ? "#2563eb" : "white";
+  document.getElementById("btn-hi").style.color = lang === "hi-IN" ? "white" : "#333";
+  document.getElementById("btn-hi").style.borderColor = lang === "hi-IN" ? "#2563eb" : "#ddd";
+
+  document.getElementById("btn-en").style.background = lang === "en-US" ? "#2563eb" : "white";
+  document.getElementById("btn-en").style.color = lang === "en-US" ? "white" : "#333";
+  document.getElementById("btn-en").style.borderColor = lang === "en-US" ? "#2563eb" : "#ddd";
+
+  // Restart recognition with new language
+  if (recognition && isAssistantActive) {
+    recognition.stop();
+    setTimeout(() => {
+      recognition.lang = voiceLang;
+      try { recognition.start(); } catch(e) {}
+    }, 400);
+  }
+}
 // --- AI VOICE LOGIC ---
 function startVoiceAssistant() {
   if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -2637,9 +2670,9 @@ function startVoiceAssistant() {
   document.getElementById("voiceModal").style.display = "flex";
   
   recognition = new webkitSpeechRecognition();
-  recognition.lang = "en-US";
-  recognition.continuous = true; 
-  recognition.interimResults = true;
+recognition.lang = voiceLang;
+recognition.continuous = true;
+recognition.interimResults = true;
 
   recognition.onresult = (event) => {
     let interimTranscript = '';
@@ -2684,7 +2717,10 @@ async function processSmartAI(transcript) {
     const res = await fetch(VERCEL_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: transcript })
+      body: JSON.stringify({ 
+  prompt: transcript,
+  language: voiceLang  
+})
     });
 
     if (!res.ok) throw new Error(`Server error: ${res.status}`);
@@ -2731,19 +2767,21 @@ output.textContent = "⚠️ " + err.message;
 function speakWithAI(text) {
   if (!('speechSynthesis' in window)) return;
   window.speechSynthesis.cancel();
-  
+
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 1.2;   // Faster speech
+  utterance.rate = 1.2;
   utterance.pitch = 1.0;
-  
+
   const trySpeak = () => {
     const voices = window.speechSynthesis.getVoices();
+    // Try Hindi voice first, fallback to English
+    const hindiVoice = voices.find(v => v.lang.includes('hi'));
     const googleVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('en'));
-    if (googleVoice) utterance.voice = googleVoice;
+    utterance.voice = hindiVoice || googleVoice || null;
+    utterance.lang = hindiVoice ? "hi-IN" : "en-US";
     window.speechSynthesis.speak(utterance);
   };
 
-  // Voices may not be loaded yet on mobile
   if (window.speechSynthesis.getVoices().length > 0) {
     trySpeak();
   } else {
