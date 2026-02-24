@@ -2629,7 +2629,9 @@ function saveBulkProducts() {
 
 // --- AI VOICE LOGIC ---
 function startVoiceAssistant() {
-  if (!('webkitSpeechRecognition' in window)) return alert("Voice not supported");
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    return alert("Voice not supported on this browser. Try Chrome.");
+  }
   
   isAssistantActive = true;
   document.getElementById("voiceModal").style.display = "flex";
@@ -2653,12 +2655,13 @@ function startVoiceAssistant() {
     }
   };
 
-  recognition.onend = () => {
+recognition.onend = () => {
     if (isAssistantActive) {
-        try { recognition.start(); } catch(e) {}
+        setTimeout(() => {
+            try { recognition.start(); } catch(e) { console.warn("Restart failed:", e); }
+        }, 300);
     }
-  };
-
+};
   recognition.start();
   speakWithAI("I am listening.");
 }
@@ -2720,25 +2723,33 @@ async function processSmartAI(transcript) {
 
   } catch (err) {
     console.error("Connection Error:", err);
-    speakWithAI("Sorry, I had a brain freeze connecting to the server.");
-    output.textContent = "Error: " + err.message;
+speakWithAI("Connection error. Please try again.");
+output.textContent = "⚠️ " + err.message;
   }
 }
 
 function speakWithAI(text) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 1.2;   // Faster speech
+  utterance.pitch = 1.0;
+  
+  const trySpeak = () => {
     const voices = window.speechSynthesis.getVoices();
     const googleVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('en'));
     if (googleVoice) utterance.voice = googleVoice;
-    
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
     window.speechSynthesis.speak(utterance);
+  };
+
+  // Voices may not be loaded yet on mobile
+  if (window.speechSynthesis.getVoices().length > 0) {
+    trySpeak();
+  } else {
+    window.speechSynthesis.onvoiceschanged = trySpeak;
   }
 }
-
 function triggerSuccess(msg) {
   const popup = document.getElementById("successPopup");
   popup.textContent = msg;
@@ -4158,3 +4169,4 @@ async function updateShopifyInventory(variantId, newQuantity) {
 
 </body>
 </html>
+
