@@ -1395,11 +1395,11 @@ function selectPlan(plan) {
 }
 
 function buyPlan(plan) {
-    const amounts = { monthly: 19900, yearly: 59900 }; // in paise
+    const amounts = { monthly: 100, yearly: 59900 }; // in paise
     const names = { monthly: 'ACE Monthly Plan', yearly: 'ACE Yearly Plan' };
     
     const options = {
-        key: 'rzp_test_1DP5mmOlF5G5ag', // Test key
+        key: rzp_live_SKcFRkHDvqtIbk', // Test key
         amount: amounts[plan],
         currency: 'INR',
         name: 'ScaleVest',
@@ -2630,6 +2630,7 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
+
 
 
 
