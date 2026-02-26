@@ -1031,8 +1031,8 @@ function _showAwayToast(awaySeconds, creditedSeconds) {
 // TIER MANAGEMENT SYSTEM
 // ============================================
 
-const FREE_TRIAL_MINUTES = 2880; 
-const FREE_TRIAL_SECONDS = 2 * 24 * 60 * 60; 
+const FREE_TRIAL_MINUTES = 20160; 
+const FREE_TRIAL_SECONDS = 14 * 24 * 60 * 60;
 const RESET_HOURS = 2;
 const RESET_TRIAL_MINUTES = 30;
 
@@ -1214,7 +1214,7 @@ function showAccessDenied(featureName, resetAt) {
     const countdown = document.getElementById('deniedCountdown');
 
     title.textContent = `${featureName} – Access Restricted`;
-msg.innerHTML = `Your free trial time has ended. Upgrade to ACE Plan for unlimited access, or wait for your free session to reset.<br><br>
+msg.innerHTML = `Your 14 Day free trial time has ended. Upgrade to ACE Plan for unlimited access, or wait for your free session to reset.<br><br>
 <div style="
     background: linear-gradient(135deg, #fffbeb, #fef3c7);
     border: 1.5px solid #f59e0b;
@@ -2630,6 +2630,7 @@ if (currentPage.includes('inventory')) {
 </div>
 </body>
 </html>
+
 
 
 
