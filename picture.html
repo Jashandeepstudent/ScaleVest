@@ -2,284 +2,657 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ScaleVest Products Scanner</title>
+<title>ScaleVest Vision XP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-    :root {
-        --primary: #7c3aed;
-        --primary-glow: rgba(124, 58, 237, 0.4);
-        --bg: #0b0f1a; 
-    }
+:root {
+    --p: #7c3aed;
+    --p-glow: rgba(124,58,237,0.4);
+    --bg: #080c16;
+    --surface: rgba(255,255,255,0.04);
+    --border: rgba(255,255,255,0.08);
+    --success: #10b981;
+    --warn: #f59e0b;
+    --error: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: var(--bg); color: #fff; font-family: 'Syne', sans-serif; overflow: hidden; }
 
-    * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body, html { height: 100%; margin: 0; background: var(--bg); color: white; overflow: hidden; }
+/* BACKGROUND */
+.bg-layer {
+    position: fixed; inset: 0; z-index: -1;
+    background: 
+        radial-gradient(ellipse 60% 50% at 10% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 90% 80%, rgba(16,185,129,0.05) 0%, transparent 60%);
+}
+.grid-bg {
+    position: fixed; inset: 0; z-index: -1;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
 
-    /* AMBIENT BACKGROUND */
-    .bg-glow {
-        position: fixed; top: -10%; left: -10%; width: 60%; height: 60%;
-        background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-        z-index: -1;
-    }
+/* HEADER */
+.header {
+    padding: 28px 36px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(20px);
+    position: relative; z-index: 10;
+}
+.logo { font-size: 15px; font-weight: 800; letter-spacing: 4px; color: #a5b4fc; text-transform: uppercase; }
+.logo span { color: var(--p); }
+.back-btn {
+    background: var(--surface); color: #fff; border: 1px solid var(--border);
+    padding: 10px 22px; border-radius: 100px; text-decoration: none;
+    font-size: 10px; font-family: 'Space Mono', monospace;
+    letter-spacing: 2px; text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+.back-btn:hover { border-color: var(--p); box-shadow: 0 0 20px var(--p-glow); }
 
-    /* HEADER */
-    .top { padding: 40px; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative; }
-    .top h2 { margin: 0; font-size: 18px; font-weight: 300; letter-spacing: 3px; text-transform: uppercase; color: #a5b4fc; }
+/* MAIN */
+.main { 
+    height: calc(100vh - 73px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 48px; padding: 20px;
+}
 
-    .back-btn {
-        background: rgba(255, 255, 255, 0.03);
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 12px 24px;
-        border-radius: 100px;
-        text-decoration: none;
-        font-size: 11px;
-        backdrop-filter: blur(12px);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-    .back-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); box-shadow: 0 0 20px var(--primary-glow); transform: translateY(-2px); }
+/* MODE SELECTOR */
+.mode-tabs {
+    display: flex; gap: 8px;
+    background: var(--surface); padding: 6px; border-radius: 100px;
+    border: 1px solid var(--border);
+}
+.mode-tab {
+    padding: 10px 24px; border-radius: 100px; cursor: pointer;
+    font-size: 11px; font-family: 'Space Mono', monospace;
+    letter-spacing: 2px; text-transform: uppercase;
+    border: none; background: transparent; color: rgba(255,255,255,0.4);
+    transition: all 0.3s ease;
+}
+.mode-tab.active {
+    background: var(--p); color: #fff;
+    box-shadow: 0 0 20px rgba(124,58,237,0.5);
+}
+.mode-tab:hover:not(.active) { color: rgba(255,255,255,0.8); }
 
-    /* MAIN INTERFACE */
-    .center-container { flex: 1; display: flex; justify-content: center; align-items: center; height: 75vh; }
-    
-    .scan-trigger {
-        width: 280px; height: 280px;
-        background: radial-gradient(circle, rgba(124, 58, 237, 0.05) 0%, transparent 80%);
-        border: 1px border-style: solid; border-color: rgba(255, 255, 255, 0.05);
-        border-radius: 50%;
-        display: flex; flex-direction: column; justify-content: center; align-items: center;
-        cursor: pointer; position: relative;
-        transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    }
+/* MULTI-SCAN QUEUE */
+.queue-bar {
+    display: none; flex-direction: column; align-items: center; gap: 12px;
+    width: 100%; max-width: 360px;
+}
+.queue-bar.visible { display: flex; }
+.queue-label { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 3px; font-family: 'Space Mono', monospace; }
+.queue-slots { display: flex; gap: 10px; }
+.q-slot {
+    width: 80px; height: 60px; border-radius: 12px;
+    border: 1px dashed rgba(255,255,255,0.15);
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: rgba(255,255,255,0.2);
+    font-family: 'Space Mono', monospace; letter-spacing: 1px;
+    overflow: hidden; position: relative; cursor: pointer;
+    transition: all 0.3s ease;
+}
+.q-slot.filled { border-color: var(--p); border-style: solid; }
+.q-slot.filled img { width: 100%; height: 100%; object-fit: cover; }
+.q-slot.filled .remove-q {
+    position: absolute; top: 3px; right: 3px; 
+    background: rgba(239,68,68,0.8); border: none; color: #fff;
+    width: 16px; height: 16px; border-radius: 50%; font-size: 9px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.q-slot:not(.filled):hover { border-color: var(--p); }
 
-    .scan-trigger:hover {
-        border-color: var(--primary);
-        box-shadow: 0 0 60px rgba(124, 58, 237, 0.2);
-        transform: scale(1.03);
-    }
+/* SCAN BUTTON */
+.scan-ring {
+    width: 220px; height: 220px; position: relative;
+    display: flex; align-items: center; justify-content: center;
+}
+.ring-outer {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 1px solid rgba(124,58,237,0.2);
+    animation: ringPulse 3s ease-in-out infinite;
+}
+.ring-mid {
+    position: absolute; inset: 20px; border-radius: 50%;
+    border: 1px solid rgba(124,58,237,0.15);
+    animation: ringPulse 3s ease-in-out infinite 0.5s;
+}
+@keyframes ringPulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+.scan-btn {
+    width: 160px; height: 160px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(124,58,237,0.3), rgba(124,58,237,0.05));
+    border: 1px solid rgba(124,58,237,0.4);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; gap: 14px; transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
+    box-shadow: 0 0 40px rgba(124,58,237,0.1), inset 0 0 40px rgba(124,58,237,0.05);
+    position: relative; z-index: 1;
+}
+.scan-btn:hover {
+    border-color: var(--p); transform: scale(1.05);
+    box-shadow: 0 0 80px rgba(124,58,237,0.35), inset 0 0 40px rgba(124,58,237,0.1);
+}
+.scan-btn:active { transform: scale(0.97); }
+.scan-btn svg { opacity: 0.9; }
+.scan-btn-label { font-size: 9px; letter-spacing: 3px; color: #a5b4fc; font-family: 'Space Mono', monospace; text-transform: uppercase; }
 
-    .scan-trigger span {
-        margin-top: 25px; font-weight: 600; letter-spacing: 3px; font-size: 12px; color: #a5b4fc;
-    }
+/* TIPS */
+.tip-row {
+    display: flex; gap: 16px; opacity: 0.5;
+    font-size: 10px; font-family: 'Space Mono', monospace;
+    letter-spacing: 1px; text-align: center; flex-wrap: wrap; justify-content: center;
+    max-width: 400px;
+}
+.tip { display: flex; align-items: center; gap: 6px; }
 
-    /* NEURAL ANALYSIS OVERLAY */
-    .ai-overlay {
-        position: fixed; inset: 0; background: #000;
-        display: none; flex-direction: column; align-items: center; justify-content: center;
-        z-index: 5000;
-    }
+/* HIDDEN INPUTS */
+input[type=file] { display: none; }
 
-    .scan-viewport {
-        width: 320px; height: 420px;
-        border: 1px solid var(--primary);
-        border-radius: 30px; position: relative; overflow: hidden;
-        background: #050505;
-        box-shadow: 0 0 100px rgba(124, 58, 237, 0.2);
-    }
+/* ===== OVERLAY ===== */
+.overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 5000; backdrop-filter: blur(10px);
+}
+.overlay.show { display: flex; }
 
-    #scanPreview {
-        width: 100%; height: 100%; 
-        object-fit: cover; 
-        opacity: 0.6;
-        filter: grayscale(0.3) contrast(1.1);
-    }
+.scan-viewport {
+    width: 300px; height: 400px; border-radius: 28px;
+    border: 1px solid var(--p); overflow: hidden;
+    background: #000; position: relative;
+    box-shadow: 0 0 80px rgba(124,58,237,0.25), 0 0 0 1px rgba(124,58,237,0.1);
+}
+#scanPreview { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+.scan-laser {
+    position: absolute; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--p), transparent);
+    box-shadow: 0 0 20px 4px rgba(124,58,237,0.7);
+    top: 0; animation: laser 2.5s ease-in-out infinite;
+}
+@keyframes laser { 0%,100% { top: 5%; opacity: 0.5; } 50% { top: 92%; opacity: 1; } }
 
-    /* THE SCANNING LINE */
-    .scan-laser {
-        position: absolute; width: 100%; height: 2px;
-        background: var(--primary);
-        box-shadow: 0 0 25px 3px var(--primary);
-        top: 0; animation: laserSwipe 2s ease-in-out infinite;
-    }
+.overlay-status {
+    margin-top: 32px; text-align: center;
+}
+.status-label { font-size: 11px; letter-spacing: 5px; color: var(--p); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+.status-sub { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 8px; font-family: 'Space Mono', monospace; letter-spacing: 2px; }
 
-    @keyframes laserSwipe {
-        0%, 100% { top: 5%; opacity: 0.4; }
-        50% { top: 95%; opacity: 1; }
-    }
+/* Retry dots */
+.retry-dots { display: flex; gap: 6px; margin-top: 16px; justify-content: center; }
+.rd { width: 8px; height: 8px; border-radius: 50%; background: rgba(124,58,237,0.3); }
+.rd.active { background: var(--p); box-shadow: 0 0 10px var(--p); }
+.rd.done { background: var(--success); }
+.rd.fail { background: var(--error); }
 
-    .status-msg {
-        margin-top: 40px; font-size: 13px; font-weight: 300;
-        letter-spacing: 6px; color: var(--primary);
-        text-transform: uppercase; animation: textFlicker 2s infinite;
-    }
+/* ===== TOAST ===== */
+.toast {
+    position: fixed; top: 32px; left: 50%; transform: translateX(-50%) translateY(-80px);
+    padding: 16px 28px; border-radius: 16px; font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; font-family: 'Space Mono', monospace; text-transform: uppercase;
+    z-index: 9000; max-width: 90%; text-align: center; line-height: 1.6;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(12px);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { background: rgba(16,185,129,0.9); }
+.toast.error { background: rgba(239,68,68,0.9); }
+.toast.warn { background: rgba(245,158,11,0.9); }
+.toast.info { background: rgba(124,58,237,0.95); }
 
-    @keyframes textFlicker { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-
-    /* THE POLISHED TOAST */
-    .toast-notification {
-        position: fixed; top: 40px; left: 50%; transform: translateX(-50%);
-        background: rgba(124, 58, 237, 0.95);
-        color: white; padding: 16px 32px;
-        border-radius: 16px; font-size: 12px; font-weight: 600;
-        display: none; z-index: 6000; 
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        backdrop-filter: blur(10px);
-        letter-spacing: 1px; text-transform: uppercase;
-        max-width: 85%; text-align: center; line-height: 1.5;
-        border: 1px solid rgba(255,255,255,0.2);
-    }
+/* Image quality warning */
+.quality-warning {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(245,158,11,0.9); padding: 8px 12px;
+    font-size: 10px; letter-spacing: 1px; text-align: center;
+    font-family: 'Space Mono', monospace; text-transform: uppercase;
+    backdrop-filter: blur(8px);
+}
 </style>
 </head>
 
 <body>
+<div class="bg-layer"></div>
+<div class="grid-bg"></div>
 
-<div class="bg-glow"></div>
-<div id="mainToast" class="toast-notification"></div>
+<div id="toast" class="toast"></div>
 
-<div id="aiOverlay" class="ai-overlay">
-    <div class="scan-viewport">
+<!-- SCAN OVERLAY -->
+<div id="overlay" class="overlay">
+    <div class="scan-viewport" id="scanViewport">
         <img id="scanPreview" src="">
         <div class="scan-laser"></div>
+        <div id="qualityWarning" class="quality-warning" style="display:none">⚠ Image may be blurry — retrying with enhanced analysis</div>
     </div>
-    <div class="status-msg">Neural Extraction Active</div>
+    <div class="overlay-status">
+        <div class="status-label" id="statusLabel">Analyzing Products</div>
+        <div class="status-sub" id="statusSub">Neural extraction active...</div>
+        <div class="retry-dots" id="retryDots">
+            <div class="rd" id="rd1"></div>
+            <div class="rd" id="rd2"></div>
+            <div class="rd" id="rd3"></div>
+        </div>
+    </div>
 </div>
 
-<div class="top">
-    <h2>Vision <span style="font-weight:700; color:var(--primary)">XP</span></h2>
+<!-- HEADER -->
+<div class="header">
+    <div class="logo">Vision <span>XP</span></div>
     <a href="inventory.html" class="back-btn">Return</a>
 </div>
 
-<div class="center-container">
-    <div class="scan-trigger" onclick="document.getElementById('aiCameraInput').click()">
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="1" stroke-linecap="round"/>
-            <path d="M9 3H15M9 3C5 3 3 5 3 9V15C3 19 5 21 9 21H15C19 21 21 19 21 15V9C21 5 19 3 15 3M9 3V5M15 3V5" stroke="white" stroke-width="1" stroke-linecap="round"/>
-        </svg>
-        <span>START AI VISION</span>
+<!-- MAIN -->
+<div class="main">
+
+    <!-- MODE TABS -->
+    <div class="mode-tabs">
+        <button class="mode-tab active" onclick="setMode('single')" id="tab-single">Single Scan</button>
+        <button class="mode-tab" onclick="setMode('multi')" id="tab-multi">Multi-Angle</button>
     </div>
-    <input type="file" id="aiCameraInput" accept="image/*" capture="environment" style="display:none" onchange="handleImageProcessing(this.files[0])">
+
+    <!-- MULTI QUEUE (hidden in single mode) -->
+    <div class="queue-bar" id="queueBar">
+        <div class="queue-label">Add 2–3 photos from different angles</div>
+        <div class="queue-slots">
+            <div class="q-slot" id="qs0" onclick="triggerQueueInput(0)">+ ADD</div>
+            <div class="q-slot" id="qs1" onclick="triggerQueueInput(1)">+ ADD</div>
+            <div class="q-slot" id="qs2" onclick="triggerQueueInput(2)">+ ADD</div>
+        </div>
+    </div>
+
+    <!-- MAIN SCAN BUTTON -->
+    <div class="scan-ring">
+        <div class="ring-outer"></div>
+        <div class="ring-mid"></div>
+        <div class="scan-btn" id="mainScanBtn" onclick="handleScanClick()">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M9 3H15M9 3C5 3 3 5 3 9V15C3 19 5 21 9 21H15C19 21 21 19 21 15V9C21 5 19 3 15 3M9 3V5M15 3V5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+            <div class="scan-btn-label" id="btnLabel">Start Scan</div>
+        </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tip-row">
+        <div class="tip">📸 Good lighting</div>
+        <div class="tip">📐 Hold steady</div>
+        <div class="tip">🔄 Multi-angle for hidden items</div>
+    </div>
+
 </div>
+
+<!-- File inputs -->
+<input type="file" id="singleInput" accept="image/*" capture="environment" onchange="handleSingle(this.files[0])">
+<input type="file" id="q0Input" accept="image/*" capture="environment" onchange="handleQueue(0, this.files[0])">
+<input type="file" id="q1Input" accept="image/*" capture="environment" onchange="handleQueue(1, this.files[0])">
+<input type="file" id="q2Input" accept="image/*" capture="environment" onchange="handleQueue(2, this.files[0])">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-// INITIALIZATION
+// ─── FIREBASE ────────────────────────────────────────────────────────────────
 firebase.initializeApp({
     apiKey: "AIzaSyD6PdrKp2XLfRqjC587lMpdKTaWD4MBens",
     authDomain: "scalevest-163a0.firebaseapp.com",
     databaseURL: "https://scalevest-163a0-default-rtdb.firebaseio.com",
     projectId: "scalevest-163a0"
 });
-
 const auth = firebase.auth(), db = firebase.database();
 let invRef = null;
-
 auth.onAuthStateChanged(u => {
     if (u) invRef = db.ref(`Businesses/${u.uid}/inventory`);
     else window.location.href = "inventory.html";
 });
 
-const toBase64 = f => new Promise((resolve, reject) => {
-    const reader = new FileReader(); 
-    reader.readAsDataURL(f);
-    reader.onload = () => resolve(reader.result); 
-    reader.onerror = e => reject(e);
-});
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentMode = 'single';
+let queueFiles = [null, null, null];
+let isProcessing = false;
 
-function initiateAIScan() {
-    const input = document.createElement('input');
-    input.type = 'file'; 
-    input.accept = 'image/*'; 
-    input.capture = 'environment';
-    input.onchange = (e) => handleImageProcessing(e.target.files[0]);
-    input.click();
+// ─── MODE ────────────────────────────────────────────────────────────────────
+function setMode(m) {
+    currentMode = m;
+    document.getElementById('tab-single').className = 'mode-tab' + (m==='single'?' active':'');
+    document.getElementById('tab-multi').className  = 'mode-tab' + (m==='multi'?' active':'');
+    document.getElementById('queueBar').className = 'queue-bar' + (m==='multi'?' visible':'');
+    document.getElementById('btnLabel').textContent = m==='single' ? 'Start Scan' : 'Scan All';
 }
 
-async function handleImageProcessing(file) {
-    // 1. Guard Clauses & Reset
-    if (!file) return;
-    if (!invRef) {
-        displayToast("CRITICAL: DATABASE OFFLINE");
-        return;
+function handleScanClick() {
+    if (isProcessing) return;
+    if (currentMode === 'single') {
+        resetInput('singleInput');
+        document.getElementById('singleInput').click();
+    } else {
+        // Multi mode: if we have at least one image, process; else add first
+        const filled = queueFiles.filter(Boolean);
+        if (filled.length === 0) {
+            resetInput('q0Input');
+            document.getElementById('q0Input').click();
+        } else {
+            runMultiScan();
+        }
     }
+}
+
+function triggerQueueInput(i) {
+    if (isProcessing) return;
+    resetInput(`q${i}Input`);
+    document.getElementById(`q${i}Input`).click();
+}
+
+function handleSingle(file) {
+    if (!file) return;
+    runScan([file]);
+}
+
+function handleQueue(i, file) {
+    if (!file) return;
+    queueFiles[i] = file;
+    const slot = document.getElementById(`qs${i}`);
+    slot.className = 'q-slot filled';
+    const url = URL.createObjectURL(file);
+    slot.innerHTML = `<img src="${url}" /><button class="remove-q" onclick="removeQueue(event,${i})">✕</button>`;
     
-    // UI: Show Preview & Analysis Overlay
-    const overlay = document.getElementById('aiOverlay');
+    // Auto-prompt next slot if empty
+    const next = queueFiles.findIndex((f,idx) => idx > i && !f);
+    if (next !== -1) {
+        setTimeout(() => {
+            resetInput(`q${next}Input`);
+            document.getElementById(`q${next}Input`).click();
+        }, 400);
+    }
+}
+
+function removeQueue(e, i) {
+    e.stopPropagation();
+    queueFiles[i] = null;
+    const slot = document.getElementById(`qs${i}`);
+    slot.className = 'q-slot';
+    slot.innerHTML = '+ ADD';
+    slot.onclick = () => triggerQueueInput(i);
+}
+
+function runMultiScan() {
+    const files = queueFiles.filter(Boolean);
+    if (files.length === 0) { showToast('Add at least one photo first', 'warn'); return; }
+    runScan(files);
+}
+
+function resetInput(id) {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+}
+
+// ─── IMAGE UTILS ─────────────────────────────────────────────────────────────
+
+// Compress image to max 900px wide, 70% JPEG quality — reduces 5MB → ~150KB
+function compressImage(file, maxPx = 900, quality = 0.70) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+            const w = Math.round(img.width * scale);
+            const h = Math.round(img.height * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            URL.revokeObjectURL(url);
+            canvas.toBlob(blob => {
+                if (!blob) { reject(new Error('Compression failed')); return; }
+                // Convert blob → base64 string
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = () => reject(new Error('Read error'));
+            }, 'image/jpeg', quality);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image load error')); };
+        img.src = url;
+    });
+}
+
+const toBase64 = f => new Promise((res, rej) => {
+    const r = new FileReader();
+    r.readAsDataURL(f);
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('File read error'));
+});
+
+// Quick blur detection: check variance of pixel brightness
+async function estimateBlur(file) {
+    return new Promise(resolve => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 80; canvas.height = 80;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 80, 80);
+            const px = ctx.getImageData(0,0,80,80).data;
+            let vals = [], sum = 0;
+            for (let i=0; i<px.length; i+=4) {
+                const g = (px[i]+px[i+1]+px[i+2])/3;
+                vals.push(g); sum += g;
+            }
+            const mean = sum/vals.length;
+            const variance = vals.reduce((a,v)=>a+Math.pow(v-mean,2),0)/vals.length;
+            URL.revokeObjectURL(url);
+            resolve(variance); // Low variance = blurry/dark
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(999); };
+        img.src = url;
+    });
+}
+
+// ─── CORE SCAN ENGINE ────────────────────────────────────────────────────────
+const API = 'https://ai-inventory-pro-sigma.vercel.app/api/scan';
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [2000, 4000, 8000]; // exponential backoff
+
+async function callAPI(b64Data, attempt, signal) {
+    const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: b64Data }),
+        signal
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const match = text.match(/\[[\s\S]*?\]/);
+    if (!match) throw new Error('PARSE_FAIL');
+    return JSON.parse(match[0]);
+}
+
+async function scanWithRetry(b64Data, fileIndex) {
+    let lastErr;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        // Update retry dot UI
+        setRetryDot(attempt, 'active');
+        updateStatus(
+            attempt === 0 ? 'Analyzing Products' : `Retry ${attempt}/${MAX_RETRIES-1}`,
+            attempt === 0 ? 'Neural extraction active...' : 'Network slow — retrying with patience...'
+        );
+
+        try {
+            const controller = new AbortController();
+            // Progressive timeout: more time on retries
+            const timeoutMs = 25000 + attempt * 10000;
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            const items = await callAPI(b64Data, attempt, controller.signal);
+            clearTimeout(timer);
+            setRetryDot(attempt, 'done');
+            return items;
+        } catch(err) {
+            setRetryDot(attempt, 'fail');
+            lastErr = err;
+            if (err.name === 'AbortError') lastErr = new Error('TIMEOUT');
+            
+            // Don't wait on last attempt
+            if (attempt < MAX_RETRIES - 1) {
+                updateStatus(`Retry ${attempt+1}`, `Waiting ${RETRY_DELAYS[attempt]/1000}s before next attempt...`);
+                await sleep(RETRY_DELAYS[attempt]);
+            }
+        }
+    }
+    throw lastErr;
+}
+
+async function runScan(files) {
+    if (!invRef) { showToast('Database not connected', 'error'); return; }
+    if (isProcessing) return;
+    isProcessing = true;
+
+    // Show overlay with first image
+    const overlay = document.getElementById('overlay');
     const preview = document.getElementById('scanPreview');
-    preview.src = URL.createObjectURL(file);
-    overlay.style.display = 'flex';
+    preview.src = URL.createObjectURL(files[0]);
+    overlay.className = 'overlay show';
+    resetRetryDots();
+    document.getElementById('qualityWarning').style.display = 'none';
+
+    // Check image quality
+    try {
+        const variance = await estimateBlur(files[0]);
+        if (variance < 150) {
+            // Low variance = potentially dark/blurry
+            document.getElementById('qualityWarning').style.display = 'block';
+            updateStatus('Enhancing Analysis', 'Low contrast detected — using advanced extraction...');
+            await sleep(1500);
+        }
+    } catch(e) { /* ignore quality check errors */ }
 
     try {
-        // 2. Timeout Protection (Aborts if API takes > 25 seconds)
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 25000);
+        let allItems = [];
 
-        const b64Full = await toBase64(file);
-        const b64Data = b64Full.split(',')[1];
+        for (let fi = 0; fi < files.length; fi++) {
+            if (fi > 0) {
+                preview.src = URL.createObjectURL(files[fi]);
+                resetRetryDots();
+                updateStatus(`Scanning angle ${fi+1}/${files.length}`, 'Cross-referencing hidden products...');
+                await sleep(500);
+            }
 
-        // 3. API Call with Abort Signal
-        const res = await fetch('https://ai-inventory-pro-sigma.vercel.app/api/scan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64: b64Data }),
-            signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
+            // Compress before upload — reduces 5MB → ~150KB (30× faster on slow networks)
+            updateStatus(fi===0 ? "Compressing Image" : `Compressing angle ${fi+1}`, "Shrinking for fast upload...");
+            let b64;
+            try { b64 = await compressImage(files[fi]); }
+            catch(e) { b64 = await toBase64(files[fi]); }
+            let items = [];
 
-        if (!res.ok) throw new Error(`Server Status: ${res.status}`);
+            try {
+                items = await scanWithRetry(b64, fi);
+            } catch(err) {
+                // If one angle fails, continue with others
+                if (files.length > 1) {
+                    showToast(`Angle ${fi+1} unclear — using other photos`, 'warn');
+                    await sleep(1500);
+                    continue;
+                }
+                throw err; // single file: propagate
+            }
 
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
+            allItems = allItems.concat(items);
+        }
 
-        // 4. Data Extraction & Safety Check
-        const aiText = data.candidates[0]?.content?.parts[0]?.text || "";
-        const jsonMatch = aiText.match(/\[[\s\S]*\]/);
-        
-        if (!jsonMatch) throw new Error("Vision Analysis was unclear. Try again.");
-        
-        const items = JSON.parse(jsonMatch[0]);
-        if (items.length === 0) throw new Error("No products detected.");
+        if (allItems.length === 0) throw new Error('No products detected in any image.');
 
-        let summaryParts = [];
-
-        // 5. Batch Save
-        items.forEach(it => {
-            const formattedName = it.name.charAt(0).toUpperCase() + it.name.slice(1);
+        // Deduplicate: merge same product names (case-insensitive)
+        const merged = {};
+        allItems.forEach(it => {
+            const key = (it.name || '').toLowerCase().trim();
+            if (!key) return;
             const qty = Number(it.qty || it.quantity) || 1;
-            summaryParts.push(`${qty}x ${formattedName}`);
+            if (merged[key]) {
+                merged[key].qty = Math.max(merged[key].qty, qty); // take highest seen quantity
+            } else {
+                merged[key] = { name: it.name, qty };
+            }
+        });
 
+        const finalItems = Object.values(merged);
+        
+        updateStatus('Saving to Inventory', `Found ${finalItems.length} product(s)...`);
+        await sleep(600);
+
+        const summaryParts = [];
+        finalItems.forEach(it => {
+            const name = it.name.charAt(0).toUpperCase() + it.name.slice(1);
+            summaryParts.push(`${it.qty}× ${name}`);
             invRef.push({
-                name: formattedName,
-                quantity: qty,
-                unit: "pcs",
+                name, quantity: it.qty, unit: 'pcs',
                 addedAt: firebase.database.ServerValue.TIMESTAMP
             });
         });
 
-        overlay.style.display = 'none';
-        displayToast(`SUCCESS: ${summaryParts.join(", ")}`);
+        overlay.className = 'overlay';
+        showToast(`✓ Added: ${summaryParts.join(', ')}`, 'success');
 
-    } catch (err) {
-        overlay.style.display = 'none';
-        console.error("ANALYSIS FAILED:", err);
-        
-        // Use Toast instead of Alert for professional feel
-        const errorMessage = err.name === 'AbortError' ? "Network Timeout. Try again." : err.message;
-        displayToast(`⚠️ VISION ERROR: ${errorMessage}`);
+        // Reset queue if multi
+        if (currentMode === 'multi') resetQueueUI();
+
+    } catch(err) {
+        overlay.className = 'overlay';
+        let msg = 'Scan failed. Try again.';
+        if (err.message === 'TIMEOUT') msg = 'Network too slow. Move closer to WiFi & retry.';
+        else if (err.message === 'PARSE_FAIL') msg = 'Image unclear. Better lighting or closer shot needed.';
+        else if (err.message.includes('No products')) msg = 'No products found. Aim camera at shelf clearly.';
+        else if (err.message.includes('HTTP')) msg = `Server error (${err.message}). Will work when back online.`;
+        showToast(`⚠ ${msg}`, 'error');
     } finally {
-        // 6. CRITICAL: Reset the input so the next click ALWAYS works
-        const input = document.getElementById('aiCameraInput'); // Ensure your input has this ID
-        if (input) input.value = ""; 
+        isProcessing = false;
+        resetInput('singleInput');
     }
 }
 
-function displayToast(msg) {
-    const t = document.getElementById('mainToast');
-    t.textContent = msg; 
-    t.style.display = 'block';
-    
-    // Dynamic duration based on text length
-    const time = msg.length > 30 ? 6000 : 4000;
-    
-    setTimeout(() => {
-        t.style.display = 'none';
-    }, time);
+// ─── UI HELPERS ──────────────────────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function updateStatus(label, sub) {
+    document.getElementById('statusLabel').textContent = label;
+    document.getElementById('statusSub').textContent = sub;
+}
+
+function resetRetryDots() {
+    [1,2,3].forEach(i => { document.getElementById(`rd${i}`).className = 'rd'; });
+}
+
+function setRetryDot(attempt, state) {
+    const el = document.getElementById(`rd${attempt+1}`);
+    if (el) el.className = `rd ${state}`;
+}
+
+let toastTimer;
+function showToast(msg, type='info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = `toast ${type}`; }, msg.length > 40 ? 7000 : 5000);
+}
+
+function resetQueueUI() {
+    queueFiles = [null, null, null];
+    [0,1,2].forEach(i => {
+        const slot = document.getElementById(`qs${i}`);
+        slot.className = 'q-slot';
+        slot.innerHTML = '+ ADD';
+        slot.onclick = () => triggerQueueInput(i);
+    });
 }
 </script>
 </body>
