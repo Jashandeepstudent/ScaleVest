@@ -4580,10 +4580,10 @@ if (user) {
 // ============================================================
 
 async function checkCFOAccess(userId) {
-    const planSnap = await dbGet(ref(db, `BusinessOwners/${userId}/CFOPlan`));
-    const timeSnap = await dbGet(ref(db, `BusinessOwners/${userId}/CFOTimeLeft`));
-    const cfoSnap  = await dbGet(ref(db, `BusinessOwners/${userId}/CFO`));
-    const resetSnap = await dbGet(ref(db, `BusinessOwners/${userId}/LastBlockReset`));
+    const planSnap = await get(ref(db, `BusinessOwners/${userId}/CFOPlan`));
+    const timeSnap = await get(ref(db, `BusinessOwners/${userId}/CFOTimeLeft`));
+    const cfoSnap  = await get(ref(db, `BusinessOwners/${userId}/CFO`));
+    const resetSnap = await get(ref(db, `BusinessOwners/${userId}/LastBlockReset`));
 
     const plan       = planSnap.exists()  ? planSnap.val()  : null;
     const timeLeft   = timeSnap.exists()  ? Number(timeSnap.val()) : null;
@@ -5147,6 +5147,7 @@ async function handlePlanPurchase(planType, price) {
 
 </body>
 </html>
+
 
 
 
