@@ -2746,14 +2746,14 @@ async function checkCFOAccess(userId) {
     const resetSnap = await get(ref(db, `BusinessOwners/${userId}/LastBlockReset`));
 
     const plan       = planSnap.exists()  ? planSnap.val()  : null;
-    const timeLeft   = timeSnap.exists()  ? Number(timeSnap.val()) : null;
+const timeLeft = (timeSnap.exists() && timeSnap.val() !== null) ? Number(timeSnap.val()) : null;
     const cfoName    = cfoSnap.exists()   ? (cfoSnap.val().name || "Your CFO") : "Your CFO";
     const lastReset  = resetSnap.exists() ? Number(resetSnap.val()) : null;
 
     const now = Date.now();
 
     // No plan yet = onboarding not done, allow through
-    if (!plan || !timeLeft) return true;
+if (!plan || timeLeft === null) return true;
 
     const isExpired = now > timeLeft;
 
