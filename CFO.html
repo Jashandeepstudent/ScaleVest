@@ -2753,7 +2753,7 @@ const timeLeft = (timeSnap.exists() && timeSnap.val() !== null) ? Number(timeSna
     const now = Date.now();
 
     // No plan yet = onboarding not done, allow through
-if (!plan || timeLeft === null) return true;
+if (!plan || timeLeft === null || timeLeft === undefined) return true;
 
     const isExpired = now > timeLeft;
 
@@ -3162,7 +3162,10 @@ async function handlePlanPurchase(planType, price) {
     alert(`✅ ${planType} Plan activated! Welcome to ScaleVest CFO Pro.`);
     location.reload();
 }
-
+window.checkCFOAccess = checkCFOAccess;
+window.showBlockedPopup = showBlockedPopup;
+window.showUpgradePage = showUpgradePage;
+window.handlePlanPurchase = handlePlanPurchase;
 onAuthStateChanged(auth, async (user) => {
     if (user) {
          const hasAccess = await checkCFOAccess(user.uid);
