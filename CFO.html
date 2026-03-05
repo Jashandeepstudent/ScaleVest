@@ -2745,36 +2745,43 @@ async function checkCFOAccess(userId) {
     const cfoSnap   = await get(ref(db, `BusinessOwners/${userId}/CFO`));
     const resetSnap = await get(ref(db, `BusinessOwners/${userId}/LastBlockReset`));
 
-    const plan     = planSnap.exists() ? planSnap.val() : null;
-    const timeLeft = (timeSnap.exists() && timeSnap.val() !== null) ? Number(timeSnap.val()) : null;
-    const cfoName  = cfoSnap.exists() ? (cfoSnap.val().name || "Your CFO") : "Your CFO";
-    const lastReset = resetSnap.exists() ? Number(resetSnap.val()) : null;
+    const plan      = planSnap.exists() ? planSnap.val() : null;
+    const timeLeft  = (timeSnap.exists() && timeSnap.val() !== null) ? Number(timeSnap.val()) : null;
+    const cfoName   = cfoSnap.exists() ? (cfoSnap.val().name || "Your CFO") : "Your CFO";
+    const blockEnd  = resetSnap.exists() ? Number(resetSnap.val()) : null;
 
     const now = Date.now();
 
-    // No plan yet = onboarding not done, allow through
     if (!plan || timeLeft === null) return true;
-
-    // Still within trial or paid plan period
     if (now <= timeLeft) return true;
 
     // ---- EXPIRED ----
-    // Check if within active 30-min free window
-    // lastReset stores the MOMENT the block was triggered (past timestamp)
-    if (lastReset && (now - lastReset) < (30 * 60 * 1000)) {
-        return true; // still within the 30-min window
+
+    // blockEnd stores when the 30-min BLOCK ENDS (i.e. when free access resumes)
+    if (blockEnd) {
+        if (now >= blockEnd) {
+            // 30-min wait is over — grant free access, delete the node so next visit re-blocks
+            const { remove } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+            await remove(ref(db, `BusinessOwners/${userId}/LastBlockReset`));
+            return true;
+        } else {
+            // Still waiting — show block popup with remaining time
+            const overlay = document.getElementById('onboarding-overlay');
+            if (overlay) overlay.style.display = 'none';
+            const isPaidPlan = ["Monthly", "HalfYearly", "Yearly"].includes(plan);
+            showBlockedPopup(isPaidPlan ? "plan_expired" : "free_expired", blockEnd, cfoName, plan);
+            return false;
+        }
     }
 
-    // Fully blocked — write current time as the new reset point
-    await set(ref(db, `BusinessOwners/${userId}/LastBlockReset`), now);
+    // No blockEnd exists — first time hitting block, create it
+    const newBlockEnd = now + (30 * 60 * 1000);
+    await set(ref(db, `BusinessOwners/${userId}/LastBlockReset`), newBlockEnd);
 
-    // Hide onboarding overlay so popup is visible
-    const onboardingEl = document.getElementById('onboarding-overlay');
-    if (onboardingEl) onboardingEl.style.display = 'none';
-
+    const overlay = document.getElementById('onboarding-overlay');
+    if (overlay) overlay.style.display = 'none';
     const isPaidPlan = ["Monthly", "HalfYearly", "Yearly"].includes(plan);
-    const windowEnd  = now + (30 * 60 * 1000);
-    showBlockedPopup(isPaidPlan ? "plan_expired" : "free_expired", windowEnd, cfoName, plan);
+    showBlockedPopup(isPaidPlan ? "plan_expired" : "free_expired", newBlockEnd, cfoName, plan);
     return false;
 }
 // ============================================================
