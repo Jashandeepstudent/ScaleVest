@@ -3152,9 +3152,9 @@ async function handlePlanPurchase(planType, price) {
     if (planType === "HalfYearly")  expiry = now + 180 * 24 * 60 * 60 * 1000;
     if (planType === "Yearly")      expiry = now + 365 * 24 * 60 * 60 * 1000;
 
-    await dbSet(ref(db, `BusinessOwners/${user.uid}/CFOPlan`), planType);
-    await dbSet(ref(db, `BusinessOwners/${user.uid}/CFOTimeLeft`), expiry);
-    await dbSet(ref(db, `BusinessOwners/${user.uid}/LastBlockReset`), null);
+    await set(ref(db, `BusinessOwners/${user.uid}/CFOPlan`), planType);
+    await set(ref(db, `BusinessOwners/${user.uid}/CFOTimeLeft`), expiry);
+    await set(ref(db, `BusinessOwners/${user.uid}/LastBlockReset`), null);
 
     document.getElementById('upgrade-page-overlay')?.remove();
     document.getElementById('cfo-blocked-overlay')?.remove();
@@ -5147,7 +5147,6 @@ if (user) {
 
 </body>
 </html>
-
 
 
 
