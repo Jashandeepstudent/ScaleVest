@@ -3138,29 +3138,262 @@ function showUpgradePage() {
 // ============================================================
 
 async function handlePlanPurchase(planType, price) {
-    const confirmed = confirm(`Activate ${planType} plan for ₹${price}?\n\n(Connect your payment gateway here)`);
-    if (!confirmed) return;
-
     const user = getAuth().currentUser;
     if (!user) return;
 
-    const { set: dbSet } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
-    const now = Date.now();
+    // ============================================================
+    // PAYMENT CONFIRMATION POPUP
+    // ============================================================
+    document.getElementById('payment-popup-overlay')?.remove();
 
-    let expiry;
-    if (planType === "Monthly")     expiry = now + 30  * 24 * 60 * 60 * 1000;
-    if (planType === "HalfYearly")  expiry = now + 180 * 24 * 60 * 60 * 1000;
-    if (planType === "Yearly")      expiry = now + 365 * 24 * 60 * 60 * 1000;
+    const paymentOverlay = document.createElement('div');
+    paymentOverlay.id = 'payment-popup-overlay';
 
-    await set(ref(db, `BusinessOwners/${user.uid}/CFOPlan`), planType);
-    await set(ref(db, `BusinessOwners/${user.uid}/CFOTimeLeft`), expiry);
-    await set(ref(db, `BusinessOwners/${user.uid}/LastBlockReset`), null);
+    paymentOverlay.innerHTML = `
+    <style>
+        #payment-popup-overlay {
+            position: fixed; inset: 0; z-index: 9999999;
+            background: rgba(4, 7, 20, 0.97);
+            backdrop-filter: blur(24px);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .pay-card {
+            background: linear-gradient(160deg, #0d1235 0%, #130a2a 100%);
+            border: 1px solid rgba(139,92,246,0.35);
+            border-radius: 28px;
+            padding: 44px 36px 36px;
+            max-width: 420px; width: 100%;
+            text-align: center;
+            box-shadow: 0 0 100px rgba(139,92,246,0.18), 0 40px 80px rgba(0,0,0,0.6);
+            position: relative; overflow: hidden;
+        }
+        .pay-card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background: linear-gradient(90deg,#6366f1,#a855f7,#ec4899,#a855f7,#6366f1);
+            background-size: 300% auto;
+            animation: borderFlow 3s linear infinite;
+        }
+        .pay-card::after {
+            content:''; position:absolute; inset:0;
+            background: radial-gradient(circle at 50% 0%, rgba(139,92,246,0.12), transparent 65%);
+            pointer-events:none;
+        }
+        @keyframes borderFlow { to { background-position: 300% center; } }
+        @keyframes payFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+        @keyframes successPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pay-icon { font-size: 56px; animation: payFloat 3s ease-in-out infinite; display:block; margin-bottom:16px; }
+        .pay-plan-tag {
+            display: inline-block; padding: 5px 14px;
+            background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 20px; font-size: 12px; color: #a855f7; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px;
+        }
+        .pay-title { font-size: 26px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+        .pay-sub { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; margin-bottom: 24px; }
+        .pay-amount-box {
+            background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 18px; padding: 20px; margin-bottom: 24px;
+        }
+        .pay-amount { font-size: 52px; font-weight: 900; color: #fff; line-height: 1; }
+        .pay-amount span { font-size: 24px; color: rgba(255,255,255,0.5); font-weight: 400; }
+        .pay-features {
+            display: flex; flex-direction: column; gap: 8px;
+            margin-bottom: 24px; text-align: left;
+        }
+        .pay-feat {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 13px; color: rgba(255,255,255,0.7);
+            padding: 8px 12px; background: rgba(255,255,255,0.03);
+            border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .pay-feat .tick { color: #4ade80; font-size: 14px; flex-shrink: 0; }
+        .pay-btn-razorpay {
+            width: 100%; padding: 18px; border-radius: 14px; border: none;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white; font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+            cursor: pointer; margin-bottom: 10px;
+            box-shadow: 0 8px 30px rgba(99,102,241,0.45);
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .pay-btn-razorpay:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(99,102,241,0.55); }
+        .pay-btn-razorpay:active { transform: translateY(0); }
+        .pay-btn-razorpay.loading {
+            pointer-events: none;
+            background: linear-gradient(90deg, #6366f1 0%, #a855f7 50%, #6366f1 100%);
+            background-size: 200% 100%;
+            animation: shimmerPay 1.5s infinite;
+        }
+        @keyframes shimmerPay {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        .pay-btn-cancel {
+            width: 100%; padding: 14px; border-radius: 14px;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.5); font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .pay-btn-cancel:hover { background: rgba(255,255,255,0.08); color: white; }
+        .pay-secure { font-size: 11px; color: rgba(255,255,255,0.25); margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 5px; }
 
-    document.getElementById('upgrade-page-overlay')?.remove();
-    document.getElementById('cfo-blocked-overlay')?.remove();
+        /* Success State */
+        .pay-success-state {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .pay-success-icon {
+            font-size: 72px;
+            animation: successPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            display: block; margin-bottom: 20px;
+        }
+        .pay-success-title { font-size: 28px; font-weight: 800; color: #4ade80; margin-bottom: 10px; }
+        .pay-success-sub { font-size: 15px; color: rgba(255,255,255,0.6); line-height: 1.6; }
+    </style>
 
-    alert(`✅ ${planType} Plan activated! Welcome to ScaleVest CFO Pro.`);
-    location.reload();
+    <div class="pay-card">
+        <!-- Main Payment State -->
+        <div id="pay-main-state">
+            <span class="pay-icon">💳</span>
+            <div class="pay-plan-tag">${planType} Plan</div>
+            <div class="pay-title">Complete Your Purchase</div>
+            <div class="pay-sub">You're one step away from unlocking your full AI CFO experience</div>
+
+            <div class="pay-amount-box">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.35); margin-bottom: 8px;">Total Amount</div>
+                <div class="pay-amount"><span>₹</span>${price}</div>
+                <div style="font-size: 12px; color: rgba(255,255,255,0.35); margin-top: 6px;">
+                    ${planType === 'Monthly' ? 'Billed monthly' : planType === 'HalfYearly' ? 'Billed every 6 months · Save ₹295' : 'Billed annually · Save ₹489'}
+                </div>
+            </div>
+
+            <div class="pay-features">
+                <div class="pay-feat"><span class="tick">✓</span> Unlimited AI CFO Analysis</div>
+                <div class="pay-feat"><span class="tick">✓</span> Real-Time Revenue Tracking</div>
+                <div class="pay-feat"><span class="tick">✓</span> Shelf Photo Intelligence</div>
+                ${planType !== 'Monthly' ? `<div class="pay-feat"><span class="tick">✓</span> Priority Support</div>` : ''}
+                ${planType === 'Yearly' ? `<div class="pay-feat"><span class="tick">✓</span> Advanced PDF Reports</div>` : ''}
+            </div>
+
+            <button class="pay-btn-razorpay" id="pay-now-btn" onclick="initiateRazorpay('${planType}', ${price})">
+                ⚡ Pay ₹${price} Securely
+            </button>
+            <button class="pay-btn-cancel" onclick="document.getElementById('payment-popup-overlay').remove()">
+                Maybe Later
+            </button>
+            <div class="pay-secure">🔒 Secured by Razorpay · 256-bit SSL Encryption</div>
+        </div>
+
+        <!-- Success State (shown after payment) -->
+        <div class="pay-success-state" id="pay-success-state">
+            <span class="pay-success-icon">🎉</span>
+            <div class="pay-success-title">Payment Successful!</div>
+            <div class="pay-success-sub">
+                Your <strong style="color:#a855f7;">${planType}</strong> plan is now active.<br>
+                Welcome to ScaleVest CFO Pro!
+            </div>
+            <div style="margin-top: 20px; padding: 15px; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 12px; font-size: 13px; color: rgba(255,255,255,0.7);">
+                Redirecting to your dashboard...
+            </div>
+        </div>
+    </div>`;
+
+    document.body.appendChild(paymentOverlay);
+
+    // ============================================================
+    // RAZORPAY INTEGRATION
+    // ============================================================
+    window.initiateRazorpay = async function(planType, price) {
+        const btn = document.getElementById('pay-now-btn');
+        btn.classList.add('loading');
+        btn.innerHTML = 'Opening Payment Gateway...';
+
+        // Load Razorpay script dynamically
+        if (!window.Razorpay) {
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        const options = {
+            // ⚠️ REPLACE WITH YOUR LIVE KEY WHEN READY
+            key: 'rzp_test_YourTestKeyHere',
+            amount: price * 100, // Razorpay uses paise
+            currency: 'INR',
+            name: 'ScaleVest',
+            description: `CFO ${planType} Plan`,
+            image: '', // Add your logo URL here if desired
+            prefill: {
+                email: user.email || '',
+                contact: ''
+            },
+            theme: {
+                color: '#6366f1'
+            },
+            modal: {
+                ondismiss: function() {
+                    btn.classList.remove('loading');
+                    btn.innerHTML = `⚡ Pay ₹${price} Securely`;
+                }
+            },
+            handler: async function(response) {
+                // Payment successful — activate plan
+                await activatePlan(planType, price, response.razorpay_payment_id);
+            }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+
+        btn.classList.remove('loading');
+        btn.innerHTML = `⚡ Pay ₹${price} Securely`;
+    };
+
+    // ============================================================
+    // ACTIVATE PLAN AFTER SUCCESSFUL PAYMENT
+    // ============================================================
+    async function activatePlan(planType, price, paymentId) {
+        try {
+            const now = Date.now();
+            let expiry;
+            if (planType === 'Monthly')    expiry = now + 30  * 24 * 60 * 60 * 1000;
+            if (planType === 'HalfYearly') expiry = now + 180 * 24 * 60 * 60 * 1000;
+            if (planType === 'Yearly')     expiry = now + 365 * 24 * 60 * 60 * 1000;
+
+            await set(ref(db, `BusinessOwners/${user.uid}/CFOPlan`), planType);
+            await set(ref(db, `BusinessOwners/${user.uid}/CFOTimeLeft`), expiry);
+            await set(ref(db, `BusinessOwners/${user.uid}/LastBlockReset`), null);
+            // Store payment ID for records
+            await set(ref(db, `BusinessOwners/${user.uid}/LastPaymentId`), paymentId || 'manual');
+
+            // Show success state
+            document.getElementById('pay-main-state').style.display = 'none';
+            const successEl = document.getElementById('pay-success-state');
+            successEl.style.display = 'block';
+
+            // Remove overlays and reload after 2.5s
+            setTimeout(() => {
+                document.getElementById('payment-popup-overlay')?.remove();
+                document.getElementById('upgrade-page-overlay')?.remove();
+                document.getElementById('cfo-blocked-overlay')?.remove();
+                location.reload();
+            }, 2500);
+
+        } catch (err) {
+            console.error('Plan activation error:', err);
+            alert('Payment received but activation failed. Please contact support with Payment ID: ' + paymentId);
+        }
+    }
 }
 window.checkCFOAccess = checkCFOAccess;
 window.showBlockedPopup = showBlockedPopup;
