@@ -2772,7 +2772,7 @@ if (!plan || timeLeft === null) return true;
     // Fully blocked — show popup and set/update LastBlockReset for next countdown
     // Only set LastBlockReset if it hasn't been set yet or their 30-min window is already over
     const nextReset = now + (30 * 60 * 1000);
-    await dbSet(ref(db, `BusinessOwners/${userId}/LastBlockReset`), nextReset);
+    await set(ref(db, `BusinessOwners/${userId}/LastBlockReset`), nextReset);
 
     const isPaidPlan = ["Monthly", "HalfYearly", "Yearly"].includes(plan);
     showBlockedPopup(isPaidPlan ? "plan_expired" : "free_expired", nextReset, cfoName, plan);
