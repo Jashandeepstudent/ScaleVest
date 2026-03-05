@@ -3330,13 +3330,13 @@ async function handlePlanPurchase(planType, price) {
         }
 
         const options = {
-            // ⚠️ REPLACE WITH YOUR LIVE KEY WHEN READY
-            key: 'rzp_test_YourTestKeyHere',
-            amount: price * 100, // Razorpay uses paise
+   
+            key: 'rzp_live_SKcFRkHDvqtIbk',
+            amount: price * 100, 
             currency: 'INR',
             name: 'ScaleVest',
             description: `CFO ${planType} Plan`,
-            image: '', // Add your logo URL here if desired
+            image: 'ScaleVestLogo.png',
             prefill: {
                 email: user.email || '',
                 contact: ''
