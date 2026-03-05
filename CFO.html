@@ -3401,8 +3401,13 @@ window.showUpgradePage = showUpgradePage;
 window.handlePlanPurchase = handlePlanPurchase;
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-         const hasAccess = await checkCFOAccess(user.uid);
-        if (!hasAccess) return;
+           const hasAccess = await checkCFOAccess(user.uid);
+        if (!hasAccess) {
+            
+            const overlay = document.getElementById('onboarding-overlay');
+            if (overlay) overlay.style.display = 'none';
+            return;
+        }
         runOnboarding(user.uid);
         fetchAnalytics(user.uid); 
         fetchRevenuePulse(user.uid);
