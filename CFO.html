@@ -2753,7 +2753,7 @@ const timeLeft = (timeSnap.exists() && timeSnap.val() !== null) ? Number(timeSna
     const now = Date.now();
 
     // No plan yet = onboarding not done, allow through
-if (!plan || timeLeft === null || timeLeft === undefined) return true;
+if (!plan || timeLeft === null) return true;
 
     const isExpired = now > timeLeft;
 
