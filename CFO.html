@@ -2740,45 +2740,43 @@ window.businessKing = new ScaleVestBusinessKing();
 // ============================================================
 
 async function checkCFOAccess(userId) {
-    const planSnap = await get(ref(db, `BusinessOwners/${userId}/CFOPlan`));
-    const timeSnap = await get(ref(db, `BusinessOwners/${userId}/CFOTimeLeft`));
-    const cfoSnap  = await get(ref(db, `BusinessOwners/${userId}/CFO`));
+    const planSnap  = await get(ref(db, `BusinessOwners/${userId}/CFOPlan`));
+    const timeSnap  = await get(ref(db, `BusinessOwners/${userId}/CFOTimeLeft`));
+    const cfoSnap   = await get(ref(db, `BusinessOwners/${userId}/CFO`));
     const resetSnap = await get(ref(db, `BusinessOwners/${userId}/LastBlockReset`));
 
-    const plan       = planSnap.exists()  ? planSnap.val()  : null;
-const timeLeft = (timeSnap.exists() && timeSnap.val() !== null) ? Number(timeSnap.val()) : null;
-    const cfoName    = cfoSnap.exists()   ? (cfoSnap.val().name || "Your CFO") : "Your CFO";
-    const lastReset  = resetSnap.exists() ? Number(resetSnap.val()) : null;
+    const plan     = planSnap.exists() ? planSnap.val() : null;
+    const timeLeft = (timeSnap.exists() && timeSnap.val() !== null) ? Number(timeSnap.val()) : null;
+    const cfoName  = cfoSnap.exists() ? (cfoSnap.val().name || "Your CFO") : "Your CFO";
+    const lastReset = resetSnap.exists() ? Number(resetSnap.val()) : null;
 
     const now = Date.now();
 
     // No plan yet = onboarding not done, allow through
-if (!plan || timeLeft === null) return true;
+    if (!plan || timeLeft === null) return true;
 
-    const isExpired = now > timeLeft;
-
-    if (!isExpired) return true; // Still within trial or paid plan period
+    // Still within trial or paid plan period
+    if (now <= timeLeft) return true;
 
     // ---- EXPIRED ----
-    // Check if a 30-min free window is currently active (LastBlockReset set + within 30 min)
-    if (lastReset && lastReset > now - (30 * 60 * 1000)) {
-        const windowEnd = lastReset + (30 * 60 * 1000);
-        if (now < windowEnd) {
-            // Still in the 30-min free window — allow
-            return true;
-        }
+    // Check if within active 30-min free window
+    // lastReset stores the MOMENT the block was triggered (past timestamp)
+    if (lastReset && (now - lastReset) < (30 * 60 * 1000)) {
+        return true; // still within the 30-min window
     }
 
-    // Fully blocked — show popup and set/update LastBlockReset for next countdown
-    // Only set LastBlockReset if it hasn't been set yet or their 30-min window is already over
-    const nextReset = now + (30 * 60 * 1000);
-    await set(ref(db, `BusinessOwners/${userId}/LastBlockReset`), nextReset);
+    // Fully blocked — write current time as the new reset point
+    await set(ref(db, `BusinessOwners/${userId}/LastBlockReset`), now);
+
+    // Hide onboarding overlay so popup is visible
+    const onboardingEl = document.getElementById('onboarding-overlay');
+    if (onboardingEl) onboardingEl.style.display = 'none';
 
     const isPaidPlan = ["Monthly", "HalfYearly", "Yearly"].includes(plan);
-    showBlockedPopup(isPaidPlan ? "plan_expired" : "free_expired", nextReset, cfoName, plan);
+    const windowEnd  = now + (30 * 60 * 1000);
+    showBlockedPopup(isPaidPlan ? "plan_expired" : "free_expired", windowEnd, cfoName, plan);
     return false;
 }
-
 // ============================================================
 // BEAUTIFUL BLOCKED POPUP
 // ============================================================
