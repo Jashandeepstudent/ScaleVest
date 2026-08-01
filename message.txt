@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acazen — Your Personal AI Academic Tutor</title>
+<meta name="description" content="Acazen is your personal AI academic tutor for Math, Science, History, and Languages. Every answer shows its work — and checks that it actually made sense.">
+<link rel="canonical" href="https://acazen.com/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,500&family=Inter:wght@400;500;600;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2F4F8;
+    --paper-2:#FFFFFF;
+    --ink:#14161F;
+    --ink-soft:#585C70;
+    --ink-faint:#8B8FA3;
+    --indigo:#2E3AC0;
+    --indigo-deep:#1F2790;
+    --indigo-wash:#E9EAFB;
+    --highlighter:#FFD54A;
+    --pen:#C6403F;
+    --line:#DFE2EA;
+    --serif:'Newsreader', Georgia, serif;
+    --sans:'Inter', system-ui, sans-serif;
+    --hand:'Caveat', cursive;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  a{color:inherit;}
+  img{max-width:100%; display:block;}
+  ::selection{background:var(--highlighter); color:var(--ink);}
+  :focus-visible{outline:2px solid var(--indigo); outline-offset:3px;}
+
+  .wrap{max-width:1120px; margin:0 auto; padding:0 28px;}
+
+  .mark-highlight{
+    background-image: linear-gradient(var(--highlighter), var(--highlighter));
+    background-repeat:no-repeat; background-size:100% 42%; background-position:0 86%;
+    padding:0 3px;
+  }
+
+  /* handwritten margin note — the signature device, used sparingly */
+  .note{
+    font-family:var(--hand); color:var(--pen); font-weight:600;
+    font-size:20px; line-height:1.15; display:inline-block; white-space:nowrap;
+  }
+  .note svg{ vertical-align:-6px; margin-right:2px; }
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:30;
+    background:rgba(242,244,248,0.88); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  header.nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:72px; }
+  .brand{ display:flex; align-items:center; gap:9px; font-family:var(--serif); font-size:21px; font-weight:600; }
+  .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--indigo); display:inline-block; }
+  .nav-links{ display:flex; align-items:center; gap:32px; }
+  .nav-links a{ font-size:14px; color:var(--ink-soft); font-weight:500; }
+  .nav-links a:hover{ color:var(--ink); }
+  .nav-cta{
+    font-size:14px; font-weight:600; background:var(--indigo); color:#fff;
+    padding:10px 18px; border-radius:7px; transition:background .15s ease;
+  }
+  .nav-cta:hover{ background:var(--indigo-deep); }
+  .menu-btn{ display:none; }
+
+  /* ---------- HERO ---------- */
+  .hero{ padding:76px 0 64px; }
+  .hero-grid{ display:grid; grid-template-columns:1.15fr 0.85fr; gap:56px; align-items:center; }
+  .eyebrow{
+    font-size:12.5px; font-weight:700; letter-spacing:1.6px; text-transform:uppercase;
+    color:var(--indigo); margin-bottom:18px; display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:""; width:20px; height:1.5px; background:var(--indigo); }
+  h1{
+    font-family:var(--serif); font-weight:500; font-size:clamp(36px,4.6vw,58px);
+    line-height:1.1; letter-spacing:-0.01em; margin-bottom:22px;
+  }
+  h1 em{ font-style:italic; color:var(--indigo); }
+  .hero-note-row{ margin-bottom:8px; }
+  .lede{ font-size:17px; color:var(--ink-soft); max-width:480px; margin-bottom:30px; line-height:1.7; }
+  .hero-actions{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:38px; }
+  .btn-primary{
+    font-size:15px; font-weight:600; background:var(--indigo); color:#fff;
+    padding:14px 26px; border-radius:8px; display:inline-flex; align-items:center; gap:8px;
+    transition:background .15s ease, transform .12s ease;
+  }
+  .btn-primary:hover{ background:var(--indigo-deep); transform:translateY(-1px); }
+  .btn-text{ font-size:15px; font-weight:600; color:var(--ink); border-bottom:2px solid var(--ink); padding-bottom:2px; }
+  .btn-text:hover{ color:var(--indigo); border-color:var(--indigo); }
+
+  .fact-row{ display:flex; gap:28px; flex-wrap:wrap; }
+  .fact{ display:flex; flex-direction:column; gap:3px; }
+  .fact .v{ font-family:var(--serif); font-size:22px; font-weight:600; }
+  .fact .l{ font-size:12px; color:var(--ink-faint); letter-spacing:.3px; }
+
+  /* hero visual: a "graded worksheet" card */
+  .worksheet{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:14px;
+    padding:26px 26px 22px; box-shadow:0 24px 48px -24px rgba(20,22,31,0.18);
+    position:relative;
+  }
+  .worksheet .ws-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+  .worksheet .ws-tag{ font-size:11px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--ink-faint); }
+  .worksheet .ws-q{ font-size:14px; color:var(--ink-soft); font-weight:500; margin-bottom:14px; }
+  .worksheet .ws-step{ display:flex; gap:12px; padding:10px 0; border-top:1px solid var(--line); }
+  .worksheet .ws-step:first-of-type{ border-top:none; }
+  .worksheet .ws-n{ font-family:var(--serif); font-size:14px; color:var(--indigo); flex:none; width:20px; }
+  .worksheet .ws-t{ font-size:13.5px; line-height:1.6; }
+  .worksheet .ws-why{ font-size:12px; color:var(--ink-faint); margin-top:3px; font-style:italic; }
+  .worksheet .check{
+    position:absolute; top:-14px; right:-10px; width:44px; height:44px;
+    transform:rotate(-8deg);
+  }
+
+  /* ---------- LOGO / TRUST STRIP ---------- */
+  .trust-strip{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:22px 0; }
+  .trust-strip .wrap{
+    display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
+    font-size:12.5px; color:var(--ink-faint); letter-spacing:.3px; text-align:center;
+  }
+  .trust-strip b{ color:var(--ink-soft); font-weight:600; }
+  .trust-strip .sep{ width:4px; height:4px; border-radius:50%; background:var(--line); }
+
+  /* ---------- SECTION SHELL ---------- */
+  section{ padding:80px 0; }
+  section.alt{ background:var(--paper-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .section-head{ max-width:600px; margin-bottom:48px; }
+  .section-head .eyebrow{ margin-bottom:14px; }
+  .section-head h2{ font-family:var(--serif); font-weight:500; font-size:clamp(28px,3.4vw,38px); line-height:1.18; }
+  .section-head p{ color:var(--ink-soft); font-size:15.5px; margin-top:14px; line-height:1.7; }
+
+  /* feature grid */
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .feat{ background:var(--paper-2); padding:32px 28px; }
+  .feat .icon{ width:38px; height:38px; color:var(--indigo); margin-bottom:18px; }
+  .feat h3{ font-family:var(--serif); font-size:19px; font-weight:600; margin-bottom:10px; }
+  .feat p{ font-size:14px; color:var(--ink-soft); line-height:1.65; }
+
+  /* two-col feature rows (compete / study-together) */
+  .rows{ display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .row-feat{ background:var(--paper-2); display:grid; grid-template-columns:56px 1fr; gap:22px; padding:28px 28px; align-items:start; }
+  .row-feat .icon{ width:26px; height:26px; color:var(--indigo); }
+  .row-feat h3{ font-family:var(--serif); font-size:18px; font-weight:600; margin-bottom:8px; }
+  .row-feat p{ font-size:14px; color:var(--ink-soft); line-height:1.65; max-width:560px; }
+  .row-feat .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .chip{
+    font-size:12px; font-weight:600; color:var(--indigo-deep); background:var(--indigo-wash);
+    padding:5px 11px; border-radius:99px;
+  }
+
+  /* parent console — trust section */
+  .parent-panel{
+    display:grid; grid-template-columns:1fr 1fr; gap:52px; align-items:center;
+    background:var(--ink); color:#fff; border-radius:18px; padding:52px;
+  }
+  .parent-panel .eyebrow{ color:var(--highlighter); }
+  .parent-panel .eyebrow::before{ background:var(--highlighter); }
+  .parent-panel h2{ font-family:var(--serif); font-weight:500; font-size:clamp(26px,3.2vw,34px); margin-bottom:16px; line-height:1.2; }
+  .parent-panel p{ color:#C7C9D6; font-size:15px; line-height:1.75; margin-bottom:20px; max-width:460px; }
+  .parent-panel .priv{
+    display:flex; align-items:center; gap:10px; font-size:13px; color:#C7C9D6;
+    border-top:1px solid rgba(255,255,255,0.14); padding-top:18px; margin-top:22px;
+  }
+  .parent-panel .priv svg{ color:var(--highlighter); flex:none; }
+  .parent-list{ display:flex; flex-direction:column; gap:0; border-top:1px solid rgba(255,255,255,0.14); }
+  .parent-item{ display:flex; justify-content:space-between; align-items:center; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.14); font-size:14px; }
+  .parent-item .label{ color:#EDEEF5; font-weight:500; }
+  .parent-item .state{ font-size:11.5px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#8CE0A6; }
+
+  /* how it works */
+  .steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:36px; counter-reset:stepnum; }
+  .step{ position:relative; padding-top:16px; border-top:2px solid var(--ink); }
+  .step .sn{
+    font-family:var(--serif); font-size:34px; color:var(--indigo); margin-bottom:14px; display:block;
+  }
+  .step h3{ font-size:17px; font-weight:600; margin-bottom:8px; }
+  .step p{ font-size:14px; color:var(--ink-soft); line-height:1.65; }
+
+  /* final CTA */
+  .final{ text-align:center; padding:96px 0 88px; }
+  .final h2{
+    font-family:var(--serif); font-weight:500; font-size:clamp(32px,5vw,50px);
+    line-height:1.1; max-width:680px; margin:0 auto 20px;
+  }
+  .final p{ color:var(--ink-soft); font-size:16px; margin-bottom:32px; }
+  .final .hero-actions{ justify-content:center; }
+
+  footer.foot{ border-top:1px solid var(--line); padding:36px 0; }
+  footer.foot .wrap{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  footer.foot .brand{ font-size:16px; }
+  footer.foot nav{ display:flex; gap:24px; }
+  footer.foot nav a{ font-size:13px; color:var(--ink-faint); }
+  footer.foot nav a:hover{ color:var(--ink); }
+  footer.foot .copy{ font-size:12.5px; color:var(--ink-faint); }
+
+  @media (max-width: 900px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .worksheet{ max-width:440px; }
+    .grid-3{ grid-template-columns:1fr; }
+    .row-feat{ grid-template-columns:1fr; }
+    .parent-panel{ grid-template-columns:1fr; padding:36px 26px; }
+    .steps{ grid-template-columns:1fr; }
+    .nav-links{ display:none; }
+  }
+  @media (max-width: 560px){
+    .wrap{ padding:0 20px; }
+    section{ padding:60px 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>Acazen</div>
+    <nav class="nav-links">
+      <a href="#features">What it teaches</a>
+      <a href="#parents">For parents</a>
+      <a href="#how">How it works</a>
+    </nav>
+    <a class="nav-cta" href="#start">Start learning free</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">AI Academic Tutor · Math · Science · History · Languages</div>
+      <h1>Every answer comes with a <em class="mark-highlight">why</em>.</h1>
+      <div class="hero-note-row">
+        <span class="note">
+          <svg width="26" height="18" viewBox="0 0 26 18" fill="none"><path d="M2 9c4-2 8-2 12 0s8 2 11-1" stroke="#C6403F" stroke-width="2" stroke-linecap="round"/></svg>
+          finally, an explanation that sticks
+        </span>
+      </div>
+      <p class="lede">Acazen explains a concept the way a good tutor would — step by step, with the reasoning shown, until it actually makes sense. Then it checks that it landed, and explains it again if it didn't.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#start" id="start">Start learning free
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a class="btn-text" href="#features">See what it teaches</a>
+      </div>
+      <div class="fact-row">
+        <div class="fact"><span class="v">24/7</span><span class="l">Always available</span></div>
+        <div class="fact"><span class="v">3</span><span class="l">Exam boards supported</span></div>
+        <div class="fact"><span class="v">10+</span><span class="l">Languages spoken</span></div>
+      </div>
+    </div>
+
+    <div class="worksheet">
+      <svg class="check" viewBox="0 0 44 44" fill="none"><path d="M9 23l8 8 18-20" stroke="#C6403F" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="ws-top"><span class="ws-tag">Worked example</span><span class="ws-tag">Algebra</span></div>
+      <div class="ws-q">Solve for x: 3x + 7 = 22</div>
+      <div class="ws-step">
+        <span class="ws-n">1</span>
+        <div><div class="ws-t">Subtract 7 from both sides → 3x = 15</div><div class="ws-why">Isolates the term with x.</div></div>
+      </div>
+      <div class="ws-step">
+        <span class="ws-n">2</span>
+        <div><div class="ws-t">Divide both sides by 3 → x = 5</div><div class="ws-why">Undoes the multiplication.</div></div>
+      </div>
+      <div class="ws-step">
+        <span class="ws-n">3</span>
+        <div><div class="ws-t">Check: 3(5) + 7 = 22 ✓</div><div class="ws-why">Confirms the answer holds.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="trust-strip">
+  <div class="wrap">
+    <span><b>Step-by-step working</b> on every problem</span>
+    <span class="sep"></span>
+    <span><b>Summary cards</b> after every explanation</span>
+    <span class="sep"></span>
+    <span><b>Parent Console</b> for progress, not chat logs</span>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">What it teaches</div>
+      <h2>Built to explain, not just answer.</h2>
+      <p>A right answer without the reasoning doesn't teach anything. Acazen is built around showing the work — in whatever form the subject actually needs.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h10M7 13h6M7 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Maths Engine</h3>
+        <p>Full step-by-step working with a short "why" note on every step, tied to real-world examples so the formula actually makes sense.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <h3>3D visuals</h3>
+        <p>Mind maps, flowcharts, and a 3D model viewer built in — see the atom, see the cell, see what a textbook diagram can't show.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
+        <h3>Summary cards</h3>
+        <p>Every reply ends with the key points and what to remember. Then a quick check on whether it landed — if not, Acazen re-explains it, automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Practice with purpose</div>
+      <h2>Studying alone gets old. This doesn't have to.</h2>
+      <p>Once the basics click, Acazen opens up ways to practice that feel less like a worksheet and more like a challenge worth showing up for.</p>
+    </div>
+
+    <div class="rows">
+      <div class="row-feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 6H4v1a4 4 0 003 3.87M17 6h3v1a4 4 0 01-3 3.87" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <div>
+          <h3>Academic duels</h3>
+          <p>Challenge a friend or get matched with a random student worldwide. Rounds go beyond multiple choice — reverse-engineer a result, trace cause and effect, spot the gap in a chain of reasoning.</p>
+          <div class="chips"><span class="chip">Reverse engineering</span><span class="chip">Cause &amp; effect</span><span class="chip">Blind spot rounds</span><span class="chip">Leaderboard</span></div>
+        </div>
+      </div>
+      <div class="row-feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="9" r="2.8" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 20c.6-3.6 3-5.6 5.5-5.6s4.9 2 5.5 5.6M14.5 20c.4-2.6 2-4.2 4-4.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <div>
+          <h3>Your personal rival</h3>
+          <p>Acazen finds a student working through the exact same topics as you — same syllabus, same chapters. GK tests, debates, and topic-mastery sprints, with a leaderboard that keeps score.</p>
+          <div class="chips"><span class="chip">GK tests</span><span class="chip">Debates</span><span class="chip">Topic mastery sprints</span><span class="chip">Concept clashes</span></div>
+        </div>
+      </div>
+      <div class="row-feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/></svg>
+        <div>
+          <h3>Challenge the tutor</h3>
+          <p>Push back on an explanation with a real-world edge case or a devil's-advocate question. If you find a genuine gap in the reasoning, Acazen says so — and fixes it.</p>
+          <div class="chips"><span class="chip">Real-world problems</span><span class="chip">Analogy checks</span><span class="chip">Edge cases</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="parents">
+  <div class="wrap">
+    <div class="parent-panel">
+      <div>
+        <div class="eyebrow">For parents</div>
+        <h2>See the progress. Not the conversation.</h2>
+        <p>Parent Console gives you a clear view of grades, weak topics, and recent activity — and a direct line to ask Acazen how your student is actually doing.</p>
+        <div class="priv">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4.4-3 8.4-7 9-4-.6-7-4.6-7-9V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          Your student's actual chat history is never shown or shared. Ever.
+        </div>
+      </div>
+      <div class="parent-list">
+        <div class="parent-item"><span class="label">Grades &amp; weak topics</span><span class="state">Visible</span></div>
+        <div class="parent-item"><span class="label">Recently studied topics</span><span class="state">Visible</span></div>
+        <div class="parent-item"><span class="label">Ask Acazen about your student</span><span class="state">Visible</span></div>
+        <div class="parent-item"><span class="label">Console access</span><span class="state">Password protected</span></div>
+        <div class="parent-item"><span class="label">Full chat history</span><span class="state" style="color:#F2A5A5;">Private</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Study your way</div>
+      <h2>Together when you want it. Alone when you don't.</h2>
+    </div>
+    <div class="grid-3">
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 20V6a2 2 0 012-2h8l6 6v10a2 2 0 01-2 2H6a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 4v6h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <h3>Shared study sessions</h3>
+        <p>Add a friend by Student ID. You both get the same questions and race to answer — no group chat, no distractions, just studying.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3c2.5 2.5 3.8 6 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-6-3.8-9s1.3-6.5 3.8-9z" stroke="currentColor" stroke-width="1.6"/></svg>
+        <h3>10+ languages</h3>
+        <p>Ask in whichever language you think in. Acazen explains back in it, reasoning included.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M5 4h9l5 5v11a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Pattern study</h3>
+        <p>Upload one past paper and Acazen learns its style, difficulty, and structure — then generates unlimited fresh papers in the same format.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">How it works</div>
+      <h2>From question to understanding in three steps.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="sn">01</span><h3>Ask anything</h3><p>Type a question in any subject, in any language you're comfortable with.</p></div>
+      <div class="step"><span class="sn">02</span><h3>Get the reasoning</h3><p>A full explanation with the steps shown, closing with a summary card.</p></div>
+      <div class="step"><span class="sn">03</span><h3>Confirm it landed</h3><p>A quick understanding check — if it didn't click, Acazen tries again, differently.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <div class="eyebrow" style="justify-content:center;">Ready when you are</div>
+    <h2>Your next question deserves a real answer<span class="mark-highlight"> — not just one.</span></h2>
+    <p>Free to start. No credit card, no catch.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#start">Start learning free
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+    </div>
+    <div style="margin-top:26px;">
+      <span class="note">
+        <svg width="26" height="18" viewBox="0 0 26 18" fill="none"><path d="M2 9c4-2 8-2 12 0s8 2 11-1" stroke="#C6403F" stroke-width="2" stroke-linecap="round"/></svg>
+        worth a try, honestly
+      </span>
+    </div>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="brand"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--indigo);display:inline-block;"></span> Acazen</div>
+    <nav>
+      <a href="#features">What it teaches</a>
+      <a href="#parents">For parents</a>
+      <a href="#how">How it works</a>
+    </nav>
+    <span class="copy">© Acazen — Your Personal AI Academic Tutor</span>
+  </div>
+</footer>
+
+</body>
+</html>
