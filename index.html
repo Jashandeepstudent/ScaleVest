@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -121,6 +122,81 @@
       animation:none !important; opacity:1 !important; transform:none !important;
     }
   }
+
+  /* ---------- HOVER INTERACTIONS ---------- */
+  .hero-feature-list li{ transition:transform .18s ease, color .18s ease; border-radius:6px; }
+  .hero-feature-list li:hover{ transform:translateX(5px); color:var(--ink); }
+  .hero-feature-list li svg{ transition:transform .25s cubic-bezier(.34,1.56,.64,1), color .18s ease; }
+  .hero-feature-list li:hover svg{ transform:scale(1.25) rotate(-6deg); color:var(--pen); }
+
+  .fact{ transition:transform .2s ease; cursor:default; }
+  .fact:hover{ transform:translateY(-3px); }
+  .fact:hover .v{ color:var(--indigo); }
+  .fact .v{ transition:color .2s ease; }
+
+  .worksheet{ transition:transform .3s ease, box-shadow .3s ease; }
+  .worksheet:hover{ transform:translateY(-4px) rotate(0.3deg); box-shadow:0 32px 60px -24px rgba(20,22,31,0.26); }
+  .worksheet .ws-step{ transition:background .2s ease, padding-left .2s ease; border-radius:8px; }
+  .worksheet .ws-step:hover{ background:var(--indigo-wash); padding-left:8px; }
+  .worksheet .check{ transition:transform .3s ease; }
+  .worksheet:hover .check{ transform:rotate(-8deg) scale(1.12); }
+
+  .feat{ transition:transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease, background .25s ease; position:relative; z-index:1; }
+  .feat:hover{ transform:translateY(-6px); box-shadow:0 20px 40px -20px rgba(20,22,31,0.22); background:var(--paper-2); z-index:2; }
+  .feat .icon{ transition:transform .3s cubic-bezier(.34,1.56,.64,1), color .2s ease; }
+  .feat:hover .icon{ transform:scale(1.15) rotate(-4deg); color:var(--indigo-deep); }
+  .feat h3{ transition:color .2s ease; }
+  .feat:hover h3{ color:var(--indigo); }
+
+  .row-feat{ transition:background .25s ease, padding-left .25s ease; position:relative; }
+  .row-feat:hover{ background:var(--indigo-wash); padding-left:34px; }
+  .row-feat .icon{ transition:transform .3s cubic-bezier(.34,1.56,.64,1), color .2s ease; }
+  .row-feat:hover .icon{ transform:scale(1.18) rotate(6deg); color:var(--indigo-deep); }
+  .row-feat h3{ transition:color .2s ease; }
+  .row-feat:hover h3{ color:var(--indigo); }
+
+  .chip{ transition:transform .18s cubic-bezier(.34,1.56,.64,1), background .18s ease, color .18s ease; cursor:default; }
+  .chip:hover{ transform:translateY(-2px) scale(1.05); background:var(--indigo); color:#fff; }
+
+  .parent-item{ transition:background .2s ease, padding-left .2s ease; border-radius:6px; }
+  .parent-item:hover{ background:rgba(255,255,255,0.06); padding-left:8px; }
+  .parent-item .state{ transition:transform .2s ease; }
+  .parent-item:hover .state{ transform:scale(1.08); }
+
+  .step{ transition:transform .25s ease, border-color .25s ease; cursor:default; }
+  .step:hover{ transform:translateY(-4px); border-color:var(--indigo); }
+  .step .sn{ transition:transform .3s cubic-bezier(.34,1.56,.64,1), color .2s ease; display:inline-block; }
+  .step:hover .sn{ transform:scale(1.1) translateX(2px); color:var(--indigo-deep); }
+
+  .btn-primary{ transition:background .15s ease, transform .15s ease, box-shadow .25s ease; }
+  .btn-primary:hover{ box-shadow:0 12px 24px -8px rgba(46,58,192,0.45); }
+  .btn-primary svg{ transition:transform .2s ease; }
+  .btn-primary:hover svg{ transform:translateX(3px); }
+
+  .btn-text{ position:relative; }
+  .btn-text::after{
+    content:""; position:absolute; left:0; bottom:-2px; width:0; height:2px;
+    background:var(--indigo); transition:width .25s ease;
+  }
+  .btn-text:hover::after{ width:100%; }
+
+  .nav-links a{ position:relative; }
+  .nav-links a::after{
+    content:""; position:absolute; left:0; bottom:-4px; width:0; height:1.5px;
+    background:var(--indigo); transition:width .2s ease;
+  }
+  .nav-links a:hover::after{ width:100%; }
+
+  .nav-cta{ transition:background .15s ease, transform .15s ease, box-shadow .2s ease; }
+  .nav-cta:hover{ box-shadow:0 8px 18px -6px rgba(46,58,192,0.4); }
+
+  .brand .dot{ transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
+  .brand:hover .dot{ transform:scale(1.4); }
+
+  footer.foot nav a{ transition:color .15s ease; }
+
+  .mark-highlight{ transition:background-size .25s ease; }
+  h1:hover .mark-highlight, .final h2:hover .mark-highlight{ background-size:100% 100%; }
 
   /* ---------- NAV ---------- */
   header.nav{
@@ -492,6 +568,126 @@
   </div>
 </section>
 
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Beyond the answer</div>
+      <h2>Every tool a serious student actually needs.</h2>
+      <p>Acazen isn't just a Q&amp;A box. It's a full academic toolkit — built to organize what you learn, test what you know, and prep you for exam day itself.</p>
+    </div>
+
+    <div class="grid-3">
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M5 4h9l5 5v11a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 11h8M8 15h5M14 4v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Notes Refinery</h3>
+        <p>Drop in messy handwritten or typed notes and Acazen cleans, restructures, and rewrites them into clear, exam-ready notes — organized by topic, not by however you originally scribbled it.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 9h8M8 13h8M8 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>In-app tests</h3>
+        <p>Generate a timed test on any topic in seconds. Instant grading, marked-up mistakes, and a breakdown of exactly which concept needs another look.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M12 3a9 9 0 100 18 9 9 0 000-18z" stroke="currentColor" stroke-width="1.6"/><path d="M9 10a1.2 1.2 0 100-2.4A1.2 1.2 0 009 10zM15 10a1.2 1.2 0 100-2.4 1.2 1.2 0 000 2.4zM8 14.5c1 1.3 2.3 2 4 2s3-.7 4-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Vivas</h3>
+        <p>Practice oral exams with a real back-and-forth. Acazen asks follow-up questions the way an examiner would, and pushes back if your reasoning has a gap.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Exam Intelligence</h3>
+        <p>Acazen tracks what you've studied against what your exam board actually tests, flags weak spots before they cost you marks, and predicts likely focus areas going into exam day.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 6H4v1a4 4 0 003 3.87M17 6h3v1a4 4 0 01-3 3.87" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Colleague adds</h3>
+        <p>Add classmates by Student ID and build your own study circle. See who's online, who's ahead, and who's stuck on the same chapter you are.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><circle cx="7" cy="8" r="2.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="8" r="2.6" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 19c.5-3 2.4-4.7 4.5-4.7s4 1.7 4.5 4.7M12.5 19c.5-3 2.4-4.7 4.5-4.7s4 1.7 4.5 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>Group study &amp; group tests</h3>
+        <p>Pull your whole circle into one session — same material, same timer, shared leaderboard. Sit a group test together and see results side by side the moment it ends.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Speak your language</div>
+      <h2>Learn in the language you actually think in.</h2>
+      <p>Ask a question, get the full reasoning back — in any of these. Switch mid-conversation whenever you want.</p>
+    </div>
+    <div class="chips" style="gap:10px;">
+      <span class="chip">Hindi</span>
+      <span class="chip">Punjabi</span>
+      <span class="chip">English</span>
+      <span class="chip">Spanish</span>
+      <span class="chip">French</span>
+      <span class="chip">Mandarin</span>
+      <span class="chip">Urdu</span>
+      <span class="chip">Marathi</span>
+      <span class="chip">Dogri</span>
+      <span class="chip">Hinglish</span>
+      <span class="chip">Malayalam</span>
+      <span class="chip">Konkani</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Built for Indian boards</div>
+      <h2>Deep support for CBSE, NCERT &amp; JKBOSE.</h2>
+      <p>Not a generic tutor stretched to fit — Acazen is trained on the actual syllabus, textbook language, and marking style of these boards specifically.</p>
+    </div>
+    <div class="grid-3">
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 6l8-3 8 3v3l-8 3-8-3V6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 10v6c0 1.5 2.7 3 6 3s6-1.5 6-3v-6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <h3>CBSE</h3>
+        <p>Chapter-matched explanations, mark-scheme-aware answers, and practice questions styled exactly like your CBSE exams.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M7 9h10M7 13h10M7 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h3>NCERT</h3>
+        <p>Line-by-line clarity on NCERT textbook content, with the reasoning teachers expect and the terminology exam papers use.</p>
+      </div>
+      <div class="feat">
+        <svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 7.5l8 4.5 8-4.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <h3>JKBOSE</h3>
+        <p>Full syllabus coverage for JKBOSE students, with regional language support built right in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Show your work</div>
+      <h2>The Social Study Card.</h2>
+      <p>A shareable snapshot of your progress — streaks, mastered topics, and time studied. Post it, compare it with your circle, or just keep it as a record of how far you've come.</p>
+    </div>
+    <div class="worksheet" style="max-width:420px;">
+      <div class="ws-top"><span class="ws-tag">Social Study Card</span><span class="ws-tag">This week</span></div>
+      <div class="ws-q">Priya S. · Class 10 · CBSE</div>
+      <div class="ws-step">
+        <span class="ws-n">🔥</span>
+        <div><div class="ws-t">12-day study streak</div><div class="ws-why">Longest streak this term.</div></div>
+      </div>
+      <div class="ws-step">
+        <span class="ws-n">✓</span>
+        <div><div class="ws-t">8 topics mastered</div><div class="ws-why">Across Maths &amp; Science.</div></div>
+      </div>
+      <div class="ws-step">
+        <span class="ws-n">⏱</span>
+        <div><div class="ws-t">6h 40m studied</div><div class="ws-why">Up 22% from last week.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="how">
   <div class="wrap">
     <div class="section-head">
@@ -519,7 +715,7 @@
     <div style="margin-top:26px;">
       <span class="note">
         <svg width="26" height="18" viewBox="0 0 26 18" fill="none"><path d="M2 9c4-2 8-2 12 0s8 2 11-1" stroke="#C6403F" stroke-width="2" stroke-linecap="round"/></svg>
-        worth a try, honestly
+        Want to Top?
       </span>
     </div>
   </div>
