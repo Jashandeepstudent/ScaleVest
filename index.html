@@ -51,6 +51,77 @@
   }
   .note svg{ vertical-align:-6px; margin-right:2px; }
 
+  /* ---------- ENTRANCE ANIMATIONS ---------- */
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(18px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeIn{
+    from{ opacity:0; }
+    to{ opacity:1; }
+  }
+  @keyframes scaleIn{
+    from{ opacity:0; transform:scale(.94) rotate(-8deg); }
+    to{ opacity:1; transform:scale(1) rotate(-8deg); }
+  }
+  @keyframes drawLine{
+    from{ stroke-dashoffset:40; }
+    to{ stroke-dashoffset:0; }
+  }
+  @keyframes floatY{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-6px); }
+  }
+  @keyframes shimmer{
+    0%{ background-position:-200% 0; }
+    100%{ background-position:200% 0; }
+  }
+
+  .anim-in{
+    opacity:0;
+    animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) forwards;
+  }
+  .d1{ animation-delay:.05s; }
+  .d2{ animation-delay:.16s; }
+  .d3{ animation-delay:.27s; }
+  .d4{ animation-delay:.38s; }
+  .d5{ animation-delay:.49s; }
+  .d6{ animation-delay:.6s; }
+  .d7{ animation-delay:.72s; }
+
+  .hero-note-row .note path{
+    stroke-dasharray:40;
+    stroke-dashoffset:40;
+    animation:drawLine 1s ease .9s forwards;
+  }
+
+  .worksheet{ animation:scaleIn .8s cubic-bezier(.2,.7,.2,1) .35s backwards; }
+  .worksheet .check{ animation:scaleIn .5s cubic-bezier(.34,1.56,.64,1) 1.15s backwards, floatY 3.2s ease-in-out 1.7s infinite; }
+  .worksheet .ws-step{ opacity:0; animation:fadeUp .55s ease forwards; }
+  .worksheet .ws-step:nth-of-type(1){ animation-delay:.55s; }
+  .worksheet .ws-step:nth-of-type(2){ animation-delay:.72s; }
+  .worksheet .ws-step:nth-of-type(3){ animation-delay:.89s; }
+
+  .fact-row .fact{ opacity:0; animation:fadeUp .6s ease forwards; }
+  .fact-row .fact:nth-child(1){ animation-delay:.75s; }
+  .fact-row .fact:nth-child(2){ animation-delay:.85s; }
+  .fact-row .fact:nth-child(3){ animation-delay:.95s; }
+  .fact-row .fact:nth-child(4){ animation-delay:1.05s; }
+
+  .btn-primary{ position:relative; overflow:hidden; }
+  .btn-primary::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%);
+    background-size:200% 100%;
+    animation:shimmer 2.6s ease-in-out .8s infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .anim-in, .worksheet, .worksheet .check, .worksheet .ws-step, .fact-row .fact, .hero-note-row .note path, .btn-primary::after{
+      animation:none !important; opacity:1 !important; transform:none !important;
+    }
+  }
+
   /* ---------- NAV ---------- */
   header.nav{
     position:sticky; top:0; z-index:30;
@@ -61,13 +132,13 @@
   .brand{ display:flex; align-items:center; gap:9px; font-family:var(--serif); font-size:21px; font-weight:600; }
   .brand .dot{ width:9px; height:9px; border-radius:50%; background:var(--indigo); display:inline-block; }
   .nav-links{ display:flex; align-items:center; gap:32px; }
-  .nav-links a{ font-size:14px; color:var(--ink-soft); font-weight:500; }
+  .nav-links a{ font-size:14px; color:var(--ink-soft); font-weight:500; transition:color .15s ease; }
   .nav-links a:hover{ color:var(--ink); }
   .nav-cta{
     font-size:14px; font-weight:600; background:var(--indigo); color:#fff;
-    padding:10px 18px; border-radius:7px; transition:background .15s ease;
+    padding:10px 18px; border-radius:7px; transition:background .15s ease, transform .12s ease;
   }
-  .nav-cta:hover{ background:var(--indigo-deep); }
+  .nav-cta:hover{ background:var(--indigo-deep); transform:translateY(-1px); }
   .menu-btn{ display:none; }
 
   /* ---------- HERO ---------- */
@@ -84,7 +155,17 @@
   }
   h1 em{ font-style:italic; color:var(--indigo); }
   .hero-note-row{ margin-bottom:8px; }
-  .lede{ font-size:17px; color:var(--ink-soft); max-width:480px; margin-bottom:30px; line-height:1.7; }
+  .lede{ font-size:17px; color:var(--ink-soft); max-width:500px; margin-bottom:22px; line-height:1.7; }
+
+  .hero-feature-list{
+    display:flex; flex-direction:column; gap:9px; margin-bottom:30px;
+  }
+  .hero-feature-list li{
+    list-style:none; display:flex; align-items:center; gap:10px;
+    font-size:14px; color:var(--ink-soft); font-weight:500;
+  }
+  .hero-feature-list svg{ flex:none; color:var(--indigo); }
+
   .hero-actions{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:38px; }
   .btn-primary{
     font-size:15px; font-weight:600; background:var(--indigo); color:#fff;
@@ -92,7 +173,7 @@
     transition:background .15s ease, transform .12s ease;
   }
   .btn-primary:hover{ background:var(--indigo-deep); transform:translateY(-1px); }
-  .btn-text{ font-size:15px; font-weight:600; color:var(--ink); border-bottom:2px solid var(--ink); padding-bottom:2px; }
+  .btn-text{ font-size:15px; font-weight:600; color:var(--ink); border-bottom:2px solid var(--ink); padding-bottom:2px; transition:color .15s ease, border-color .15s ease; }
   .btn-text:hover{ color:var(--indigo); border-color:var(--indigo); }
 
   .fact-row{ display:flex; gap:28px; flex-wrap:wrap; }
@@ -225,24 +306,34 @@
       <a href="#parents">For parents</a>
       <a href="#how">How it works</a>
     </nav>
-    <a class="nav-cta" href="#start">Start learning free</a>
+    <a class="nav-cta" href="https://acazen.com">Start learning free</a>
   </div>
 </header>
 
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <div class="eyebrow">AI Academic Tutor · Math · Science · History · Languages</div>
-      <h1>Every answer comes with a <em class="mark-highlight">why</em>.</h1>
-      <div class="hero-note-row">
+      <div class="eyebrow anim-in d1">The Most Powerful AI Academic Tutor · Math · Science · History · Languages</div>
+      <h1 class="anim-in d2">Every answer comes with a <em class="mark-highlight">why</em>.</h1>
+      <div class="hero-note-row anim-in d3">
         <span class="note">
           <svg width="26" height="18" viewBox="0 0 26 18" fill="none"><path d="M2 9c4-2 8-2 12 0s8 2 11-1" stroke="#C6403F" stroke-width="2" stroke-linecap="round"/></svg>
           finally, an explanation that sticks
         </span>
       </div>
-      <p class="lede">Acazen explains a concept the way a good tutor would — step by step, with the reasoning shown, until it actually makes sense. Then it checks that it landed, and explains it again if it didn't.</p>
-      <div class="hero-actions">
-        <a class="btn-primary" href="#start" id="start">Start learning free
+      <p class="lede anim-in d4">Acazen is the most complete AI tutor built for real learning — full step-by-step working, 3D visual models, instant understanding checks, live academic duels, and a private Parent Console, all in one place. Not a chatbot. A tutor that actually teaches.</p>
+
+      <ul class="hero-feature-list anim-in d5">
+        <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg> Step-by-step working with the "why" behind every step</li>
+        <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg> 3D models, mind maps &amp; flowcharts for concepts textbooks can't show</li>
+        <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg> Summary cards + automatic understanding checks</li>
+        <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg> Academic duels &amp; rival matching to make practice fun</li>
+        <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg> Private Parent Console — progress visible, chats never shared</li>
+        <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg> Unlimited past-paper-style practice, generated to match your exam</li>
+      </ul>
+
+      <div class="hero-actions anim-in d6">
+        <a class="btn-primary" href="https://acazen.com" id="start">Start learning free
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
         <a class="btn-text" href="#features">See what it teaches</a>
@@ -251,6 +342,7 @@
         <div class="fact"><span class="v">24/7</span><span class="l">Always available</span></div>
         <div class="fact"><span class="v">3</span><span class="l">Exam boards supported</span></div>
         <div class="fact"><span class="v">10+</span><span class="l">Languages spoken</span></div>
+        <div class="fact"><span class="v">100%</span><span class="l">Private chat history</span></div>
       </div>
     </div>
 
@@ -281,6 +373,8 @@
     <span><b>Summary cards</b> after every explanation</span>
     <span class="sep"></span>
     <span><b>Parent Console</b> for progress, not chat logs</span>
+    <span class="sep"></span>
+    <span><b>Academic duels</b> that make practice stick</span>
   </div>
 </div>
 
@@ -418,7 +512,7 @@
     <h2>Your next question deserves a real answer<span class="mark-highlight"> — not just one.</span></h2>
     <p>Free to start. No credit card, no catch.</p>
     <div class="hero-actions">
-      <a class="btn-primary" href="#start">Start learning free
+      <a class="btn-primary" href="https://acazen.com">Start learning free
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
